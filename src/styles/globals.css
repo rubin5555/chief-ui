@@ -1,0 +1,28 @@
+/* globals */
+
+/* Scrollbar — always visible, light gray at rest, darker on use */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb;
+  border-radius: 999px;
+  transition: background-color 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background-color: #9ca3af;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
