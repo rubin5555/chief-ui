@@ -1554,7 +1554,7 @@ export function PersonalArea() {
 
             {/* Active import sub-panel */}
             {listImportPanel === 'doc' && (
-              <div className="rounded-2xl overflow-hidden mb-4" style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)' }}>
+              <div className="rounded-2xl mb-4" style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)' }}>
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
                   <h3 className="text-sm font-semibold text-gray-800">ייבוא ממסמך קיים</h3>
