@@ -1804,7 +1804,21 @@ export function PersonalArea() {
                       <span className="text-xs text-gray-500">{listDocSelected.size} מסמכים נבחרו</span>
                       <button
                         type="button"
-                        onClick={() => { setListImportPanel(null); setListDocSelected(new Set()); }}
+                        onClick={() => {
+                          // Collect all distribution members from selected docs, dedupe by idNumber
+                          const toAdd = LIST_DOCS_DATA
+                            .filter(doc => listDocSelected.has(doc.id))
+                            .flatMap(doc => doc.distribution);
+                          setListMembers(prev => {
+                            const existingIds = new Set(prev.map(m => m.idNumber));
+                            const newMembers = toAdd
+                              .filter(p => !existingIds.has(p.idNumber))
+                              .map(p => ({ id: `imp-${p.idNumber}`, name: p.name, idNumber: p.idNumber, environment: p.environment }));
+                            return [...prev, ...newMembers];
+                          });
+                          setListImportPanel(null);
+                          setListDocSelected(new Set());
+                        }}
                         className="px-4 py-1.5 bg-[#1B3A6B] text-white text-xs font-medium rounded-lg hover:bg-[#152e54] transition-colors"
                       >
                         ייבא נבחרים
