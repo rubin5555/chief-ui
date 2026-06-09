@@ -56,6 +56,39 @@ const LIST_PEOPLE_POOL = [
   { id: 'p15', name: 'גיל אלון',       idNumber: '156789012', environment: 'ארגון ג׳' },
 ];
 
+/* ── Filter section helper (mirrors Catalog's SearchableCheckboxSection / SimpleCheckboxSection) ── */
+function ImportFilterSection({ title, options, selected, onChange, searchable = false }: {
+  title: string; options: string[]; selected: string[]; onChange: (v: string[]) => void; searchable?: boolean;
+}) {
+  const [q, setQ] = useState('');
+  const visible = searchable ? options.filter(o => o.includes(q)) : options;
+  const toggle = (opt: string) =>
+    onChange(selected.includes(opt) ? selected.filter(x => x !== opt) : [...selected, opt]);
+  return (
+    <div>
+      <p className="text-xs font-semibold text-gray-400 px-4 pb-1.5 uppercase tracking-wide">{title}</p>
+      {searchable && (
+        <div className="relative mx-3 mb-1.5">
+          <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-300 pointer-events-none" />
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="חיפוש..."
+            className="w-full pr-7 pl-2 py-1 text-xs rounded-md border border-gray-100 bg-gray-50 focus:outline-none focus:border-gray-200"
+            dir="rtl" />
+        </div>
+      )}
+      <div className="max-h-28 overflow-y-auto">
+        {visible.map(opt => (
+          <label key={opt} className="flex items-center gap-2 px-4 py-1.5 cursor-pointer hover:bg-gray-50 transition-colors">
+            <input type="checkbox" checked={selected.includes(opt)} onChange={() => toggle(opt)}
+              className="rounded w-3.5 h-3.5 flex-shrink-0 accent-[#1B3A6B]" />
+            <span className={`flex-1 text-right text-sm ${selected.includes(opt) ? 'font-semibold text-[#1B3A6B]' : 'text-gray-700'}`}>{opt}</span>
+          </label>
+        ))}
+        {visible.length === 0 && <p className="px-4 py-1.5 text-xs text-gray-300 text-right">לא נמצאו</p>}
+      </div>
+    </div>
+  );
+}
+
 function SearchableSelect({ value, onChange, placeholder = 'חפש...', options = ENV_PEOPLE_OPTIONS, noBorder = false }: {
   value: string; onChange: (v: string) => void; placeholder?: string; options?: string[]; noBorder?: boolean;
 }) {
@@ -1587,81 +1620,54 @@ export function PersonalArea() {
                     {/* Rich filter funnel */}
                     <div ref={importFilterRef} className="relative flex-shrink-0">
                       <button type="button" onClick={() => setImportFilterOpen(o => !o)}
-                        className="relative p-1 rounded-full hover:bg-gray-100 transition-colors">
-                        <Filter className={`w-4 h-4 ${(importDocTypeFilter.length + importStatusFilter.length + importEnvFilter.length + (importDateFrom || importDateTo ? 1 : 0)) > 0 ? 'text-[#1B3A6B]' : 'text-gray-400'}`} />
+                        className="relative p-2 rounded-full hover:bg-black/10 transition-colors" title="סינון">
+                        <Filter className={`w-4 h-4 ${(importDocTypeFilter.length + importStatusFilter.length + importEnvFilter.length + (importDateFrom || importDateTo ? 1 : 0)) > 0 ? 'text-[#1B3A6B]' : 'text-gray-600'}`} />
                         {(importDocTypeFilter.length + importStatusFilter.length + importEnvFilter.length + (importDateFrom || importDateTo ? 1 : 0)) > 0 && (
-                          <span className="absolute top-0 left-0 w-2 h-2 rounded-full bg-[#1B3A6B]" />
+                          <span className="absolute top-0.5 left-0.5 w-2 h-2 rounded-full bg-[#1B3A6B]" />
                         )}
                       </button>
                       {importFilterOpen && (
-                        <div className="absolute left-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 py-3 z-[99999] w-64"
-                          dir="rtl" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                          {/* סוג מסמך */}
-                          <div>
-                            <p className="text-xs font-semibold text-gray-400 px-4 pb-1.5 uppercase tracking-wide">סוג מסמך</p>
-                            {['נוהל', 'תקנון', 'פקודה', 'הוראה'].map(opt => (
-                              <label key={opt} className="flex items-center gap-2 px-4 py-1.5 cursor-pointer hover:bg-gray-50 transition-colors">
-                                <input type="checkbox" checked={importDocTypeFilter.includes(opt)}
-                                  onChange={() => setImportDocTypeFilter(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])}
-                                  className="rounded w-3.5 h-3.5 flex-shrink-0 accent-[#1B3A6B]" />
-                                <span className={`flex-1 text-right text-sm ${importDocTypeFilter.includes(opt) ? 'font-semibold text-[#1B3A6B]' : 'text-gray-700'}`}>{opt}</span>
-                              </label>
-                            ))}
-                          </div>
-                          <div className="my-2 border-t border-gray-100" />
-                          {/* סטטוס */}
-                          <div>
-                            <p className="text-xs font-semibold text-gray-400 px-4 pb-1.5 uppercase tracking-wide">סטטוס</p>
-                            {['טיוטה', 'בהכנה'].map(opt => (
-                              <label key={opt} className="flex items-center gap-2 px-4 py-1.5 cursor-pointer hover:bg-gray-50 transition-colors">
-                                <input type="checkbox" checked={importStatusFilter.includes(opt)}
-                                  onChange={() => setImportStatusFilter(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])}
-                                  className="rounded w-3.5 h-3.5 flex-shrink-0 accent-[#1B3A6B]" />
-                                <span className={`flex-1 text-right text-sm ${importStatusFilter.includes(opt) ? 'font-semibold text-[#1B3A6B]' : 'text-gray-700'}`}>{opt}</span>
-                              </label>
-                            ))}
-                          </div>
-                          <div className="my-2 border-t border-gray-100" />
-                          {/* סביבה */}
-                          <div>
-                            <p className="text-xs font-semibold text-gray-400 px-4 pb-1.5 uppercase tracking-wide">סביבה</p>
-                            {['ארגון א׳', 'ארגון ב׳', 'ארגון ג׳', 'ארגון ד׳'].map(opt => (
-                              <label key={opt} className="flex items-center gap-2 px-4 py-1.5 cursor-pointer hover:bg-gray-50 transition-colors">
-                                <input type="checkbox" checked={importEnvFilter.includes(opt)}
-                                  onChange={() => setImportEnvFilter(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])}
-                                  className="rounded w-3.5 h-3.5 flex-shrink-0 accent-[#1B3A6B]" />
-                                <span className={`flex-1 text-right text-sm ${importEnvFilter.includes(opt) ? 'font-semibold text-[#1B3A6B]' : 'text-gray-700'}`}>{opt}</span>
-                              </label>
-                            ))}
-                          </div>
-                          <div className="my-2 border-t border-gray-100" />
-                          {/* תאריך עדכון אחרון */}
-                          <div>
-                            <p className="text-xs font-semibold text-gray-400 px-4 pb-1.5 uppercase tracking-wide">תאריך עדכון אחרון</p>
-                            <div className="px-3 flex flex-col gap-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">מ-</span>
-                                <div className="flex-1"><DatePicker value={importDateFrom} onChange={setImportDateFrom} placeholder="מ-" /></div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">עד</span>
-                                <div className="flex-1"><DatePicker value={importDateTo} onChange={setImportDateTo} placeholder="עד" /></div>
+                        /* dir="ltr" on outer → scrollbar on RIGHT; dir="rtl" on inner → content RTL */
+                        <div className="absolute left-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 py-3 z-[99999] w-72"
+                          dir="ltr" style={{ maxHeight: '82vh', overflowY: 'auto' }}>
+                          <div dir="rtl">
+                            {/* סוג מסמך — searchable */}
+                            <ImportFilterSection title="סוג מסמך" options={['נוהל','תקנון','פקודה','הוראה']} selected={importDocTypeFilter} onChange={setImportDocTypeFilter} searchable />
+                            <div className="my-2 border-t border-gray-100" />
+                            {/* סטטוס */}
+                            <ImportFilterSection title="סטטוס" options={['טיוטה','בהכנה']} selected={importStatusFilter} onChange={setImportStatusFilter} />
+                            <div className="my-2 border-t border-gray-100" />
+                            {/* סביבה — searchable */}
+                            <ImportFilterSection title="סביבה" options={['ארגון א׳','ארגון ב׳','ארגון ג׳','ארגון ד׳']} selected={importEnvFilter} onChange={setImportEnvFilter} searchable />
+                            <div className="my-2 border-t border-gray-100" />
+                            {/* תאריך עדכון אחרון */}
+                            <div>
+                              <p className="text-xs font-semibold text-gray-400 px-4 pb-1.5 uppercase tracking-wide">תאריך עדכון אחרון</p>
+                              <div className="px-3 flex flex-col gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">מ-</span>
+                                  <div className="flex-1"><DatePicker value={importDateFrom} onChange={setImportDateFrom} placeholder="מ-" /></div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">עד</span>
+                                  <div className="flex-1"><DatePicker value={importDateTo} onChange={setImportDateTo} placeholder="עד" /></div>
+                                </div>
                               </div>
                             </div>
+                            {/* נקה הכל */}
+                            {(importDocTypeFilter.length + importStatusFilter.length + importEnvFilter.length + (importDateFrom || importDateTo ? 1 : 0)) > 0 && (
+                              <>
+                                <div className="my-2 border-t border-gray-100" />
+                                <div className="px-3">
+                                  <button type="button"
+                                    onClick={() => { setImportDocTypeFilter([]); setImportStatusFilter([]); setImportEnvFilter([]); setImportDateFrom(''); setImportDateTo(''); }}
+                                    className="w-full py-1.5 text-xs font-medium text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors">
+                                    נקה הכל
+                                  </button>
+                                </div>
+                              </>
+                            )}
                           </div>
-                          {/* נקה הכל */}
-                          {(importDocTypeFilter.length + importStatusFilter.length + importEnvFilter.length + (importDateFrom || importDateTo ? 1 : 0)) > 0 && (
-                            <>
-                              <div className="my-2 border-t border-gray-100" />
-                              <div className="px-3">
-                                <button type="button"
-                                  onClick={() => { setImportDocTypeFilter([]); setImportStatusFilter([]); setImportEnvFilter([]); setImportDateFrom(''); setImportDateTo(''); }}
-                                  className="w-full py-1.5 text-xs font-medium text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors">
-                                  נקה הכל
-                                </button>
-                              </div>
-                            </>
-                          )}
                         </div>
                       )}
                     </div>
