@@ -1,6 +1,6 @@
 /* globals */
 
-/* Scrollbar — always visible, light gray at rest, darker on use */
+/* Scrollbar — always visible, medium gray at rest, darker on use */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -8,21 +8,22 @@
 
 ::-webkit-scrollbar-track {
   background: transparent;
+  margin: 6px; /* keeps scrollbar away from rounded corners */
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #e5e7eb;
+  background-color: #b0b7c3;
   border-radius: 999px;
   transition: background-color 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover,
 ::-webkit-scrollbar-thumb:active {
-  background-color: #9ca3af;
+  background-color: #6b7280;
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #e5e7eb transparent;
+  scrollbar-color: #b0b7c3 transparent;
 }
