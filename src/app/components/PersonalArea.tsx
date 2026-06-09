@@ -2,6 +2,7 @@ import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, 
 import { useState, useRef, useEffect } from 'react';
 import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
+import { DatePicker } from './DatePicker';
 
 const ENV_PEOPLE_OPTIONS = [
   'אבי כהן', 'שרה לוי', 'משה ישראלי', 'רחל דוד', 'יוסף מזרחי',
@@ -1639,14 +1640,12 @@ export function PersonalArea() {
                             <p className="text-xs font-semibold text-gray-400 px-4 pb-1.5 uppercase tracking-wide">תאריך עדכון אחרון</p>
                             <div className="px-3 flex flex-col gap-2">
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-left">מ-</span>
-                                <input type="date" value={importDateFrom} onChange={e => setImportDateFrom(e.target.value)}
-                                  className="flex-1 text-xs px-2 py-1 rounded-lg border border-gray-100 bg-gray-50 focus:outline-none focus:border-gray-300 text-gray-700" dir="ltr" />
+                                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">מ-</span>
+                                <div className="flex-1"><DatePicker value={importDateFrom} onChange={setImportDateFrom} placeholder="מ-" /></div>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-left">עד</span>
-                                <input type="date" value={importDateTo} onChange={e => setImportDateTo(e.target.value)}
-                                  className="flex-1 text-xs px-2 py-1 rounded-lg border border-gray-100 bg-gray-50 focus:outline-none focus:border-gray-300 text-gray-700" dir="ltr" />
+                                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">עד</span>
+                                <div className="flex-1"><DatePicker value={importDateTo} onChange={setImportDateTo} placeholder="עד" /></div>
                               </div>
                             </div>
                           </div>

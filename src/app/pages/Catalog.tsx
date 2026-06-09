@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { TopNavbar } from '../components/TopNavbar';
 import { RightSidebar } from '../components/RightSidebar';
+import { DatePicker } from '../components/DatePicker';
 import {
   Search, Clock, MoreHorizontal, ChevronLeft, ChevronRight,
   Eye, Send, Copy, Trash2, Archive, X, Download, RotateCcw, ChevronDown, Filter, Plus, FileText,
@@ -490,16 +491,16 @@ function FilterFunnel({
             <p className="text-xs font-semibold text-gray-400 px-4 pb-1.5 uppercase tracking-wide">מועד כניסה לתוקף</p>
             <div className="px-3 flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-left">מ-</span>
-                <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                  className="flex-1 text-xs px-2 py-1 rounded-lg border border-gray-100 bg-gray-50 focus:outline-none focus:border-gray-300 text-gray-700"
-                  dir="ltr" />
+                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">מ-</span>
+                <div className="flex-1">
+                  <DatePicker value={dateFrom} onChange={setDateFrom} placeholder="מ-" />
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-left">עד</span>
-                <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                  className="flex-1 text-xs px-2 py-1 rounded-lg border border-gray-100 bg-gray-50 focus:outline-none focus:border-gray-300 text-gray-700"
-                  dir="ltr" />
+                <span className="text-xs text-gray-400 w-5 flex-shrink-0 text-right">עד</span>
+                <div className="flex-1">
+                  <DatePicker value={dateTo} onChange={setDateTo} placeholder="עד" />
+                </div>
               </div>
             </div>
           </div>
