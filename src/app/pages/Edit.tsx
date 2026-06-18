@@ -1041,6 +1041,12 @@ export function Edit({ navigate, doc }: EditProps) {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const closeFilterPanel = useCallback(() => setShowFilterPanel(false), []);
   const [showEditDocModal, setShowEditDocModal] = useState(false);
+  const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
+  const toggleTopic = (id: string) => setExpandedTopics(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
 
   const openRestorePanel = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1202,12 +1208,20 @@ export function Edit({ navigate, doc }: EditProps) {
                 <div key={section.id}>
 
                   {/* Topic row */}
-                  <div className="flex items-center gap-2 px-2 py-2 rounded-xl group hover:bg-white/50 transition-colors cursor-pointer" dir="rtl">
+                  <div
+                    className="flex items-center gap-2 px-2 py-2 rounded-xl group hover:bg-white/50 transition-colors cursor-pointer"
+                    dir="rtl"
+                    onClick={() => editingNewId !== section.id && toggleTopic(section.id)}>
+                    <ChevronLeft
+                      className="w-3.5 h-3.5 flex-shrink-0 text-gray-400 transition-transform duration-200"
+                      style={{ transform: expandedTopics.has(section.id) ? 'rotate(-90deg)' : 'rotate(0deg)' }}
+                    />
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#1B3A6B' }} />
                     {editingNewId === section.id ? (
                       <input
                         autoFocus
                         defaultValue={section.title}
+                        onClick={e => e.stopPropagation()}
                         onBlur={e => saveNewSection(section.id, e.target.value.trim())}
                         onKeyDown={e => {
                           if (e.key === 'Enter') { e.preventDefault(); saveNewSection(section.id, (e.target as HTMLInputElement).value.trim()); }
@@ -1221,13 +1235,14 @@ export function Edit({ navigate, doc }: EditProps) {
                     )}
                     <button
                       title="מחק נושא"
+                      onClick={e => e.stopPropagation()}
                       className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-red-400 transition-all flex-shrink-0">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  {/* Section children — individual white cards */}
-                  {section.children && (
+                  {/* Section children — individual white cards (only when expanded) */}
+                  {section.children && expandedTopics.has(section.id) && (
                     <div className="mx-1 flex flex-col gap-1 mb-1">
                       {section.children.map((child, ci) => (
                         <div key={child.id}
@@ -1251,8 +1266,8 @@ export function Edit({ navigate, doc }: EditProps) {
                     </div>
                   )}
 
-                  {/* No children — just add section link */}
-                  {!section.children && (
+                  {/* No children — show add section link only when expanded */}
+                  {!section.children && expandedTopics.has(section.id) && (
                     <div className="px-3 pb-1.5" dir="rtl">
                       <button className="text-right text-xs font-semibold text-[#1B3A6B] hover:text-[#152e54] transition-colors">+ הוספת סעיף</button>
                     </div>
