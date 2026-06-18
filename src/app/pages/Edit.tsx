@@ -660,84 +660,19 @@ function ImportDocModal({ onClose, onImport }: {
   );
 }
 
-function SectionItem({
-  section, depth = 0, isEditing = false, onSave, index,
-}: {
-  section: Section; depth?: number; isEditing?: boolean; onSave?: (title: string) => void; index?: number;
-}) {
-  const [open, setOpen] = useState(true);
-  const [draft, setDraft] = useState(section.title);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const hasChildren = !!(section.children?.length);
+const HE_LETTERS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י'];
 
-  useEffect(() => { if (isEditing) inputRef.current?.focus(); }, [isEditing]);
-
-  const commit = () => onSave?.(draft.trim());
-
-  if (depth === 0) {
-    // Top-level topic row
-    return (
-      <div className="mb-0.5">
-        <div
-          className={`flex items-center gap-2 py-2 px-3 rounded-xl cursor-pointer transition-colors group
-            ${hasChildren && open ? 'bg-[#EEF4FF]' : 'hover:bg-gray-100'}`}
-          onClick={() => !isEditing && hasChildren && setOpen(o => !o)}
-        >
-          {/* Expand arrow */}
-          {hasChildren ? (
-            <ChevronLeft className={`w-3.5 h-3.5 flex-shrink-0 text-[#1B3A6B] transition-transform duration-200 ${open ? '-rotate-90' : ''}`} />
-          ) : (
-            <span className="w-3.5 flex-shrink-0" />
-          )}
-
-          {/* Number badge */}
-          {index !== undefined && (
-            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-              style={{ background: '#1B3A6B', color: '#fff' }}>
-              {index + 1}
-            </span>
-          )}
-
-          {/* Title */}
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              value={draft}
-              onChange={e => setDraft(e.target.value)}
-              onBlur={commit}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') onSave?.(''); }}
-              className="flex-1 bg-transparent border-b border-[#1B3A6B] outline-none text-sm font-semibold text-gray-800 text-right"
-              placeholder="שם הנושא..."
-              dir="rtl"
-            />
-          ) : (
-            <span className={`flex-1 text-sm font-semibold text-right truncate ${hasChildren && open ? 'text-[#1B3A6B]' : 'text-gray-700'}`}>
-              {section.title}
-            </span>
-          )}
-        </div>
-
-        {/* Children */}
-        {hasChildren && open && (
-          <div className="mt-0.5 mb-1 mr-4 border-r-2 border-[#1B3A6B]/15 pr-2">
-            {section.children!.map((child, ci) => (
-              <SectionItem key={child.id} section={child} depth={1} index={ci} />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Sub-section (depth > 0)
+function SectionEditInput({ initialValue, onSave }: { initialValue: string; onSave: (v: string) => void }) {
+  const [draft, setDraft] = useState(initialValue);
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => { ref.current?.focus(); }, []);
+  const commit = () => onSave(draft.trim());
   return (
-    <div
-      className="flex items-center gap-2 py-1.5 px-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-100 text-right"
-    >
-      <span className="flex-shrink-0 text-[10px] font-semibold text-gray-400 w-7 text-center tabular-nums" />
-      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#94a3b8' }} />
-      <span className="flex-1 text-xs text-gray-600 truncate">{section.title}</span>
-    </div>
+    <input ref={ref} value={draft} onChange={e => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') onSave(''); }}
+      className="flex-1 bg-transparent border-b border-[#1B3A6B] outline-none text-sm font-semibold text-gray-800 text-right min-w-0"
+      placeholder="שם הנושא..." dir="rtl" />
   );
 }
 
@@ -1183,18 +1118,15 @@ export function Edit({ navigate, doc }: EditProps) {
 
         {/* Right sidebar */}
         <aside className="flex-shrink-0 flex flex-col overflow-hidden z-10"
-          style={{ width: 264, background: '#fff', borderLeft: '1px solid #e5e7eb' }}>
+          style={{ width: 272, background: '#fff', borderLeft: '1px solid #e5e7eb' }}>
 
           {/* Status + navigation */}
           <div className="px-4 pt-5 pb-4" style={{ borderBottom: '1px solid #f0f0f0' }}>
-            {/* Status chip */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-3"
               style={{ background: 'rgba(27,58,107,0.07)', border: '1px solid rgba(27,58,107,0.15)' }}>
               <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
               <span className="text-sm font-semibold" style={{ color: '#1B3A6B' }}>מסמך {docStatus}</span>
             </div>
-
-            {/* Primary CTA */}
             {nextStatus && (
               <button className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold mb-2 transition-all hover:opacity-90 active:scale-[0.98]"
                 style={{ background: '#1B3A6B', color: '#fff', boxShadow: '0 2px 10px rgba(27,58,107,0.28)' }}>
@@ -1202,8 +1134,6 @@ export function Edit({ navigate, doc }: EditProps) {
                 <ChevronLeft className="w-3.5 h-3.5 flex-shrink-0" />
               </button>
             )}
-
-            {/* Secondary back link */}
             {prevStatus && (
               <button className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-gray-600 transition-colors">
                 <span>חזרה למסמך {prevStatus}</span>
@@ -1212,38 +1142,80 @@ export function Edit({ navigate, doc }: EditProps) {
             )}
           </div>
 
-          {/* Section tree header */}
-          <div className="flex items-center justify-between px-4 pt-4 pb-2">
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">נושאים וסעיפים</span>
+          {/* + הוספת נושא button */}
+          <div className="px-3 pt-3 pb-2">
+            <button onClick={openAddMenu}
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold text-[#1B3A6B] hover:bg-blue-50 transition-colors"
+              style={{ border: '1.5px dashed #1B3A6B' }}>
+              <Plus className="w-3.5 h-3.5" />
+              הוספת נושא
+            </button>
           </div>
 
-          {/* Sections list — scrollable */}
-          <div className="flex-1 overflow-y-auto min-h-0 px-2 pb-2">
-            {sections.map((s, idx) => (
-              <SectionItem
-                key={s.id} section={s} index={idx}
-                isEditing={editingNewId === s.id}
-                onSave={editingNewId === s.id ? (title) => saveNewSection(s.id, title) : undefined}
-              />
+          {/* Topic tree — scrollable */}
+          <div className="flex-1 overflow-y-auto min-h-0 px-1">
+            {sections.map((section) => (
+              <div key={section.id} className="mb-1">
+                {/* Topic row */}
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl group hover:bg-gray-50 cursor-pointer" dir="rtl">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#1B3A6B' }} />
+                  {editingNewId === section.id ? (
+                    <SectionEditInput
+                      initialValue={section.title}
+                      onSave={title => saveNewSection(section.id, title)}
+                    />
+                  ) : (
+                    <span className="flex-1 text-sm font-semibold text-gray-800 truncate">{section.title || 'נושא חדש...'}</span>
+                  )}
+                  <button title="מחק נושא"
+                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-red-400 transition-all flex-shrink-0">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Sections (children) */}
+                {section.children && (
+                  <div className="mr-4" style={{ borderRight: '1.5px solid #e5e7eb' }}>
+                    {section.children.map((child, ci) => (
+                      <div key={child.id}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg group hover:bg-gray-50 cursor-pointer" dir="rtl">
+                        <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-5 text-right">{ci + 1}.</span>
+                        <span className="flex-1 text-xs text-gray-700 truncate">{child.title}</span>
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
+                          <button className="p-0.5 rounded text-gray-300 hover:text-red-400 transition-colors"><Trash2 className="w-3 h-3" /></button>
+                          <button className="p-0.5 rounded text-gray-300 hover:text-blue-400 transition-colors"><UserCheck className="w-3 h-3" /></button>
+                        </div>
+                      </div>
+                    ))}
+                    {/* Inline add buttons */}
+                    <div className="px-3 pt-0.5 pb-2 flex flex-col gap-0.5" dir="rtl">
+                      <button className="text-right text-xs font-medium text-[#1B3A6B] hover:text-[#152e54] transition-colors">+ תת סעיף</button>
+                      <button className="text-right text-xs font-medium text-[#1B3A6B] hover:text-[#152e54] transition-colors">+ הוספת סעיף</button>
+                    </div>
+                  </div>
+                )}
+                {!section.children && (
+                  <div className="mr-4 px-3 pb-1" dir="rtl">
+                    <button className="text-right text-xs font-medium text-[#1B3A6B] hover:text-[#152e54] transition-colors">+ הוספת סעיף</button>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
 
-          {/* Bottom action bar */}
-          <div className="px-4 py-3 flex items-center gap-2" style={{ borderTop: '1px solid #f0f0f0' }}>
-            <button
-              title="שחזר סעיף שנמחק"
-              onClick={openRestorePanel}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-100 transition-colors border border-gray-200">
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>שחזור</span>
+          {/* Bottom dashed action buttons */}
+          <div className="px-3 pb-4 pt-2 flex flex-col gap-2" style={{ borderTop: '1px solid #f0f0f0' }}>
+            <button onClick={openRestorePanel}
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+              style={{ border: '1.5px dashed #d1d5db' }}>
+              <Plus className="w-3.5 h-3.5" />
+              הוספת נספח
             </button>
             <button
-              title="הוסף נושא / סעיף"
-              onClick={openAddMenu}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:opacity-90"
-              style={{ background: '#1B3A6B', boxShadow: '0 2px 6px rgba(27,58,107,0.25)' }}>
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+              style={{ border: '1.5px dashed #d1d5db' }}>
               <Plus className="w-3.5 h-3.5" />
-              <span>הוספה</span>
+              הוספת דגשים לכתיבת המסמך
             </button>
           </div>
         </aside>
@@ -1300,76 +1272,37 @@ export function Edit({ navigate, doc }: EditProps) {
             }}>
               <div style={{ padding: '16mm 20mm 20mm 20mm' }}>
                 {sections.map((section, idx) => (
-                  <div key={section.id} {...(!section.children ? { 'data-page-box': '' } : {})} style={{ marginBottom: '10mm' }}>
+                  <div key={section.id} style={{ marginBottom: '14mm' }}>
 
-                    {/* Section header row */}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      background: '#F4F7FB', borderRadius: '8px 8px 0 0',
-                      padding: '6px 10px 6px 8px',
-                      borderBottom: '2px solid #1B3A6B',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        {/* Number badge */}
-                        <span style={{
-                          width: 22, height: 22, borderRadius: '50%', background: '#1B3A6B', color: '#fff',
-                          fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                        }}>{idx + 1}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#1B3A6B' }}>{section.title}</span>
-                      </div>
-                      {!section.children && (
-                        <div className="flex items-center gap-0.5">
-                          <button title="בטל" className="p-1 rounded hover:bg-white/70 transition-colors" style={{ color: '#94a3b8' }}><Undo2 className="w-3 h-3" /></button>
-                          <button title="בצע שנית" className="p-1 rounded hover:bg-white/70 transition-colors" style={{ color: '#94a3b8' }}><Redo2 className="w-3 h-3" /></button>
-                          <button title="צאט"
-                            onClick={e => {
-                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                              setOpenChat(openChat?.id === section.id ? null : { id: section.id, title: `${idx + 1}. ${section.title}`, top: rect.top });
-                            }}
-                            className={`p-1 rounded hover:bg-white/70 transition-colors ${openChat?.id === section.id ? 'text-[#1B3A6B]' : ''}`}
-                            style={{ color: openChat?.id === section.id ? '#1B3A6B' : '#94a3b8' }}>
-                            <MessageSquare className="w-3 h-3" />
-                          </button>
-                          <button title="אפשרויות" onClick={openSectionMenu}
-                            className="p-1 rounded hover:bg-white/70 transition-colors" style={{ color: '#94a3b8' }}>
-                            <MoreHorizontal className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
+                    {/* ── Topic heading — centered with underline ── */}
+                    <div style={{ textAlign: 'center', marginBottom: '7mm' }}>
+                      <span style={{
+                        fontSize: 15, fontWeight: 700, color: '#1e293b',
+                        display: 'inline-block',
+                        paddingBottom: 7,
+                        borderBottom: '2px solid #1e293b',
+                        minWidth: '35%',
+                      }}>
+                        {section.title}
+                      </span>
                     </div>
 
-                    {/* Content box for leaf sections */}
-                    {!section.children && (
-                      <div style={{
-                        minHeight: '35mm', border: '1px solid #e2e8f0', borderTop: 'none',
-                        borderRadius: '0 0 8px 8px', background: 'white',
-                      }} />
-                    )}
-
-                    {/* Sub-sections */}
+                    {/* ── Children = numbered sections ── */}
                     {section.children?.map((child, ci) => (
-                      <div key={child.id} data-page-box="" style={{ marginBottom: '5mm' }}>
-                        {/* Sub-section header */}
+                      <div key={child.id} data-page-box="" style={{ marginBottom: '7mm' }}>
+                        {/* Section label row */}
                         <div style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          background: '#F9FAFB', padding: '5px 10px 5px 8px',
-                          borderRight: '3px solid #1B3A6B',
-                          borderBottom: '1px solid #e2e8f0',
-                          marginTop: ci === 0 ? '3mm' : '3mm',
+                          marginBottom: '2mm',
                         }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 11, fontWeight: 600, color: '#1B3A6B', flexShrink: 0 }}>
-                              {idx + 1}.{ci + 1}
-                            </span>
-                            <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{child.title}</span>
-                          </div>
-                          <div className="flex items-center gap-0.5">
+                          {/* Action buttons on the left */}
+                          <div className="flex items-center gap-0.5" style={{ flexShrink: 0 }}>
                             <button title="בטל" className="p-1 rounded hover:bg-gray-100 transition-colors" style={{ color: '#d1d5db' }}><Undo2 className="w-3 h-3" /></button>
                             <button title="בצע שנית" className="p-1 rounded hover:bg-gray-100 transition-colors" style={{ color: '#d1d5db' }}><Redo2 className="w-3 h-3" /></button>
                             <button title="צאט"
                               onClick={e => {
                                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                setOpenChat(openChat?.id === child.id ? null : { id: child.id, title: `${idx + 1}.${ci + 1} ${child.title}`, top: rect.top });
+                                setOpenChat(openChat?.id === child.id ? null : { id: child.id, title: `${ci + 1}. ${child.title}`, top: rect.top });
                               }}
                               className="p-1 rounded hover:bg-gray-100 transition-colors"
                               style={{ color: openChat?.id === child.id ? '#1B3A6B' : '#94a3b8' }}>
@@ -1380,14 +1313,58 @@ export function Edit({ navigate, doc }: EditProps) {
                               <MoreHorizontal className="w-3 h-3" />
                             </button>
                           </div>
+                          {/* Number + title on the right */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{child.title}</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>{ci + 1}.</span>
+                          </div>
                         </div>
                         {/* Content box */}
                         <div style={{
-                          minHeight: '28mm', border: '1px solid #e2e8f0', borderTop: 'none', borderRight: '3px solid #1B3A6B',
-                          background: 'white',
-                        }} />
+                          minHeight: '28mm', borderRadius: 8,
+                          background: '#f8f9fb', border: '1px solid #e2e8f0',
+                          padding: '10px 12px',
+                        }}>
+                          <span style={{ color: '#94a3b8', fontSize: 12 }}>מלל קבוע לסעיף (אופציונלי)...</span>
+                        </div>
                       </div>
                     ))}
+
+                    {/* ── Leaf section (no children) ── */}
+                    {!section.children && (
+                      <div data-page-box="">
+                        <div style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          marginBottom: '2mm',
+                        }}>
+                          <div className="flex items-center gap-0.5" style={{ flexShrink: 0 }}>
+                            <button title="בטל" className="p-1 rounded hover:bg-gray-100 transition-colors" style={{ color: '#d1d5db' }}><Undo2 className="w-3 h-3" /></button>
+                            <button title="בצע שנית" className="p-1 rounded hover:bg-gray-100 transition-colors" style={{ color: '#d1d5db' }}><Redo2 className="w-3 h-3" /></button>
+                            <button title="צאט"
+                              onClick={e => {
+                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                setOpenChat(openChat?.id === section.id ? null : { id: section.id, title: section.title, top: rect.top });
+                              }}
+                              className="p-1 rounded hover:bg-gray-100 transition-colors"
+                              style={{ color: openChat?.id === section.id ? '#1B3A6B' : '#94a3b8' }}>
+                              <MessageSquare className="w-3 h-3" />
+                            </button>
+                            <button title="אפשרויות" onClick={openSectionMenu}
+                              className="p-1 rounded hover:bg-gray-100 transition-colors" style={{ color: '#94a3b8' }}>
+                              <MoreHorizontal className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>{idx + 1}. {section.title}</span>
+                        </div>
+                        <div style={{
+                          minHeight: '35mm', borderRadius: 8,
+                          background: '#f8f9fb', border: '1px solid #e2e8f0',
+                          padding: '10px 12px',
+                        }}>
+                          <span style={{ color: '#94a3b8', fontSize: 12 }}>מלל קבוע לסעיף (אופציונלי)...</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
