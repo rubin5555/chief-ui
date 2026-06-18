@@ -1497,15 +1497,15 @@ export function Edit({ navigate, doc }: EditProps) {
             <p className="text-sm text-gray-400 text-center">מחיקת הנושא תמחק את כל הסעיפים שלו</p>
             <div className="flex gap-3 w-full mt-1">
               <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 py-2.5 rounded-2xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+                ביטול
+              </button>
+              <button
                 onClick={confirmDelete}
                 className="flex-1 py-2.5 rounded-2xl text-sm font-semibold text-white transition-all hover:opacity-90"
                 style={{ background: '#1B3A6B' }}>
                 מחיקה
-              </button>
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="flex-1 py-2.5 rounded-2xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
-                ביטול
               </button>
             </div>
           </div>
