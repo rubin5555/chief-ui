@@ -329,7 +329,7 @@ function SearchableMultiSelect({ selected, onChange, placeholder = 'בחר...', 
             ? <span className="text-sm text-gray-400">{placeholder}</span>
             : selected.map(s => (
               <span key={s} className="inline-flex items-center gap-1 bg-[#EEF4FF] text-[#1B3A6B] text-xs font-medium px-2 py-0.5 rounded-lg">
-                <button type="button" onClick={e => { e.stopPropagation(); toggle(s); }} className="hover:text-red-500">
+                <button type="button" onClick={e => { e.stopPropagation(); toggle(s); }} className="hover:text-[#1B3A6B]">
                   <X className="w-3 h-3" />
                 </button>
                 {s}
@@ -829,7 +829,7 @@ function DynamicFieldPicker({
                     {param.name && (
                       <div className="mt-1.5 flex items-center justify-between px-2.5 py-1.5 bg-[#EEF4FF] rounded-lg">
                         <span className="text-[11px] font-semibold text-[#1B3A6B] truncate">{param.name}</span>
-                        <button type="button" onClick={() => setParam(op.id, { name: '' })} className="text-[#1B3A6B]/40 hover:text-red-500 transition-colors ml-1 flex-shrink-0">
+                        <button type="button" onClick={() => setParam(op.id, { name: '' })} className="text-[#1B3A6B]/40 hover:text-[#1B3A6B] transition-colors ml-1 flex-shrink-0">
                           <X className="w-3 h-3" />
                         </button>
                       </div>
@@ -930,11 +930,11 @@ function DynamicFieldPicker({
           const linked = selInsts.every(inst => existingFields.some(f => f.operationId === selOp!.id && f.instanceName === inst && f.fieldName === fn));
           return (
             <button key={fn} type="button" onClick={() => toggleField(fn)}
-              className={`w-full flex items-center justify-between gap-1.5 px-3 py-2 mx-1 rounded-lg text-[11px] text-right transition-all mb-0.5 group ${linked ? 'text-gray-700 hover:bg-red-50 hover:text-red-500' : 'text-gray-600 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]'}`}
+              className={`w-full flex items-center justify-between gap-1.5 px-3 py-2 mx-1 rounded-lg text-[11px] text-right transition-all mb-0.5 group ${linked ? 'text-gray-700 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]' : 'text-gray-600 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]'}`}
               style={{ width: 'calc(100% - 8px)' }}>
               <span className={`truncate ${linked ? 'font-medium' : 'group-hover:font-medium'}`}>{fn}</span>
               {linked
-                ? <><Check className="w-3.5 h-3.5 text-[#1B3A6B]/40 flex-shrink-0 group-hover:hidden" /><X className="w-3.5 h-3.5 text-red-400 flex-shrink-0 hidden group-hover:block" /></>
+                ? <><Check className="w-3.5 h-3.5 text-[#1B3A6B]/40 flex-shrink-0 group-hover:hidden" /><X className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0 hidden group-hover:block" /></>
                 : <Plus className="w-3.5 h-3.5 text-transparent group-hover:text-[#1B3A6B]/50 flex-shrink-0 transition-colors" />}
             </button>
           );
@@ -1079,7 +1079,7 @@ function PermissionsPanel({ approvers, editors, onChangeApprovers, onChangeEdito
                   <span className="flex-1 text-right text-gray-700">{t.label}</span>
                   <button type="button"
                     onClick={() => onChangeTags(currentTags.filter((_,j) => j !== i))}
-                    className="p-0.5 rounded text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors flex-shrink-0">
+                    className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] hover:bg-[#EEF4FF] transition-colors flex-shrink-0">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -1909,7 +1909,7 @@ export function PersonalArea() {
                   {/* Remove button */}
                   {envForm.logoPreview && (
                     <button type="button" onClick={() => setEnvForm(f => ({ ...f, logoPreview: '' }))}
-                      className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors flex-shrink-0">
+                      className="p-1.5 rounded-lg text-gray-300 hover:text-[#1B3A6B] hover:bg-[#EEF4FF] transition-colors flex-shrink-0">
                       <X className="w-4 h-4" />
                     </button>
                   )}
@@ -2182,7 +2182,7 @@ export function PersonalArea() {
                           <button
                             onMouseDown={e => e.stopPropagation()}
                             onClick={() => setTTemplateFields(p => p.filter(f => f.id !== df.id))}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-red-400 transition-all flex-shrink-0">
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-all flex-shrink-0">
                             <X className="w-3 h-3" />
                           </button>
                         </div>
@@ -2215,7 +2215,7 @@ export function PersonalArea() {
                           placeholder={`נושא ${ti + 1}...`}
                           className="flex-1 bg-transparent text-xs font-bold text-gray-800 focus:outline-none placeholder-gray-400 text-right min-w-0"
                           dir="rtl" />
-                        <button onClick={() => delTTopic(ti)} className="p-0.5 rounded text-gray-400 hover:text-red-400 hover:bg-red-50 transition-colors flex-shrink-0">
+                        <button onClick={() => delTTopic(ti)} className="p-0.5 rounded text-gray-400 hover:text-[#1B3A6B] hover:bg-[#EEF4FF] transition-colors flex-shrink-0">
                           <Trash2 className="w-3 h-3" />
                         </button>
                       </div>
@@ -2244,7 +2244,7 @@ export function PersonalArea() {
                                 className={`p-0.5 rounded transition-colors flex-shrink-0 ${secPermActive ? 'text-[#1B3A6B] bg-[#EEF4FF]' : secHasPerms ? 'text-[#1B3A6B]' : 'text-gray-300 hover:text-[#1B3A6B] hover:bg-[#EEF4FF]'}`}>
                                 <User className="w-3 h-3" />
                               </button>
-                              <button onClick={() => delTSection(ti, si)} className="p-0.5 rounded text-gray-400 hover:text-red-400 hover:bg-red-50 transition-colors flex-shrink-0">
+                              <button onClick={() => delTSection(ti, si)} className="p-0.5 rounded text-gray-400 hover:text-[#1B3A6B] hover:bg-[#EEF4FF] transition-colors flex-shrink-0">
                                 <Trash2 className="w-3 h-3" />
                               </button>
                             </div>
@@ -2274,7 +2274,7 @@ export function PersonalArea() {
                                         className={`p-0.5 rounded transition-colors flex-shrink-0 ${subPermActive ? 'text-[#1B3A6B] bg-[#EEF4FF]' : subHasPerms ? 'text-[#1B3A6B]' : 'text-gray-300 hover:text-[#1B3A6B] hover:bg-[#EEF4FF]'}`}>
                                         <User className="w-3 h-3" />
                                       </button>
-                                      <button onClick={() => delTSub(ti, si, subi)} className="p-0.5 rounded text-gray-400 hover:text-red-400 hover:bg-red-50 transition-colors flex-shrink-0">
+                                      <button onClick={() => delTSub(ti, si, subi)} className="p-0.5 rounded text-gray-400 hover:text-[#1B3A6B] hover:bg-[#EEF4FF] transition-colors flex-shrink-0">
                                         <Trash2 className="w-3 h-3" />
                                       </button>
                                     </div>
@@ -2325,7 +2325,7 @@ export function PersonalArea() {
                         className={`p-0.5 rounded transition-colors flex-shrink-0 ${appPermActive ? 'text-[#1B3A6B] bg-[#EEF4FF]' : appHasPerms ? 'text-[#1B3A6B]' : 'text-gray-300 hover:text-[#1B3A6B] hover:bg-[#EEF4FF]'}`}>
                         <User className="w-3 h-3" />
                       </button>
-                      <button onClick={() => setTAppendices(p => p.filter((_,i) => i!==ai))} className="p-0.5 rounded text-gray-400 hover:text-red-400 hover:bg-red-50 transition-colors flex-shrink-0">
+                      <button onClick={() => setTAppendices(p => p.filter((_,i) => i!==ai))} className="p-0.5 rounded text-gray-400 hover:text-[#1B3A6B] hover:bg-[#EEF4FF] transition-colors flex-shrink-0">
                         <X className="w-3 h-3" />
                       </button>
                     </div>
@@ -3527,8 +3527,8 @@ export function PersonalArea() {
                             <span className="text-center text-xs text-gray-400">—</span>
                             <span className="text-center text-xs text-gray-600">{member.environment}</span>
                             <button onClick={e => { e.stopPropagation(); confirmDelete(() => { setListMembers(prev => prev.filter(m => m.id !== member.id)); if (memberGroupExpanded === member.id) setMemberGroupExpanded(null); }); }}
-                              className="flex items-center justify-center p-1 rounded transition-colors hover:text-red-500">
-                              <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
+                              className="flex items-center justify-center p-1 rounded transition-colors hover:text-[#1B3A6B]">
+                              <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-[#1B3A6B]" />
                             </button>
                           </div>
                           {/* Expanded members */}
@@ -3564,8 +3564,8 @@ export function PersonalArea() {
                           <span className="text-center text-xs text-gray-600 tabular-nums">{member.idNumber}</span>
                           <span className="text-center text-xs text-gray-600">{member.environment}</span>
                           <button onClick={() => confirmDelete(() => setListMembers(prev => prev.filter(m => m.id !== member.id)))}
-                            className="flex items-center justify-center p-1 rounded transition-colors hover:text-red-500">
-                            <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
+                            className="flex items-center justify-center p-1 rounded transition-colors hover:text-[#1B3A6B]">
+                            <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-[#1B3A6B]" />
                           </button>
                         </div>
                       )
@@ -3655,7 +3655,7 @@ export function PersonalArea() {
               {newHamalPicked.map((m, i) => (
                 <div key={i} dir="ltr" className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-50 last:border-0">
                   <button type="button" onClick={() => setNewHamalPicked(prev => prev.filter((_, j) => j !== i))}
-                    className="p-0.5 hover:text-red-500 transition-colors flex-shrink-0">
+                    className="p-0.5 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
                     <Trash2 className="w-3 h-3 text-gray-300" />
                   </button>
                   <span className="flex-1 text-[11px] font-medium text-gray-800 text-right">{m.name}</span>
@@ -3723,7 +3723,7 @@ export function PersonalArea() {
                       <span className="text-[11px] font-medium text-gray-800">{m.name}</span>
                     </div>
                     <button type="button" onClick={() => setHamalExtraMembers(prev => ({ ...prev, [hamalAddMemberGroupId]: prev[hamalAddMemberGroupId].filter((_, j) => j !== i) }))}
-                      className="p-0.5 hover:text-red-500 transition-colors flex-shrink-0">
+                      className="p-0.5 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
                       <Trash2 className="w-3 h-3 text-gray-300" />
                     </button>
                   </div>
@@ -3811,7 +3811,7 @@ export function PersonalArea() {
             <p className="text-xs text-gray-400 text-center mb-5">פעולה זו אינה ניתנת לביטול</p>
             <div className="flex gap-2">
               <button onClick={() => setShowDeleteConfirm(null)} className="flex-1 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">ביטול</button>
-              <button onClick={() => { showDeleteConfirm?.onConfirm(); setShowDeleteConfirm(null); }} className="flex-1 py-2 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors">מחיקה</button>
+              <button onClick={() => { showDeleteConfirm?.onConfirm(); setShowDeleteConfirm(null); }} className="flex-1 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: '#1B3A6B' }}>מחיקה</button>
             </div>
           </div>
         </div>
