@@ -919,7 +919,7 @@ function DynamicFieldPicker({
             </div>
           );
         }) : (
-          <div className="flex items-center justify-center h-24"><p className="text-[10px] text-[#B8C8E8]">בחר מערכת</p></div>
+          <div className="flex flex-col items-center justify-center h-full gap-1.5 pb-8"><p className="text-[11px] text-gray-300">בחר מערכת</p></div>
         )}
       </div>
 
