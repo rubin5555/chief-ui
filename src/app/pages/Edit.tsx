@@ -1481,36 +1481,33 @@ export function Edit({ navigate, doc }: EditProps) {
         <EditDocDetailsModal doc={doc} onClose={() => setShowEditDocModal(false)} />
       )}
 
-      {/* Delete topic confirmation panel */}
+      {/* Delete topic confirmation — centered modal */}
       {deleteConfirm && (
         <div
-          ref={deleteConfirmRef}
-          dir="rtl"
-          className="fixed z-[99999] bg-white rounded-2xl shadow-xl border border-gray-100"
-          style={{
-            top: Math.min(deleteConfirm.y, window.innerHeight - 160),
-            left: Math.max(8, deleteConfirm.x),
-            width: 260,
-          }}>
-          <div className="px-4 pt-4 pb-3">
-            <p className="text-sm font-semibold text-gray-800 mb-1">מחיקת נושא</p>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              האם אתה בטוח שתרצה למחוק נושא זה?<br />
-              מחיקת הנושא תמחק את כל הסעיפים שלו.
-            </p>
-          </div>
-          <div className="flex gap-2 px-4 pb-4">
-            <button
-              onClick={confirmDelete}
-              className="flex-1 py-1.5 rounded-xl text-xs font-semibold text-white transition-colors hover:opacity-90"
-              style={{ background: '#dc2626' }}>
-              מחק
-            </button>
-            <button
-              onClick={() => setDeleteConfirm(null)}
-              className="flex-1 py-1.5 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-100 border border-gray-200 transition-colors">
-              ביטול
-            </button>
+          className="fixed inset-0 z-[99999] flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          onClick={() => setDeleteConfirm(null)}>
+          <div
+            ref={deleteConfirmRef}
+            dir="rtl"
+            className="bg-white rounded-3xl shadow-2xl px-8 py-7 flex flex-col items-center gap-3"
+            style={{ width: 340 }}
+            onClick={e => e.stopPropagation()}>
+            <p className="text-base font-bold text-gray-900 text-center">האם אתה בטוח שברצונך למחוק?</p>
+            <p className="text-sm text-gray-400 text-center">מחיקת הנושא תמחק את כל הסעיפים שלו</p>
+            <div className="flex gap-3 w-full mt-1">
+              <button
+                onClick={confirmDelete}
+                className="flex-1 py-2.5 rounded-2xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: '#1B3A6B' }}>
+                מחיקה
+              </button>
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 py-2.5 rounded-2xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+                ביטול
+              </button>
+            </div>
           </div>
         </div>
       )}
