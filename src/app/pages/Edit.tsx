@@ -1048,6 +1048,31 @@ export function Edit({ navigate, doc }: EditProps) {
     return next;
   });
 
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; x: number; y: number } | null>(null);
+  const deleteConfirmRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!deleteConfirm) return;
+    const h = (e: MouseEvent) => {
+      if (deleteConfirmRef.current && !deleteConfirmRef.current.contains(e.target as Node))
+        setDeleteConfirm(null);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [deleteConfirm]);
+
+  const openDeleteConfirm = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setDeleteConfirm({ id, x: rect.right + 6, y: rect.top });
+  };
+
+  const confirmDelete = () => {
+    if (!deleteConfirm) return;
+    setSections(prev => prev.filter(s => s.id !== deleteConfirm.id));
+    setDeleteConfirm(null);
+  };
+
   const openRestorePanel = (e: React.MouseEvent) => {
     e.stopPropagation();
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -1226,7 +1251,7 @@ export function Edit({ navigate, doc }: EditProps) {
                     )}
                     <button
                       title="מחק נושא"
-                      onClick={e => e.stopPropagation()}
+                      onClick={e => openDeleteConfirm(e, section.id)}
                       className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-red-400 transition-all flex-shrink-0">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1454,6 +1479,40 @@ export function Edit({ navigate, doc }: EditProps) {
       )}
       {showEditDocModal && (
         <EditDocDetailsModal doc={doc} onClose={() => setShowEditDocModal(false)} />
+      )}
+
+      {/* Delete topic confirmation panel */}
+      {deleteConfirm && (
+        <div
+          ref={deleteConfirmRef}
+          dir="rtl"
+          className="fixed z-[99999] bg-white rounded-2xl shadow-xl border border-gray-100"
+          style={{
+            top: Math.min(deleteConfirm.y, window.innerHeight - 160),
+            left: Math.max(8, deleteConfirm.x),
+            width: 260,
+          }}>
+          <div className="px-4 pt-4 pb-3">
+            <p className="text-sm font-semibold text-gray-800 mb-1">מחיקת נושא</p>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              האם אתה בטוח שתרצה למחוק נושא זה?<br />
+              מחיקת הנושא תמחק את כל הסעיפים שלו.
+            </p>
+          </div>
+          <div className="flex gap-2 px-4 pb-4">
+            <button
+              onClick={confirmDelete}
+              className="flex-1 py-1.5 rounded-xl text-xs font-semibold text-white transition-colors hover:opacity-90"
+              style={{ background: '#dc2626' }}>
+              מחק
+            </button>
+            <button
+              onClick={() => setDeleteConfirm(null)}
+              className="flex-1 py-1.5 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-100 border border-gray-200 transition-colors">
+              ביטול
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
