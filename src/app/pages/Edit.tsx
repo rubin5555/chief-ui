@@ -1255,6 +1255,7 @@ export function Edit({ navigate, doc }: EditProps) {
                       className="w-3.5 h-3.5 flex-shrink-0 text-gray-400 transition-transform duration-200"
                       style={{ transform: expandedTopics.has(section.id) ? 'rotate(-90deg)' : 'rotate(0deg)' }}
                     />
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#1B3A6B' }} />
                     {editingNewId === section.id ? (
                       <input
                         autoFocus
@@ -1283,22 +1284,53 @@ export function Edit({ navigate, doc }: EditProps) {
                   {section.children && expandedTopics.has(section.id) && (
                     <div className="flex flex-col gap-1 mb-1" style={{ paddingRight: 30 }}>
                       {section.children.map((child, ci) => (
-                        <div key={child.id}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl group transition-colors cursor-pointer hover:bg-white/50"
-                          dir="rtl">
-                          <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-4 text-right">{ci + 1}.</span>
-                          <span className="flex-1 text-xs text-gray-700 truncate">{child.title}</span>
-                          <div className="flex items-center gap-0.5 flex-shrink-0">
-                            <button title="מחק" className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors"><Trash2 className="w-3 h-3" /></button>
-                            <button title="עורכים" className="p-0.5 rounded text-gray-300 hover:text-blue-400 transition-colors"><UserCheck className="w-3 h-3" /></button>
+                        <div key={child.id} dir="rtl">
+                          <div
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl group transition-colors cursor-pointer hover:bg-white/50"
+                            dir="rtl">
+                            <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-4 text-right">{ci + 1}.</span>
+                            <span className="flex-1 text-xs text-gray-700 truncate">{child.title}</span>
+                            <button
+                              title="מחק"
+                              onClick={e => { e.stopPropagation(); setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.filter(c => c.id !== child.id) } : s)); }}
+                              className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                          {/* Sub-children */}
+                          {child.children && child.children.map((sub, si) => (
+                            <div key={sub.id}
+                              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl group transition-colors cursor-pointer hover:bg-white/50"
+                              style={{ paddingRight: 28 }}
+                              dir="rtl">
+                              <span className="text-[10px] text-gray-400 flex-shrink-0 w-5 text-right">{ci + 1}.{si + 1}</span>
+                              <span className="flex-1 text-xs text-gray-500 truncate">{sub.title}</span>
+                              <button
+                                title="מחק"
+                                onClick={e => { e.stopPropagation(); setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: c.children!.filter(sb => sb.id !== sub.id) } : c) } : s)); }}
+                                className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
+                                <Trash2 className="w-2.5 h-2.5" />
+                              </button>
+                            </div>
+                          ))}
+                          {/* Add sub-section under this child */}
+                          <div style={{ paddingRight: 28 }} dir="rtl">
+                            <button
+                              className="text-right text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+                              onClick={e => { e.stopPropagation(); const id = `sub-${Date.now()}`; setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: [...(c.children ?? []), { id, title: 'תת סעיף חדש' }] } : c) } : s)); }}>
+                              + תת סעיף
+                            </button>
                           </div>
                         </div>
                       ))}
 
-                      {/* Inline add links */}
-                      <div className="flex flex-col gap-0.5 pb-1" dir="rtl">
-                        <button className="text-right text-xs text-gray-400 hover:text-gray-600 transition-colors">+ תת סעיף</button>
-                        <button className="text-right text-xs font-semibold text-[#1B3A6B] hover:text-[#152e54] transition-colors">+ הוספת סעיף</button>
+                      {/* Add section */}
+                      <div className="pb-1" dir="rtl">
+                        <button
+                          className="text-right text-xs font-semibold text-[#1B3A6B] hover:text-[#152e54] transition-colors"
+                          onClick={e => { e.stopPropagation(); const id = `child-${Date.now()}`; setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: [...(s.children ?? []), { id, title: `סעיף ${(s.children?.length ?? 0) + 1}` }] } : s)); }}>
+                          + הוספת סעיף
+                        </button>
                       </div>
                     </div>
                   )}
@@ -1306,7 +1338,11 @@ export function Edit({ navigate, doc }: EditProps) {
                   {/* No children — show add section link only when expanded */}
                   {!section.children && expandedTopics.has(section.id) && (
                     <div className="pb-1.5" style={{ paddingRight: 30 }} dir="rtl">
-                      <button className="text-right text-xs font-semibold text-[#1B3A6B] hover:text-[#152e54] transition-colors">+ הוספת סעיף</button>
+                      <button
+                        className="text-right text-xs font-semibold text-[#1B3A6B] hover:text-[#152e54] transition-colors"
+                        onClick={e => { e.stopPropagation(); const id = `child-${Date.now()}`; setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: [{ id, title: 'סעיף 1' }] } : s)); }}>
+                        + הוספת סעיף
+                      </button>
                     </div>
                   )}
                 </div>
