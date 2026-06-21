@@ -1181,6 +1181,29 @@ export function Edit({ navigate, doc }: EditProps) {
         onEditDocClick={() => setShowEditDocModal(true)} />
       {showFilterPanel && <FilterPanel onClose={closeFilterPanel} />}
 
+      {/* Doc metadata pill — full-width, from export icon to notification bell */}
+      <div style={{ width: '100%', flexShrink: 0, zIndex: 21, paddingBottom: 6, paddingTop: 6, paddingLeft: 16, paddingRight: 16, background: 'linear-gradient(135deg,#F6F9FC,#F9F3ED)' }}>
+        <div className="flex items-center gap-0 rounded-2xl px-4 py-2"
+          style={{ background: '#EBEBEB', direction: 'rtl' }}>
+          {[
+            <span key="name" className="text-xs font-bold text-gray-800 whitespace-nowrap">
+              {doc?.name ?? 'שם הפקודה'}&nbsp;<span className="font-normal text-gray-500">(ארגון א׳)</span>
+            </span>,
+            <span key="template"  className="text-xs text-gray-600 whitespace-nowrap">מסמך בטיחות</span>,
+            <span key="orderNum"  className="text-xs text-gray-600 whitespace-nowrap">מס׳ {doc?.orderNum ?? '001'}</span>,
+            <span key="dept"      className="text-xs text-gray-600 whitespace-nowrap">משאבי אנוש</span>,
+            <span key="effective" className="text-xs text-gray-600 whitespace-nowrap">כניסה לתוקף 01/06/2026</span>,
+            <span key="class"     className="text-xs text-gray-600 whitespace-nowrap">בלמ״ס</span>,
+            <span key="ref"       className="text-xs text-gray-600 whitespace-nowrap">סימוכין פ.מ. 12/2025</span>,
+          ].map((item, i) => (
+            <div key={i} className="flex items-center">
+              {i > 0 && <span className="text-gray-400 mx-2.5 text-xs">|</span>}
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
         {/* Right sidebar */}
@@ -1252,7 +1275,7 @@ export function Edit({ navigate, doc }: EditProps) {
                     <button
                       title="מחק נושא"
                       onClick={e => openDeleteConfirm(e, section.id)}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-red-400 transition-all flex-shrink-0">
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-all flex-shrink-0">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1268,7 +1291,7 @@ export function Edit({ navigate, doc }: EditProps) {
                           <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-4 text-right">{ci + 1}.</span>
                           <span className="flex-1 text-xs text-gray-700 truncate">{child.title}</span>
                           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
-                            <button title="מחק" className="p-0.5 rounded text-gray-300 hover:text-red-400 transition-colors"><Trash2 className="w-3 h-3" /></button>
+                            <button title="מחק" className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors"><Trash2 className="w-3 h-3" /></button>
                             <button title="עורכים" className="p-0.5 rounded text-gray-300 hover:text-blue-400 transition-colors"><UserCheck className="w-3 h-3" /></button>
                           </div>
                         </div>
@@ -1315,33 +1338,10 @@ export function Edit({ navigate, doc }: EditProps) {
 
         {/* Main editor area — Docs/Word style */}
         <main className="flex-1 overflow-y-auto">
-          <div className="flex flex-col items-center pt-8 gap-0">
+          <div className="flex flex-col items-center pt-6 gap-0">
 
-            {/* Doc metadata pill — sticky, visually separate from toolbar */}
-            <div style={{ width: '210mm', position: 'sticky', top: 0, zIndex: 21, paddingBottom: 6, background: 'linear-gradient(135deg,#F6F9FC,#F9F3ED)' }}>
-              <div className="flex items-center gap-0 rounded-2xl px-4 py-2"
-                style={{ background: '#EBEBEB', direction: 'rtl' }}>
-                {[
-                  <span key="name" className="text-xs font-bold text-gray-800 whitespace-nowrap">
-                    {doc?.name ?? 'שם הפקודה'}&nbsp;<span className="font-normal text-gray-500">(ארגון א׳)</span>
-                  </span>,
-                  <span key="template"  className="text-xs text-gray-600 whitespace-nowrap">מסמך בטיחות</span>,
-                  <span key="orderNum"  className="text-xs text-gray-600 whitespace-nowrap">מס׳ {doc?.orderNum ?? '001'}</span>,
-                  <span key="dept"      className="text-xs text-gray-600 whitespace-nowrap">משאבי אנוש</span>,
-                  <span key="effective" className="text-xs text-gray-600 whitespace-nowrap">כניסה לתוקף 01/06/2026</span>,
-                  <span key="class"     className="text-xs text-gray-600 whitespace-nowrap">בלמ״ס</span>,
-                  <span key="ref"       className="text-xs text-gray-600 whitespace-nowrap">סימוכין פ.מ. 12/2025</span>,
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center">
-                    {i > 0 && <span className="text-gray-400 mx-2.5 text-xs">|</span>}
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Toolbar — sticky just below the pill */}
-            <div style={{ width: '210mm', position: 'sticky', top: 42, zIndex: 20, borderRadius: '8px 8px 0 0', overflow: 'hidden' }}>
+            {/* Toolbar — sticky at top of scroll area */}
+            <div style={{ width: '210mm', position: 'sticky', top: 0, zIndex: 20, borderRadius: '8px 8px 0 0', overflow: 'hidden' }}>
               <DocToolbar />
             </div>
 
