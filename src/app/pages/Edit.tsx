@@ -10,7 +10,7 @@ import {
   PilcrowRight, PilcrowLeft, Superscript, Paperclip,
   Table2, PaintBucket, PaintRoller, RemoveFormatting,
   MessageSquare, Send, X,
-  MoreHorizontal, UserCheck, Users, EyeOff, Lock, FileText, FileDown, BookOpen, Trash2, Pencil,
+  MoreHorizontal, MoreVertical, UserCheck, Users, EyeOff, Lock, FileText, FileDown, BookOpen, Trash2, Pencil,
   FolderPlus, FileInput, Lightbulb, Check,
   Search, SlidersHorizontal, ArrowRight,
 } from 'lucide-react';
@@ -1050,6 +1050,18 @@ export function Edit({ navigate, doc }: EditProps) {
     return next;
   });
 
+  // Context menu for section/child items (3-dots)
+  const [itemMenu, setItemMenu] = useState<{ id: string; type: 'child' | 'sub'; parentId?: string; childId?: string; x: number; y: number; onDelete: () => void; onRename: () => void } | null>(null);
+  const itemMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!itemMenu) return;
+    const h = (e: MouseEvent) => { if (itemMenuRef.current && !itemMenuRef.current.contains(e.target as Node)) setItemMenu(null); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [itemMenu]);
+
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; x: number; y: number } | null>(null);
   const deleteConfirmRef = useRef<HTMLDivElement>(null);
 
@@ -1287,35 +1299,57 @@ export function Edit({ navigate, doc }: EditProps) {
                     <div className="flex flex-col gap-1 mb-1" style={{ paddingRight: 30 }}>
                       {section.children.map((child, ci) => (
                         <div key={child.id} dir="rtl">
-                          <div
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl group transition-colors cursor-pointer hover:bg-white/50"
-                            dir="rtl">
+                          {/* Child row */}
+                          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl group transition-colors cursor-pointer hover:bg-white/50" dir="rtl">
                             <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-4 text-right">{ci + 1}.</span>
-                            <span className="flex-1 text-xs text-gray-700 truncate">{child.title}</span>
+                            {renamingId === child.id ? (
+                              <input
+                                autoFocus
+                                defaultValue={child.title}
+                                onClick={e => e.stopPropagation()}
+                                onBlur={e => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, title: e.target.value || c.title } : c) } : s)); setRenamingId(null); }}
+                                onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') (e.target as HTMLInputElement).blur(); }}
+                                className="flex-1 bg-transparent border-b border-[#1B3A6B] outline-none text-xs text-gray-800 text-right min-w-0"
+                                dir="rtl"
+                              />
+                            ) : (
+                              <span className="flex-1 text-xs text-gray-700 truncate">{child.title}</span>
+                            )}
                             <button
-                              title="מחק"
-                              onClick={e => { e.stopPropagation(); setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.filter(c => c.id !== child.id) } : s)); }}
+                              title="אפשרויות"
+                              onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: child.id, type: 'child', x: rect.left, y: rect.bottom + 4, onDelete: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.filter(c => c.id !== child.id) } : s)); setItemMenu(null); }, onRename: () => { setRenamingId(child.id); setItemMenu(null); } }); }}
                               className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
-                              <Trash2 className="w-3 h-3" />
+                              <MoreVertical className="w-3 h-3" />
                             </button>
                           </div>
+
                           {/* Sub-children */}
                           {child.children && child.children.map((sub, si) => (
-                            <div key={sub.id}
-                              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl group transition-colors cursor-pointer hover:bg-white/50"
-                              style={{ paddingRight: 28 }}
-                              dir="rtl">
+                            <div key={sub.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl group transition-colors cursor-pointer hover:bg-white/50" style={{ paddingRight: 28 }} dir="rtl">
                               <span className="text-[10px] text-gray-400 flex-shrink-0 w-5 text-right">{HE_ALPHA[si]}.</span>
-                              <span className="flex-1 text-xs text-gray-500 truncate">{sub.title}</span>
+                              {renamingId === sub.id ? (
+                                <input
+                                  autoFocus
+                                  defaultValue={sub.title}
+                                  onClick={e => e.stopPropagation()}
+                                  onBlur={e => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: c.children!.map(sb => sb.id === sub.id ? { ...sb, title: e.target.value || sb.title } : sb) } : c) } : s)); setRenamingId(null); }}
+                                  onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') (e.target as HTMLInputElement).blur(); }}
+                                  className="flex-1 bg-transparent border-b border-[#1B3A6B] outline-none text-xs text-gray-700 text-right min-w-0"
+                                  dir="rtl"
+                                />
+                              ) : (
+                                <span className="flex-1 text-xs text-gray-500 truncate">{sub.title}</span>
+                              )}
                               <button
-                                title="מחק"
-                                onClick={e => { e.stopPropagation(); setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: c.children!.filter(sb => sb.id !== sub.id) } : c) } : s)); }}
+                                title="אפשרויות"
+                                onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: sub.id, type: 'sub', x: rect.left, y: rect.bottom + 4, onDelete: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: c.children!.filter(sb => sb.id !== sub.id) } : c) } : s)); setItemMenu(null); }, onRename: () => { setRenamingId(sub.id); setItemMenu(null); } }); }}
                                 className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
-                                <Trash2 className="w-2.5 h-2.5" />
+                                <MoreVertical className="w-3 h-3" />
                               </button>
                             </div>
                           ))}
-                          {/* Add sub-section under this child */}
+
+                          {/* Add sub-section */}
                           <div style={{ paddingRight: 28 }} dir="rtl">
                             <button
                               className="text-right text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
@@ -1515,6 +1549,23 @@ export function Edit({ navigate, doc }: EditProps) {
       )}
       {showEditDocModal && (
         <EditDocDetailsModal doc={doc} onClose={() => setShowEditDocModal(false)} />
+      )}
+
+      {/* 3-dots context menu for section / sub-section items */}
+      {itemMenu && (
+        <div ref={itemMenuRef} className="fixed z-[99999] bg-white rounded-xl shadow-xl border border-gray-100 py-1 min-w-[130px]"
+          style={{ top: itemMenu.y, left: itemMenu.x }} dir="rtl">
+          <button onClick={itemMenu.onRename}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-right">
+            <Pencil className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+            שינוי שם
+          </button>
+          <button onClick={itemMenu.onDelete}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#1B3A6B] hover:bg-[#EEF4FF] transition-colors text-right">
+            <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
+            מחיקה
+          </button>
+        </div>
       )}
 
       {/* Delete topic confirmation — centered modal */}
