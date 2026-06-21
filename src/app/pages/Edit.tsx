@@ -1182,7 +1182,7 @@ export function Edit({ navigate, doc }: EditProps) {
       {showFilterPanel && <FilterPanel onClose={closeFilterPanel} />}
 
       {/* Doc metadata pill — 1cm wider than A4 on each side */}
-      <div style={{ width: '100%', flexShrink: 0, zIndex: 21, paddingBottom: 6, paddingTop: 6, paddingRight: 256, display: 'flex', justifyContent: 'center', background: 'linear-gradient(135deg,#F6F9FC,#F9F3ED)' }}>
+      <div style={{ width: '100%', flexShrink: 0, zIndex: 21, paddingBottom: 6, paddingTop: 6, paddingRight: 256, display: 'flex', justifyContent: 'center' }}>
         <div className="flex items-center gap-0 rounded-2xl px-4 py-2"
           style={{ width: '230mm', background: '#EBEBEB', direction: 'rtl' }}>
           {[
