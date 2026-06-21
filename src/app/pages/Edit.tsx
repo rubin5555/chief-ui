@@ -1255,7 +1255,6 @@ export function Edit({ navigate, doc }: EditProps) {
                       className="w-3.5 h-3.5 flex-shrink-0 text-gray-400 transition-transform duration-200"
                       style={{ transform: expandedTopics.has(section.id) ? 'rotate(-90deg)' : 'rotate(0deg)' }}
                     />
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#1B3A6B' }} />
                     {editingNewId === section.id ? (
                       <input
                         autoFocus
@@ -1280,9 +1279,9 @@ export function Edit({ navigate, doc }: EditProps) {
                     </button>
                   </div>
 
-                  {/* Section children — individual white cards (only when expanded) */}
+                  {/* Section children — aligned with title start */}
                   {section.children && expandedTopics.has(section.id) && (
-                    <div className="mx-1 flex flex-col gap-1 mb-1">
+                    <div className="flex flex-col gap-1 mb-1" style={{ paddingRight: 30 }}>
                       {section.children.map((child, ci) => (
                         <div key={child.id}
                           className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl group transition-colors cursor-pointer"
@@ -1298,7 +1297,7 @@ export function Edit({ navigate, doc }: EditProps) {
                       ))}
 
                       {/* Inline add links */}
-                      <div className="flex flex-col gap-0.5 px-1 pb-1" dir="rtl">
+                      <div className="flex flex-col gap-0.5 pb-1" dir="rtl">
                         <button className="text-right text-xs text-gray-400 hover:text-gray-600 transition-colors">+ תת סעיף</button>
                         <button className="text-right text-xs font-semibold text-[#1B3A6B] hover:text-[#152e54] transition-colors">+ הוספת סעיף</button>
                       </div>
@@ -1307,7 +1306,7 @@ export function Edit({ navigate, doc }: EditProps) {
 
                   {/* No children — show add section link only when expanded */}
                   {!section.children && expandedTopics.has(section.id) && (
-                    <div className="px-3 pb-1.5" dir="rtl">
+                    <div className="pb-1.5" style={{ paddingRight: 30 }} dir="rtl">
                       <button className="text-right text-xs font-semibold text-[#1B3A6B] hover:text-[#152e54] transition-colors">+ הוספת סעיף</button>
                     </div>
                   )}
