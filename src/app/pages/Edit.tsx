@@ -367,6 +367,8 @@ interface EditProps {
   doc?: EditDocInfo | null;
 }
 
+const HE_ALPHA = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת'];
+
 const STATUS_FLOW = ['טיוטה פנימית', 'בהכנה', 'בסבב אישורים', 'ממתין להפצה'];
 
 const STATUS_COLOR: Record<string, string> = {
@@ -1303,7 +1305,7 @@ export function Edit({ navigate, doc }: EditProps) {
                               className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl group transition-colors cursor-pointer hover:bg-white/50"
                               style={{ paddingRight: 28 }}
                               dir="rtl">
-                              <span className="text-[10px] text-gray-400 flex-shrink-0 w-5 text-right">{ci + 1}.{si + 1}</span>
+                              <span className="text-[10px] text-gray-400 flex-shrink-0 w-5 text-right">{HE_ALPHA[si]}.</span>
                               <span className="flex-1 text-xs text-gray-500 truncate">{sub.title}</span>
                               <button
                                 title="מחק"
@@ -1317,7 +1319,7 @@ export function Edit({ navigate, doc }: EditProps) {
                           <div style={{ paddingRight: 28 }} dir="rtl">
                             <button
                               className="text-right text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
-                              onClick={e => { e.stopPropagation(); const id = `sub-${Date.now()}`; setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: [...(c.children ?? []), { id, title: 'תת סעיף חדש' }] } : c) } : s)); }}>
+                              onClick={e => { e.stopPropagation(); const id = `sub-${Date.now()}`; setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: [...(c.children ?? []), { id, title: `תת סעיף ${HE_ALPHA[(c.children?.length ?? 0)]}` }] } : c) } : s)); }}>
                               + תת סעיף
                             </button>
                           </div>
