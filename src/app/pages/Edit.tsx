@@ -1284,12 +1284,11 @@ export function Edit({ navigate, doc }: EditProps) {
                     <div className="flex flex-col gap-1 mb-1" style={{ paddingRight: 30 }}>
                       {section.children.map((child, ci) => (
                         <div key={child.id}
-                          className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl group transition-colors cursor-pointer"
-                          style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid #e5e7eb' }}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl group transition-colors cursor-pointer hover:bg-white/50"
                           dir="rtl">
                           <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-4 text-right">{ci + 1}.</span>
                           <span className="flex-1 text-xs text-gray-700 truncate">{child.title}</span>
-                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
+                          <div className="flex items-center gap-0.5 flex-shrink-0">
                             <button title="מחק" className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors"><Trash2 className="w-3 h-3" /></button>
                             <button title="עורכים" className="p-0.5 rounded text-gray-300 hover:text-blue-400 transition-colors"><UserCheck className="w-3 h-3" /></button>
                           </div>
