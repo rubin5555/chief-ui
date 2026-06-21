@@ -1181,10 +1181,10 @@ export function Edit({ navigate, doc }: EditProps) {
         onEditDocClick={() => setShowEditDocModal(true)} />
       {showFilterPanel && <FilterPanel onClose={closeFilterPanel} />}
 
-      {/* Doc metadata pill — full-width, from export icon to notification bell */}
-      <div style={{ width: '100%', flexShrink: 0, zIndex: 21, paddingBottom: 6, paddingTop: 6, paddingLeft: 16, paddingRight: 16, background: 'linear-gradient(135deg,#F6F9FC,#F9F3ED)' }}>
+      {/* Doc metadata pill — 1cm wider than A4 on each side */}
+      <div style={{ width: '100%', flexShrink: 0, zIndex: 21, paddingBottom: 6, paddingTop: 6, display: 'flex', justifyContent: 'center', background: 'linear-gradient(135deg,#F6F9FC,#F9F3ED)' }}>
         <div className="flex items-center gap-0 rounded-2xl px-4 py-2"
-          style={{ background: '#EBEBEB', direction: 'rtl' }}>
+          style={{ width: '230mm', background: '#EBEBEB', direction: 'rtl' }}>
           {[
             <span key="name" className="text-xs font-bold text-gray-800 whitespace-nowrap">
               {doc?.name ?? 'שם הפקודה'}&nbsp;<span className="font-normal text-gray-500">(ארגון א׳)</span>
