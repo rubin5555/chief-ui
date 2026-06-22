@@ -1237,16 +1237,16 @@ export function Edit({ navigate, doc }: EditProps) {
             {docStatus === 'בסבב אישורים' && (
               <div className="flex flex-col gap-1 px-1">
                 <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-gray-500 whitespace-nowrap">0/3 סעיפים בהכנה</span>
                   <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
                     <div className="h-full rounded-full bg-amber-400" style={{ width: '0%' }} />
                   </div>
-                  <span className="text-[11px] text-gray-500 whitespace-nowrap">0/3 סעיפים בהכנה</span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-gray-500 whitespace-nowrap">2/5 סעיפים אושרו</span>
                   <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
                     <div className="h-full rounded-full" style={{ width: '40%', background: '#1B3A6B' }} />
                   </div>
-                  <span className="text-[11px] text-gray-500 whitespace-nowrap">2/5 סעיפים אושרו</span>
                 </div>
               </div>
             )}
