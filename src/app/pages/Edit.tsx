@@ -1263,7 +1263,7 @@ export function Edit({ navigate, doc }: EditProps) {
                   {/* Topic row */}
                   <div
                     className="flex items-center gap-2 px-2 py-2 rounded-xl group transition-colors cursor-pointer hover:border-[#c7d2e8]"
-                    style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid #e2e8f0' }}
+                    style={{ border: '1px solid #e2e8f0' }}
                     dir="rtl"
                     onClick={() => editingNewId !== section.id && toggleTopic(section.id)}>
                     <ChevronLeft
