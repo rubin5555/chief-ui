@@ -1301,7 +1301,7 @@ export function Edit({ navigate, doc }: EditProps) {
                     )}
                     <button
                       title="אפשרויות"
-                      onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: section.id, type: 'topic', x: rect.left, y: rect.bottom + 4, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'נושא זה', onConfirm: () => { setSections(prev => prev.filter(s => s.id !== section.id)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(section.id); setItemMenu(null); } }); }}
+                      onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: section.id, type: 'topic', x: window.innerWidth - rect.left + 4, y: rect.top, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'נושא זה', onConfirm: () => { setSections(prev => prev.filter(s => s.id !== section.id)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(section.id); setItemMenu(null); } }); }}
                       className="opacity-0 group-hover:opacity-100 p-1 rounded-full text-[#1B3A6B] hover:bg-gray-200/70 transition-all flex-shrink-0">
                       <MoreVertical className="w-3.5 h-3.5" />
                     </button>
@@ -1330,7 +1330,7 @@ export function Edit({ navigate, doc }: EditProps) {
                             )}
                             <button
                               title="אפשרויות"
-                              onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: child.id, type: 'section', x: rect.left, y: rect.bottom + 4, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'סעיף זה', onConfirm: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.filter(c => c.id !== child.id) } : s)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(child.id); setItemMenu(null); } }); }}
+                              onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: child.id, type: 'section', x: window.innerWidth - rect.left + 4, y: rect.top, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'סעיף זה', onConfirm: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.filter(c => c.id !== child.id) } : s)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(child.id); setItemMenu(null); } }); }}
                               className="p-1 rounded-full text-[#1B3A6B] hover:bg-gray-200/70 transition-colors flex-shrink-0">
                               <MoreVertical className="w-3 h-3" />
                             </button>
@@ -1355,7 +1355,7 @@ export function Edit({ navigate, doc }: EditProps) {
                               )}
                               <button
                                 title="אפשרויות"
-                                onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: sub.id, type: 'subsection', x: rect.left, y: rect.bottom + 4, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'תת סעיף זה', onConfirm: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: c.children!.filter(sb => sb.id !== sub.id) } : c) } : s)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(sub.id); setItemMenu(null); } }); }}
+                                onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: sub.id, type: 'subsection', x: window.innerWidth - rect.left + 4, y: rect.top, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'תת סעיף זה', onConfirm: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: c.children!.filter(sb => sb.id !== sub.id) } : c) } : s)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(sub.id); setItemMenu(null); } }); }}
                                 className="p-1 rounded-full text-[#1B3A6B] hover:bg-gray-200/70 transition-colors flex-shrink-0">
                                 <MoreVertical className="w-3 h-3" />
                               </button>
@@ -1567,7 +1567,7 @@ export function Edit({ navigate, doc }: EditProps) {
       {/* 3-dots context menu for section / sub-section items */}
       {itemMenu && (
         <div ref={itemMenuRef} className="fixed z-[99999] bg-white rounded-xl shadow-xl border border-gray-100 py-1 min-w-[130px]"
-          style={{ top: itemMenu.y, left: itemMenu.x }} dir="rtl">
+          style={{ top: itemMenu.y, right: itemMenu.x }} dir="rtl">
           <button onClick={itemMenu.onRename}
             className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-right">
             <Pencil className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
