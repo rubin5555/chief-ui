@@ -1283,14 +1283,24 @@ export function Edit({ navigate, doc }: EditProps) {
                         className="flex-1 bg-transparent border-b border-[#1B3A6B] outline-none text-sm font-semibold text-gray-800 text-right min-w-0"
                         placeholder="שם הנושא..." dir="rtl"
                       />
+                    ) : renamingId === section.id ? (
+                      <input
+                        autoFocus
+                        defaultValue={section.title}
+                        onClick={e => e.stopPropagation()}
+                        onBlur={e => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, title: e.target.value || s.title } : s)); setRenamingId(null); }}
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') (e.target as HTMLInputElement).blur(); }}
+                        className="flex-1 bg-transparent border-b border-[#1B3A6B] outline-none text-sm font-semibold text-gray-800 text-right min-w-0"
+                        dir="rtl"
+                      />
                     ) : (
                       <span className="flex-1 text-sm font-semibold text-gray-700 truncate">{section.title}</span>
                     )}
                     <button
-                      title="מחק נושא"
-                      onClick={e => openDeleteConfirm(e, section.id)}
+                      title="אפשרויות"
+                      onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: section.id, type: 'child', x: rect.left, y: rect.bottom + 4, onDelete: () => { openDeleteConfirm(e, section.id); setItemMenu(null); }, onRename: () => { setRenamingId(section.id); setItemMenu(null); } }); }}
                       className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-all flex-shrink-0">
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <MoreVertical className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
