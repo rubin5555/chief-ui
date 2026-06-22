@@ -1231,7 +1231,7 @@ export function Edit({ navigate, doc }: EditProps) {
             {/* Title — no background, no border */}
             <div className="flex items-center gap-2 px-1 mb-2">
               <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
-              <span className="text-sm font-semibold" style={{ color: '#1B3A6B' }}>מסמך {docStatus}</span>
+              <span className="text-base font-bold" style={{ color: '#1B3A6B' }}>מסמך {docStatus}</span>
             </div>
             {/* Progress stats — shown when in approval round */}
             {docStatus === 'בסבב אישורים' && (
