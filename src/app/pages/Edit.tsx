@@ -1262,11 +1262,12 @@ export function Edit({ navigate, doc }: EditProps) {
 
                   {/* Topic row */}
                   <div
-                    className="flex items-center gap-2 px-2 py-2 rounded-xl group hover:bg-white/50 transition-colors cursor-pointer"
+                    className="flex items-center gap-2 px-2 py-2 rounded-xl group transition-colors cursor-pointer hover:border-[#c7d2e8]"
+                    style={{ background: 'rgba(255,255,255,0.75)', border: '1px solid #e2e8f0' }}
                     dir="rtl"
                     onClick={() => editingNewId !== section.id && toggleTopic(section.id)}>
                     <ChevronLeft
-                      className="w-3.5 h-3.5 flex-shrink-0 text-gray-400 transition-transform duration-200"
+                      className="w-3.5 h-3.5 flex-shrink-0 text-[#1B3A6B]/50 transition-transform duration-200"
                       style={{ transform: expandedTopics.has(section.id) ? 'rotate(-90deg)' : 'rotate(0deg)' }}
                     />
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#1B3A6B' }} />
@@ -1294,7 +1295,7 @@ export function Edit({ navigate, doc }: EditProps) {
                         dir="rtl"
                       />
                     ) : (
-                      <span className="flex-1 text-sm font-semibold text-gray-700 truncate">{section.title}</span>
+                      <span className="flex-1 text-sm font-semibold truncate" style={{ color: '#1B3A6B' }}>{section.title}</span>
                     )}
                     <button
                       title="אפשרויות"
