@@ -1102,8 +1102,8 @@ export function PersonalArea() {
   const confirmRestore = (onConfirm: () => void) => setShowRestoreConfirm({ onConfirm });
   const [activeSignatureTab, setActiveSignatureTab] = useState<'approver' | 'distribution' | 'personal'>('approver');
   const [activeListTab, setActiveListTab] = useState<'my-lists' | 'deleted'>('my-lists');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<{ onConfirm: () => void } | null>(null);
-  const confirmDelete = (onConfirm: () => void) => setShowDeleteConfirm({ onConfirm });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<{ onConfirm: () => void; label?: string } | null>(null);
+  const confirmDelete = (onConfirm: () => void, label?: string) => setShowDeleteConfirm({ onConfirm, label });
   const [showDuplicatePanel, setShowDuplicatePanel] = useState<{type: string, name: string} | null>(null);
   const [hoveredSignature, setHoveredSignature] = useState<string | null>(null);
   const [showNewTemplate, setShowNewTemplate] = useState(false);
@@ -1156,7 +1156,19 @@ export function PersonalArea() {
   });
   const [showNewSignature, setShowNewSignature] = useState(false);
   const [signatureType, setSignatureType] = useState<'approver' | 'distribution' | 'personal' | null>(null);
+  const [signatureEditMode, setSignatureEditMode] = useState(false);
+  const [signatureDuplicateMode, setSignatureDuplicateMode] = useState(false);
+  const [signatureDirty, setSignatureDirty] = useState(false);
+  const [templateEditMode, setTemplateEditMode] = useState(false);
+  const [templateDuplicateMode, setTemplateDuplicateMode] = useState(false);
+  const [templateOriginalName, setTemplateOriginalName] = useState('');
+  const [templateDirty, setTemplateDirty] = useState(false);
   const [showNewList, setShowNewList] = useState(false);
+  const [listName, setListName] = useState('');
+  const [listEditMode, setListEditMode] = useState(false);
+  const [listDuplicateMode, setListDuplicateMode] = useState(false);
+  const [listOriginalName, setListOriginalName] = useState('');
+  const [listDirty, setListDirty] = useState(false);
   const [listFilterDropdown, setListFilterDropdown] = useState(false);
   const [listMembers, setListMembers] = useState<Array<{
     id: string; name: string; idNumber: string; environment: string;
@@ -1320,20 +1332,20 @@ export function PersonalArea() {
     setTemplateRows([]); setSelectedTemplateType(null);
     setTTopics([]); setTAppendices([]); setTHasEmphasis(false); setTEmphasis(''); setTemplateName('');
     setTClassification(''); setTClassificationTag(''); setTEffectiveDateTime(nowIso()); setTExpiryDateTime('');
-    setTPermTarget(null); setTTemplateFields([]); setTDynTarget(null);
+    setTPermTarget(null); setTTemplateFields([]); setTDynTarget(null); setTemplateEditMode(false); setTemplateDuplicateMode(false); setTemplateOriginalName(''); setTemplateDirty(false);
   };
-  const addTTopic = () => setTTopics(p => [...p, {id:`tt-${Date.now()}`,title:'',sections:[]}]);
-  const addTSection = (ti: number) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:[...t.sections,{id:`ts-${Date.now()}`,title:'',content:'',subsections:[],permissions:{approvers:[],editors:[]},dynamicFields:[]}]}));
-  const addTSub = (ti: number, si: number) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,subsections:[...s.subsections,{id:`tss-${Date.now()}`,title:'',content:'',permissions:{approvers:[],editors:[]},dynamicFields:[]}]})}));
-  const delTTopic = (ti: number) => setTTopics(p => p.filter((_,i) => i!==ti));
-  const delTSection = (ti: number, si: number) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.filter((_,j) => j!==si)}));
-  const delTSub = (ti: number, si: number, subi: number) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,subsections:s.subsections.filter((_,k) => k!==subi)})}));
-  const updTTopicTitle = (ti: number, v: string) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,title:v}));
-  const updTSecTitle = (ti: number, si: number, v: string) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,title:v})}));
-  const updTSecContent = (ti: number, si: number, v: string) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,content:v})}));
-  const updTSubTitle = (ti: number, si: number, subi: number, v: string) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,subsections:s.subsections.map((ss,k) => k!==subi?ss:{...ss,title:v})})}));
-  const updTSubContent = (ti: number, si: number, subi: number, v: string) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,subsections:s.subsections.map((ss,k) => k!==subi?ss:{...ss,content:v})})}));
-  const addTAppendix = () => setTAppendices(p => [...p, {id:`ta-${Date.now()}`,title:'',content:'',permissions:{approvers:[],editors:[]},dynamicFields:[]}]);
+  const addTTopic = () => { setTTopics(p => [...p, {id:`tt-${Date.now()}`,title:'',sections:[]}]); setTemplateDirty(true); };
+  const addTSection = (ti: number) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:[...t.sections,{id:`ts-${Date.now()}`,title:'',content:'',subsections:[],permissions:{approvers:[],editors:[]},dynamicFields:[]}]})); setTemplateDirty(true); };
+  const addTSub = (ti: number, si: number) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,subsections:[...s.subsections,{id:`tss-${Date.now()}`,title:'',content:'',permissions:{approvers:[],editors:[]},dynamicFields:[]}]})})); setTemplateDirty(true); };
+  const delTTopic = (ti: number) => { setTTopics(p => p.filter((_,i) => i!==ti)); setTemplateDirty(true); };
+  const delTSection = (ti: number, si: number) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.filter((_,j) => j!==si)})); setTemplateDirty(true); };
+  const delTSub = (ti: number, si: number, subi: number) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,subsections:s.subsections.filter((_,k) => k!==subi)})})); setTemplateDirty(true); };
+  const updTTopicTitle = (ti: number, v: string) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,title:v})); setTemplateDirty(true); };
+  const updTSecTitle = (ti: number, si: number, v: string) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,title:v})})); setTemplateDirty(true); };
+  const updTSecContent = (ti: number, si: number, v: string) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,content:v})})); setTemplateDirty(true); };
+  const updTSubTitle = (ti: number, si: number, subi: number, v: string) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,subsections:s.subsections.map((ss,k) => k!==subi?ss:{...ss,title:v})})})); setTemplateDirty(true); };
+  const updTSubContent = (ti: number, si: number, subi: number, v: string) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,subsections:s.subsections.map((ss,k) => k!==subi?ss:{...ss,content:v})})})); setTemplateDirty(true); };
+  const addTAppendix = () => { setTAppendices(p => [...p, {id:`ta-${Date.now()}`,title:'',content:'',permissions:{approvers:[],editors:[]},dynamicFields:[]}]); setTemplateDirty(true); };
   const updTSecPerms = (ti: number, si: number, v: {approvers: PermTag[]; editors: PermTag[]}) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,permissions:v})}));
   const updTSubPerms = (ti: number, si: number, subi: number, v: {approvers: PermTag[]; editors: PermTag[]}) => setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:t.sections.map((s,j) => j!==si?s:{...s,subsections:s.subsections.map((ss,k) => k!==subi?ss:{...ss,permissions:v})})}));
   const updTAppPerms = (ai: number, v: {approvers: PermTag[]; editors: PermTag[]}) => setTAppendices(p => p.map((a,i) => i!==ai?a:{...a,permissions:v}));
@@ -1508,7 +1520,7 @@ export function PersonalArea() {
                     <div className="max-h-96 overflow-y-auto space-y-0">
                       {templates.map((t, i) => (
                         <div key={t.id}>
-                          <div className="py-4 hover:bg-gray-50/50 px-4 transition-colors cursor-pointer flex items-center justify-between">
+                          <div onClick={() => { setTemplateName(t.name); setTemplateEditMode(true); setShowNewTemplate(true); }} className="py-4 hover:bg-gray-50/50 px-4 transition-colors cursor-pointer flex items-center justify-between">
                             <div className="flex items-center gap-3 flex-1">
                               <button onClick={(e) => { e.stopPropagation(); togglePin(t.id); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
                                 <Pin className={`w-4 h-4 ${pinnedTemplates.has(t.id) ? 'text-[#1B3A6B] fill-[#1B3A6B]' : 'text-gray-400'}`} />
@@ -1516,7 +1528,7 @@ export function PersonalArea() {
                               <span className="text-sm text-gray-900">{t.name}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <button onClick={(e) => { e.stopPropagation(); setShowNewTemplate(true); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
+                              <button onClick={(e) => { e.stopPropagation(); setTemplateName(t.name); setTemplateOriginalName(t.name); setTemplateDuplicateMode(true); setShowNewTemplate(true); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
                                 <Copy className="w-4 h-4 text-gray-400" />
                               </button>
                               <button onClick={(e) => { e.stopPropagation(); confirmDelete(() => {}); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
@@ -1539,7 +1551,7 @@ export function PersonalArea() {
                             <span className="text-sm text-gray-900 flex-1">{t.name}</span>
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={e => { e.stopPropagation(); setShowNewTemplate(true); }}
+                                onClick={e => { e.stopPropagation(); setTemplateName(t.name); setTemplateOriginalName(t.name); setTemplateDuplicateMode(true); setShowNewTemplate(true); }}
                                 title="שכפול תבנית"
                                 className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
                                 <Copy className="w-4 h-4" />
@@ -1640,10 +1652,10 @@ export function PersonalArea() {
                   <div className="max-h-96 overflow-y-auto space-y-0">
                     {signatureData[activeSignatureTab].map((sig, i) => (
                       <div key={sig.id}>
-                        <div className="py-4 hover:bg-gray-50/50 px-4 transition-colors cursor-pointer flex items-center justify-between">
+                        <div onClick={() => { setSignatureType(activeSignatureTab); setSignatureEditMode(true); setShowNewSignature(true); }} className="py-4 hover:bg-gray-50/50 px-4 transition-colors cursor-pointer flex items-center justify-between">
                           <span className="text-sm text-gray-900">{sig.name}</span>
                           <div className="flex items-center gap-2 relative">
-                            <button onClick={(e) => { e.stopPropagation(); setShowNewSignature(true); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
+                            <button onClick={(e) => { e.stopPropagation(); setSignatureType(activeSignatureTab); setSignatureDuplicateMode(true); setShowNewSignature(true); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
                               <Copy className="w-4 h-4 text-gray-400" />
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); confirmDelete(() => {}); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
@@ -1735,12 +1747,12 @@ export function PersonalArea() {
                 <div className="bg-white/70 backdrop-blur-md p-6 shadow-lg">
                   {activeListTab === 'my-lists' && (
                     <div className="max-h-96 overflow-y-auto space-y-0">
-                      {['רשימת מפקדים', 'רשימת צוות א\'', 'רשימת כלל המשתמשים'].map((list, i) => (
-                        <div key={list}>
-                          <div className="py-4 hover:bg-gray-50/50 px-4 transition-colors cursor-pointer flex items-center justify-between">
-                            <span className="text-sm text-gray-900">{list}</span>
+                      {PERSONAL_LISTS.filter(l => l.tab === 'mine').map((list, i, arr) => (
+                        <div key={list.id}>
+                          <div onClick={() => { setListName(list.name); setListMembers(list.members.map((m, mi) => ({ id: `edit-m-${mi}`, ...m }))); setListEditMode(true); setShowNewList(true); }} className="py-4 hover:bg-gray-50/50 px-4 transition-colors cursor-pointer flex items-center justify-between">
+                            <span className="text-sm text-gray-900">{list.name}</span>
                             <div className="flex items-center gap-2">
-                              <button onClick={(e) => { e.stopPropagation(); setShowNewList(true); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
+                              <button onClick={(e) => { e.stopPropagation(); setListName(list.name); setListOriginalName(list.name); setListMembers(list.members.map((m, mi) => ({ id: `dup-m-${mi}`, ...m }))); setListDuplicateMode(true); setShowNewList(true); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
                                 <Copy className="w-4 h-4 text-gray-400" />
                               </button>
                               <button onClick={(e) => { e.stopPropagation(); confirmDelete(() => {}); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
@@ -1748,7 +1760,7 @@ export function PersonalArea() {
                               </button>
                             </div>
                           </div>
-                          {i < 2 && <div className="border-t border-gray-200/50"></div>}
+                          {i < arr.length - 1 && <div className="border-t border-gray-200/50"></div>}
                         </div>
                       ))}
                     </div>
@@ -1756,9 +1768,14 @@ export function PersonalArea() {
                   {activeListTab === 'deleted' && (
                     <div className="py-4 hover:bg-gray-50/50 px-4 transition-colors cursor-pointer flex items-center justify-between">
                       <span className="text-sm text-gray-900">רשימה ישנה שנמחקה</span>
-                      <button onClick={(e) => { e.stopPropagation(); setShowNewList(true); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
-                        <Copy className="w-4 h-4 text-gray-400" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button onClick={(e) => { e.stopPropagation(); setListOriginalName('רשימה ישנה שנמחקה'); setListName('רשימה ישנה שנמחקה'); setListDuplicateMode(true); setShowNewList(true); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
+                          <Copy className="w-4 h-4 text-gray-400" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); confirmDelete(() => {}, 'רשימה זו'); }} className="p-1 hover:bg-gray-200 rounded transition-colors">
+                          <Trash2 className="w-4 h-4 text-gray-400" />
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -2027,7 +2044,7 @@ export function PersonalArea() {
           >
             {/* ── Header ── */}
             <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">תבנית חדשה</h2>
+              <h2 className="text-xl font-bold text-gray-900">{templateDuplicateMode ? 'שכפול תבנית' : templateEditMode ? 'עריכת תבנית' : 'תבנית חדשה'}</h2>
               <button onClick={() => { setShowNewTemplate(false); resetNewTemplate(); }} className="text-gray-400 hover:text-gray-700 text-xl leading-none">✕</button>
             </div>
 
@@ -2037,16 +2054,19 @@ export function PersonalArea() {
                 {/* שם התבנית */}
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1 text-right">שם התבנית</label>
-                  <input type="text" value={templateName} onChange={e => setTemplateName(e.target.value)}
+                  <input type="text" value={templateName} onChange={e => { setTemplateName(e.target.value); setTemplateDirty(true); }}
                     placeholder="הזן שם תבנית..."
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-right focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors" />
+                    className={`w-full px-3 py-2 border rounded-xl text-sm text-right focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors ${templateDuplicateMode && templateName === templateOriginalName ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`} />
+                  {templateDuplicateMode && templateName === templateOriginalName && (
+                    <p className="text-[11px] text-amber-600 mt-1 text-right">יש לשנות את שם התבנית לפני השכפול</p>
+                  )}
                 </div>
                 {/* סוג מסמך */}
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1 text-right">סוג מסמך</label>
                   <div className="flex gap-2">
                     {([{ key: 'command', label: 'פקודה', soon: false }, { key: 'instruction', label: 'הוראה', soon: true }, { key: 'document', label: 'מסמך', soon: true }] as const).map(({ key, label, soon }) => (
-                      <button key={key} onClick={() => !soon && setSelectedTemplateType(key)} disabled={soon}
+                      <button key={key} onClick={() => { if (!soon) { setSelectedTemplateType(key); setTemplateDirty(true); } }} disabled={soon}
                         className={`relative flex-1 py-2 px-3 rounded-xl text-xs font-medium border transition-all ${soon ? 'opacity-50 cursor-default text-gray-400 border-gray-200' : selectedTemplateType === key ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]' : 'text-gray-600 border-gray-200 bg-white hover:border-[#1B3A6B] hover:text-[#1B3A6B]'}`}>
                         {soon && <span className="absolute -top-1.5 left-0.5 text-[8px] bg-amber-100 text-amber-600 px-1 rounded-full font-bold leading-tight">soon</span>}
                         {label}
@@ -2071,7 +2091,7 @@ export function PersonalArea() {
                   <div className="flex items-center justify-between gap-2 px-3 bg-white border border-gray-200 rounded-xl" style={{ height: '38px' }}>
                     <span className="text-xs text-gray-600 leading-tight">סבב אישורים על סעיפי הפקודה</span>
                     <button type="button" dir="ltr"
-                      onClick={() => setTemplateApprovalDefault(v => v === 'allow' ? 'skip' : 'allow')}
+                      onClick={() => { setTemplateApprovalDefault(v => v === 'allow' ? 'skip' : 'allow'); setTemplateDirty(true); }}
                       className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 ${templateApprovalDefault === 'allow' ? 'bg-[#1B3A6B]' : 'bg-gray-300'}`}>
                       <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${templateApprovalDefault === 'allow' ? 'translate-x-4' : 'translate-x-0.5'}`} />
                     </button>
@@ -2083,7 +2103,7 @@ export function PersonalArea() {
                     <label className="block text-xs font-medium text-gray-500 mb-1 text-right">סיווג</label>
                     <CustomSelect
                       value={tClassification}
-                      onChange={v => { setTClassification(v); setTClassificationTag(''); }}
+                      onChange={v => { setTClassification(v); setTClassificationTag(''); setTemplateDirty(true); }}
                       placeholder="בחר סיווג..."
                       options={['בלמ"ס', 'סודי', 'סודי ביותר', 'סודי ביותר לשו"ס']}
                     />
@@ -2528,10 +2548,20 @@ export function PersonalArea() {
 
             {/* ── Footer ── */}
             <div className="flex-shrink-0 px-8 py-4 border-t border-gray-100 flex justify-end">
-              <button onClick={() => { setShowNewTemplate(false); resetNewTemplate(); }}
-                className="px-8 py-2.5 bg-[#1B3A6B] text-white rounded-xl hover:bg-[#152e54] transition-colors font-medium text-sm">
-                צור תבנית
-              </button>
+              {(() => {
+                const isDupBlocked = templateDuplicateMode && templateName === templateOriginalName;
+                const isEditBlocked = templateEditMode && !templateDirty;
+                const isDisabled = isDupBlocked || isEditBlocked;
+                const label = templateDuplicateMode ? 'שכפל' : templateEditMode ? 'שמור שינויים' : 'צור תבנית';
+                return (
+                  <button
+                    onClick={() => { if (isDisabled) return; setShowNewTemplate(false); resetNewTemplate(); }}
+                    disabled={isDisabled}
+                    className={`px-8 py-2.5 rounded-xl font-medium text-sm transition-colors ${isDisabled ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#1B3A6B] text-white hover:bg-[#152e54]'}`}>
+                    {label}
+                  </button>
+                );
+              })()}
             </div>
 
             {/* ── Import from source system floating card ── */}
@@ -2634,13 +2664,13 @@ export function PersonalArea() {
         <div
           className="fixed inset-0 flex items-center justify-center z-[9998]"
           style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-          onClick={() => { setShowNewSignature(false); setSignatureType(null); }}
+          onClick={() => { setShowNewSignature(false); setSignatureType(null); setSignatureEditMode(false); setSignatureDuplicateMode(false); setSignatureDirty(false); }}
         >
           <div className="bg-white rounded-3xl shadow-2xl w-[700px] max-w-[95vw] max-h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()} dir="rtl">
             {/* Header — sticky */}
             <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900">חתימה חדשה</h2>
-              <button onClick={() => { setShowNewSignature(false); setSignatureType(null); }} className="text-gray-600 hover:text-gray-900 text-2xl">✕</button>
+              <h2 className="text-2xl font-bold text-gray-900">{signatureDuplicateMode ? 'שכפול חתימה' : signatureEditMode ? 'עריכת חתימה' : 'חתימה חדשה'}</h2>
+              <button onClick={() => { setShowNewSignature(false); setSignatureType(null); setSignatureEditMode(false); setSignatureDuplicateMode(false); setSignatureDirty(false); }} className="text-gray-600 hover:text-gray-900 text-2xl">✕</button>
             </div>
 
             <div className="flex-1 overflow-y-auto">
@@ -2651,7 +2681,7 @@ export function PersonalArea() {
                   <div key={key} className="relative group flex-1">
                     <button
                       type="button"
-                      onClick={() => !soon && setSignatureType(key)}
+                      onClick={() => { if (!soon) { setSignatureType(key); setSignatureDirty(true); } }}
                       style={{
                         width: '100%',
                         padding: '9px 12px',
@@ -2724,6 +2754,7 @@ export function PersonalArea() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl text-right focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/50 resize-none"
                 rows={7}
                 placeholder="הזן את תוכן החתימה..."
+                onChange={() => setSignatureDirty(true)}
               />
               <div>
                 <input type="file" accept="image/*" className="hidden" id="signature-upload" />
@@ -2733,8 +2764,20 @@ export function PersonalArea() {
                 </label>
               </div>
               <div className="flex gap-3 justify-end pt-2">
-                <button onClick={() => { setShowNewSignature(false); setSignatureType(null); }} className="px-6 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">ביטול</button>
-                <button onClick={() => { setShowNewSignature(false); setSignatureType(null); }} className="px-6 py-2 bg-[#1B3A6B] text-white rounded-xl hover:bg-[#152e54] transition-colors">שמור חתימה</button>
+                <button onClick={() => { setShowNewSignature(false); setSignatureType(null); setSignatureEditMode(false); setSignatureDuplicateMode(false); setSignatureDirty(false); }} className="px-6 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">ביטול</button>
+                {(() => {
+                  const isEditBlocked = signatureEditMode && !signatureDirty;
+                  const isDisabled = isEditBlocked;
+                  const label = signatureDuplicateMode ? 'שכפל' : signatureEditMode ? 'שמור שינויים' : 'שמור חתימה';
+                  return (
+                    <button
+                      onClick={() => { if (isDisabled) return; setShowNewSignature(false); setSignatureType(null); setSignatureEditMode(false); setSignatureDuplicateMode(false); setSignatureDirty(false); }}
+                      disabled={isDisabled}
+                      className={`px-6 py-2 rounded-xl transition-colors ${isDisabled ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#1B3A6B] text-white hover:bg-[#152e54]'}`}>
+                      {label}
+                    </button>
+                  );
+                })()}
               </div>
             </div>
             </div>
@@ -2747,7 +2790,7 @@ export function PersonalArea() {
         <div
           className="fixed inset-0 flex items-center justify-center z-[9998]"
           style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-          onClick={() => { setShowNewList(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
+          onClick={() => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
         >
           <div
             className="relative bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden"
@@ -2757,9 +2800,9 @@ export function PersonalArea() {
           >
             {/* ── Header ── */}
             <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">רשימת תפוצה חדשה</h2>
+              <h2 className="text-xl font-bold text-gray-900">{listDuplicateMode ? 'שכפול רשימת תפוצה' : listEditMode ? 'עריכת רשימת תפוצה' : 'רשימת תפוצה חדשה'}</h2>
               <button
-                onClick={() => { setShowNewList(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
+                onClick={() => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
                 className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -2776,8 +2819,11 @@ export function PersonalArea() {
                 <div className="flex-shrink-0 px-5 py-4 border-b border-gray-100 space-y-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1 text-right">שם רשימת התפוצה</label>
-                    <input type="text" placeholder="הזן שם רשימה..."
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-right focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors" />
+                    <input type="text" value={listName} onChange={e => { setListName(e.target.value); setListDirty(true); }} placeholder="הזן שם רשימה..."
+                      className={`w-full px-3 py-2 border rounded-xl text-sm text-right focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors ${listDuplicateMode && listName === listOriginalName ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`} />
+                    {listDuplicateMode && listName === listOriginalName && (
+                      <p className="text-[11px] text-amber-600 mt-1 text-right">יש לשנות את שם הרשימה לפני השכפול</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1 text-right">בחירת אגף</label>
@@ -2872,7 +2918,7 @@ export function PersonalArea() {
                           <div className="mt-2 rounded-xl border border-gray-100 overflow-hidden bg-white shadow-sm">
                             {results.map(person => (
                               <button key={person.id} type="button"
-                                onMouseDown={() => { setListMembers(prev => [...prev, { ...person }]); setListSearchQuery(''); setListSearchOpen(false); }}
+                                onMouseDown={() => { setListMembers(prev => [...prev, { ...person }]); setListSearchQuery(''); setListSearchOpen(false); setListDirty(true); }}
                                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 text-right">
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium text-gray-800 truncate">{person.name}</p>
@@ -3108,7 +3154,7 @@ export function PersonalArea() {
                                 return [...prev, ...toAdd.filter(p => !existingIds.has(p.idNumber)).map(p => ({ id: `imp-${p.idNumber}`, name: p.name, idNumber: p.idNumber, environment: p.environment }))];
                               });
                               setListDocAdded(prev => { const next = new Set(prev); listDocSelected.forEach(id => next.add(id)); return next; });
-                              setListDocSelected(new Set());
+                              setListDocSelected(new Set()); setListDirty(true);
                             }}
                             className="px-4 py-1.5 bg-[#1B3A6B] text-white text-xs font-medium rounded-lg hover:bg-[#152e54] transition-colors">
                             הוסף לרשימה
@@ -3246,7 +3292,7 @@ export function PersonalArea() {
                                 });
                                 setHamalAdded(prev => { const next = new Set(prev); hamalSelected.forEach(id => next.add(id)); return next; });
                                 setHamalSelected(new Set());
-                                setHamalSearch('');
+                                setHamalSearch(''); setListDirty(true);
                               }}
                               className="px-4 py-1.5 bg-[#1B3A6B] text-white text-xs font-medium rounded-lg hover:bg-[#152e54] transition-colors">
                               הוסף לרשימה
@@ -3355,7 +3401,7 @@ export function PersonalArea() {
                                 });
                                 setMirazAdded(prev => { const next = new Set(prev); mirazSelected.forEach(id => next.add(id)); return next; });
                                 setMirazSelected(new Set());
-                                setMirazSearchQuery('');
+                                setMirazSearchQuery(''); setListDirty(true);
                               }}
                               className="px-4 py-1.5 bg-[#1B3A6B] text-white text-xs font-medium rounded-lg hover:bg-[#152e54] transition-colors">
                               הוסף לרשימה
@@ -3468,7 +3514,7 @@ export function PersonalArea() {
                                   return [...prev, ...toAdd.filter(p => !existingIds.has(p.idNumber)).map(p => ({ id: `prs-${p.idNumber}`, name: p.name, idNumber: p.idNumber, environment: p.environment }))];
                                 });
                                 setPersonalListAdded(prev => { const next = new Set(prev); personalListSelected.forEach(id => next.add(id)); return next; });
-                                setPersonalListSelected(new Set());
+                                setPersonalListSelected(new Set()); setListDirty(true);
                               }}
                               className="px-4 py-1.5 bg-[#1B3A6B] text-white text-xs font-medium rounded-lg hover:bg-[#152e54] transition-colors">
                               הוסף לרשימה
@@ -3526,7 +3572,7 @@ export function PersonalArea() {
                             <span className="text-right text-xs font-medium text-gray-800 truncate">{member.name}</span>
                             <span className="text-center text-xs text-gray-400">—</span>
                             <span className="text-center text-xs text-gray-600">{member.environment}</span>
-                            <button onClick={e => { e.stopPropagation(); confirmDelete(() => { setListMembers(prev => prev.filter(m => m.id !== member.id)); if (memberGroupExpanded === member.id) setMemberGroupExpanded(null); }); }}
+                            <button onClick={e => { e.stopPropagation(); confirmDelete(() => { setListMembers(prev => prev.filter(m => m.id !== member.id)); if (memberGroupExpanded === member.id) setMemberGroupExpanded(null); setListDirty(true); }); }}
                               className="flex items-center justify-center p-1 rounded transition-colors hover:text-[#1B3A6B]">
                               <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-[#1B3A6B]" />
                             </button>
@@ -3563,7 +3609,7 @@ export function PersonalArea() {
                           </div>
                           <span className="text-center text-xs text-gray-600 tabular-nums">{member.idNumber}</span>
                           <span className="text-center text-xs text-gray-600">{member.environment}</span>
-                          <button onClick={() => confirmDelete(() => setListMembers(prev => prev.filter(m => m.id !== member.id)))}
+                          <button onClick={() => confirmDelete(() => { setListMembers(prev => prev.filter(m => m.id !== member.id)); setListDirty(true); })}
                             className="flex items-center justify-center p-1 rounded transition-colors hover:text-[#1B3A6B]">
                             <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-[#1B3A6B]" />
                           </button>
@@ -3580,18 +3626,28 @@ export function PersonalArea() {
             <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 border-t border-gray-100">
               <button
                 type="button"
-                onClick={() => { setShowNewList(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
+                onClick={() => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
                 className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
               >
                 ביטול
               </button>
-              <button
-                type="button"
-                onClick={() => { setShowNewList(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
-                className="px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl hover:bg-[#152e54] transition-colors text-sm font-medium"
-              >
-                צור רשימה
-              </button>
+              {(() => {
+                const isDupBlocked = listDuplicateMode && listName === listOriginalName;
+                const isEditBlocked = listEditMode && !listDirty;
+                const isDisabled = isDupBlocked || isEditBlocked;
+                const label = listDuplicateMode ? 'שכפל' : listEditMode ? 'שמור שינויים' : 'צור רשימה';
+                const closeAll = () => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); };
+                return (
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => { if (isDisabled) return; closeAll(); }}
+                    className={`px-6 py-2.5 rounded-xl transition-colors text-sm font-medium ${isDisabled ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#1B3A6B] text-white hover:bg-[#152e54]'}`}
+                  >
+                    {label}
+                  </button>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -3790,7 +3846,7 @@ export function PersonalArea() {
                 const newId = `manual-${Date.now()}`;
                 const name = manualAddDisplayName.trim() || manualAddUsername.trim();
                 setListMembers(prev => [...prev, { id: newId, name, idNumber: manualAddUsername.trim(), environment: '', subLabel: networkLabel }]);
-                setManualAddOpen(false); setManualAddUsername(''); setManualAddDisplayName('');
+                setManualAddOpen(false); setManualAddUsername(''); setManualAddDisplayName(''); setListDirty(true);
               }}
               className="flex-1 py-1.5 rounded-xl text-xs font-semibold bg-[#1B3A6B] text-white hover:bg-[#152e54] transition-colors disabled:opacity-40">
               הוספה
@@ -3807,11 +3863,11 @@ export function PersonalArea() {
           onClick={() => setShowDeleteConfirm(null)}
         >
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-72" onClick={(e) => e.stopPropagation()} dir="rtl">
-            <p className="text-sm font-semibold text-gray-800 text-center mb-1">האם אתה בטוח שברצונך למחוק?</p>
+            <p className="text-sm font-semibold text-gray-800 text-center mb-1">{showDeleteConfirm?.label ? `בטוח שתרצה למחוק ${showDeleteConfirm.label}?` : 'האם אתה בטוח שברצונך למחוק?'}</p>
             <p className="text-xs text-gray-400 text-center mb-5">פעולה זו אינה ניתנת לביטול</p>
             <div className="flex gap-2">
               <button onClick={() => setShowDeleteConfirm(null)} className="flex-1 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">ביטול</button>
-              <button onClick={() => { showDeleteConfirm?.onConfirm(); setShowDeleteConfirm(null); }} className="flex-1 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: '#1B3A6B' }}>מחיקה</button>
+              <button onClick={() => { showDeleteConfirm?.onConfirm(); setShowDeleteConfirm(null); }} className="flex-1 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: '#1B3A6B' }}>אישור</button>
             </div>
           </div>
         </div>
