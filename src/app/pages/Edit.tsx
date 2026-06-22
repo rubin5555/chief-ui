@@ -1227,12 +1227,29 @@ export function Edit({ navigate, doc }: EditProps) {
         <aside className="w-64 flex-shrink-0 flex flex-col overflow-hidden z-10 relative px-4 py-5 before:content-[''] before:absolute before:left-0 before:top-6 before:bottom-6 before:w-[1px] before:bg-[#E5E5E5]">
 
           {/* Status header */}
-          <div className="mb-4">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl border"
-              style={{ background: 'rgba(27,58,107,0.07)', borderColor: 'rgba(27,58,107,0.2)' }}>
+          <div className="mb-4" dir="rtl">
+            {/* Title — no background, no border */}
+            <div className="flex items-center gap-2 px-1 mb-2">
               <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
               <span className="text-sm font-semibold" style={{ color: '#1B3A6B' }}>מסמך {docStatus}</span>
             </div>
+            {/* Progress stats — shown when in approval round */}
+            {docStatus === 'בסבב אישורים' && (
+              <div className="flex flex-col gap-1 px-1">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                    <div className="h-full rounded-full bg-amber-400" style={{ width: '0%' }} />
+                  </div>
+                  <span className="text-[11px] text-gray-500 whitespace-nowrap">0/3 סעיפים בהכנה</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: '40%', background: '#1B3A6B' }} />
+                  </div>
+                  <span className="text-[11px] text-gray-500 whitespace-nowrap">2/5 סעיפים אושרו</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Status navigation */}
