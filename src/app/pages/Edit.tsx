@@ -1465,68 +1465,44 @@ export function Edit({ navigate, doc }: EditProps) {
               ].join(''),
             }}>
               <div style={{ padding: '16mm 20mm 20mm 20mm' }}>
-                {sections.map((section, idx) => (
-                  <div key={section.id} {...(!section.children ? { 'data-page-box': '' } : {})} style={{ display: 'flex', gap: '0.3em', marginBottom: '10mm' }}>
+                {(() => {
+                  let secCounter = 0; // global section counter across topics
+                  return sections.map((section) => (
+                  <div key={section.id} {...(!section.children ? { 'data-page-box': '' } : {})} style={{ marginBottom: '10mm' }}>
 
-                    {/* Number column */}
-                    <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 700, color: '#1e293b', lineHeight: 1.5 }}>
-                      {idx + 1}.
+                    {/* Topic heading — no number */}
+                    <div style={{
+                      fontSize: 14, fontWeight: 700, color: '#1e293b',
+                      marginBottom: '4mm', paddingBottom: '1.5mm',
+                      borderBottom: '1px solid #e5e7eb',
+                    }}>
+                      {section.title}
                     </div>
 
-                    {/* Content column — aligns with first letter of section name */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      {/* Section heading */}
-                      <div style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        marginBottom: '3mm', paddingBottom: '1.5mm',
-                        borderBottom: '1px solid #e5e7eb',
-                      }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>{section.title}</div>
-                        {!section.children && (
-                          <div className="flex items-center gap-0.5">
-                            <button title="בטל" className="p-1 rounded hover:bg-gray-100 transition-colors" style={{ color: '#d1d5db' }}>
-                              <Undo2 className="w-3 h-3" />
-                            </button>
-                            <button title="בצע שנית" className="p-1 rounded hover:bg-gray-100 transition-colors" style={{ color: '#d1d5db' }}>
-                              <Redo2 className="w-3 h-3" />
-                            </button>
-                            <button title="צאט"
-                              onClick={e => {
-                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                setOpenChat(openChat?.id === section.id ? null : { id: section.id, title: `${idx + 1}. ${section.title}`, top: rect.top });
-                              }}
-                              className={`p-1 rounded hover:bg-gray-100 transition-colors ${openChat?.id === section.id ? 'text-[#1B3A6B]' : 'text-gray-400'}`}>
-                              <MessageSquare className="w-3 h-3" />
-                            </button>
-                            <button title="אפשרויות" onClick={openSectionMenu}
-                              className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
-                              <MoreHorizontal className="w-3 h-3" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                    {/* Content box for leaf topics (no children) */}
+                    {!section.children && (
+                      <div style={{ minHeight: '35mm', border: '1px solid #e5e7eb', borderRadius: 4, background: 'white' }} />
+                    )}
 
-                      {/* Content box for leaf sections */}
-                      {!section.children && (
-                        <div style={{ minHeight: '35mm', border: '1px solid #e5e7eb', borderRadius: 4, background: 'white' }} />
-                      )}
+                    {/* Sections (children of topic) */}
+                    {section.children?.map((child, ci) => {
+                      secCounter++;
+                      const secNum = secCounter;
+                      return (
+                      <div key={child.id} data-page-box="" style={{ display: 'flex', gap: '0.3em', marginBottom: '5mm' }}>
 
-                      {/* Sub-sections */}
-                      {section.children?.map((child, ci) => (
-                        <div key={child.id} data-page-box="" style={{ display: 'flex', gap: '0.3em', marginBottom: '5mm' }}>
+                        {/* Section number */}
+                        <div style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: '#374151', lineHeight: 1.5, whiteSpace: 'nowrap' }}>
+                          {secNum}.
+                        </div>
 
-                          {/* Sub-section number column */}
-                          <div style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: '#374151', lineHeight: 1.5, whiteSpace: 'nowrap' }}>
-                            {idx + 1}.{ci + 1}
-                          </div>
-
-                          {/* Sub-section content column — aligns with first letter of sub-section name */}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{
-                              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                              marginBottom: '2mm',
-                            }}>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{child.title}</div>
+                        {/* Section content */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            marginBottom: '2mm',
+                          }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{child.title}</div>
                               <div className="flex items-center gap-0.5">
                                 <button title="בטל" className="p-1 rounded hover:bg-gray-100 transition-colors" style={{ color: '#d1d5db' }}>
                                   <Undo2 className="w-3 h-3" />
@@ -1537,7 +1513,7 @@ export function Edit({ navigate, doc }: EditProps) {
                                 <button title="צאט"
                                   onClick={e => {
                                     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                    setOpenChat(openChat?.id === child.id ? null : { id: child.id, title: `${idx + 1}.${ci + 1} ${child.title}`, top: rect.top });
+                                    setOpenChat(openChat?.id === child.id ? null : { id: child.id, title: `${secNum}. ${child.title}`, top: rect.top });
                                   }}
                                   className={`p-1 rounded hover:bg-gray-100 transition-colors ${openChat?.id === child.id ? 'text-[#1B3A6B]' : 'text-gray-400'}`}>
                                   <MessageSquare className="w-3 h-3" />
@@ -1548,13 +1524,26 @@ export function Edit({ navigate, doc }: EditProps) {
                                 </button>
                               </div>
                             </div>
-                            <div style={{ minHeight: '28mm', border: '1px solid #e5e7eb', borderRadius: 4, background: 'white' }} />
+                            {/* Sub-sections (children of section) */}
+                            {child.children?.map((sub, si) => (
+                              <div key={sub.id} style={{ display: 'flex', gap: '0.3em', marginBottom: '3mm', paddingRight: '4mm' }}>
+                                <div style={{ flexShrink: 0, fontSize: 11, fontWeight: 500, color: '#6b7280', lineHeight: 1.5 }}>{HE_ALPHA[si]}.</div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: 11, fontWeight: 500, color: '#6b7280', marginBottom: '1.5mm' }}>{sub.title}</div>
+                                  <div style={{ minHeight: '20mm', border: '1px solid #f3f4f6', borderRadius: 4, background: 'white' }} />
+                                </div>
+                              </div>
+                            ))}
+                            {!child.children?.length && (
+                              <div style={{ minHeight: '28mm', border: '1px solid #e5e7eb', borderRadius: 4, background: 'white' }} />
+                            )}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
-                ))}
+                ));
+                })()}
               </div>
             </div>
           </div>
