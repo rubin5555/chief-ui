@@ -1051,7 +1051,7 @@ export function Edit({ navigate, doc }: EditProps) {
   });
 
   // Context menu for section/child items (3-dots)
-  const [itemMenu, setItemMenu] = useState<{ id: string; type: 'child' | 'sub'; parentId?: string; childId?: string; x: number; y: number; onDelete: () => void; onRename: () => void } | null>(null);
+  const [itemMenu, setItemMenu] = useState<{ id: string; type: 'topic' | 'section' | 'subsection'; x: number; y: number; onDelete: () => void; onRename: () => void } | null>(null);
   const itemMenuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!itemMenu) return;
@@ -1059,6 +1059,9 @@ export function Edit({ navigate, doc }: EditProps) {
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, [itemMenu]);
+
+  // Delete confirmation from 3-dots menu
+  const [pendingDelete, setPendingDelete] = useState<{ label: string; onConfirm: () => void } | null>(null);
 
   const [renamingId, setRenamingId] = useState<string | null>(null);
 
@@ -1299,7 +1302,7 @@ export function Edit({ navigate, doc }: EditProps) {
                     )}
                     <button
                       title="אפשרויות"
-                      onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: section.id, type: 'child', x: rect.left, y: rect.bottom + 4, onDelete: () => { openDeleteConfirm(e, section.id); setItemMenu(null); }, onRename: () => { setRenamingId(section.id); setItemMenu(null); } }); }}
+                      onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: section.id, type: 'topic', x: rect.left, y: rect.bottom + 4, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'נושא זה', onConfirm: () => { setSections(prev => prev.filter(s => s.id !== section.id)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(section.id); setItemMenu(null); } }); }}
                       className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-all flex-shrink-0">
                       <MoreVertical className="w-3.5 h-3.5" />
                     </button>
@@ -1328,7 +1331,7 @@ export function Edit({ navigate, doc }: EditProps) {
                             )}
                             <button
                               title="אפשרויות"
-                              onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: child.id, type: 'child', x: rect.left, y: rect.bottom + 4, onDelete: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.filter(c => c.id !== child.id) } : s)); setItemMenu(null); }, onRename: () => { setRenamingId(child.id); setItemMenu(null); } }); }}
+                              onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: child.id, type: 'section', x: rect.left, y: rect.bottom + 4, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'סעיף זה', onConfirm: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.filter(c => c.id !== child.id) } : s)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(child.id); setItemMenu(null); } }); }}
                               className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
                               <MoreVertical className="w-3 h-3" />
                             </button>
@@ -1353,7 +1356,7 @@ export function Edit({ navigate, doc }: EditProps) {
                               )}
                               <button
                                 title="אפשרויות"
-                                onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: sub.id, type: 'sub', x: rect.left, y: rect.bottom + 4, onDelete: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: c.children!.filter(sb => sb.id !== sub.id) } : c) } : s)); setItemMenu(null); }, onRename: () => { setRenamingId(sub.id); setItemMenu(null); } }); }}
+                                onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: sub.id, type: 'subsection', x: rect.left, y: rect.bottom + 4, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'תת סעיף זה', onConfirm: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: c.children!.filter(sb => sb.id !== sub.id) } : c) } : s)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(sub.id); setItemMenu(null); } }); }}
                                 className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
                                 <MoreVertical className="w-3 h-3" />
                               </button>
@@ -1576,6 +1579,26 @@ export function Edit({ navigate, doc }: EditProps) {
             <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
             מחיקה
           </button>
+        </div>
+      )}
+
+      {/* 3-dots delete confirmation modal */}
+      {pendingDelete && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.45)' }} onClick={() => setPendingDelete(null)}>
+          <div dir="rtl" className="bg-white rounded-3xl shadow-2xl px-8 py-7 flex flex-col items-center gap-3" style={{ width: 340 }} onClick={e => e.stopPropagation()}>
+            <p className="text-base font-bold text-gray-900 text-center">בטוח שתרצה למחוק {pendingDelete.label}?</p>
+            <div className="flex gap-3 w-full mt-1">
+              <button onClick={() => setPendingDelete(null)}
+                className="flex-1 py-2.5 rounded-2xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+                ביטול
+              </button>
+              <button onClick={pendingDelete.onConfirm}
+                className="flex-1 py-2.5 rounded-2xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: '#1B3A6B' }}>
+                מחיקה
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
