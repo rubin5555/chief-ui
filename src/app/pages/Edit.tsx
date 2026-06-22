@@ -1265,8 +1265,7 @@ export function Edit({ navigate, doc }: EditProps) {
 
                   {/* Topic row */}
                   <div
-                    className="flex items-center gap-2 px-2 py-2 rounded-xl group transition-colors cursor-pointer hover:border-[#c7d2e8]"
-                    style={{  }}
+                    className="flex items-center gap-2 px-2 py-2 rounded-xl group transition-colors cursor-pointer hover:bg-white"
                     dir="rtl"
                     onClick={() => editingNewId !== section.id && toggleTopic(section.id)}>
                     <ChevronLeft
@@ -1303,7 +1302,7 @@ export function Edit({ navigate, doc }: EditProps) {
                     <button
                       title="אפשרויות"
                       onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: section.id, type: 'topic', x: rect.left, y: rect.bottom + 4, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'נושא זה', onConfirm: () => { setSections(prev => prev.filter(s => s.id !== section.id)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(section.id); setItemMenu(null); } }); }}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-all flex-shrink-0">
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded-full text-[#1B3A6B] hover:bg-gray-200/70 transition-all flex-shrink-0">
                       <MoreVertical className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1314,7 +1313,7 @@ export function Edit({ navigate, doc }: EditProps) {
                       {section.children.map((child, ci) => (
                         <div key={child.id} dir="rtl">
                           {/* Child row */}
-                          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl group transition-colors cursor-pointer hover:bg-white/50" dir="rtl">
+                          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl group transition-colors cursor-pointer hover:bg-white" dir="rtl">
                             <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-4 text-right">{ci + 1}.</span>
                             {renamingId === child.id ? (
                               <input
@@ -1332,14 +1331,14 @@ export function Edit({ navigate, doc }: EditProps) {
                             <button
                               title="אפשרויות"
                               onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: child.id, type: 'section', x: rect.left, y: rect.bottom + 4, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'סעיף זה', onConfirm: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.filter(c => c.id !== child.id) } : s)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(child.id); setItemMenu(null); } }); }}
-                              className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
+                              className="p-1 rounded-full text-[#1B3A6B] hover:bg-gray-200/70 transition-colors flex-shrink-0">
                               <MoreVertical className="w-3 h-3" />
                             </button>
                           </div>
 
                           {/* Sub-children */}
                           {child.children && child.children.map((sub, si) => (
-                            <div key={sub.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl group transition-colors cursor-pointer hover:bg-white/50" style={{ paddingRight: 28 }} dir="rtl">
+                            <div key={sub.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl group transition-colors cursor-pointer hover:bg-white" style={{ paddingRight: 28 }} dir="rtl">
                               <span className="text-[10px] text-gray-400 flex-shrink-0 w-5 text-right">{HE_ALPHA[si]}.</span>
                               {renamingId === sub.id ? (
                                 <input
@@ -1357,7 +1356,7 @@ export function Edit({ navigate, doc }: EditProps) {
                               <button
                                 title="אפשרויות"
                                 onClick={e => { e.stopPropagation(); const rect = (e.currentTarget as HTMLElement).getBoundingClientRect(); setItemMenu({ id: sub.id, type: 'subsection', x: rect.left, y: rect.bottom + 4, onDelete: () => { setItemMenu(null); setPendingDelete({ label: 'תת סעיף זה', onConfirm: () => { setSections(prev => prev.map(s => s.id === section.id ? { ...s, children: s.children!.map(c => c.id === child.id ? { ...c, children: c.children!.filter(sb => sb.id !== sub.id) } : c) } : s)); setPendingDelete(null); } }); }, onRename: () => { setRenamingId(sub.id); setItemMenu(null); } }); }}
-                                className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-colors flex-shrink-0">
+                                className="p-1 rounded-full text-[#1B3A6B] hover:bg-gray-200/70 transition-colors flex-shrink-0">
                                 <MoreVertical className="w-3 h-3" />
                               </button>
                             </div>
