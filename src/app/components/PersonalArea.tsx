@@ -1,4 +1,4 @@
-import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw} from 'lucide-react';
+import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw} from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
@@ -592,6 +592,12 @@ const DYNAMIC_SYSTEMS = [
   ]},
 ];
 
+// Fields that expand to show optional sub-fields (used in Col 3 of DynamicFieldPicker)
+const FIELD_CHILDREN: Record<string, string[]> = {
+  'שם היחידה':    ['שם מלא', 'שם קצר', 'שם בעברית'],
+  'מפקד היחידה': ['דרגה', 'שם פרטי', 'שם משפחה'],
+};
+
 function SidebarFieldPicker({
   existingFields, onAdd,
 }: { existingFields: DynamicField[]; onAdd: (v: DynamicField[]) => void }) {
@@ -685,6 +691,7 @@ function DynamicFieldPicker({
   const [selInsts,     setSelInsts]     = useState<string[]>([]);
   const [instSearch,   setInstSearch]   = useState('');
   const [showInstPanel, setShowInstPanel] = useState(false);
+  const [expandedField, setExpandedField] = useState<string | null>(null);
 
   // Per-operation parameters
   const [opParams, setOpParams] = useState<Record<string, { name: string; date: string; quantity: string; question: boolean }>>({});
@@ -928,15 +935,53 @@ function DynamicFieldPicker({
         <p className="text-[9px] font-semibold text-gray-400 tracking-widest uppercase px-3 pt-3 pb-2 sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-50">שדה מידע</p>
         {selInsts.length > 0 && selOp ? selOp.fields.map(fn => {
           const linked = selInsts.every(inst => existingFields.some(f => f.operationId === selOp!.id && f.instanceName === inst && f.fieldName === fn));
+          const subFields = FIELD_CHILDREN[fn];
+          const isExpanded = expandedField === fn;
+
           return (
-            <button key={fn} type="button" onClick={() => toggleField(fn)}
-              className={`w-full flex items-center justify-between gap-1.5 px-3 py-2 mx-1 rounded-lg text-[11px] text-right transition-all mb-0.5 group ${linked ? 'text-gray-700 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]' : 'text-gray-600 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]'}`}
-              style={{ width: 'calc(100% - 8px)' }}>
-              <span className={`truncate ${linked ? 'font-medium' : 'group-hover:font-medium'}`}>{fn}</span>
-              {linked
-                ? <><Check className="w-3.5 h-3.5 text-[#1B3A6B]/40 flex-shrink-0 group-hover:hidden" /><X className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0 hidden group-hover:block" /></>
-                : <Plus className="w-3.5 h-3.5 text-transparent group-hover:text-[#1B3A6B]/50 flex-shrink-0 transition-colors" />}
-            </button>
+            <div key={fn}>
+              {/* Parent field row */}
+              <button type="button"
+                onClick={() => {
+                  if (subFields) {
+                    setExpandedField(isExpanded ? null : fn);
+                  } else {
+                    toggleField(fn);
+                  }
+                }}
+                className={`w-full flex items-center justify-between gap-1.5 px-3 py-2 mx-1 rounded-lg text-[11px] text-right transition-all mb-0.5 group ${isExpanded ? 'bg-[#EEF4FF] text-[#1B3A6B]' : linked ? 'text-gray-700 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]' : 'text-gray-600 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]'}`}
+                style={{ width: 'calc(100% - 8px)' }}>
+                <span className={`truncate ${isExpanded ? 'font-semibold' : linked ? 'font-medium' : 'group-hover:font-medium'}`}>{fn}</span>
+                {subFields
+                  ? <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-[#1B3A6B]' : 'text-gray-300 group-hover:text-[#1B3A6B]/50'}`} />
+                  : linked
+                    ? <><Check className="w-3.5 h-3.5 text-[#1B3A6B]/40 flex-shrink-0 group-hover:hidden" /><X className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0 hidden group-hover:block" /></>
+                    : <Plus className="w-3.5 h-3.5 text-transparent group-hover:text-[#1B3A6B]/50 flex-shrink-0 transition-colors" />}
+              </button>
+
+              {/* Sub-fields (expanded hierarchy) */}
+              {subFields && isExpanded && (
+                <div className="mr-3 mb-1 border-r-2 border-[#1B3A6B]/10 pr-2">
+                  {subFields.map(sf => {
+                    const sfLinked = selInsts.every(inst => existingFields.some(f => f.operationId === selOp!.id && f.instanceName === inst && f.fieldName === sf));
+                    return (
+                      <button key={sf} type="button" onClick={() => toggleField(sf)}
+                        className={`w-full flex items-center justify-between gap-1.5 px-2.5 py-1.5 mx-0.5 rounded-lg text-[11px] text-right transition-all mb-0.5 group ${sfLinked ? 'text-[#1B3A6B] bg-[#EEF4FF]/60' : 'text-gray-500 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]'}`}
+                        style={{ width: 'calc(100% - 4px)' }}>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-[#1B3A6B]/20 flex-shrink-0 text-[10px]">└</span>
+                          <span className={`truncate text-[10px] ${sfLinked ? 'font-semibold' : 'group-hover:font-medium'}`}>{sf}</span>
+                          {sfLinked && <span className="text-[9px] text-[#1B3A6B]/50 flex-shrink-0">אופציונלי</span>}
+                        </div>
+                        {sfLinked
+                          ? <><Check className="w-3 h-3 text-[#1B3A6B]/40 flex-shrink-0 group-hover:hidden" /><X className="w-3 h-3 text-[#1B3A6B] flex-shrink-0 hidden group-hover:block" /></>
+                          : <Plus className="w-3 h-3 text-transparent group-hover:text-[#1B3A6B]/50 flex-shrink-0 transition-colors" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         }) : (
           <div className="flex flex-col items-center justify-center h-full gap-1.5 pb-8">
@@ -1182,7 +1227,7 @@ export function PersonalArea() {
   const [selectedTemplateType, setSelectedTemplateType] = useState<'command' | 'instruction' | 'document' | null>(null);
   const [showNetworkSubMenu, setShowNetworkSubMenu] = useState(false);
   const [listImportPanel, setListImportPanel] = useState<'doc' | 'hamal' | 'miraz' | 'personal' | 'network' | null>(null);
-  const [listImportTab, setListImportTab] = useState<'search' | 'doc' | 'hamal' | 'miraz' | 'personal'>('search');
+  const [listImportTab, setListImportTab] = useState<'network' | 'doc' | 'hamal' | 'miraz' | 'personal' | null>(null);
   const [listDocTab, setListDocTab] = useState<'drafts' | 'distributed'>('distributed');
   const [listSearchEnvFilter, setListSearchEnvFilter] = useState('');
   const [listSearchFilterOpen, setListSearchFilterOpen] = useState(false);
@@ -1422,12 +1467,12 @@ export function PersonalArea() {
           </div>
 
           {/* Main section */}
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col">
             <div className="grid grid-cols-3 gap-4 mb-6">
               {[
                 { key: 'templates', Icon: FileText, label: 'תבניות' },
                 { key: 'signatures', Icon: PenLine, label: 'חתימות' },
-                { key: 'lists', Icon: List, label: 'רשימות תפוצה' },
+                { key: 'lists', Icon: UserCog, label: 'רשימות תפוצה' },
               ].map(({ key, Icon, label }) => (
                 <button
                   key={key}
@@ -1442,6 +1487,7 @@ export function PersonalArea() {
               ))}
             </div>
 
+            <div className="flex-1">
             {/* Templates */}
             {activeCard === 'templates' && (
               <div>
@@ -1515,7 +1561,7 @@ export function PersonalArea() {
                     </button>
                   ))}
                 </div>
-                <div className="bg-white/70 backdrop-blur-md p-6 shadow-lg">
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
                   {activeSubTab === 'my-templates' && (
                     <div className="max-h-96 overflow-y-auto space-y-0">
                       {templates.map((t, i) => (
@@ -1648,7 +1694,7 @@ export function PersonalArea() {
                     </div>
                   ))}
                 </div>
-                <div className="bg-white/70 backdrop-blur-md p-6 shadow-lg relative overflow-visible">
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
                   <div className="max-h-96 overflow-y-auto space-y-0">
                     {signatureData[activeSignatureTab].map((sig, i) => (
                       <div key={sig.id}>
@@ -1744,7 +1790,7 @@ export function PersonalArea() {
                     </button>
                   ))}
                 </div>
-                <div className="bg-white/70 backdrop-blur-md p-6 shadow-lg">
+                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
                   {activeListTab === 'my-lists' && (
                     <div className="max-h-96 overflow-y-auto space-y-0">
                       {PERSONAL_LISTS.filter(l => l.tab === 'mine').map((list, i, arr) => (
@@ -1781,10 +1827,11 @@ export function PersonalArea() {
                 </div>
               </div>
             )}
+            </div>{/* end flex-1 card content wrapper */}
 
-            {/* Spell checker card */}
+            {/* Spell checker card — always pinned to bottom */}
             <div className="mt-4 rounded-2xl px-4 py-3.5 flex items-center gap-3" style={{
-              background: '#fff', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+              background: 'transparent', border: '1px solid #e5e7eb',
             }}>
               <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0">
                 <Check className="w-4 h-4 text-[#1B3A6B]" />
@@ -2790,7 +2837,7 @@ export function PersonalArea() {
         <div
           className="fixed inset-0 flex items-center justify-center z-[9998]"
           style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-          onClick={() => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
+          onClick={() => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab(null); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
         >
           <div
             className="relative bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden"
@@ -2802,7 +2849,7 @@ export function PersonalArea() {
             <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100">
               <h2 className="text-xl font-bold text-gray-900">{listDuplicateMode ? 'שכפול רשימת תפוצה' : listEditMode ? 'עריכת רשימת תפוצה' : 'רשימת תפוצה חדשה'}</h2>
               <button
-                onClick={() => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
+                onClick={() => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab(null); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
                 className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -2831,92 +2878,58 @@ export function PersonalArea() {
                   </div>
                 </div>
 
-                {/* Tab bar — fixed */}
-                <div className="flex-shrink-0 flex border-b border-gray-100 overflow-x-auto">
-                  {([
-                    { key: 'search',   label: 'חיפוש',            Icon: Search  },
-                    { key: 'doc',      label: 'ייבוא ממסמך קיים', Icon: FileText },
-                    { key: 'hamal',    label: 'קבוצות חמ״ל',      Icon: Users   },
-                    { key: 'miraz',    label: "קבוצות מיראז'",    Icon: Layers  },
-                    { key: 'personal', label: 'איזור אישי',        Icon: List    },
-                  ] as const).map(({ key, label, Icon }) => {
-                    const isActive = listImportTab === key;
-                    return (
-                      <button key={key} type="button" onClick={() => setListImportTab(key)}
-                        className={`relative flex flex-col items-center gap-0.5 px-3.5 py-2.5 text-[11px] flex-shrink-0 transition-colors ${isActive ? 'text-[#1B3A6B] font-semibold' : 'text-gray-400 hover:text-gray-600'}`}>
-                        <Icon className="w-3.5 h-3.5" />
-                        <span>{label}</span>
-                        {isActive && <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#1B3A6B]" />}
-                      </button>
-                    );
-                  })}
+                {/* chips row — fixed */}
+                <div className="px-4 pt-3 pb-3 flex-shrink-0" dir="rtl">
+                  <p className="text-[11px] text-gray-400 mb-2 font-medium">ייבוא ממקורות נוספים</p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {([
+                      { key: 'network'  as const, label: 'הוסף מרשתות',   Icon: Network  },
+                      { key: 'doc'      as const, label: 'ממסמך קיים',    Icon: FileText },
+                      { key: 'hamal'    as const, label: 'קבוצות חמ"ל',   Icon: Users    },
+                      { key: 'miraz'    as const, label: "קבוצות מיראז'", Icon: Layers   },
+                      { key: 'personal' as const, label: 'אזור אישי',      Icon: List     },
+                    ]).map(({ key, label, Icon }) => {
+                      const active = listImportTab === key;
+                      return (
+                        <button key={key} type="button"
+                          onClick={() => { setListImportTab(active ? null : key); setListSearchQuery(''); setListSearchOpen(false); if (!active && key !== 'network') setListSearchNetworkFilter('sodibioti'); }}
+                          className={`flex items-center gap-1.5 flex-1 px-2.5 py-2 rounded-xl border transition-all text-right ${active ? '' : 'border-gray-100 bg-gray-50/60 hover:bg-white hover:border-gray-200 hover:shadow-sm'}`}
+                          style={active ? { background: '#1B3A6B07', borderColor: '#1B3A6B35', boxShadow: '0 1px 3px rgba(27,58,107,0.08)' } : undefined}>
+                          <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={active ? { background: '#1B3A6B18' } : { background: 'white', border: '1px solid #f3f4f6' }}>
+                            <Icon className="w-2.5 h-2.5" style={{ color: active ? '#1B3A6B' : '#9ca3af' }} />
+                          </div>
+                          <span className="text-[11px] font-semibold truncate" style={{ color: active ? '#1B3A6B' : '#374151' }}>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                {/* Tab content — flex-1 scrollable */}
-                <div className="flex-1 overflow-y-auto">
-
-                  {/* ── SEARCH TAB ── */}
-                  {listImportTab === 'search' && (
-                    <div className="flex flex-col h-full">
-                      {/* Sub-tabs */}
-                      <div className="flex items-center border-b border-gray-100 px-4 bg-gray-50/50 flex-shrink-0">
-                        {([['sodibioti', 'סודי ביותר'], ['sodi', 'סודי'], ['aman', 'אמ"ן']] as const).map(([val, label]) => (
-                          <button key={val} type="button"
-                            onClick={() => { setListSearchNetworkFilter(val); setListSearchQuery(''); setListSearchOpen(false); }}
-                            className="relative px-4 py-3 text-xs focus:outline-none transition-colors"
-                            style={{ color: listSearchNetworkFilter === val ? '#111827' : '#9ca3af', fontWeight: listSearchNetworkFilter === val ? 600 : 400 }}>
-                            {label}
-                            {listSearchNetworkFilter === val && <span className="absolute bottom-0 right-4 left-4 h-[2px] rounded-full bg-gray-900" />}
-                          </button>
-                        ))}
-                      </div>
-                      {/* Search + manual add button */}
-                      <div className="p-4">
-                        <div className="flex items-center gap-2">
-                          <div className="relative flex-1">
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                            <input
-                              type="text"
-                              autoComplete="new-password"
-                              value={listSearchQuery}
-                              onChange={e => { setListSearchQuery(e.target.value); setListSearchOpen(true); }}
-                              onFocus={() => setListSearchOpen(true)}
-                              onBlur={() => setTimeout(() => setListSearchOpen(false), 150)}
-                              placeholder="חיפוש לפי שם או ת.ז..."
-                              dir="rtl"
-                              className="w-full pr-9 pl-4 py-2.5 border border-gray-200 rounded-xl text-right text-sm focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors"
-                            />
-                          </div>
-                          <button ref={manualAddBtnRef} type="button"
-                            onClick={() => {
-                              if (!manualAddOpen && manualAddBtnRef.current) {
-                                const r = manualAddBtnRef.current.getBoundingClientRect();
-                                setManualAddPos({ top: r.bottom + 6, left: r.left - 260 + r.width });
-                              }
-                              setManualAddOpen(o => !o);
-                              setManualAddUsername(''); setManualAddDisplayName('');
-                            }}
-                            className="flex items-center gap-1 px-3 py-2 text-xs rounded-xl font-semibold transition-colors whitespace-nowrap flex-shrink-0 bg-[#1B3A6B] text-white hover:bg-[#152e54]">
-                            <Plus className="w-3.5 h-3.5" />
-                            הוספה ידנית
-                          </button>
-                        </div>
-                      {listSearchOpen && listSearchQuery.trim() !== '' && (() => {
-                        const networkPool = listSearchNetworkFilter
-                          ? NETWORK_PEOPLE.filter(p => p.network === listSearchNetworkFilter)
-                          : [];
-                        const plainPool = listSearchNetworkFilter ? [] : LIST_PEOPLE_POOL;
-                        const results = [
-                          ...networkPool.map(p => ({ id: p.id, name: p.name, idNumber: p.idNumber, environment: p.environment, subLabel: p.networkLabel })),
-                          ...plainPool,
-                        ].filter(p => p.name.includes(listSearchQuery) || p.idNumber.includes(listSearchQuery))
-                          .filter(p => !listMembers.some(m => m.id === p.id));
-                        if (results.length === 0) return (
-                          <div className="mt-2 rounded-xl border border-gray-100 py-6 text-center text-sm text-gray-400">לא נמצאו תוצאות</div>
-                        );
-                        return (
-                          <div className="mt-2 rounded-xl border border-gray-100 overflow-hidden bg-white shadow-sm">
-                            {results.map(person => (
+                {/* fixed search + conditional buttons */}
+                <div className="px-4 pb-3 flex-shrink-0 flex items-center gap-2" dir="rtl">
+                  <div className="relative flex-1">
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <input type="text" autoComplete="new-password"
+                      value={listSearchQuery}
+                      onChange={e => { setListSearchQuery(e.target.value); setListSearchOpen(true); if (listImportTab === null) setListImportTab('network'); }}
+                      onFocus={() => { if (listSearchQuery.trim()) setListSearchOpen(true); if (listImportTab === null) setListImportTab('network'); }}
+                      onBlur={() => setTimeout(() => setListSearchOpen(false), 150)}
+                      placeholder="הוספה או חיפוש לפי שם או ת.ז..."
+                      dir="rtl"
+                      className={`w-full pr-9 py-2.5 border border-gray-200 rounded-xl text-right text-sm focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors ${listImportTab === 'doc' ? 'pl-9' : 'pl-4'}`} />
+                    {/* Search results dropdown — only for network/null mode */}
+                    {listSearchOpen && listSearchQuery.trim() !== '' && (listImportTab === 'network' || listImportTab === null) && (() => {
+                      const pool = NETWORK_PEOPLE.filter(p => p.network === listSearchNetworkFilter);
+                      const results = pool
+                        .map(p => ({ id: p.id, name: p.name, idNumber: p.idNumber, environment: p.environment, subLabel: p.networkLabel }))
+                        .filter(p => p.name.includes(listSearchQuery) || p.idNumber.includes(listSearchQuery))
+                        .filter(p => !listMembers.some(m => m.id === p.id));
+                      return (
+                        <div className="absolute top-full right-0 left-0 mt-1.5 z-[9999] rounded-xl border border-gray-100 bg-white shadow-lg overflow-hidden" dir="rtl">
+                          {results.length === 0
+                            ? <div className="py-5 text-center text-sm text-gray-400">לא נמצאו תוצאות</div>
+                            : results.map(person => (
                               <button key={person.id} type="button"
                                 onMouseDown={() => { setListMembers(prev => [...prev, { ...person }]); setListSearchQuery(''); setListSearchOpen(false); setListDirty(true); }}
                                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 text-right">
@@ -2926,11 +2939,69 @@ export function PersonalArea() {
                                 </div>
                                 <Plus className="w-4 h-4 text-gray-300 flex-shrink-0" />
                               </button>
-                            ))}
-                          </div>
-                        );
-                      })()}
+                            ))
+                          }
+                        </div>
+                      );
+                    })()}
+                    {listImportTab === 'doc' && (
+                      <button ref={listDocFilterBtnRef} type="button"
+                        onClick={() => {
+                          if (!listDocFilterOpen && listDocFilterBtnRef.current) {
+                            const r = listDocFilterBtnRef.current.getBoundingClientRect();
+                            setListDocFilterPos({ top: r.bottom + 6, left: r.left - 268 });
+                          }
+                          setListDocFilterOpen(o => !o);
+                        }}
+                        className={`absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors ${(listDocTypeFilter.length || listDocStatusFilter.length || listDocOrgFilter.length || listDocDateFrom || listDocDateTo) ? 'text-[#1B3A6B]' : 'text-gray-400 hover:text-gray-600'}`}>
+                        <Filter className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  {listImportTab === 'network' && (
+                    <button ref={manualAddBtnRef} type="button"
+                      onClick={() => {
+                        if (!manualAddOpen && manualAddBtnRef.current) {
+                          const r = manualAddBtnRef.current.getBoundingClientRect();
+                          setManualAddPos({ top: r.bottom + 6, left: r.left - 260 + r.width });
+                        }
+                        setManualAddOpen(o => !o);
+                        setManualAddUsername(''); setManualAddDisplayName('');
+                      }}
+                      className="flex items-center gap-1 px-3 py-2 text-xs rounded-xl font-semibold transition-colors whitespace-nowrap flex-shrink-0 bg-[#1B3A6B] text-white hover:bg-[#152e54]">
+                      <Plus className="w-3.5 h-3.5" />
+                      הוספה ידנית
+                    </button>
+                  )}
+                </div>
+
+                {/* Tab content — flex-1 scrollable */}
+                <div className="flex-1 overflow-y-auto border-t border-gray-100">
+
+                  {/* ── NETWORK TAB ── */}
+                  {listImportTab === 'network' && (
+                    <div className="flex flex-col h-full" dir="rtl">
+                      {/* network sub-tabs */}
+                      <div className="flex items-center border-b border-gray-100 px-4 flex-shrink-0">
+                        {([['sodibioti', 'סודי ביותר'], ['sodi', 'סודי'], ['aman', 'אמ"ן']] as const).map(([val, label]) => (
+                          <button key={val} type="button"
+                            onClick={() => { setListSearchNetworkFilter(val); setListSearchQuery(''); setListSearchOpen(false); }}
+                            className={`relative pb-2.5 pt-3 pl-4 text-sm font-semibold transition-colors whitespace-nowrap ${listSearchNetworkFilter === val ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}>
+                            {label}
+                            {listSearchNetworkFilter === val && <span className="absolute bottom-0 right-0 left-0 h-0.5 rounded-full bg-gray-900" />}
+                          </button>
+                        ))}
                       </div>
+                      <div className="flex items-center justify-center flex-1">
+                        <p className="text-xs text-gray-400">חפש לפי שם או ת.ז. להוספה</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* hint when nothing selected */}
+                  {listImportTab === null && (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-xs text-gray-400">בחר מקור ייבוא או חפש לפי שם</p>
                     </div>
                   )}
 
@@ -2948,26 +3019,8 @@ export function PersonalArea() {
                           </button>
                         ))}
                       </div>
-                      {/* Search + filter */}
-                      <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-                        <div className="relative">
-                          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                          <input type="text" placeholder="חיפוש מסמך..." dir="rtl"
-                            className="w-full pr-9 pl-9 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors" />
-                          <button
-                            ref={listDocFilterBtnRef}
-                            type="button"
-                            onClick={() => {
-                              if (!listDocFilterOpen && listDocFilterBtnRef.current) {
-                                const r = listDocFilterBtnRef.current.getBoundingClientRect();
-                                setListDocFilterPos({ top: r.bottom + 6, left: r.left - 268 });
-                              }
-                              setListDocFilterOpen(o => !o);
-                            }}
-                            className={`absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors ${(listDocTypeFilter.length || listDocStatusFilter.length || listDocOrgFilter.length || listDocDateFrom || listDocDateTo) ? 'text-[#1B3A6B]' : 'text-gray-400 hover:text-gray-600'}`}>
-                            <Filter className="w-3.5 h-3.5" />
-                          </button>
-                          {listDocFilterOpen && listDocFilterPos && (() => {
+                      {/* Filter popover */}
+                      {listDocFilterOpen && listDocFilterPos && (() => {
                             const docTypes = Array.from(new Set(LIST_DOCS_DATA.map(d => d.docType)));
                             const statuses = Array.from(new Set(LIST_DOCS_DATA.map(d => d.status)));
                             const orgs    = Array.from(new Set(LIST_DOCS_DATA.map(d => d.environment)));
@@ -3013,10 +3066,9 @@ export function PersonalArea() {
                               </div>
                             );
                           })()}
-                        </div>
-                        {/* Active filter chips */}
-                        {(listDocTypeFilter.length > 0 || listDocStatusFilter.length > 0 || listDocOrgFilter.length > 0 || listDocDateFrom || listDocDateTo) && (
-                          <div className="flex flex-wrap gap-1.5 mt-2">
+                      {/* Active filter chips */}
+                      {(listDocTypeFilter.length > 0 || listDocStatusFilter.length > 0 || listDocOrgFilter.length > 0 || listDocDateFrom || listDocDateTo) && (
+                        <div className="flex flex-wrap gap-1.5 px-4 pb-2">
                             {listDocTypeFilter.map(v => (
                               <span key={v} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border"
                                 style={{ background: '#EEF4FF', color: '#1B3A6B', borderColor: '#c7d9ff' }}>
@@ -3054,11 +3106,11 @@ export function PersonalArea() {
                             )}
                           </div>
                         )}
-                      </div>
                       {/* Table header */}
                       {(() => {
                         const docGrid = '28px 1fr 64px 58px 48px 70px 80px 58px 24px';
                         const filteredDocs = LIST_DOCS_DATA.filter(doc =>
+                          (listSearchQuery === '' || doc.name.includes(listSearchQuery)) &&
                           (listDocTypeFilter.length === 0 || listDocTypeFilter.includes(doc.docType)) &&
                           (listDocStatusFilter.length === 0 || listDocStatusFilter.includes(doc.status)) &&
                           (listDocOrgFilter.length === 0 || listDocOrgFilter.includes(doc.environment))
@@ -3167,37 +3219,12 @@ export function PersonalArea() {
                   {/* ── HAMAL TAB ── */}
                   {listImportTab === 'hamal' && (() => {
                     const filteredHamal = HAMAL_GROUPS.filter(g =>
-                      g.name.includes(hamalSearch) || g.type.includes(hamalSearch) || g.environment.includes(hamalSearch)
+                      g.name.includes(listSearchQuery) || g.type.includes(listSearchQuery) || g.environment.includes(listSearchQuery)
                     );
                     const allFilteredIds = filteredHamal.map(g => g.id);
                     const allSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => hamalSelected.has(id));
                     return (
                       <div className="flex flex-col h-full">
-                        {/* Search + create */}
-                        <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2 flex-shrink-0">
-                          <div className="relative flex-1">
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                            <input type="text" value={hamalSearch} onChange={e => setHamalSearch(e.target.value)}
-                              placeholder="חיפוש קבוצה..." autoComplete="new-password"
-                              className="w-full pr-9 pl-4 py-2 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:border-[#1B3A6B] transition-colors" dir="rtl" />
-                            {hamalSearch && (
-                              <button type="button" onClick={() => setHamalSearch('')} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3.5 h-3.5" /></button>
-                            )}
-                          </div>
-                          <button ref={hamalCreateBtnRef} type="button"
-                            onClick={() => {
-                              if (!showCreateHamal && hamalCreateBtnRef.current) {
-                                const r = hamalCreateBtnRef.current.getBoundingClientRect();
-                                setHamalCreatePos({ top: r.bottom + 6, left: r.left - 320 + r.width });
-                              }
-                              setShowCreateHamal(v => !v);
-                              setNewHamalName(''); setNewHamalMemberSearch(''); setNewHamalPicked([]); setNewHamalDropdownOpen(false);
-                            }}
-                            className="flex items-center gap-1 px-2.5 py-2 text-xs rounded-lg border font-medium transition-colors whitespace-nowrap flex-shrink-0 bg-[#1B3A6B] text-white border-[#1B3A6B] hover:bg-[#152e54]">
-                            <Plus className="w-3.5 h-3.5" />
-                            קבוצה
-                          </button>
-                        </div>
                         {/* Create group floating panel — rendered via portal below */}
                         {/* Table — CSS grid like doc tab */}
                         <div className="flex-1 overflow-y-auto">
@@ -3306,22 +3333,10 @@ export function PersonalArea() {
                   {/* ── MIRAZ TAB ── */}
                   {listImportTab === 'miraz' && (() => {
                     const filteredMiraz = MIRAZ_GROUPS.filter(g =>
-                      g.name.includes(mirazSearchQuery) || g.type.includes(mirazSearchQuery) || g.environment.includes(mirazSearchQuery)
+                      g.name.includes(listSearchQuery) || g.type.includes(listSearchQuery) || g.environment.includes(listSearchQuery)
                     );
                     return (
                       <div className="flex flex-col h-full">
-                        {/* Search */}
-                        <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-                          <div className="relative">
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                            <input type="text" value={mirazSearchQuery} onChange={e => setMirazSearchQuery(e.target.value)}
-                              placeholder="חיפוש קבוצה..." autoComplete="new-password"
-                              className="w-full pr-9 pl-4 py-2 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:border-[#1B3A6B] transition-colors" dir="rtl" />
-                            {mirazSearchQuery && (
-                              <button type="button" onClick={() => setMirazSearchQuery('')} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"><X className="w-3.5 h-3.5" /></button>
-                            )}
-                          </div>
-                        </div>
                         {/* Groups list */}
                         <div className="flex-1 overflow-y-auto">
                           {/* Header */}
@@ -3417,7 +3432,7 @@ export function PersonalArea() {
                     const personalGrid = '28px 1fr 24px';
                     const filteredPersonal = PERSONAL_LISTS.filter(l =>
                       l.tab === personalListTab &&
-                      (personalListSearch === '' || l.name.includes(personalListSearch))
+                      (listSearchQuery === '' || l.name.includes(listSearchQuery))
                     );
                     return (
                       <div className="flex flex-col h-full">
@@ -3431,15 +3446,6 @@ export function PersonalArea() {
                               {personalListTab === tab && <span className="absolute bottom-0 right-4 left-4 h-[2px] rounded-full bg-gray-900" />}
                             </button>
                           ))}
-                        </div>
-                        {/* Search */}
-                        <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-                          <div className="relative">
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                            <input type="text" value={personalListSearch} onChange={e => setPersonalListSearch(e.target.value)}
-                              placeholder="חיפוש רשימה..." dir="rtl" autoComplete="new-password"
-                              className="w-full pr-9 pl-4 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors" />
-                          </div>
                         </div>
                         {/* Table header */}
                         <div className="flex-shrink-0 grid items-center px-3 py-2 text-[10px] font-semibold text-gray-500 select-none"
@@ -3626,7 +3632,7 @@ export function PersonalArea() {
             <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 border-t border-gray-100">
               <button
                 type="button"
-                onClick={() => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
+                onClick={() => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab(null); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); }}
                 className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
               >
                 ביטול
@@ -3636,7 +3642,7 @@ export function PersonalArea() {
                 const isEditBlocked = listEditMode && !listDirty;
                 const isDisabled = isDupBlocked || isEditBlocked;
                 const label = listDuplicateMode ? 'שכפל' : listEditMode ? 'שמור שינויים' : 'צור רשימה';
-                const closeAll = () => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab('search'); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); };
+                const closeAll = () => { setShowNewList(false); setListName(''); setListEditMode(false); setListDuplicateMode(false); setListOriginalName(''); setListDirty(false); setListMembers([]); setActiveFilters([]); setListImportPanel(null); setListImportTab(null); setListDocSelected(new Set()); setListDocAdded(new Set()); setHamalSelected(new Set()); setHamalAdded(new Set()); setHamalExtraMembers({}); setShowCreateHamal(false); };
                 return (
                   <button
                     type="button"

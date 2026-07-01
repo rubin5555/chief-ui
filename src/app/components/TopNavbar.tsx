@@ -1,38 +1,786 @@
-import { Bell, MessageCircle, User, ChevronDown, BookOpen, Eye, Edit, X, HelpCircle, Play, ExternalLink, ArrowRight, Lock, MessageSquare, Phone, ChevronLeft, ChevronRight, Filter, FileEdit, Copy, UserCog } from 'lucide-react';
+import { Bell, MessageCircle, User, ChevronDown, BookOpen, Eye, Edit, X, HelpCircle, Play, ExternalLink, ArrowRight, Lock, MessageSquare, Phone, ChevronLeft, ChevronRight, Filter, FileEdit, Copy, UserCog, Loader2, Search, Plus, FileText, Users, Layers, List, PenLine, UserCheck, Network, Check } from 'lucide-react';
 
 function WordIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* document shape with folded corner */}
       <path d="M2 2.5 C2 1.67 2.67 1 3.5 1 H10 L14 5 V13.5 C14 14.33 13.33 15 12.5 15 H3.5 C2.67 15 2 14.33 2 13.5 Z"
-        stroke="#9ca3af" strokeWidth="1.1" fill="white"/>
-      <path d="M10 1 L10 5 L14 5" stroke="#9ca3af" strokeWidth="1.1" fill="none" strokeLinejoin="round"/>
+        stroke="#6b7280" strokeWidth="1.1" fill="white"/>
+      <path d="M10 1 L10 5 L14 5" stroke="#6b7280" strokeWidth="1.1" fill="none" strokeLinejoin="round"/>
       {/* W centred in document */}
-      <text x="8" y="12" fontSize="7" fontWeight="800" fill="#9ca3af"
+      <text x="8" y="12" fontSize="7" fontWeight="800" fill="#6b7280"
         fontFamily="Arial,sans-serif" textAnchor="middle">W</text>
     </svg>
   );
 }
 
 function PdfIcon() {
+  // Exact Adobe Acrobat "A" path (24×24 source), scaled into the document content area
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* same document shape as Word */}
+      {/* document shape — same as WordIcon */}
       <path d="M2 2.5 C2 1.67 2.67 1 3.5 1 H10 L14 5 V13.5 C14 14.33 13.33 15 12.5 15 H3.5 C2.67 15 2 14.33 2 13.5 Z"
-        stroke="#9ca3af" strokeWidth="1.1" fill="white"/>
-      <path d="M10 1 L10 5 L14 5" stroke="#9ca3af" strokeWidth="1.1" fill="none" strokeLinejoin="round"/>
-      {/* Adobe-style mark inside — closed loop + diagonal + curl */}
-      <path d="M 9 4.5 C 11 4, 12 5.5, 11 7 C 10 8.5, 7.5 8, 7.5 6.5 C 7.5 5.5 8.2 4.6 9 4.5 Z"
-        stroke="#9ca3af" strokeWidth="0.9" fill="none"/>
-      <path d="M 8.5 5 L 6 11.5"
-        stroke="#9ca3af" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
-      <path d="M 6 11.5 C 5.5 12.5 7 13 7.5 12"
-        stroke="#9ca3af" strokeWidth="0.9" strokeLinecap="round" fill="none"/>
+        stroke="#6b7280" strokeWidth="1.1" fill="white"/>
+      <path d="M10 1 L10 5 L14 5" stroke="#6b7280" strokeWidth="1.1" fill="none" strokeLinejoin="round"/>
+      {/* Adobe "A" logo — exact path from 24×24 viewBox, scaled & translated into doc body */}
+      <g transform="translate(3.2, 2.8) scale(0.41)">
+        <path
+          fill="#6b7280"
+          d="M23.63 15.3c-.71-.745-2.166-1.17-4.224-1.17-1.1 0-2.377.106-3.761.354a19.443 19.443 0 0 1-2.307-2.661c-.532-.71-.994-1.49-1.42-2.236.817-2.484 1.207-4.507 1.207-5.962 0-1.632-.603-3.336-2.342-3.336-.532 0-1.065.32-1.349.781-.78 1.384-.425 4.4.923 7.381a60.277 60.277 0 0 1-1.703 4.507c-.568 1.349-1.207 2.733-1.917 4.01C2.834 18.53.314 20.34.03 21.758c-.106.533.071 1.03.462 1.42.142.107.639.533 1.49.533 2.59 0 5.323-4.188 6.707-6.707 1.065-.355 2.13-.71 3.194-.994a34.963 34.963 0 0 1 3.407-.745c2.732 2.448 5.145 2.839 6.352 2.839 1.49 0 2.023-.604 2.2-1.1.32-.64.106-1.349-.213-1.704zm-1.42 1.03c-.107.532-.64.887-1.384.887-.213 0-.39-.036-.604-.071-1.348-.32-2.626-.994-3.903-2.059a17.717 17.717 0 0 1 2.98-.248c.746 0 1.385.035 1.81.142.497.106 1.278.426 1.1 1.348zm-7.524-1.668a38.01 38.01 0 0 0-2.945.674 39.68 39.68 0 0 0-2.52.745 40.05 40.05 0 0 0 1.207-2.555c.426-.994.78-2.023 1.136-2.981.354.603.745 1.207 1.135 1.739a50.127 50.127 0 0 0 1.987 2.378zM10.038 1.46a.768.768 0 0 1 .674-.425c.745 0 .887.851.887 1.526 0 1.135-.355 2.874-.958 4.861-1.03-2.768-1.1-5.074-.603-5.962zM6.134 17.997c-1.81 2.981-3.549 4.826-4.613 4.826a.872.872 0 0 1-.532-.177c-.213-.213-.32-.461-.249-.745.213-1.065 2.271-2.555 5.394-3.904Z"
+        />
+      </g>
     </svg>
   );
 }
-import { useState, useRef, useEffect } from 'react';
-import type React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+
+// ─── Document clause hierarchy ───────────────────────────────────────────────
+const PERM_DOC_STRUCTURE = [
+  { id: 'ch1', title: 'מבוא', sections: [
+    { id: 's1', num: '1', title: 'כללי', subs: [
+      { id: 'ss11', title: 'רקע ומטרות' },
+      { id: 'ss12', title: 'הגדרות' },
+      { id: 'ss13', title: 'תחולה' },
+    ]},
+    { id: 's2', num: '2', title: 'אחריות', subs: [
+      { id: 'ss21', title: 'אחריות מנהלית' },
+      { id: 'ss22', title: 'אחריות תפעולית' },
+    ]},
+  ]},
+  { id: 'ch2', title: 'הוראות ביצוע', sections: [
+    { id: 's3', num: '3', title: 'נהלים', subs: [
+      { id: 'ss31', title: 'נוהל קבלה' },
+      { id: 'ss32', title: 'נוהל שחרור' },
+      { id: 'ss33', title: 'נוהל חירום' },
+    ]},
+    { id: 's4', num: '4', title: 'דיווח', subs: [
+      { id: 'ss41', title: 'דיווח שוטף' },
+      { id: 'ss42', title: 'דיווח חריגים' },
+    ]},
+  ]},
+  { id: 'ch3', title: 'נספחים', sections: [
+    { id: 's5', num: '5', title: 'טפסים', subs: [
+      { id: 'ss51', title: 'טופס א׳' },
+      { id: 'ss52', title: 'טופס ב׳' },
+    ]},
+  ]},
+];
+
+// ─── Data for DocPermissionsModal ────────────────────────────────────────────
+const PERM_PEOPLE_POOL = [
+  { id: 'p1',  name: 'אבי כהן',     idNumber: '012345678', environment: 'ארגון א׳' },
+  { id: 'p2',  name: 'שרה לוי',      idNumber: '023456789', environment: 'ארגון ב׳' },
+  { id: 'p3',  name: 'משה ישראלי',   idNumber: '034567890', environment: 'ארגון א׳' },
+  { id: 'p4',  name: 'רחל דוד',      idNumber: '045678901', environment: 'ארגון ג׳' },
+  { id: 'p5',  name: 'יוסף מזרחי',   idNumber: '056789012', environment: 'ארגון ב׳' },
+  { id: 'p6',  name: 'מירי פרץ',     idNumber: '067890123', environment: 'ארגון א׳' },
+  { id: 'p7',  name: 'דני אברהם',    idNumber: '078901234', environment: 'ארגון ד׳' },
+  { id: 'p8',  name: 'לאה כץ',       idNumber: '089012345', environment: 'ארגון ב׳' },
+  { id: 'p9',  name: 'אורן שמש',     idNumber: '090123456', environment: 'ארגון א׳' },
+  { id: 'p10', name: 'נועה גרין',    idNumber: '101234567', environment: 'ארגון ג׳' },
+  { id: 'p11', name: 'יעקב בן-דוד', idNumber: '112345678', environment: 'ארגון א׳' },
+  { id: 'p12', name: 'תמר ברק',      idNumber: '123456789', environment: 'ארגון ב׳' },
+  { id: 'p13', name: 'עמי שלו',      idNumber: '134567890', environment: 'ארגון ד׳' },
+  { id: 'p14', name: 'ריקי נחום',    idNumber: '145678901', environment: 'ארגון א׳' },
+  { id: 'p15', name: 'גיל אלון',     idNumber: '156789012', environment: 'ארגון ג׳' },
+];
+const PERM_NETWORK_PEOPLE = [
+  { id: 'n1', name: 'דוד לוי',      idNumber: '201234567', environment: 'ארגון א׳', network: 'sodi'      as const, networkLabel: 'מערכת סודי'  },
+  { id: 'n2', name: 'רונית שפיר',   idNumber: '202345678', environment: 'ארגון ב׳', network: 'sodi'      as const, networkLabel: 'מערכת סודי'  },
+  { id: 'n3', name: 'אייל כץ',      idNumber: '203456789', environment: 'ארגון א׳', network: 'sodi'      as const, networkLabel: 'מערכת סודי'  },
+  { id: 'n4', name: 'מיכל אברמוב', idNumber: '204567890', environment: 'ארגון ג׳', network: 'sodi'      as const, networkLabel: 'מערכת סודי'  },
+  { id: 'n5', name: 'גדעון רוזן',   idNumber: '301234567', environment: 'ארגון ב׳', network: 'aman'      as const, networkLabel: 'אמ"ן'         },
+  { id: 'n6', name: 'טל חיים',      idNumber: '302345678', environment: 'ארגון א׳', network: 'aman'      as const, networkLabel: 'אמ"ן'         },
+  { id: 'n7', name: 'שירה בן-דוד', idNumber: '303456789', environment: 'ארגון ג׳', network: 'aman'      as const, networkLabel: 'אמ"ן'         },
+  { id: 'n8', name: 'אלון מזרחי',   idNumber: '401234567', environment: 'ארגון א׳', network: 'sodibioti' as const, networkLabel: 'סודי ביותר'  },
+  { id: 'n9', name: 'יפית הרוש',    idNumber: '402345678', environment: 'ארגון ב׳', network: 'sodibioti' as const, networkLabel: 'סודי ביותר'  },
+];
+const PERM_DOCS_DATA = [
+  { id: 'd1', name: 'נוהל בטיחות 2026',  environment: 'ארגון א׳', lastUpdate: '10/05/2026', orderNum: '001', updateNum: 'גרסה 2', docType: 'נוהל', refNum: '1001',
+    distribution: [
+      { id: 'p1', name: 'אבי כהן',   idNumber: '012345678', environment: 'ארגון א׳' },
+      { id: 'p2', name: 'שרה לוי',    idNumber: '023456789', environment: 'ארגון ב׳' },
+      { id: 'p7', name: 'דני אברהם', idNumber: '078901234', environment: 'ארגון ד׳' },
+      { id: 'p9',  name: 'אורן שמש', idNumber: '090123456', environment: 'ארגון א׳' },
+      { id: 'p10', name: 'נועה גרין', idNumber: '101234567', environment: 'ארגון ג׳' },
+      { id: 'p14', name: 'ריקי נחום', idNumber: '145678901', environment: 'ארגון א׳' },
+    ]},
+  { id: 'd2', name: 'נוהל גיוס עובדים', environment: 'ארגון ב׳', lastUpdate: '08/05/2026', orderNum: '002', updateNum: 'גרסה 1', docType: 'נוהל', refNum: '1002',
+    distribution: [
+      { id: 'p3', name: 'משה ישראלי', idNumber: '034567890', environment: 'ארגון א׳' },
+      { id: 'p8', name: 'לאה כץ',     idNumber: '089012345', environment: 'ארגון ב׳' },
+    ]},
+  { id: 'd3', name: 'תקנון משמעת',       environment: 'ארגון א׳', lastUpdate: '05/05/2026', orderNum: '003', updateNum: 'גרסה 3', docType: 'תקנון', refNum: '1003',
+    distribution: [
+      { id: 'p9',  name: 'אורן שמש', idNumber: '090123456', environment: 'ארגון א׳' },
+      { id: 'p10', name: 'נועה גרין', idNumber: '101234567', environment: 'ארגון ג׳' },
+      { id: 'p14', name: 'ריקי נחום', idNumber: '145678901', environment: 'ארגון א׳' },
+      { id: 'p4', name: 'רחל דוד',    idNumber: '045678901', environment: 'ארגון ג׳' },
+    ]},
+  { id: 'd4', name: 'נוהל רכש ואספקה',  environment: 'ארגון ג׳', lastUpdate: '03/05/2026', orderNum: '004', updateNum: 'גרסה 1', docType: 'נוהל', refNum: '1004',
+    distribution: [
+      { id: 'p5', name: 'יוסף מזרחי', idNumber: '056789012', environment: 'ארגון ב׳' },
+      { id: 'p11', name: 'יעקב בן-דוד', idNumber: '112345678', environment: 'ארגון א׳' },
+    ]},
+];
+const PERM_HAMAL_GROUPS = [
+  { id: 'h1', name: 'חמל ביטחון שטח', type: 'ביטחוני',  environment: 'ארגון א׳',
+    members: [
+      { id: 'p1', name: 'אבי כהן',   idNumber: '012345678', environment: 'ארגון א׳' },
+      { id: 'p2', name: 'שרה לוי',    idNumber: '023456789', environment: 'ארגון ב׳' },
+      { id: 'p6', name: 'מירי פרץ',   idNumber: '067890123', environment: 'ארגון א׳' },
+    ]},
+  { id: 'h2', name: 'חמל לוגיסטי',      type: 'לוגיסטי',  environment: 'ארגון ב׳',
+    members: [
+      { id: 'p3', name: 'משה ישראלי', idNumber: '034567890', environment: 'ארגון א׳' },
+      { id: 'p8', name: 'לאה כץ',     idNumber: '089012345', environment: 'ארגון ב׳' },
+      { id: 'p5', name: 'יוסף מזרחי', idNumber: '056789012', environment: 'ארגון ב׳' },
+    ]},
+  { id: 'h3', name: 'חמל מודיעין',      type: 'מודיעיני', environment: 'ארגון א׳',
+    members: [
+      { id: 'p9',  name: 'אורן שמש', idNumber: '090123456', environment: 'ארגון א׳' },
+      { id: 'p10', name: 'נועה גרין', idNumber: '101234567', environment: 'ארגון ג׳' },
+    ]},
+  { id: 'h4', name: 'חמל תקשורת',       type: 'תקשורתי', environment: 'ארגון ג׳',
+    members: [
+      { id: 'p14', name: 'ריקי נחום', idNumber: '145678901', environment: 'ארגון א׳' },
+      { id: 'p12', name: 'תמר ברק',   idNumber: '123456789', environment: 'ארגון ב׳' },
+    ]},
+];
+const PERM_MIRAZ_GROUPS = [
+  { id: 'm1', name: "מיראז' קרבי",   type: 'קרבי',     environment: 'ארגון א׳',
+    members: [
+      { id: 'p1', name: 'אבי כהן',  idNumber: '012345678', environment: 'ארגון א׳' },
+      { id: 'p6', name: 'מירי פרץ', idNumber: '067890123', environment: 'ארגון א׳' },
+      { id: 'p11', name: 'יעקב בן-דוד', idNumber: '112345678', environment: 'ארגון א׳' },
+    ]},
+  { id: 'm2', name: "מיראז' סייבר",  type: 'סייבר',    environment: 'ארגון ב׳',
+    members: [
+      { id: 'p2',  name: 'שרה לוי',  idNumber: '023456789', environment: 'ארגון ב׳' },
+      { id: 'p12', name: 'תמר ברק',  idNumber: '123456789', environment: 'ארגון ב׳' },
+      { id: 'p10', name: 'נועה גרין', idNumber: '101234567', environment: 'ארגון ג׳' },
+    ]},
+  { id: 'm3', name: "מיראז' לוגיסטי", type: 'לוגיסטי', environment: 'ארגון ג׳',
+    members: [
+      { id: 'p3', name: 'משה ישראלי', idNumber: '034567890', environment: 'ארגון א׳' },
+      { id: 'p5', name: 'יוסף מזרחי', idNumber: '056789012', environment: 'ארגון ב׳' },
+    ]},
+];
+
+// ─── DocPermissionsModal ──────────────────────────────────────────────────────
+type PermUser = { id: string; name: string; idNumber: string; environment: string; subLabel?: string };
+
+function DocPermissionsModal({ onClose }: { onClose: () => void }) {
+  const PERMISSIONS = [
+    {
+      label: 'צפייה לאחר הפצה', Icon: Eye, color: '#111827',
+      desc: 'המשתמשים עם הרשאה זו יוכלו לצפות בתוכן הפקודה לאחר הפצתה.',
+    },
+    {
+      label: 'צפייה טרם הפצה', Icon: Eye, color: '#111827',
+      desc: 'המשתמשים עם הרשאה זו יוכלו לצפות בתוכן הפקודה כשהיא בסטטוס ״בהכנה״ או ״בסבב אישורים״, וייצא אותה ל-Word ו-PDF. הם לא יוכלו לערוך תוכן זה.',
+    },
+    {
+      label: 'ניהול פקודה', Icon: Network, color: '#111827',
+      desc: 'המשתמשים עם הרשאה זו יוכלו לנהל את הפקודה כמו ״בעל פקודה״ — לערוך ולאשר את כל הסעיפים, לשנות את סדר הפקודה ולנהל את הרשאות הצפייה, העריכה והאישור.',
+    },
+    {
+      label: 'עורכי סעיפים', Icon: PenLine, color: '#111827',
+      desc: 'המשתמשים עם הרשאה זו יוכלו לערוך את הסעיף כשהפקודה בסטטוס ״בהכנה״. עורכי הסעיף יוכלו לערוך רק את הסעיף שבעבורו ניתנה להם ההרשאה. משתמשים אלו יהיו משויכים לרשימת התפוצה.',
+    },
+    {
+      label: 'מאשרי סעיף', Icon: UserCheck, color: '#111827',
+      desc: 'המשתמשים עם הרשאה זו יוכלו לאשר את הסעיף כשהפקודה בסטטוס ״בהכנה״. מאשרי הסעיף יוכלו לאשר רק את הסעיף שבעבורו ניתנה להם ההרשאה. משתמשים אלו משויכים לרשימת התפוצה.',
+    },
+  ];
+
+  const [activeIdx, setActiveIdx]           = useState(0);
+  const [members,   setMembers]             = useState<Record<number, PermUser[]>>({0:[],1:[],2:[],3:[],4:[]});
+  const [importTab, setImportTab]           = useState<'doc'|'hamal'|'miraz'|'personal'|'network'|null>(null);
+  const [searchQuery, setSearchQuery]       = useState('');
+  const [searchOpen,  setSearchOpen]        = useState(false);
+  const [networkFilter, setNetworkFilter]   = useState<'sodibioti'|'sodi'|'aman'>('sodibioti');
+  const [docSearch, setDocSearch]           = useState('');
+  const [expandedId, setExpandedId]         = useState<string|null>(null);
+  const [selectedClauses, setSelectedClauses] = useState<string[]>([]);
+  const [memberClauses, setMemberClauses]   = useState<Record<string, string[]>>({});
+  const [openChapters,  setOpenChapters]    = useState<string[]>([]);
+  const [openSections,  setOpenSections]    = useState<string[]>([]);
+  const [openClauseMembers, setOpenClauseMembers] = useState<string[]>([]);
+  const [manualAddOpen, setManualAddOpen]   = useState(false);
+  const [manualAddPos,  setManualAddPos]    = useState<{top:number;left:number}|null>(null);
+  const [manualAddUsername, setManualAddUsername]       = useState('');
+  const [manualAddDisplayName, setManualAddDisplayName] = useState('');
+  const manualAddBtnRef = useRef<HTMLButtonElement>(null);
+  const [docTabFilter, setDocTabFilter] = useState<'distributed'|'drafts'>('distributed');
+  const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
+
+  const isClauseMode = activeIdx === 3 || activeIdx === 4;
+
+  const toggleClause = (id: string) =>
+    setSelectedClauses(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
+  const toggleChapter = (id: string) =>
+    setOpenChapters(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
+  const toggleSection = (id: string) =>
+    setOpenSections(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
+  const toggleClauseMembers = (id: string) =>
+    setOpenClauseMembers(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
+
+  const curMembers = members[activeIdx] || [];
+  const clauseMembers = (clauseId: string) =>
+    curMembers.filter(m => (memberClauses[m.id] || []).includes(clauseId));
+
+  const removeMemberFromClause = (memberId: string, clauseId: string) => {
+    setMemberClauses(prev => {
+      const next = (prev[memberId] || []).filter(c => c !== clauseId);
+      return { ...prev, [memberId]: next };
+    });
+  };
+
+  const addMember = (p: PermUser) => {
+    setMembers(prev => {
+      const cur = prev[activeIdx] || [];
+      return cur.some(m => m.id === p.id) ? prev : { ...prev, [activeIdx]: [...cur, p] };
+    });
+    if (isClauseMode && selectedClauses.length > 0) {
+      setMemberClauses(prev => ({ ...prev, [p.id]: [...new Set([...(prev[p.id]||[]), ...selectedClauses])] }));
+    }
+  };
+
+  const addMany = (people: PermUser[]) =>
+    setMembers(prev => {
+      const cur = prev[activeIdx] || [];
+      const next = people.filter(p => !cur.some(m => m.id === p.id));
+      return next.length ? { ...prev, [activeIdx]: [...cur, ...next] } : prev;
+    });
+
+  const removeMember = (id: string) =>
+    setMembers(prev => ({ ...prev, [activeIdx]: (prev[activeIdx]||[]).filter(m => m.id !== id) }));
+
+  const networkPool = PERM_NETWORK_PEOPLE.filter(p => p.network === networkFilter);
+  const searchResults = searchQuery.trim()
+    ? [...networkPool.map(p=>({...p, subLabel: p.networkLabel})), ...PERM_PEOPLE_POOL]
+        .filter(p => p.name.includes(searchQuery) || p.idNumber.includes(searchQuery))
+    : [];
+
+  const GroupList = ({ groups, iconEl }: { groups: typeof PERM_HAMAL_GROUPS; iconEl: React.ReactNode }) => (
+    <div>
+      {groups.map(g => (
+        <div key={g.id} className="border-b border-gray-50 last:border-0">
+          <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-right"
+            onClick={() => setExpandedId(expandedId === g.id ? null : g.id)}>
+            <span className="flex-shrink-0 w-4 h-4 text-gray-300">{iconEl}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-800">{g.name}</p>
+              <p className="text-xs text-gray-400">{g.type} · {g.members.length} חברים</p>
+            </div>
+            <button onMouseDown={e => { e.stopPropagation(); addMany(g.members); }}
+              className="text-[11px] px-2 py-1 rounded-lg font-semibold transition-colors whitespace-nowrap flex-shrink-0"
+              style={{ background: '#1B3A6B14', color: '#1B3A6B' }}>
+              הוסף הכל
+            </button>
+            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform flex-shrink-0 ${expandedId === g.id ? 'rotate-180' : ''}`} />
+          </button>
+          {expandedId === g.id && (
+            <div className="bg-gray-50/50 border-t border-gray-50">
+              {g.members.map(p => (
+                <button key={p.id} onMouseDown={() => addMember(p)}
+                  className="w-full flex items-center gap-3 px-6 py-2.5 hover:bg-gray-100/60 text-right transition-colors">
+                  <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500 flex-shrink-0">
+                    {p.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-700">{p.name}</p>
+                    <p className="text-[10px] text-gray-400">{p.idNumber}</p>
+                  </div>
+                  <Plus className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
+  return (<>
+    <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.45)', zIndex: 99999 }}
+      onClick={onClose}>
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col" dir="rtl"
+        style={{ width: isClauseMode ? 1140 : 1080, height: 600, maxWidth: '96vw', maxHeight: '92vh', transition: 'width 0.2s' }}
+        onClick={e => e.stopPropagation()}>
+        {/* ── BODY (3 columns) ── */}
+        <div className="flex flex-1 min-h-0">
+
+        {/* ── LEFT: permission type list ── */}
+        <div className="w-52 flex-shrink-0 border-l border-gray-100 bg-gray-50/60 flex flex-col">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <h2 className="text-base font-bold text-gray-900">הרשאות מסמך</h2>
+          </div>
+          <nav className="py-1">
+            {PERMISSIONS.map(({ label, Icon, color }, i) => {
+              const active = i === activeIdx;
+              return (
+                <button key={i} onClick={() => setActiveIdx(i)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-right transition-colors ${active ? 'bg-white shadow-sm' : 'hover:bg-white/70'}`}>
+                  <Icon className="w-4 h-4 flex-shrink-0" style={{ color }} />
+                  <span className={`flex-1 text-sm leading-tight ${active ? 'font-semibold text-gray-900' : 'text-gray-500'}`}>{label}</span>
+                </button>
+              );
+            })}
+          </nav>
+          {/* description for active permission */}
+          <div className="flex-1 px-4 py-3 border-t border-gray-100 flex flex-col justify-end">
+            <p className="text-[11px] text-gray-400 leading-relaxed text-right">
+              {PERMISSIONS[activeIdx].desc}
+            </p>
+          </div>
+        </div>
+
+        {/* ── MIDDLE: search + import panel ── */}
+        <div className="flex-1 flex flex-col min-w-0">
+
+          {/* header */}
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 flex-shrink-0">
+            {activeIdx === 2
+              ? <span />
+              : <span className="text-sm font-semibold text-gray-800">הוספת משתמשים</span>}
+            <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors">
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+
+          {/* source chips — fixed single row */}
+          <div className="px-4 pt-4 pb-3 flex-shrink-0" dir="rtl">
+            <p className="text-[11px] text-gray-400 mb-2 font-medium">ייבוא ממקורות נוספים</p>
+            <div className="flex gap-1.5 flex-wrap">
+              {([
+                { key: 'network'  as const, label: 'הוסף מרשתות',   Icon: Network  },
+                { key: 'doc'      as const, label: 'ממסמך קיים',    Icon: FileText },
+                { key: 'hamal'    as const, label: 'קבוצות חמ"ל',   Icon: Users    },
+                { key: 'miraz'    as const, label: "קבוצות מיראז'", Icon: Layers   },
+                { key: 'personal' as const, label: 'אזור אישי',      Icon: List     },
+              ]).map(({ key, label, Icon }) => {
+                const active = importTab === key;
+                return (
+                  <button key={key}
+                    onClick={() => { setImportTab(active ? null : key); setExpandedId(null); setSearchQuery(''); setSearchOpen(false); if (!active && key !== 'network') setNetworkFilter('sodibioti'); }}
+                    className={`flex items-center gap-1.5 flex-1 px-2.5 py-2 rounded-xl border transition-all text-right ${
+                      active ? '' : 'border-gray-100 bg-gray-50/60 hover:bg-white hover:border-gray-200 hover:shadow-sm'
+                    }`}
+                    style={active ? { background: '#1B3A6B07', borderColor: '#1B3A6B35', boxShadow: '0 1px 3px rgba(27,58,107,0.08)' } : undefined}>
+                    <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={active ? { background: '#1B3A6B18' } : { background: 'white', border: '1px solid #f3f4f6' }}>
+                      <Icon className="w-2.5 h-2.5" style={{ color: active ? '#1B3A6B' : '#9ca3af' }} />
+                    </div>
+                    <span className="text-[11px] font-semibold truncate" style={{ color: active ? '#1B3A6B' : '#374151' }}>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* fixed search bar — always visible */}
+          <div className="px-4 pb-3 flex-shrink-0 flex items-center gap-2" dir="rtl">
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <input type="text" value={searchQuery}
+                onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); if (importTab === null) setImportTab('network'); }}
+                onFocus={() => { if (searchQuery.trim()) setSearchOpen(true); if (importTab === null) setImportTab('network'); }}
+                onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
+                placeholder="הוספה או חיפוש לפי שם או ת.ז..."
+                dir="rtl"
+                className={`w-full pr-9 py-2.5 border border-gray-200 rounded-xl text-sm text-right focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors ${importTab === 'doc' ? 'pl-9' : 'pl-4'}`} />
+              {/* Search results dropdown — only for network/null mode */}
+              {searchOpen && searchQuery.trim() && (importTab === 'network' || importTab === null) && (() => {
+                const results = searchResults;
+                return (
+                  <div className="absolute top-full right-0 left-0 mt-1.5 z-[9999] rounded-xl border border-gray-100 bg-white shadow-lg overflow-hidden" dir="rtl">
+                    {results.length === 0
+                      ? <div className="py-5 text-center text-sm text-gray-400">לא נמצאו תוצאות</div>
+                      : results.map(p => {
+                          const alreadyAdded = curMembers.some(m => m.id === p.id);
+                          return (
+                            <button key={p.id} disabled={alreadyAdded}
+                              onMouseDown={() => { if (alreadyAdded) return; addMember(p); setSearchQuery(''); setSearchOpen(false); }}
+                              className={`w-full flex items-center gap-3 px-4 py-3 border-b border-gray-50 last:border-0 text-right transition-colors ${alreadyAdded ? 'cursor-default' : 'hover:bg-gray-50'}`}>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm font-medium truncate ${alreadyAdded ? 'text-gray-400' : 'text-gray-800'}`}>{p.name}</p>
+                                <p className="text-xs text-gray-400">{p.idNumber}{'subLabel' in p && p.subLabel && <span className="mr-1.5 text-gray-300">· {p.subLabel}</span>}</p>
+                              </div>
+                              {alreadyAdded
+                                ? <span className="flex items-center gap-1 text-[11px] font-medium flex-shrink-0" style={{ color: '#1B3A6B' }}><Check className="w-3.5 h-3.5" />כבר ברשימה</span>
+                                : <Plus className="w-4 h-4 text-gray-300 flex-shrink-0" />}
+                            </button>
+                          );
+                        })
+                    }
+                  </div>
+                );
+              })()}
+              {importTab === 'doc' && (
+                <button className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                  <Filter className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            {importTab === 'network' && (
+              <button ref={manualAddBtnRef}
+                onClick={() => {
+                  if (!manualAddOpen && manualAddBtnRef.current) {
+                    const r = manualAddBtnRef.current.getBoundingClientRect();
+                    setManualAddPos({ top: r.bottom + 6, left: r.left - 280 + r.width });
+                  }
+                  setManualAddOpen(o => !o);
+                }}
+                className="flex items-center gap-1 px-3 py-2 text-xs rounded-xl font-semibold transition-colors whitespace-nowrap flex-shrink-0 bg-[#1B3A6B] text-white hover:bg-[#152e54]">
+                <Plus className="w-3.5 h-3.5" />
+                הוספה ידנית
+              </button>
+            )}
+          </div>
+
+          {/* scrollable content */}
+          <div className="flex-1 overflow-y-auto border-t border-gray-100" dir="ltr">
+            {importTab === 'network' ? (
+              /* ── network: tabs + results ── */
+              <div className="flex flex-col h-full" dir="rtl">
+                <div className="px-4 pt-3 border-b border-gray-100 flex gap-5 flex-shrink-0">
+                  {([['sodibioti','סודי ביותר'],['sodi','סודי'],['aman','אמ"ן']] as const).map(([val, label]) => (
+                    <button key={val}
+                      onClick={() => { setNetworkFilter(val); setSearchQuery(''); setSearchOpen(false); }}
+                      className={`pb-2.5 text-sm font-semibold relative whitespace-nowrap transition-colors ${networkFilter === val ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}>
+                      {label}
+                      {networkFilter === val && <span className="absolute bottom-0 right-0 left-0 h-0.5 rounded-full bg-gray-900" />}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center justify-center flex-1">
+                  <p className="text-xs text-gray-400">חפש לפי שם או ת.ז. להוספה</p>
+                </div>
+              </div>
+            ) : importTab ? (
+              /* ── expanded source content ── */
+              <div dir="rtl">
+
+                {/* DOC */}
+                {importTab === 'doc' && (
+                  <div className="flex flex-col">
+                    {/* tabs */}
+                    <div className="px-4 border-b border-gray-100 flex gap-5" dir="rtl">
+                      {([['distributed','פקודות שהופצו'],['drafts','טיוטות']] as const).map(([val, label]) => (
+                        <button key={val} onClick={() => { setDocTabFilter(val); setExpandedId(null); }}
+                          className={`py-2.5 text-xs font-semibold relative whitespace-nowrap transition-colors ${docTabFilter === val ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}>
+                          {label}
+                          {docTabFilter === val && <span className="absolute bottom-0 right-0 left-0 h-0.5 rounded-full bg-gray-900" />}
+                        </button>
+                      ))}
+                    </div>
+                    {/* table header */}
+                    <div className="grid text-[10px] font-semibold text-gray-400 border-b border-gray-100 px-4 py-1.5 bg-gray-50/60"
+                      style={{ gridTemplateColumns: '24px 1fr 56px 56px 44px 60px 68px 56px 20px' }} dir="rtl">
+                      <span />
+                      <span>שם מסמך</span>
+                      <span className="text-center">מס׳ פקודה</span>
+                      <span className="text-center">מס׳ עדכון</span>
+                      <span className="text-center">סוג</span>
+                      <span className="text-center">ארגון</span>
+                      <span className="text-center">תאריך עדכון</span>
+                      <span className="text-center">מס׳ סימוכין</span>
+                      <span />
+                    </div>
+                    {/* rows */}
+                    {PERM_DOCS_DATA.filter(d => !searchQuery || d.name.includes(searchQuery)).map(doc => {
+                      const isSelected = selectedDocIds.includes(doc.id);
+                      const isExpanded = expandedId === doc.id;
+                      const toggle = () => {
+                        setSelectedDocIds(prev => isSelected ? prev.filter(id => id !== doc.id) : [...prev, doc.id]);
+                        setExpandedId(isExpanded ? null : doc.id);
+                      };
+                      return (
+                        <div key={doc.id} className={`border-b border-gray-100 last:border-0 ${isSelected ? 'bg-blue-50/20' : ''}`}>
+                          <div className="grid items-center px-4 py-2.5 hover:bg-gray-50/80 transition-colors cursor-pointer"
+                            style={{ gridTemplateColumns: '24px 1fr 56px 56px 44px 60px 68px 56px 20px' }} dir="rtl"
+                            onClick={toggle}>
+                            <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${isSelected ? 'border-[#1B3A6B]' : 'border-gray-300'}`}
+                              style={isSelected ? { background: '#1B3A6B' } : {}}>
+                              {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                            </div>
+                            <span className="text-xs font-bold text-gray-800 truncate pr-1">
+                              {doc.name} <span className="font-normal text-gray-400">({doc.distribution.length})</span>
+                            </span>
+                            <span className="text-[11px] text-gray-500 text-center">{doc.orderNum}</span>
+                            <span className="text-[11px] text-gray-500 text-center">{doc.updateNum}</span>
+                            <span className="text-[11px] text-gray-500 text-center">{doc.docType}</span>
+                            <span className="text-[11px] text-gray-500 text-center">{doc.environment}</span>
+                            <span className="text-[11px] text-gray-500 text-center">{doc.lastUpdate}</span>
+                            <span className="text-[11px] text-gray-500 text-center">{doc.refNum}</span>
+                            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform justify-self-center ${isExpanded ? 'rotate-180' : ''}`} />
+                          </div>
+                          {isExpanded && (
+                            <div className="border-t border-gray-100" style={{ borderRight: '3px solid #1B3A6B20' }}>
+                              <div className="grid text-[10px] font-semibold text-gray-400 px-8 py-1.5 bg-gray-50/80 border-b border-gray-100"
+                                style={{ gridTemplateColumns: '1fr 140px 100px' }} dir="rtl">
+                                <span>שם מלא</span>
+                                <span>תעודת זהות</span>
+                                <span>ארגון</span>
+                              </div>
+                              {doc.distribution.map(p => {
+                                const alreadyAdded = curMembers.some(m => m.id === p.id);
+                                return (
+                                  <button key={p.id} disabled={alreadyAdded}
+                                    onMouseDown={() => { if (!alreadyAdded) addMember(p); }}
+                                    className={`w-full grid items-center px-8 py-2 border-b border-gray-50 last:border-0 transition-colors ${alreadyAdded ? 'opacity-50 cursor-default' : 'hover:bg-blue-50/40'}`}
+                                    style={{ gridTemplateColumns: '1fr 140px 100px' }} dir="rtl">
+                                    <span className="text-xs font-semibold text-gray-800 text-right">{p.name}</span>
+                                    <span className="text-xs text-gray-500">{p.idNumber}</span>
+                                    <span className="text-xs text-gray-500">{p.environment}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {/* footer */}
+                    {selectedDocIds.length > 0 && (
+                      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-white sticky bottom-0" dir="rtl">
+                        <span className="text-xs text-gray-500">{selectedDocIds.length} מסמכים נבחרו</span>
+                        <button
+                          onClick={() => {
+                            const allPeople = PERM_DOCS_DATA
+                              .filter(d => selectedDocIds.includes(d.id))
+                              .flatMap(d => d.distribution);
+                            addMany(allPeople);
+                            setSelectedDocIds([]);
+                            setExpandedId(null);
+                          }}
+                          className="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-colors"
+                          style={{ background: '#1B3A6B' }}>
+                          הוסף לרשימה
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* HAMAL */}
+                {importTab === 'hamal' && (
+                  <GroupList groups={PERM_HAMAL_GROUPS} iconEl={<Users className="w-4 h-4 text-gray-300" />} />
+                )}
+
+                {/* MIRAZ */}
+                {importTab === 'miraz' && (
+                  <GroupList groups={PERM_MIRAZ_GROUPS} iconEl={<Layers className="w-4 h-4 text-gray-300" />} />
+                )}
+
+                {/* PERSONAL */}
+                {importTab === 'personal' && (
+                  <div className="flex flex-col items-center justify-center py-12 gap-2">
+                    <List className="w-8 h-8" style={{ color: '#e5e7eb' }} />
+                    <p className="text-xs text-gray-400">אין רשימות אישיות שמורות</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* ── hint state ── */
+              <div className="flex items-center justify-center h-full" dir="rtl">
+                <p className="text-xs text-gray-400">בחר מקור ייבוא או חפש לפי שם</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── FAR LEFT: added members list (always) / clause hierarchy (editor & approver) ── */}
+        <div className="w-60 flex-shrink-0 border-r border-gray-100 bg-gray-50/40 flex flex-col overflow-y-auto" dir="ltr">
+          {isClauseMode ? (
+            <div dir="rtl" className="flex flex-col flex-1 min-h-0">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 flex-shrink-0">
+              <span className="text-xs font-semibold text-gray-700">סעיפים</span>
+              <span className="text-[11px]">
+                {selectedClauses.length > 0
+                  ? <button onClick={() => setSelectedClauses([])} className="hover:underline" style={{ color: '#1B3A6B' }}>{selectedClauses.length} נבחרו · נקה</button>
+                  : <span className="text-gray-400">בחר סעיפים לשיוך</span>}
+              </span>
+            </div>
+            <div className="flex flex-col gap-0.5 p-3">
+              {PERM_DOC_STRUCTURE.map(ch => {
+                const chOpen = openChapters.includes(ch.id);
+                return (
+                  <div key={ch.id}>
+                    {/* chapter row — exact Edit.tsx topic style */}
+                    <div className="flex items-center gap-1.5 px-2 py-2 rounded-xl cursor-pointer hover:bg-white transition-colors" dir="rtl"
+                      onClick={() => toggleChapter(ch.id)}>
+                      <ChevronLeft
+                        className="w-3.5 h-3.5 flex-shrink-0 text-[#1B3A6B]/50 transition-transform duration-200"
+                        style={{ transform: chOpen ? 'rotate(-90deg)' : 'rotate(0deg)' }}
+                      />
+                      <span className="flex-1 text-sm font-semibold truncate" style={{ color: '#1B3A6B' }}>{ch.title}</span>
+                    </div>
+
+                    {chOpen && (
+                      <div className="flex flex-col gap-1 mb-1" style={{ paddingRight: 30 }}>
+                        {ch.sections.map((s, si) => {
+                          const sSel = selectedClauses.includes(s.id);
+                          const sMembers = clauseMembers(s.id);
+                          const sMembersOpen = openClauseMembers.includes(s.id);
+                          return (
+                            <div key={s.id}>
+                              {/* section row */}
+                              <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl cursor-pointer transition-colors ${sSel ? 'shadow-sm' : 'hover:bg-white'}`}
+                                style={sSel ? { background: '#1B3A6B14' } : undefined} dir="rtl"
+                                onClick={() => toggleClause(s.id)}>
+                                <span className="text-xs font-bold text-gray-500 flex-shrink-0 w-4 text-right">{si + 1}.</span>
+                                <span className={`flex-1 text-xs truncate ${sSel ? 'font-semibold text-[#1B3A6B]' : 'text-gray-700'}`}>{s.title}</span>
+                                {sMembers.length > 0 && (
+                                  <button onClick={e => { e.stopPropagation(); toggleClauseMembers(s.id); }}
+                                    className="flex items-center gap-0.5 flex-shrink-0 px-1.5 py-0.5 rounded-full hover:bg-gray-200/70 transition-colors"
+                                    style={{ background: sMembersOpen ? '#1B3A6B1f' : '#f3f4f6' }}>
+                                    <span className="text-[10px] font-semibold" style={{ color: sMembersOpen ? '#1B3A6B' : '#9ca3af' }}>{sMembers.length}</span>
+                                    <ChevronLeft className="w-2.5 h-2.5 transition-transform duration-200"
+                                      style={{ color: sMembersOpen ? '#1B3A6B' : '#9ca3af', transform: sMembersOpen ? 'rotate(-90deg)' : 'rotate(0deg)' }} />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* assigned users — table under the relevant section */}
+                              {sMembersOpen && sMembers.length > 0 && (
+                                <div className="mt-0.5 mb-1 rounded-xl overflow-hidden border border-gray-100 bg-white" style={{ marginRight: 20 }}>
+                                  <table className="w-full text-xs" dir="rtl">
+                                    <thead>
+                                      <tr className="bg-gray-50/80 border-b border-gray-100">
+                                        <th className="text-right font-medium text-gray-400 text-[10px] px-3 py-1.5">שם מלא</th>
+                                        <th className="text-right font-medium text-gray-400 text-[10px] px-3 py-1.5">תעודת זהות</th>
+                                        <th className="text-right font-medium text-gray-400 text-[10px] px-3 py-1.5">ארגון</th>
+                                        <th className="w-6" />
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {sMembers.map(m => (
+                                        <tr key={m.id} className="border-b border-gray-50 last:border-0 group/m hover:bg-gray-50/60 transition-colors">
+                                          <td className="px-3 py-1.5 text-[11px] font-medium text-gray-700 truncate">{m.name}</td>
+                                          <td className="px-3 py-1.5 text-[11px] text-gray-400">{m.idNumber}</td>
+                                          <td className="px-3 py-1.5 text-[11px] text-gray-400">{m.environment}</td>
+                                          <td className="px-1.5 py-1.5">
+                                            <button onClick={() => removeMemberFromClause(m.id, s.id)}
+                                              className="opacity-0 group-hover/m:opacity-100 p-0.5 rounded hover:bg-red-50 transition-all">
+                                              <X className="w-3 h-3 text-gray-400" />
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            </div>
+          ) : (
+            <div dir="rtl" className="flex flex-col flex-1 min-h-0">
+              <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+                <span className="text-sm font-semibold text-gray-800">
+                  רשימת אנשים{curMembers.length > 0 && <span className="font-normal text-gray-500 mr-1">({curMembers.length})</span>}
+                </span>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {/* Column header */}
+                <div className="sticky top-0 grid items-center px-3 py-2 text-[10px] font-semibold text-gray-500 select-none z-10"
+                  style={{ background: '#EBEBEB', gridTemplateColumns: '1fr 80px 80px 28px', columnGap: '6px' }}>
+                  <span className="text-right whitespace-nowrap">שם מלא</span>
+                  <span className="text-center">תעודת זהות</span>
+                  <span className="text-center">ארגון</span>
+                  <span />
+                </div>
+                {curMembers.length === 0 ? (
+                  <div className="px-4 py-14 text-center">
+                    <Users className="w-9 h-9 text-gray-200 mx-auto mb-2.5" />
+                    <p className="text-xs text-gray-400">הוסף אנשים לרשימה באמצעות<br />החיפוש או ייבוא מהפאנל הימני</p>
+                  </div>
+                ) : curMembers.map(m => (
+                  <div key={m.id} className="grid items-center px-3 py-2.5 hover:bg-gray-50 transition-colors group"
+                    style={{ gridTemplateColumns: '1fr 80px 80px 28px', columnGap: '6px', borderBottom: '1px solid #f5f5f5' }}>
+                    <span className="text-right text-xs font-medium text-gray-800 truncate">{m.name}</span>
+                    <span className="text-center text-xs text-gray-600 tabular-nums">{m.idNumber}</span>
+                    <span className="text-center text-xs text-gray-600">{m.environment}</span>
+                    <button onClick={() => removeMember(m.id)}
+                      className="flex items-center justify-center opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-50 transition-all">
+                      <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-400" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        </div>{/* end body */}
+
+        {/* ── FOOTER ── */}
+        <div className="border-t border-gray-100 px-5 py-3 flex items-center justify-between flex-shrink-0">
+          <button onClick={onClose}
+            className="px-5 py-2 rounded-xl text-sm text-gray-400 hover:text-gray-600 transition-colors">
+            ביטול
+          </button>
+          <button onClick={onClose}
+            className="px-6 py-2 rounded-xl text-sm font-semibold text-white transition-colors hover:opacity-90"
+            style={{ background: '#1B3A6B' }}>
+            אישור
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* manual add popover */}
+    {manualAddOpen && manualAddPos && (
+      <div dir="rtl"
+        className="fixed bg-white rounded-2xl shadow-xl border border-gray-100 z-[99999] flex flex-col"
+        style={{ top: manualAddPos.top, left: manualAddPos.left, width: 280 }}>
+        <div className="px-4 pt-4 pb-3">
+          <p className="text-xs font-semibold text-gray-700 mb-3">הוספה ידנית</p>
+          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:border-[#1B3A6B] focus-within:ring-1 focus-within:ring-[#1B3A6B]/20 transition-colors mb-2.5" dir="ltr">
+            <input type="text" value={manualAddUsername} onChange={e => setManualAddUsername(e.target.value)}
+              placeholder="מזהה משתמש" dir="rtl"
+              className="flex-1 min-w-0 px-2.5 py-2 text-xs focus:outline-none bg-white text-right" />
+            <span className="px-2.5 py-2 text-xs text-gray-400 bg-gray-50 border-l border-gray-200 flex-shrink-0 select-none whitespace-nowrap">@army.idf.il</span>
+          </div>
+          <input type="text" value={manualAddDisplayName} onChange={e => setManualAddDisplayName(e.target.value)}
+            placeholder="שם תצוגה" dir="rtl"
+            className="w-full px-2.5 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-[#1B3A6B] focus:ring-1 focus:ring-[#1B3A6B]/20 transition-colors" />
+        </div>
+        <div className="flex gap-2 px-4 pb-4">
+          <button type="button"
+            onClick={() => { setManualAddOpen(false); setManualAddUsername(''); setManualAddDisplayName(''); }}
+            className="flex-1 py-1.5 rounded-xl text-xs font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
+            ביטול
+          </button>
+          <button type="button"
+            disabled={!manualAddUsername.trim() && !manualAddDisplayName.trim()}
+            onClick={() => {
+              const newId = `manual-${Date.now()}`;
+              const name = manualAddDisplayName.trim() || manualAddUsername.trim();
+              const networkLabel = networkFilter === 'sodibioti' ? 'סודי ביותר' : networkFilter === 'sodi' ? 'סודי' : 'אמ"ן';
+              setMembers(prev => ({
+                ...prev,
+                [activeIdx]: [...(prev[activeIdx] || []), { id: newId, name, idNumber: manualAddUsername.trim(), environment: networkLabel }]
+              }));
+              setManualAddOpen(false); setManualAddUsername(''); setManualAddDisplayName('');
+            }}
+            className="flex-1 py-1.5 rounded-xl text-xs font-semibold bg-[#1B3A6B] text-white hover:bg-[#152e54] transition-colors disabled:opacity-40">
+            הוספה
+          </button>
+        </div>
+      </div>
+    )}
+  </>);
+}
 
 interface DocHeaderInfo {
   name: string; orderNum: string; env: string;
@@ -48,11 +796,14 @@ interface TopNavbarProps {
   docHeader?: DocHeaderInfo | null;
   onFilterClick?: () => void;
   onEditDocClick?: () => void;
+  onDuplicateClick?: () => void;
+  onZoomChange?: (z: number) => void;
+  onDocSearch?: (q: string) => void;
 }
 
 type DropPos = { top: number; left: number };
 
-export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false, navigate, showDocActions = false, docHeader = null, onFilterClick, onEditDocClick }: TopNavbarProps) {
+export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false, navigate, showDocActions = false, docHeader = null, onFilterClick, onEditDocClick, onDuplicateClick, onZoomChange, onDocSearch }: TopNavbarProps) {
   const [realityMode, setRealityMode] = useState('מציאות');
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIcon, setActiveIcon] = useState<string | null>(null);
@@ -62,6 +813,34 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
   const [showSupport, setShowSupport] = useState(false);
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [showDocPermissions, setShowDocPermissions] = useState(false);
+  const [loadingExport, setLoadingExport] = useState<'word' | 'pdf' | null>(null);
+  const [docZoom, setDocZoom] = useState(100);
+  const [searchActive, setSearchActive] = useState(false);
+  const [navSearch, setNavSearch] = useState('');
+
+  const handleZoom = (delta: number) => {
+    const next = Math.min(200, Math.max(50, docZoom + delta));
+    setDocZoom(next);
+    onZoomChange?.(next);
+  };
+
+  const handleSearchChange = (q: string) => {
+    setNavSearch(q);
+    onDocSearch?.(q);
+  };
+
+  const closeSearch = () => {
+    setSearchActive(false);
+    setNavSearch('');
+    onDocSearch?.('');
+  };
+
+  const handleExport = (type: 'word' | 'pdf') => {
+    if (loadingExport) return;
+    setLoadingExport(type);
+    setTimeout(() => setLoadingExport(null), 2000);
+  };
 
   const [bellPos, setBellPos] = useState<DropPos | null>(null);
   const [supportPos, setSupportPos] = useState<DropPos | null>(null);
@@ -172,25 +951,79 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
 
             {showDocActions && (
               <div className="flex items-center gap-1 mr-1">
+                {/* all action icons */}
                 <button title="סינון" onClick={onFilterClick}
                   className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
-                  <Filter className="w-4 h-4 text-gray-400" />
+                  <Filter className="w-4 h-4 text-gray-500" />
                 </button>
                 <button title="עריכת פרטי מסמך" onClick={onEditDocClick}
                   className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
-                  <FileEdit className="w-4 h-4 text-gray-400" />
+                  <FileEdit className="w-4 h-4 text-gray-500" />
                 </button>
                 {([
-                  { icon: Copy,     title: 'שכפול' },
-                  { icon: UserCog,  title: 'הרשאות' },
-                  { icon: WordIcon, title: 'ייצוא ל-Word' },
-                  { icon: PdfIcon,  title: 'ייצוא PDF' },
-                ] as { icon: React.ElementType; title: string }[]).map(({ icon: Icon, title }) => (
-                  <button key={title} title={title}
+                  { icon: Copy,     title: 'שכפול', onClick: onDuplicateClick },
+                  { icon: UserCog,  title: 'הרשאות', onClick: () => setShowDocPermissions(true) },
+                ] as { icon: React.ElementType; title: string; onClick?: () => void }[]).map(({ icon: Icon, title, onClick }) => (
+                  <button key={title} title={title} onClick={onClick}
                     className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
-                    <Icon className="w-4 h-4 text-gray-400" />
+                    <Icon className="w-4 h-4 text-gray-500" />
                   </button>
                 ))}
+                <button title="ייצוא ל-Word" onClick={() => handleExport('word')}
+                  className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
+                  {loadingExport === 'word'
+                    ? <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
+                    : <WordIcon />}
+                </button>
+                <button title="ייצוא PDF" onClick={() => handleExport('pdf')}
+                  className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
+                  {loadingExport === 'pdf'
+                    ? <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
+                    : <PdfIcon />}
+                </button>
+
+                {/* divider */}
+                <span className="w-px h-4 bg-gray-200 mx-0.5" />
+
+                {/* zoom control */}
+                <div className="flex items-center gap-0">
+                  <button onClick={() => handleZoom(-10)}
+                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600 font-bold text-base leading-none select-none">
+                    −
+                  </button>
+                  <span className="text-xs text-gray-600 w-10 text-center tabular-nums">{docZoom}%</span>
+                  <button onClick={() => handleZoom(10)}
+                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600 font-bold text-base leading-none select-none">
+                    +
+                  </button>
+                </div>
+
+                {/* divider */}
+                <span className="w-px h-4 bg-gray-200 mx-0.5" />
+
+                {/* search in document */}
+                {searchActive ? (
+                  <div className="flex items-center gap-1.5 bg-gray-100 rounded-full px-3 py-1">
+                    <Search className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                    <input
+                      autoFocus
+                      value={navSearch}
+                      onChange={e => handleSearchChange(e.target.value)}
+                      onKeyDown={e => e.key === 'Escape' && closeSearch()}
+                      placeholder="חיפוש במסמך..."
+                      dir="rtl"
+                      className="text-xs bg-transparent outline-none w-32 text-right placeholder-gray-400"
+                    />
+                    <button onClick={closeSearch} className="p-0.5 rounded-full hover:bg-gray-200 transition-colors flex-shrink-0">
+                      <X className="w-3 h-3 text-gray-500" />
+                    </button>
+                  </div>
+                ) : (
+                  <button title="חיפוש במסמך" onClick={() => setSearchActive(true)}
+                    className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
+                    <Search className="w-4 h-4 text-gray-500" />
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -202,7 +1035,7 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
               onClick={() => toggle('bell', showNotifications, setShowNotifications, bellRef, setBellPos)}
               className={`p-1.5 rounded-full transition-all relative ${activeIcon === 'bell' ? 'bg-[#1B3A6B]' : ''}`}
             >
-              <Bell className={`w-5 h-5 ${activeIcon === 'bell' ? 'text-white' : 'text-gray-400'}`} />
+              <Bell className={`w-5 h-5 ${activeIcon === 'bell' ? 'text-white' : 'text-gray-500'}`} />
               {activeIcon !== 'bell' && (
                 <span className="absolute top-1 right-1 w-2 h-2 bg-[#1B3A6B] rounded-full"></span>
               )}
@@ -214,7 +1047,7 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
               onClick={() => toggle('support', showSupport, setShowSupport, supportRef, setSupportPos)}
               className={`p-1.5 rounded-full transition-all ${activeIcon === 'support' ? 'bg-[#1B3A6B]' : ''}`}
             >
-              <MessageCircle className={`w-5 h-5 ${activeIcon === 'support' ? 'text-white' : 'text-gray-400'}`} />
+              <MessageCircle className={`w-5 h-5 ${activeIcon === 'support' ? 'text-white' : 'text-gray-500'}`} />
             </button>
 
             {/* Book */}
@@ -223,14 +1056,14 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
               onClick={() => toggle('book', showTraining, setShowTraining, bookRef, setBookPos)}
               className={`p-1.5 rounded-full transition-all ${activeIcon === 'book' ? 'bg-[#1B3A6B]' : ''}`}
             >
-              <BookOpen className={`w-5 h-5 ${activeIcon === 'book' ? 'text-white' : 'text-gray-400'}`} />
+              <BookOpen className={`w-5 h-5 ${activeIcon === 'book' ? 'text-white' : 'text-gray-500'}`} />
             </button>
 
             <button
               onClick={() => { navigate('/personal'); setActiveIcon('user'); }}
               className={`p-1.5 rounded-full transition-all ${isPersonalAreaActive || activeIcon === 'user' ? 'bg-[#1B3A6B]' : ''}`}
             >
-              <User className={`w-5 h-5 ${isPersonalAreaActive || activeIcon === 'user' ? 'text-white' : 'text-gray-400'}`} />
+              <User className={`w-5 h-5 ${isPersonalAreaActive || activeIcon === 'user' ? 'text-white' : 'text-gray-500'}`} />
             </button>
           </div>
         </div>
@@ -380,6 +1213,10 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
             </div>
           </div>
         </div>
+      )}
+
+      {showDocPermissions && (
+        <DocPermissionsModal onClose={() => setShowDocPermissions(false)} />
       )}
 
       {showPermissionsModal && (
