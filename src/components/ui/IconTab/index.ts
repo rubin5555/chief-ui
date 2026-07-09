@@ -1,0 +1,1 @@
+export { IconTab } from './IconTab';
