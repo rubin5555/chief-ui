@@ -1,8 +1,11 @@
 import styled from 'styled-components';
+import { dialogEnter } from '@/styles/animations';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 import { NavRow } from './components/columns.shared.styles';
 
 // Centers the card over the hosting modal without dimming or blocking clicks around it.
+// No fade on the overlay itself (it's transparent/non-dimming already) — only
+// the card animates in.
 export const Overlay = styled.div`
   position: absolute;
   inset: 0;
@@ -21,6 +24,7 @@ export const Card = styled.div`
   width: 680px;
   max-width: 90%;
   box-shadow: ${shadows.xxl};
+  animation: ${dialogEnter} 180ms cubic-bezier(0.16, 1, 0.3, 1);
 `;
 
 export const Header = styled.div`

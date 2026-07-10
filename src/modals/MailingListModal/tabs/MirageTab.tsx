@@ -6,6 +6,7 @@ import {
   MIRAGE_GROUPS_FALLBACK,
 } from '@/api/mirageGroups';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
 import { gray } from '@/styles/theme';
@@ -40,7 +41,8 @@ export const MirageTab = ({ addedGroupIds, onImport }: MirageTabProps) => {
     useTabSelection();
   const { search, debouncedSearch, onSearchChange, onClearSearch } = useSearch();
 
-  const { data } = useQuery<GetMirageGroupsResult>(GET_MIRAGE_GROUPS_QUERY);
+  const { data, loading: mirageGroupsLoading } =
+    useQuery<GetMirageGroupsResult>(GET_MIRAGE_GROUPS_QUERY);
   const mirageGroups = data?.mirageGroups ?? MIRAGE_GROUPS_FALLBACK.mirageGroups;
 
   const onImportSelected = () => {
@@ -88,45 +90,49 @@ export const MirageTab = ({ addedGroupIds, onImport }: MirageTabProps) => {
         />
       </SearchSlot>
 
-      <GridTable
-        columns={MIRAGE_GRID}
-        headers={[null, <ColHeader $align="right">שם הקבוצה</ColHeader>, null]}
-        items={filtered}
-        getRowKey={(group) => group.id}
-        emptyState={<EmptyState>לא נמצאו קבוצות</EmptyState>}
-        renderRow={(group: MirageGroup) => {
-          const isSelected = selected.set.has(group.id);
-          const isAdded = addedGroupIds.has(group.id);
-          const isExpanded = expanded === group.id;
+      {mirageGroupsLoading ? (
+        <InlineSpinner />
+      ) : (
+        <GridTable
+          columns={MIRAGE_GRID}
+          headers={[null, <ColHeader $align="right">שם הקבוצה</ColHeader>, null]}
+          items={filtered}
+          getRowKey={(group) => group.id}
+          emptyState={<EmptyState>לא נמצאו קבוצות</EmptyState>}
+          renderRow={(group: MirageGroup) => {
+            const isSelected = selected.set.has(group.id);
+            const isAdded = addedGroupIds.has(group.id);
+            const isExpanded = expanded === group.id;
 
-          return (
-            <GridTableRow
-              isSelected={isSelected}
-              isAdded={isAdded}
-              onClick={handleRowClick(group.id, isAdded)}
-              expansion={isExpanded ? <ExpandedMemberBlock members={group.members} /> : null}
-            >
-              <CheckboxCell
-                data-testid={MIRAGE_TAB_IDS.rowCheckbox(group.id)}
-                onClick={handleCheckClick(group.id, isAdded)}
+            return (
+              <GridTableRow
+                isSelected={isSelected}
+                isAdded={isAdded}
+                onClick={handleRowClick(group.id, isAdded)}
+                expansion={isExpanded ? <ExpandedMemberBlock members={group.members} /> : null}
               >
-                <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
-              </CheckboxCell>
-              <NameCell>
-                {group.name}
-                <CountLabel>({group.members.length})</CountLabel>
-              </NameCell>
-              <ExpandBtn
-                type="button"
-                data-testid={MIRAGE_TAB_IDS.rowExpand(group.id)}
-                onClick={handleToggleExpand(group.id)}
-              >
-                <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
-              </ExpandBtn>
-            </GridTableRow>
-          );
-        }}
-      />
+                <CheckboxCell
+                  data-testid={MIRAGE_TAB_IDS.rowCheckbox(group.id)}
+                  onClick={handleCheckClick(group.id, isAdded)}
+                >
+                  <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
+                </CheckboxCell>
+                <NameCell>
+                  {group.name}
+                  <CountLabel>({group.members.length})</CountLabel>
+                </NameCell>
+                <ExpandBtn
+                  type="button"
+                  data-testid={MIRAGE_TAB_IDS.rowExpand(group.id)}
+                  onClick={handleToggleExpand(group.id)}
+                >
+                  <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
+                </ExpandBtn>
+              </GridTableRow>
+            );
+          }}
+        />
+      )}
 
       <TabImportBar
         count={selected.set.size}

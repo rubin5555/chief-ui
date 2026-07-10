@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { dialogEnter, overlayFadeIn } from '@/styles/animations';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 // Shared full-page modal chrome (overlay + card + header/title/close/footer).
@@ -14,6 +15,7 @@ export const Overlay = styled.div`
   justify-content: center;
   z-index: 9998;
   background: rgba(0, 0, 0, 0.5);
+  animation: ${overlayFadeIn} 150ms ease-out;
 `;
 
 export const ModalCardBase = styled.div`
@@ -24,6 +26,7 @@ export const ModalCardBase = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: ${dialogEnter} 180ms cubic-bezier(0.16, 1, 0.3, 1);
 `;
 
 export const ModalHeaderBase = styled.div`

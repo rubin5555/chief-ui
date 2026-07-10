@@ -3,6 +3,7 @@ import { Filter } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { DOCS_FALLBACK, GET_DOCS_QUERY, type GetDocsResult } from '@/api/docs';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SubTable, SubTableRow } from '@/components/ui/SubTable';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
@@ -50,7 +51,7 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
   const { search, debouncedSearch, onSearchChange } = useSearch();
   const filters = useDocFilters();
 
-  const { data } = useQuery<GetDocsResult>(GET_DOCS_QUERY);
+  const { data, loading: docsLoading } = useQuery<GetDocsResult>(GET_DOCS_QUERY);
   const allDocs = data?.docs ?? DOCS_FALLBACK.docs;
 
   const filterBtnRef = useRef<HTMLButtonElement>(null);
@@ -125,85 +126,89 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
         />
       </SearchSlot>
 
-      <GridTable
-        columns={DOC_GRID}
-        headers={[
-          null,
-          <ColHeader $align="right">שם המסמך</ColHeader>,
-          <ColHeader>פקודה</ColHeader>,
-          <ColHeader>עדכון</ColHeader>,
-          <ColHeader>סוג</ColHeader>,
-          <ColHeader>ארגון</ColHeader>,
-          <ColHeader>תאריך</ColHeader>,
-          <ColHeader>מ"פ</ColHeader>,
-          null,
-        ]}
-        items={docs}
-        getRowKey={(doc) => doc.id}
-        emptyState={<EmptyState>לא נמצאו מסמכים</EmptyState>}
-        renderRow={(doc: DocItem) => {
-          const isSelected = selected.set.has(doc.id);
-          const isAdded = addedDocIds.has(doc.id);
-          const isExpanded = expanded === doc.id;
+      {docsLoading ? (
+        <InlineSpinner />
+      ) : (
+        <GridTable
+          columns={DOC_GRID}
+          headers={[
+            null,
+            <ColHeader $align="right">שם המסמך</ColHeader>,
+            <ColHeader>פקודה</ColHeader>,
+            <ColHeader>עדכון</ColHeader>,
+            <ColHeader>סוג</ColHeader>,
+            <ColHeader>ארגון</ColHeader>,
+            <ColHeader>תאריך</ColHeader>,
+            <ColHeader>מ"פ</ColHeader>,
+            null,
+          ]}
+          items={docs}
+          getRowKey={(doc) => doc.id}
+          emptyState={<EmptyState>לא נמצאו מסמכים</EmptyState>}
+          renderRow={(doc: DocItem) => {
+            const isSelected = selected.set.has(doc.id);
+            const isAdded = addedDocIds.has(doc.id);
+            const isExpanded = expanded === doc.id;
 
-          return (
-            <GridTableRow
-              isSelected={isSelected}
-              isAdded={isAdded}
-              onClick={handleRowClick(doc.id, isAdded)}
-              expansion={
-                isExpanded ? (
-                  <SubTable
-                    columns={DOC_GRID}
-                    headers={[
-                      null,
-                      <ColHeader $align="right">שם מלא</ColHeader>,
-                      <ColHeader>תעודת זהות</ColHeader>,
-                      null,
-                      <ColHeader>ארגון</ColHeader>,
-                    ]}
-                    items={doc.distribution}
-                    getRowKey={(p: PersonMember, i: number) => p.idNumber || i}
-                    renderRow={(p: PersonMember) => (
-                      <SubTableRow>
-                        <span />
-                        <SubNameCell>{p.name}</SubNameCell>
-                        <SubCell $tabular>{p.idNumber}</SubCell>
-                        <span />
-                        <SubCell>{p.environment}</SubCell>
-                      </SubTableRow>
-                    )}
-                  />
-                ) : null
-              }
-            >
-              <CheckboxCell
-                data-testid={DOC_TAB_IDS.rowCheckbox(doc.id)}
-                onClick={handleCheckClick(doc.id, isAdded)}
+            return (
+              <GridTableRow
+                isSelected={isSelected}
+                isAdded={isAdded}
+                onClick={handleRowClick(doc.id, isAdded)}
+                expansion={
+                  isExpanded ? (
+                    <SubTable
+                      columns={DOC_GRID}
+                      headers={[
+                        null,
+                        <ColHeader $align="right">שם מלא</ColHeader>,
+                        <ColHeader>תעודת זהות</ColHeader>,
+                        null,
+                        <ColHeader>ארגון</ColHeader>,
+                      ]}
+                      items={doc.distribution}
+                      getRowKey={(p: PersonMember, i: number) => p.idNumber || i}
+                      renderRow={(p: PersonMember) => (
+                        <SubTableRow>
+                          <span />
+                          <SubNameCell>{p.name}</SubNameCell>
+                          <SubCell $tabular>{p.idNumber}</SubCell>
+                          <span />
+                          <SubCell>{p.environment}</SubCell>
+                        </SubTableRow>
+                      )}
+                    />
+                  ) : null
+                }
               >
-                <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
-              </CheckboxCell>
-              <NameCell>
-                {doc.name}
-                <CountLabel>({doc.distribution.length})</CountLabel>
-              </NameCell>
-              <ColCenter>{doc.cmdNum}</ColCenter>
-              <ColCenter>{doc.update}</ColCenter>
-              <ColCenter>{doc.docType}</ColCenter>
-              <ColCenter>{doc.environment}</ColCenter>
-              <ColCenter $color={gray[500]}>{doc.lastUpdate}</ColCenter>
-              <ColCenter $color={gray[400]}>{doc.refNum}</ColCenter>
-              <ExpandBtn
-                type="button"
-                data-testid={DOC_TAB_IDS.rowExpand(doc.id)}
-                onClick={handleToggleExpand(doc.id)}
-              >
-                <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
-              </ExpandBtn>
-            </GridTableRow>
-          );
-        }}
-      />
+                <CheckboxCell
+                  data-testid={DOC_TAB_IDS.rowCheckbox(doc.id)}
+                  onClick={handleCheckClick(doc.id, isAdded)}
+                >
+                  <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
+                </CheckboxCell>
+                <NameCell>
+                  {doc.name}
+                  <CountLabel>({doc.distribution.length})</CountLabel>
+                </NameCell>
+                <ColCenter>{doc.cmdNum}</ColCenter>
+                <ColCenter>{doc.update}</ColCenter>
+                <ColCenter>{doc.docType}</ColCenter>
+                <ColCenter>{doc.environment}</ColCenter>
+                <ColCenter $color={gray[500]}>{doc.lastUpdate}</ColCenter>
+                <ColCenter $color={gray[400]}>{doc.refNum}</ColCenter>
+                <ExpandBtn
+                  type="button"
+                  data-testid={DOC_TAB_IDS.rowExpand(doc.id)}
+                  onClick={handleToggleExpand(doc.id)}
+                >
+                  <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
+                </ExpandBtn>
+              </GridTableRow>
+            );
+          }}
+        />
+      )}
 
       <TabImportBar
         count={selected.set.size}

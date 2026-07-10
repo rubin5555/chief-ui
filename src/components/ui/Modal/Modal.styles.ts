@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { dialogEnter, overlayFadeIn } from '@/styles/animations';
 import { colors, gray, shadows } from '@/styles/theme';
 
 export const Overlay = styled.div`
@@ -9,6 +10,7 @@ export const Overlay = styled.div`
   justify-content: center;
   z-index: 9998;
   background-color: rgba(0,0,0,0.5);
+  animation: ${overlayFadeIn} 150ms ease-out;
 `;
 
 export const ModalCard = styled.div`
@@ -21,6 +23,7 @@ export const ModalCard = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: ${dialogEnter} 180ms cubic-bezier(0.16, 1, 0.3, 1);
 `;
 
 export const ModalHeader = styled.div`
