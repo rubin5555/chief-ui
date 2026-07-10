@@ -1,5 +1,11 @@
+import { useQuery } from '@apollo/client';
 import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import {
+  GET_NETWORK_PEOPLE_QUERY,
+  type GetNetworkPeopleResult,
+  NETWORK_PEOPLE_FALLBACK,
+} from '@/api/networkPeople';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { Pos } from '@/hooks/useFloatingPanel';
@@ -12,7 +18,6 @@ import {
 } from '../components/ManualAddPanel/ManualAddPanel.styles';
 import { PersonSearchField } from '../components/PersonSearchField';
 import type { NetworkPerson, PersonMember } from '../MailingListModal.constants';
-import { PEOPLE_POOL } from '../MailingListModal.constants';
 import { toPersonMember } from '../utils/toPersonMember';
 import { HAMAL_TAB_IDS } from './HamalTab.testids';
 
@@ -38,6 +43,9 @@ export const HamalAddMemberPanel = ({
   const debouncedQuery = useDebounce(query);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  const { data } = useQuery<GetNetworkPeopleResult>(GET_NETWORK_PEOPLE_QUERY);
+  const peoplePool = data?.networkPeople ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
+
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
@@ -53,11 +61,13 @@ export const HamalAddMemberPanel = ({
     setQuery('');
   };
 
-  const results: NetworkPerson[] = PEOPLE_POOL.filter(
-    (p) =>
-      !existingIdNumbers.includes(p.idNumber) &&
-      (p.name.includes(debouncedQuery) || p.idNumber.includes(debouncedQuery)),
-  ).slice(0, 8);
+  const results: NetworkPerson[] = peoplePool
+    .filter(
+      (p) =>
+        !existingIdNumbers.includes(p.idNumber) &&
+        (p.name.includes(debouncedQuery) || p.idNumber.includes(debouncedQuery)),
+    )
+    .slice(0, 8);
 
   return (
     <FloatingPanel ref={panelRef} $pos={pos} $width={280}>

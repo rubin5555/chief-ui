@@ -1,4 +1,10 @@
+import { useQuery } from '@apollo/client';
 import { X } from 'lucide-react';
+import {
+  GET_MIRAGE_GROUPS_QUERY,
+  type GetMirageGroupsResult,
+  MIRAGE_GROUPS_FALLBACK,
+} from '@/api/mirageGroups';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
@@ -8,7 +14,6 @@ import { ColHeader } from '../components/MembersPanel/MembersPanel.styles';
 import { ModalSearchInput } from '../components/ModalSearchInput';
 import { SelectionCheckbox } from '../components/SelectionCheckbox';
 import type { Member, MirageGroup } from '../MailingListModal.constants';
-import { MIRAGE_GROUPS } from '../MailingListModal.constants';
 import { MIRAGE_TAB_IDS } from './MirageTab.testids';
 import { TabImportBar } from './TabImportBar';
 import {
@@ -35,8 +40,11 @@ export const MirageTab = ({ addedGroupIds, onImport }: MirageTabProps) => {
     useTabSelection();
   const { search, debouncedSearch, onSearchChange, onClearSearch } = useSearch();
 
+  const { data } = useQuery<GetMirageGroupsResult>(GET_MIRAGE_GROUPS_QUERY);
+  const mirageGroups = data?.mirageGroups ?? MIRAGE_GROUPS_FALLBACK.mirageGroups;
+
   const onImportSelected = () => {
-    const groups = MIRAGE_GROUPS.filter((g) => selected.set.has(g.id));
+    const groups = mirageGroups.filter((g) => selected.set.has(g.id));
     const members: Member[] = groups
       .filter((g) => !addedGroupIds.has(g.id))
       .map((g) => ({
@@ -56,7 +64,7 @@ export const MirageTab = ({ addedGroupIds, onImport }: MirageTabProps) => {
     onClearSearch();
   };
 
-  const filtered = MIRAGE_GROUPS.filter(
+  const filtered = mirageGroups.filter(
     (g) =>
       g.name.includes(debouncedSearch) ||
       g.type.includes(debouncedSearch) ||

@@ -1,2 +1,10 @@
 export * from './MailingListModal';
-export type { Member } from './MailingListModal.constants';
+export type {
+  DocItem,
+  HamalGroup,
+  Member,
+  MirageGroup,
+  NetworkPerson,
+  PersonalList,
+  PersonMember,
+} from './MailingListModal.constants';

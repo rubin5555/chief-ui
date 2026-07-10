@@ -1,9 +1,15 @@
+import { useQuery } from '@apollo/client';
 import { useState } from 'react';
+import {
+  GET_NETWORK_PEOPLE_QUERY,
+  type GetNetworkPeopleResult,
+  NETWORK_PEOPLE_FALLBACK,
+} from '@/api/networkPeople';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
 import { PersonSearchField } from '../components/PersonSearchField';
 import type { Member, NetworkFilter, NetworkPerson } from '../MailingListModal.constants';
-import { NETWORK_FILTERS, PEOPLE_POOL } from '../MailingListModal.constants';
+import { NETWORK_FILTERS } from '../MailingListModal.constants';
 import { PlaceholderText } from '../MailingListModal.styles';
 import { NETWORK_TAB_IDS } from './NetworkTab.testids';
 import { SubTabBar, SubTabBtn, SubTabIndicator, TabRoot } from './tabs.shared.styles';
@@ -24,6 +30,9 @@ export const NetworkTab = ({
   const [network, setNetwork] = useState<NetworkFilter>('sodibioti');
   const { search, debouncedSearch, onSearchChange, onClearSearch } = useSearch(300, initialQuery);
   const [resultsOpen, setResultsOpen] = useState(Boolean(initialQuery.trim()));
+
+  const { data } = useQuery<GetNetworkPeopleResult>(GET_NETWORK_PEOPLE_QUERY);
+  const peoplePool = data?.networkPeople ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
 
   const onNetworkChange = (val: NetworkFilter) => {
     setNetwork(val);
@@ -53,7 +62,7 @@ export const NetworkTab = ({
 
   const handleNetworkChange = (val: NetworkFilter) => () => onNetworkChange(val);
 
-  const pool = PEOPLE_POOL.filter((p) => p.network === network);
+  const pool = peoplePool.filter((p) => p.network === network);
   const results = debouncedSearch.trim()
     ? pool
         .filter((p) => p.name.includes(debouncedSearch) || p.idNumber.includes(debouncedSearch))

@@ -1,4 +1,10 @@
+import { useQuery } from '@apollo/client';
 import { useState } from 'react';
+import {
+  GET_PERSONAL_LISTS_QUERY,
+  type GetPersonalListsResult,
+  PERSONAL_LISTS_FALLBACK,
+} from '@/api/personalLists';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
@@ -8,7 +14,6 @@ import { ColHeader } from '../components/MembersPanel/MembersPanel.styles';
 import { ModalSearchInput } from '../components/ModalSearchInput';
 import { SelectionCheckbox } from '../components/SelectionCheckbox';
 import type { Member, PersonalList } from '../MailingListModal.constants';
-import { PERSONAL_LISTS } from '../MailingListModal.constants';
 import { deduplicateMembers } from '../utils/deduplicateMembers';
 import { PERSONAL_TAB_IDS } from './PersonalTab.testids';
 import { TabImportBar } from './TabImportBar';
@@ -37,6 +42,9 @@ export const PersonalTab = ({ addedListIds, onImport }: PersonalTabProps) => {
   const { selected, expanded, handleToggleExpand } = useTabSelection();
   const { search, debouncedSearch, onSearchChange } = useSearch();
 
+  const { data } = useQuery<GetPersonalListsResult>(GET_PERSONAL_LISTS_QUERY);
+  const personalLists = data?.personalLists ?? PERSONAL_LISTS_FALLBACK.personalLists;
+
   const onTabChange = (tab: 'mine' | 'all') => setListTab(tab);
   const handleTabChange = (tab: 'mine' | 'all') => () => onTabChange(tab);
   const handleRowClick = (id: string, isAdded: boolean) => () => {
@@ -44,7 +52,7 @@ export const PersonalTab = ({ addedListIds, onImport }: PersonalTabProps) => {
   };
 
   const onImportSelected = () => {
-    const lists = PERSONAL_LISTS.filter((l) => selected.set.has(l.id));
+    const lists = personalLists.filter((l) => selected.set.has(l.id));
     const members = deduplicateMembers(
       lists.flatMap((l) => l.members),
       'prs',
@@ -56,7 +64,7 @@ export const PersonalTab = ({ addedListIds, onImport }: PersonalTabProps) => {
     selected.reset();
   };
 
-  const filtered = PERSONAL_LISTS.filter(
+  const filtered = personalLists.filter(
     (l) => l.tab === listTab && (debouncedSearch === '' || l.name.includes(debouncedSearch)),
   );
 

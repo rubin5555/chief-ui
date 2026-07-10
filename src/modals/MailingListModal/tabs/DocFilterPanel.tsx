@@ -2,7 +2,7 @@ import { Check } from 'lucide-react';
 import { Fragment, type RefObject } from 'react';
 import { colors } from '@/styles/theme';
 import { CheckBox } from '../components/SelectionCheckbox/SelectionCheckbox.styles';
-import { LIST_DOCS } from '../MailingListModal.constants';
+import type { DocItem } from '../MailingListModal.constants';
 import {
   ClearFiltersBtn,
   DateFilterSection,
@@ -16,23 +16,34 @@ import {
 } from './DocTab.styles';
 import type { DocFilters } from './useDocFilters';
 
-const DOC_TYPES = [...new Set(LIST_DOCS.map((d) => d.docType))];
-const STATUSES = [...new Set(LIST_DOCS.map((d) => d.status))];
-const ORGS = [...new Set(LIST_DOCS.map((d) => d.environment))];
-
 interface DocFilterPanelProps {
+  docs: DocItem[];
   filters: DocFilters;
   top: number;
   left: number;
   panelRef: RefObject<HTMLDivElement | null>;
 }
 
-// The floating filter dropdown anchored to DocTab's filter button.
-export const DocFilterPanel = ({ filters, top, left, panelRef }: DocFilterPanelProps) => {
+// The floating filter dropdown anchored to DocTab's filter button. `docs` is
+// the full unfiltered list (DocTab's own filtered view doesn't work here —
+// the checkbox options must stay stable as other filters narrow the table).
+export const DocFilterPanel = ({ docs, filters, top, left, panelRef }: DocFilterPanelProps) => {
   const sections = [
-    { title: 'סוג מסמך', values: DOC_TYPES, list: filters.typeFilter },
-    { title: 'סטטוס', values: STATUSES, list: filters.statusFilter },
-    { title: 'ארגון', values: ORGS, list: filters.orgFilter },
+    {
+      title: 'סוג מסמך',
+      values: [...new Set(docs.map((d) => d.docType))],
+      list: filters.typeFilter,
+    },
+    {
+      title: 'סטטוס',
+      values: [...new Set(docs.map((d) => d.status))],
+      list: filters.statusFilter,
+    },
+    {
+      title: 'ארגון',
+      values: [...new Set(docs.map((d) => d.environment))],
+      list: filters.orgFilter,
+    },
   ];
 
   const handleToggle = (list: DocFilters['typeFilter'], value: string) => () => list.toggle(value);

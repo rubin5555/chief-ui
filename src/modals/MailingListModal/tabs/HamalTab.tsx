@@ -1,5 +1,11 @@
+import { useQuery } from '@apollo/client';
 import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
+import {
+  GET_HAMAL_GROUPS_QUERY,
+  type GetHamalGroupsResult,
+  HAMAL_GROUPS_FALLBACK,
+} from '@/api/hamalGroups';
 import { Button } from '@/components/ui/Button';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { SearchSlot } from '@/context/SearchSlotContext';
@@ -11,7 +17,6 @@ import { ColHeader } from '../components/MembersPanel/MembersPanel.styles';
 import { ModalSearchInput } from '../components/ModalSearchInput';
 import { SelectionCheckbox } from '../components/SelectionCheckbox';
 import type { HamalGroup, Member, PersonMember } from '../MailingListModal.constants';
-import { HAMAL_GROUPS } from '../MailingListModal.constants';
 import { HamalAddMemberPanel } from './HamalAddMemberPanel';
 import { HamalCreateGroupPanel } from './HamalCreateGroupPanel';
 import { IconActionBtn } from './HamalTab.styles';
@@ -46,6 +51,9 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
   const [addMemberPos, setAddMemberPos] = useState<Pos | null>(null);
   const createPanel = useFloatingPanel();
 
+  const { data } = useQuery<GetHamalGroupsResult>(GET_HAMAL_GROUPS_QUERY);
+  const hamalGroups = data?.hamalGroups ?? HAMAL_GROUPS_FALLBACK.hamalGroups;
+
   const onAddMemberClick = (groupId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -69,7 +77,7 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
   const onToggleCreate = () => createPanel.toggle(320);
 
   const onImportSelected = () => {
-    const groups = HAMAL_GROUPS.filter((g) => selected.set.has(g.id));
+    const groups = hamalGroups.filter((g) => selected.set.has(g.id));
     const members: Member[] = groups
       .filter((g) => !addedGroupIds.has(g.id))
       .map((g) => ({
@@ -89,7 +97,7 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
     onClearSearch();
   };
 
-  const filtered = HAMAL_GROUPS.filter(
+  const filtered = hamalGroups.filter(
     (g) =>
       g.name.includes(debouncedSearch) ||
       g.type.includes(debouncedSearch) ||
@@ -97,7 +105,7 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
   );
 
   const openGroup = addMemberGroupId
-    ? HAMAL_GROUPS.find((g) => g.id === addMemberGroupId)
+    ? hamalGroups.find((g) => g.id === addMemberGroupId)
     : undefined;
   const existingIdNumbers = openGroup
     ? [...openGroup.members, ...(extraMembers[openGroup.id] ?? [])].map((m) => m.idNumber)

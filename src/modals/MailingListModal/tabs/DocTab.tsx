@@ -1,5 +1,7 @@
+import { useQuery } from '@apollo/client';
 import { Filter } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { DOCS_FALLBACK, GET_DOCS_QUERY, type GetDocsResult } from '@/api/docs';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { SubTable, SubTableRow } from '@/components/ui/SubTable';
 import { SearchSlot } from '@/context/SearchSlotContext';
@@ -9,7 +11,7 @@ import { ColHeader } from '../components/MembersPanel/MembersPanel.styles';
 import { ModalSearchInput } from '../components/ModalSearchInput';
 import { SelectionCheckbox } from '../components/SelectionCheckbox';
 import type { DocItem, Member, PersonMember } from '../MailingListModal.constants';
-import { DOC_GRID, LIST_DOCS } from '../MailingListModal.constants';
+import { DOC_GRID } from '../MailingListModal.constants';
 import { deduplicateMembers } from '../utils/deduplicateMembers';
 import { DocFilterPanel } from './DocFilterPanel';
 import { ColCenter, FilterBtnInline, SubCell, SubNameCell } from './DocTab.styles';
@@ -48,6 +50,9 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
   const { search, debouncedSearch, onSearchChange } = useSearch();
   const filters = useDocFilters();
 
+  const { data } = useQuery<GetDocsResult>(GET_DOCS_QUERY);
+  const allDocs = data?.docs ?? DOCS_FALLBACK.docs;
+
   const filterBtnRef = useRef<HTMLButtonElement>(null);
   const filterPanelRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +81,7 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
   };
 
   const onImportSelected = () => {
-    const docs = LIST_DOCS.filter((d) => selected.set.has(d.id));
+    const docs = allDocs.filter((d) => selected.set.has(d.id));
     const members = deduplicateMembers(
       docs.flatMap((d) => d.distribution),
       'imp',
@@ -87,7 +92,7 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
 
   const handleDocTabChange = (tab: 'distributed' | 'drafts') => () => onDocTabChange(tab);
 
-  const docs = LIST_DOCS.filter(
+  const docs = allDocs.filter(
     (d) => (!debouncedSearch || d.name.includes(debouncedSearch)) && filters.matches(d),
   );
 
@@ -209,6 +214,7 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
 
       {filterOpen && filterPos && (
         <DocFilterPanel
+          docs={allDocs}
           filters={filters}
           top={filterPos.top}
           left={filterPos.left}
