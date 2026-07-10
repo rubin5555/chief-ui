@@ -51,7 +51,103 @@ test('acquiring a held lock sends lock:denied only to the requester', () => {
 
   rooms.handleMessage(bob, { type: 'lock:acquire', fieldId: 'f-deny' });
 
-  assert.deepEqual(bob.received, [{ type: 'lock:denied', fieldId: 'f-deny', holderId: 'alice' }]);
+  assert.deepEqual(bob.received, [
+    { type: 'lock:denied', fieldId: 'f-deny', holderId: 'alice', reason: 'held' },
+  ]);
+});
+
+test('a field with no editors restriction can be locked by anyone (unrestricted default)', () => {
+  const rooms = new RoomManager();
+  const alice = new FakeSocket();
+  rooms.registerClient(alice, 'alice');
+  rooms.handleMessage(alice, { type: 'join', fieldId: 'f-open' });
+
+  rooms.handleMessage(alice, { type: 'lock:acquire', fieldId: 'f-open' });
+
+  assert.deepEqual(alice.received.at(-1), { type: 'lock:granted', fieldId: 'f-open', holderId: 'alice' });
+});
+
+test('a field restricted to specific editors denies a non-editor with reason: unauthorized', () => {
+  const rooms = new RoomManager();
+  store.upsertField({
+    id: 'f-restricted',
+    documentId: 'doc-1',
+    parentFieldId: null,
+    kind: 'section',
+    title: 'Restricted',
+    content: '',
+    permissions: { approvers: [], editors: ['alice'] },
+    createdAt: 0,
+    updatedAt: 0,
+  });
+  const bob = new FakeSocket();
+  rooms.registerClient(bob, 'bob');
+  rooms.handleMessage(bob, { type: 'join', fieldId: 'f-restricted' });
+
+  rooms.handleMessage(bob, { type: 'lock:acquire', fieldId: 'f-restricted' });
+
+  assert.deepEqual(bob.received.at(-1), {
+    type: 'lock:denied',
+    fieldId: 'f-restricted',
+    holderId: '',
+    reason: 'unauthorized',
+  });
+});
+
+test('a field restricted to specific editors grants a listed editor', () => {
+  const rooms = new RoomManager();
+  store.upsertField({
+    id: 'f-restricted-2',
+    documentId: 'doc-1',
+    parentFieldId: null,
+    kind: 'section',
+    title: 'Restricted',
+    content: '',
+    permissions: { approvers: [], editors: ['alice'] },
+    createdAt: 0,
+    updatedAt: 0,
+  });
+  const alice = new FakeSocket();
+  rooms.registerClient(alice, 'alice');
+  rooms.handleMessage(alice, { type: 'join', fieldId: 'f-restricted-2' });
+
+  rooms.handleMessage(alice, { type: 'lock:acquire', fieldId: 'f-restricted-2' });
+
+  assert.deepEqual(alice.received.at(-1), {
+    type: 'lock:granted',
+    fieldId: 'f-restricted-2',
+    holderId: 'alice',
+  });
+});
+
+test('an unauthorized acquire attempt never actually takes the lock', () => {
+  const rooms = new RoomManager();
+  store.upsertField({
+    id: 'f-restricted-3',
+    documentId: 'doc-1',
+    parentFieldId: null,
+    kind: 'section',
+    title: 'Restricted',
+    content: '',
+    permissions: { approvers: [], editors: ['alice'] },
+    createdAt: 0,
+    updatedAt: 0,
+  });
+  const alice = new FakeSocket();
+  const bob = new FakeSocket();
+  rooms.registerClient(alice, 'alice');
+  rooms.registerClient(bob, 'bob');
+  rooms.handleMessage(alice, { type: 'join', fieldId: 'f-restricted-3' });
+  rooms.handleMessage(bob, { type: 'join', fieldId: 'f-restricted-3' });
+
+  rooms.handleMessage(bob, { type: 'lock:acquire', fieldId: 'f-restricted-3' }); // denied, unauthorized
+  rooms.handleMessage(alice, { type: 'lock:acquire', fieldId: 'f-restricted-3' }); // should still succeed
+
+  assert.deepEqual(alice.received.at(-1), {
+    type: 'lock:granted',
+    fieldId: 'f-restricted-3',
+    holderId: 'alice',
+  });
 });
 
 test('a client joining an already-locked field is told the current holder', () => {

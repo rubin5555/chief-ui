@@ -134,6 +134,11 @@ export class RoomManager {
   }
 
   private handleAcquire(socket: RoomSocket, client: ClientInfo, fieldId: string): void {
+    if (!this.isAuthorizedToEdit(fieldId, client.userId)) {
+      this.send(socket, { type: 'lock:denied', fieldId, holderId: '', reason: 'unauthorized' });
+      return;
+    }
+
     const result = this.lockManager.acquire(fieldId, client.userId);
     if (result.granted) {
       this.editBaselines.set(fieldId, store.getField(fieldId)?.content ?? '');
@@ -142,8 +147,22 @@ export class RoomManager {
       this.broadcastToField(fieldId, { type: 'lock:granted', fieldId, holderId: client.userId }, null);
       writeAuditLog({ fieldId, actorId: client.userId, action: 'lock_acquire' });
     } else {
-      this.send(socket, { type: 'lock:denied', fieldId, holderId: result.holderId });
+      this.send(socket, { type: 'lock:denied', fieldId, holderId: result.holderId, reason: 'held' });
     }
+  }
+
+  // Authorization source is the field's own permissions.editors (plan §3 —
+  // already present in the data model, unenforced before this). A field with
+  // no record yet, or an empty editors list, is treated as unrestricted: the
+  // real document-creation flow (plan §2's GraphQL CRUD layer, not built in
+  // this repo) is what would populate editors, so refusing everyone by
+  // default here would make every field permanently uneditable in this mock.
+  private isAuthorizedToEdit(fieldId: string, userId: string): boolean {
+    const field = store.getField(fieldId);
+    if (!field) return true;
+    const { editors } = field.permissions;
+    if (editors.length === 0) return true;
+    return editors.includes(userId);
   }
 
   private handleRelease(client: ClientInfo, fieldId: string): void {

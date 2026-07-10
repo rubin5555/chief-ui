@@ -60,7 +60,7 @@ const main = async () => {
   await wait(100);
   assertDeep(
     bob.log.at(-1),
-    { type: 'lock:denied', fieldId: 'f1', holderId: 'alice' },
+    { type: 'lock:denied', fieldId: 'f1', holderId: 'alice', reason: 'held' },
     'bob is denied the already-held lock',
   );
 

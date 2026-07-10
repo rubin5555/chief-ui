@@ -67,3 +67,19 @@ they're meant to back a future GraphQL resolver (plan §2) rather than travel
 over `/collab`. That's also why `scripts/smoke.mjs` doesn't exercise them —
 it's scoped to the WS protocol surface; the unit tests in
 `test/roomManager.test.ts` are what cover this instead.
+
+## Authorization
+
+`lock:acquire` checks the target field's `permissions.editors` (plan §3 —
+already present in the shared `NodePermissions` type, previously unenforced).
+A field with no record yet, or an empty `editors` list, is unrestricted —
+refusing everyone by default would make every field permanently uneditable in
+this mock, since nothing here populates `editors` except a test or a future
+real document-creation flow. A non-empty list restricts acquiring to exactly
+those user ids; a denial for this reason sends `lock:denied` with
+`reason: 'unauthorized'`, distinct from `reason: 'held'` (someone else
+currently has it — retrying later might work) so a client can tell the two
+apart. Same caveat as version history above: seeding a field's `editors` is a
+CRUD-layer concern with no WS message to drive it, so `scripts/smoke.mjs`
+only exercises the unrestricted default path — the restricted path is unit
+tested instead.
