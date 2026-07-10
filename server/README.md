@@ -46,3 +46,24 @@ heartbeat-timeout logic unit-testable without real sleeps. `RoomManager` itself
 depends only on the minimal `RoomSocket` interface (`send`/`readyState`), not
 the `ws` package, so it's testable with plain fake objects too — the real `ws`
 transport only shows up in `wsServer.ts`.
+
+## Version history & audit log
+
+Every lock release (explicit, disconnect, or heartbeat-timeout expiry) checks
+whether the field's content actually changed during that holder's session; if
+so, it writes one `version_snapshot` and one `edit` audit entry pointing at it
+(`RoomManager.finalizeEditSession`). A no-op session — lock taken and released
+with no edits — writes neither, which is what keeps this a per-*session*
+checkpoint instead of degenerating into a snapshot per keystroke. Restoring
+(`RoomManager.restoreVersion`) inserts a new snapshot copying the target
+content forward and fast-forwards the field's live content — it never deletes
+or rewrites history, so the restore itself stays visible in both the snapshot
+list and the audit log.
+
+These three (`listVersions`, `listAuditLog`, `restoreVersion`) are exposed as
+plain methods on `RoomManager`, not WS messages — version history and restore
+are document-management/CRUD concerns, not real-time collab traffic, so
+they're meant to back a future GraphQL resolver (plan §2) rather than travel
+over `/collab`. That's also why `scripts/smoke.mjs` doesn't exercise them —
+it's scoped to the WS protocol surface; the unit tests in
+`test/roomManager.test.ts` are what cover this instead.

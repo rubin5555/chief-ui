@@ -57,8 +57,27 @@ export const createMemoryStore = (): CollabStore => {
     },
     updateFieldContent: (fieldId, content, updatedAt) => {
       const existing = fields.get(fieldId);
-      if (!existing) return;
-      fields.set(fieldId, { ...existing, content, updatedAt });
+      if (existing) {
+        fields.set(fieldId, { ...existing, content, updatedAt });
+        return;
+      }
+      // A real backend requires the field to exist first (created via the
+      // plan's GraphQL CRUD layer, §2 — not built yet in this repo). Until
+      // that layer exists, auto-create a minimal record so RoomManager's
+      // content flow — and version snapshots off the back of it — works
+      // without an external "create field" step. Metadata beyond content is
+      // deliberately blank; a real implementation would reject this instead.
+      fields.set(fieldId, {
+        id: fieldId,
+        documentId: '',
+        parentFieldId: null,
+        kind: 'section',
+        title: '',
+        content,
+        permissions: { approvers: [], editors: [] },
+        createdAt: updatedAt,
+        updatedAt,
+      });
     },
     addVersionSnapshot: (snapshot) => {
       const list = snapshots.get(snapshot.fieldId) ?? [];

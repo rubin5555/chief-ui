@@ -1,4 +1,6 @@
 import { writeAuditLog } from '../audit.js';
+import { restoreVersionSnapshot, writeVersionSnapshot } from '../snapshot.js';
+import type { AuditEntry, VersionSnapshot } from '../store/memoryStore.js';
 import { store } from '../store/memoryStore.js';
 import type { CollabMessage } from '../types.js';
 import { LockManager } from './LockManager.js';
@@ -32,6 +34,10 @@ export class RoomManager {
   private readonly contentDebounceMs: number;
   private readonly pendingContent = new Map<string, PendingContent>();
   private readonly pendingContentTimers = new Map<string, NodeJS.Timeout>();
+  // Content as of the moment a lock was granted — compared against current
+  // content on release to decide whether an edit session actually changed
+  // anything (and so whether it's worth a version snapshot at all).
+  private readonly editBaselines = new Map<string, string>();
   private sweepInterval: NodeJS.Timeout | null = null;
 
   constructor(options: RoomManagerOptions = {}) {
@@ -56,6 +62,7 @@ export class RoomManager {
     // until the heartbeat-timeout sweep catches up to it.
     const releasedFields = this.lockManager.releaseAllHeldBy(client.userId);
     for (const fieldId of releasedFields) {
+      this.finalizeEditSession(fieldId, client.userId);
       this.broadcastToField(fieldId, { type: 'lock:released', fieldId, holderId: client.userId }, null);
     }
 
@@ -106,7 +113,14 @@ export class RoomManager {
     }
     members.add(socket);
 
-    // Bring the joining client up to date on the field's current lock, if any.
+    // Bring the joining client up to date: current content (if the field has
+    // any tracked yet) and the current lock holder (if any). Initial load of
+    // a *never-edited* field is still the GraphQL layer's job (plan §6's
+    // "prerequisite gap") — this only covers what changed after that load.
+    const field = store.getField(fieldId);
+    if (field) {
+      this.send(socket, { type: 'content', fieldId, html: field.content });
+    }
     const holderId = this.lockManager.getHolder(fieldId);
     if (holderId) {
       this.send(socket, { type: 'lock:granted', fieldId, holderId });
@@ -122,6 +136,7 @@ export class RoomManager {
   private handleAcquire(socket: RoomSocket, client: ClientInfo, fieldId: string): void {
     const result = this.lockManager.acquire(fieldId, client.userId);
     if (result.granted) {
+      this.editBaselines.set(fieldId, store.getField(fieldId)?.content ?? '');
       // Broadcast to the whole room (including the requester) so everyone's
       // "X is editing" badge updates from one code path.
       this.broadcastToField(fieldId, { type: 'lock:granted', fieldId, holderId: client.userId }, null);
@@ -134,8 +149,24 @@ export class RoomManager {
   private handleRelease(client: ClientInfo, fieldId: string): void {
     const released = this.lockManager.release(fieldId, client.userId);
     if (!released) return;
+    this.finalizeEditSession(fieldId, client.userId);
     this.broadcastToField(fieldId, { type: 'lock:released', fieldId, holderId: client.userId }, null);
     writeAuditLog({ fieldId, actorId: client.userId, action: 'lock_release' });
+  }
+
+  // Called on every path a lock can end (explicit release, disconnect, or
+  // heartbeat-timeout expiry): if the field's content actually changed during
+  // this holder's session, snapshot it and log an `edit` audit entry pointing
+  // at that snapshot. A no-op session (lock taken and released with no edits)
+  // produces neither — snapshots are per *session*, not per keystroke.
+  private finalizeEditSession(fieldId: string, holderId: string): void {
+    const baseline = this.editBaselines.get(fieldId);
+    this.editBaselines.delete(fieldId);
+    if (baseline === undefined) return;
+    const current = store.getField(fieldId)?.content ?? '';
+    if (current === baseline) return;
+    const snapshotId = writeVersionSnapshot(fieldId, current, holderId);
+    writeAuditLog({ fieldId, actorId: holderId, action: 'edit', diffRef: snapshotId });
   }
 
   private handleContent(socket: RoomSocket, client: ClientInfo, fieldId: string, html: string): void {
@@ -176,6 +207,7 @@ export class RoomManager {
     this.sweepInterval = setInterval(() => {
       const expired = this.lockManager.sweepExpired();
       for (const { fieldId, holderId } of expired) {
+        this.finalizeEditSession(fieldId, holderId);
         this.broadcastToField(fieldId, { type: 'lock:released', fieldId, holderId }, null);
       }
     }, intervalMs);
@@ -184,5 +216,32 @@ export class RoomManager {
   stopExpirySweep(): void {
     if (this.sweepInterval) clearInterval(this.sweepInterval);
     this.sweepInterval = null;
+  }
+
+  // Read-side pass-throughs — the natural backing for the plan's §2 GraphQL
+  // version-history/audit-log queries, once that layer exists. Exposed here
+  // now so the logic has one entry point rather than callers reaching into
+  // the store directly.
+  listVersions(fieldId: string): VersionSnapshot[] {
+    return store.listVersionSnapshots(fieldId);
+  }
+
+  listAuditLog(fieldId: string): AuditEntry[] {
+    return store.listAuditEntries(fieldId);
+  }
+
+  // Restore = a new snapshot copying old content forward, never a destructive
+  // rewrite (plan §5). If the field currently has an active room, broadcast
+  // the restored content live so anyone watching sees it without a refresh.
+  // Returns the new snapshot's id, or null if snapshotId doesn't exist.
+  restoreVersion(fieldId: string, snapshotId: string, actorId: string): string | null {
+    const newSnapshotId = restoreVersionSnapshot(fieldId, snapshotId, actorId);
+    if (!newSnapshotId) return null;
+    writeAuditLog({ fieldId, actorId, action: 'restore', diffRef: newSnapshotId });
+    const field = store.getField(fieldId);
+    if (field) {
+      this.broadcastToField(fieldId, { type: 'content', fieldId, html: field.content }, null);
+    }
+    return newSnapshotId;
   }
 }
