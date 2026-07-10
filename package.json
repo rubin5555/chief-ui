@@ -14,10 +14,12 @@
 		"test:ui": "playwright test --ui"
 	},
 	"dependencies": {
+		"@apollo/client": "^3.14.1",
 		"@tanstack/react-form": "^1.33.0",
 		"@tanstack/react-router": "^1.170.17",
 		"@tanstack/react-virtual": "^3.14.5",
 		"@tinymce/tinymce-react": "^6.3.0",
+		"graphql": "^16.14.2",
 		"lucide-react": "^0.487.0",
 		"react": "19.2.7",
 		"react-dom": "19.2.7",
@@ -32,8 +34,8 @@
 		"@rspack/core": "^2.1.0",
 		"@rspack/dev-server": "^2.1.0",
 		"@rspack/plugin-react-refresh": "^2.0.0",
-		"@tanstack/react-router-devtools": "^1.167.0",
 		"@tanstack/react-form-devtools": "^0.2.29",
+		"@tanstack/react-router-devtools": "^1.167.0",
 		"@tanstack/router-plugin": "^1.168.19",
 		"@types/node": "^26.1.0",
 		"@types/react": "^19.0.0",

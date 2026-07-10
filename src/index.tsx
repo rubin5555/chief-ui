@@ -1,6 +1,8 @@
+import { ApolloProvider } from '@apollo/client';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { apolloClient } from './api/client';
 import { routeTree } from './routeTree.gen';
 import { GlobalStyles } from './styles/GlobalStyles';
 import './styles/theme.css';
@@ -15,7 +17,9 @@ declare module '@tanstack/react-router' {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <GlobalStyles />
-    <RouterProvider router={router} />
+    <ApolloProvider client={apolloClient}>
+      <GlobalStyles />
+      <RouterProvider router={router} />
+    </ApolloProvider>
   </StrictMode>,
 );
