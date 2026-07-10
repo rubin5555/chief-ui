@@ -1,12 +1,18 @@
+import { useQuery } from '@apollo/client';
 import { ChevronLeft, Database, X } from 'lucide-react';
 import type { MouseEvent } from 'react';
 import { useEffect } from 'react';
+import {
+  GET_SOURCE_SYSTEMS_QUERY,
+  type GetSourceSystemsResult,
+  SOURCE_SYSTEMS_FALLBACK,
+} from '@/api/sourceSystems';
 import { ColumnHeading, ColumnPane, RowGroup } from './components/columns.shared.styles';
 import { FieldsColumn } from './components/FieldsColumn';
 import { OperationsColumn } from './components/OperationsColumn';
 import { useDataImportAnalytics } from './DataImportModal.analytics';
 import type { DynamicField, SourceOperation, SourceSystem } from './DataImportModal.constants';
-import { MODAL_TITLE, SOURCE_SYSTEMS } from './DataImportModal.constants';
+import { MODAL_TITLE } from './DataImportModal.constants';
 import {
   Card,
   CloseBtn,
@@ -56,6 +62,9 @@ export const DataImportModal = ({
 
   const picker = useDataImportPicker({ existingFields, onAdd, onRemove: handleFieldRemoved });
 
+  const { data } = useQuery<GetSourceSystemsResult>(GET_SOURCE_SYSTEMS_QUERY);
+  const sourceSystems = data?.sourceSystems ?? SOURCE_SYSTEMS_FALLBACK.sourceSystems;
+
   useEffect(() => {
     trackModalOpened();
   }, []);
@@ -100,7 +109,7 @@ export const DataImportModal = ({
         <PickerBody>
           <ColumnPane $width={SYSTEMS_COLUMN_WIDTH} data-testid={DATA_IMPORT_IDS.systemsColumn}>
             <ColumnHeading>מערכת</ColumnHeading>
-            {SOURCE_SYSTEMS.map((system) => {
+            {sourceSystems.map((system) => {
               const isActive = picker.selectedSystem?.id === system.id;
               return (
                 <RowGroup key={system.id}>

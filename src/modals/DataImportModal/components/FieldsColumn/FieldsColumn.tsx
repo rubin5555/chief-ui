@@ -1,5 +1,10 @@
+import { useQuery } from '@apollo/client';
 import { Check, ChevronDown, Plus, X } from 'lucide-react';
-import { FIELD_CHILDREN } from '../../DataImportModal.constants';
+import {
+  FIELD_CHILDREN_FALLBACK,
+  GET_FIELD_CHILDREN_QUERY,
+  type GetFieldChildrenResult,
+} from '@/api/fieldChildren';
 import { DATA_IMPORT_IDS } from '../../DataImportModal.testids';
 import type { DataImportPicker } from '../../useDataImportPicker';
 import { ColumnEmptyState, ColumnHeading, ColumnPane } from '../columns.shared.styles';
@@ -48,6 +53,9 @@ const LinkToggleIcons = ({ isLinked, size }: LinkToggleIconsProps) =>
 export const FieldsColumn = ({ picker, onFieldToggled }: FieldsColumnProps) => {
   const hasSelection = picker.selectedInstances.length > 0 && picker.selectedOperation !== null;
 
+  const { data } = useQuery<GetFieldChildrenResult>(GET_FIELD_CHILDREN_QUERY);
+  const fieldChildren = data?.fieldChildren ?? FIELD_CHILDREN_FALLBACK.fieldChildren;
+
   const handleFieldClick = (fieldName: string, hasChildren: boolean) => () => {
     if (hasChildren) {
       picker.setExpandedField(picker.expandedField === fieldName ? null : fieldName);
@@ -64,7 +72,7 @@ export const FieldsColumn = ({ picker, onFieldToggled }: FieldsColumnProps) => {
       {hasSelection && picker.selectedOperation ? (
         picker.selectedOperation.fields.map((fieldName) => {
           const isLinked = picker.isFieldLinked(fieldName);
-          const subFields = FIELD_CHILDREN[fieldName];
+          const subFields = fieldChildren[fieldName];
           const isExpanded = picker.expandedField === fieldName;
           return (
             <div key={fieldName}>
