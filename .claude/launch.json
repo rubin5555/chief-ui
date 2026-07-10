@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["exec", "rspack", "serve"],
+      "port": 4319,
+      "autoPort": true
+    }
+  ]
+}

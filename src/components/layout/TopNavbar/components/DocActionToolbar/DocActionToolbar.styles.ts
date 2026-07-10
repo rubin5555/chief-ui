@@ -1,0 +1,95 @@
+import styled from 'styled-components';
+import { colors, gray } from '@/styles/theme';
+
+export const ToolbarRoot = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+`;
+
+export const IconAction = styled.button`
+  padding: 6px;
+  border-radius: 9999px;
+  transition: background-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${gray[500]};
+  &:hover { background-color: ${gray[100]}; }
+`;
+
+export const Divider = styled.span`
+  width: 1px;
+  height: 16px;
+  background: ${gray[200]};
+  margin: 0 2px;
+`;
+
+export const ZoomControlRoot = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+export const ZoomButton = styled.button`
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  transition: background-color 0.15s;
+  color: ${gray[600]};
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  user-select: none;
+  &:hover { background-color: ${gray[100]}; }
+`;
+
+export const ZoomValue = styled.span`
+  font-size: 12px;
+  color: ${gray[600]};
+  width: 40px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+`;
+
+export const SearchField = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: ${gray[100]};
+  border-radius: 9999px;
+  padding: 4px 12px;
+`;
+
+export const SearchFieldInput = styled.input`
+  font-size: 12px;
+  background: transparent;
+  outline: none;
+  width: 128px;
+  text-align: right;
+  color: ${gray[700]};
+  &::placeholder { color: ${gray[400]}; }
+`;
+
+export const SearchCloseButton = styled.button`
+  padding: 2px;
+  border-radius: 9999px;
+  transition: background-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:hover { background-color: ${gray[200]}; }
+`;
+
+export const SpinningLoader = styled.span`
+  display: inline-flex;
+  animation: spin 1s linear infinite;
+  color: ${colors.primary};
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;

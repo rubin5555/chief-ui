@@ -1,0 +1,1 @@
+export { ExpandedMemberBlock } from './ExpandedMemberBlock';

@@ -1,0 +1,13 @@
+# Normalize all text files to LF in the repo and in the working tree.
+# Biome formats with LF (its default); this keeps git, the formatter, and
+# CI (Linux) agreeing so diffs never fill up with line-ending churn.
+* text=auto eol=lf
+
+# Binary assets — never normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
