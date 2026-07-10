@@ -37,17 +37,20 @@ export const TABS: Tab[] = [
 ];
 
 export const PERMISSIONS: ListEntry[] = [
-  { id: '1', icon: <Eye size={16} />, label: 'צפייה' },
-  { id: '2', icon: <Send size={16} />, label: 'שליחה' },
-  { id: '3', icon: <CheckCircle size={16} />, label: 'אישור' },
-  { id: '4', icon: <Share2 size={16} />, label: 'שיתוף' },
-  { id: '5', icon: <Search size={16} />, label: 'חיפוש' },
+  { id: '1', icon: <Eye size={16} />, label: 'נצפה פקודה' },
+  { id: '2', icon: <Send size={16} />, label: 'מפיץ פקודות' },
+  { id: '3', icon: <CheckCircle size={16} />, label: 'מאשר פקודות' },
+  { id: '4', icon: <Share2 size={16} />, label: 'משתף פקודות' },
+  { id: '5', icon: <Search size={16} />, label: 'מתחקר' },
 ];
 
 export const DEPARTMENTS: ListEntry[] = [
-  { id: '1', icon: <Folder size={16} />, label: 'מחלקה א׳' },
-  { id: '2', icon: <Folder size={16} />, label: 'מחלקה ב׳' },
-  { id: '3', icon: <Folder size={16} />, label: 'מחלקה ג׳' },
+  { id: '1', icon: <Folder size={16} />, label: 'מחלקת משאבי אנוש' },
+  { id: '2', icon: <Folder size={16} />, label: 'מחלקת כספים' },
+  { id: '3', icon: <Folder size={16} />, label: 'מחלקת טכנולוגיה' },
+  { id: '4', icon: <Folder size={16} />, label: 'מחלקת תפעול' },
+  { id: '5', icon: <Folder size={16} />, label: 'מחלקת שיווק' },
+  { id: '6', icon: <Folder size={16} />, label: 'מחלקת מכירות' },
 ];
 
 export const DEPARTMENT_FILTER_OPTIONS: string[] = DEPARTMENTS.map(
