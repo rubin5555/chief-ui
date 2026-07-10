@@ -1,5 +1,5 @@
 import { Editor } from '@tinymce/tinymce-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'tinymce/tinymce';
 import 'tinymce/icons/default';
 import 'tinymce/themes/silver';
@@ -12,6 +12,8 @@ import 'tinymce/plugins/image/plugin';
 import 'tinymce/skins/ui/oxide/skin.min.css';
 import 'tinymce/skins/ui/oxide/content.inline.min.css';
 
+import type { CursorPath } from '@/collab/types';
+import { useCollabContext } from '@/context/CollabContext';
 import { useContentEditorContext } from '@/context/ContentEditorContext';
 import {
   CONTENT_CHIP_HTML_MIME,
@@ -23,10 +25,14 @@ import {
   EditorBody,
   EditorContent,
   EditorWrapper,
+  LockBadge,
   PreviewContent,
+  PreviewWrapper,
   ToolbarContainer,
 } from './ContentEditor.styles';
 import { CONTENT_EDITOR_IDS } from './ContentEditor.testids';
+import { CursorOverlay } from './CursorOverlay';
+import { clampOffset, getNodePath, resolveNodePath, serializeSelection } from './nodePath';
 
 interface EditorDragEvent {
   clientX: number;
@@ -41,7 +47,11 @@ interface EditorClickEvent {
 
 interface TinyMceEditor {
   focus(): void;
-  selection: { setRng(rng: Range): void; placeCaretAt(clientX: number, clientY: number): void };
+  selection: {
+    setRng(rng: Range): void;
+    placeCaretAt(clientX: number, clientY: number): void;
+    getRng(): Range;
+  };
   nodeChanged(): void;
   getBody(): HTMLElement;
   getContent(): string;
@@ -53,53 +63,6 @@ interface TinyMceEditor {
   addCommand(name: string, callback: () => void): void;
   undoManager: { ignore(callback: () => void): void; add(): void };
 }
-
-interface SerializedSelection {
-  startPath: number[];
-  startOffset: number;
-  endPath: number[];
-  endOffset: number;
-}
-
-// Whitespace-only text nodes (e.g. the newline TinyMCE's serializer pretty-prints
-// between block elements on save) aren't guaranteed to exist in both trees a path is
-// resolved against, so they're excluded from sibling indices on both ends.
-const isInsignificantTextNode = (node: Node): boolean =>
-  node.nodeType === Node.TEXT_NODE && !(node as Text).data.trim();
-
-const significantChildren = (node: Node): Node[] =>
-  Array.prototype.filter.call(node.childNodes, (child: Node) => !isInsignificantTextNode(child));
-
-// Path of child indices from `root` down to `node`, so the same position can be
-// re-located inside a *different* DOM tree that mirrors root's structure (e.g. the
-// TinyMCE body mounted from the same HTML string as this preview).
-const getNodePath = (root: Node, node: Node): number[] | null => {
-  const path: number[] = [];
-  let current: Node | null = node;
-  while (current && current !== root) {
-    const parent: Node | null = current.parentNode;
-    if (!parent) return null;
-    path.unshift(significantChildren(parent).indexOf(current));
-    current = parent;
-  }
-  return current === root ? path : null;
-};
-
-const resolveNodePath = (root: Node, path: number[]): Node | null => {
-  let current: Node = root;
-  for (const index of path) {
-    const child = significantChildren(current)[index];
-    if (!child) return null;
-    current = child;
-  }
-  return current;
-};
-
-const clampOffset = (node: Node, offset: number): number => {
-  const max =
-    node.nodeType === Node.TEXT_NODE ? (node as Text).data.length : node.childNodes.length;
-  return Math.min(offset, max);
-};
 
 // caretRangeFromPoint is Chromium/WebKit-only and caretPositionFromPoint is its Firefox
 // counterpart — neither is guaranteed at runtime, so both are feature-detected.
@@ -134,10 +97,14 @@ const runAfterFrame = (callback: () => void) => {
   setTimeout(runOnce, AFTER_FRAME_FALLBACK_MS);
 };
 
+const CURSOR_SEND_DEBOUNCE_MS = 150;
+const HEARTBEAT_INTERVAL_MS = 8000;
+
 export interface ContentEditorProps {
   // Stable identity for the field's content (e.g. a section id), used to keep undo/redo
   // history alive across the TinyMCE instance being unmounted and remounted — such as
-  // when this field scrolls out of and back into a virtualised list.
+  // when this field scrolls out of and back into a virtualised list. Also the collab
+  // layer's room id (plan §3): one lock, one set of remote cursors/content per id.
   id: string;
   value: string;
   onChange: (v: string) => void;
@@ -155,15 +122,16 @@ export const ContentEditor = ({
   disabled = false,
 }: ContentEditorProps) => {
   const ctx = useContentEditorContext();
+  const collab = useCollabContext();
   const myId = useRef(`ce-${self.crypto.randomUUID()}`);
   const localToolbarId = useRef(`ce-tb-${myId.current}`);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
-  const pendingSelectionRef = useRef<SerializedSelection | null>(null);
+  const pendingSelectionRef = useRef<CursorPath | null>(null);
   // Chip HTML dropped on the inactive preview, inserted once the editor mounts.
   const pendingInsertHtmlRef = useRef<string | null>(null);
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
+  const lastAppliedRemoteAtRef = useRef(0);
 
   const [editorReady, setEditorReady] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -173,10 +141,67 @@ export const ContentEditor = ({
   const isActive = !ctx || ctx.activeId === myId.current;
   const toolbarContainerId = ctx ? ctx.toolbarId : localToolbarId.current;
 
+  const remoteLock = ctx?.lockState.get(id) ?? null;
+  const isLockHolder = !!collab && remoteLock?.holderId === collab.userId;
+  const lockedByOther = !!remoteLock && !isLockHolder;
+  const remoteCursorPath = ctx?.remoteCursors.get(id) ?? null;
+
+  const isLockHolderRef = useRef(isLockHolder);
+  isLockHolderRef.current = isLockHolder;
+
+  // CollabContext's value is a plain object recomputed whenever lockState/remoteCursors/
+  // remoteContent change (i.e. on every incoming WS message) — its identity is not stable
+  // across renders. Effects below need a `collab` reference but must NOT re-run every time
+  // a message arrives (a join/leave effect keyed on the object itself would re-fire on
+  // every message its own join triggers a response for, looping forever), so they read it
+  // through this ref and key their dependency arrays on collab?.userId instead, which only
+  // actually changes when the connection itself is torn down and rebuilt.
+  const collabRef = useRef(collab);
+  collabRef.current = collab;
+
+  // Pushes local edits into collab too, but only while this client actually
+  // holds the field's lock — with no collab wired up, or while just viewing
+  // a remote push (see the remote-content effect below), this is identical
+  // to the original plain onChange.
+  const handleEditorChange = (newValue: string) => {
+    onChange(newValue);
+    if (collab && isLockHolderRef.current) collab.sendContent(id, newValue);
+  };
+  onChangeRef.current = handleEditorChange;
+
+  // Every mounted field (active or previewing) joins its own collab room, so
+  // remote content/cursor/lock updates reach the preview even when this
+  // client never activates the field itself.
+  useEffect(() => {
+    if (!collabRef.current) return;
+    collabRef.current.joinField(id);
+    return () => collabRef.current?.leaveField(id);
+  }, [id]);
+
+  // A remote content push (only ever sent to non-holders — see RoomManager's
+  // authorization check server-side) is applied the same way a local edit
+  // is: through onChange, so it flows into the parent's document tree and
+  // the preview re-renders from the updated `value` like any other change.
+  const remoteUpdate = collab?.remoteContent.get(id);
+  useEffect(() => {
+    if (!remoteUpdate || remoteUpdate.receivedAt <= lastAppliedRemoteAtRef.current) return;
+    lastAppliedRemoteAtRef.current = remoteUpdate.receivedAt;
+    onChangeRef.current(remoteUpdate.html);
+  }, [remoteUpdate]);
+
+  // Keeps the server from auto-releasing this lock for silence (plan §3's
+  // 30s timeout) while we're still the active holder.
+  useEffect(() => {
+    if (!collabRef.current || !isLockHolder) return;
+    const interval = setInterval(() => collabRef.current?.sendHeartbeat(id), HEARTBEAT_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [isLockHolder, id]);
+
   const deactivate = () => {
     if (!ctx) return;
     ctx.setActive(null);
     setEditorReady(false);
+    collab?.releaseLock(id);
   };
 
   // Capture the pointer so the eventual pointerup/click stays targeted at this
@@ -194,28 +219,18 @@ export const ContentEditor = ({
   // already reflects native double/triple-click word/paragraph selection.
   const handlePreviewPointerUp = () => {
     if (disabled || !ctx) return;
+    // Known to be held by someone else — skip the request entirely rather
+    // than optimistically activating and immediately rolling back.
+    if (lockedByOther) return;
 
     pendingSelectionRef.current = null;
-
     const root = previewRef.current;
     const selection = window.getSelection();
-    if (root && selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      if (root.contains(range.startContainer) && root.contains(range.endContainer)) {
-        const startPath = getNodePath(root, range.startContainer);
-        const endPath = getNodePath(root, range.endContainer);
-        if (startPath && endPath) {
-          pendingSelectionRef.current = {
-            startPath,
-            startOffset: range.startOffset,
-            endPath,
-            endOffset: range.endOffset,
-          };
-        }
-      }
+    if (root && selection) {
+      pendingSelectionRef.current = serializeSelection(root, selection);
     }
 
-    ctx.setActive(myId.current);
+    ctx.requestActivate(id, myId.current);
   };
 
   const handleInit = (_: unknown, editor: TinyMceEditor) => {
@@ -322,9 +337,28 @@ export const ContentEditor = ({
     });
   };
 
+  // Broadcasts this editor's own selection to the room, debounced, but only
+  // while we're actually the lock holder — isLockHolderRef (not the plain
+  // isLockHolder closed over at setup time) is what keeps this correct after
+  // TinyMCE's `setup` callback has already run once at mount.
+  const handleCursorSetup = (editor: TinyMceEditor) => {
+    if (!collab) return;
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    editor.on('SelectionChange', () => {
+      if (!isLockHolderRef.current) return;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const body = editor.getBody();
+        const path = serializeSelection(body, window.getSelection());
+        if (path) collab.sendCursor(id, path);
+      }, CURSOR_SEND_DEBOUNCE_MS);
+    });
+  };
+
   const handleEditorSetup = (editor: TinyMceEditor) => {
     handleUndoRedoSetup(editor);
     handleChipSetup(editor);
+    handleCursorSetup(editor);
   };
 
   const handlePreviewDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -341,7 +375,7 @@ export const ContentEditor = ({
   // the insertion once TinyMCE has mounted at the equivalent caret.
   const handlePreviewDrop = (e: React.DragEvent<HTMLDivElement>) => {
     setIsDragOver(false);
-    if (disabled || !ctx) return;
+    if (disabled || !ctx || lockedByOther) return;
     const chipHtml = e.dataTransfer.getData(CONTENT_CHIP_HTML_MIME);
     if (!chipHtml) return;
     e.preventDefault();
@@ -362,7 +396,7 @@ export const ContentEditor = ({
     }
 
     pendingInsertHtmlRef.current = chipHtml;
-    ctx.setActive(myId.current);
+    ctx.requestActivate(id, myId.current);
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
@@ -392,7 +426,7 @@ export const ContentEditor = ({
               disabled={disabled}
               value={value}
               licenseKey={TINYMCE_LICENSE_KEY}
-              onEditorChange={onChange}
+              onEditorChange={handleEditorChange}
               onInit={handleInit}
               init={{
                 ...TINYMCE_INIT,
@@ -418,21 +452,35 @@ export const ContentEditor = ({
 
       {/* Shared mode inactive state */}
       {ctx && !isActive && (
-        <PreviewContent
-          ref={previewRef}
-          $minHeight={minHeight}
-          $isEmpty={!value}
-          $disabled={disabled}
-          $isDragOver={isDragOver}
-          onPointerDown={handlePreviewPointerDown}
-          onPointerUp={handlePreviewPointerUp}
-          onDragOver={handlePreviewDragOver}
-          onDragLeave={handlePreviewDragLeave}
-          onDrop={handlePreviewDrop}
-          data-testid={CONTENT_EDITOR_IDS.content}
-          data-placeholder={placeholder}
-          dangerouslySetInnerHTML={{ __html: value }}
-        />
+        <PreviewWrapper>
+          <PreviewContent
+            ref={previewRef}
+            $minHeight={minHeight}
+            $isEmpty={!value}
+            $disabled={disabled}
+            $isDragOver={isDragOver}
+            onPointerDown={handlePreviewPointerDown}
+            onPointerUp={handlePreviewPointerUp}
+            onDragOver={handlePreviewDragOver}
+            onDragLeave={handlePreviewDragLeave}
+            onDrop={handlePreviewDrop}
+            data-testid={CONTENT_EDITOR_IDS.content}
+            data-placeholder={placeholder}
+            dangerouslySetInnerHTML={{ __html: value }}
+          />
+          {remoteLock && (
+            <LockBadge data-testid={CONTENT_EDITOR_IDS.lockBadge}>
+              בעריכה על ידי {remoteLock.holderId}
+            </LockBadge>
+          )}
+          {remoteLock && remoteCursorPath && (
+            <CursorOverlay
+              containerRef={previewRef}
+              path={remoteCursorPath}
+              label={remoteLock.holderId}
+            />
+          )}
+        </PreviewWrapper>
       )}
     </EditorWrapper>
   );

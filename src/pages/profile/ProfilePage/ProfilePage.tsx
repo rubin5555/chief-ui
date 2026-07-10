@@ -310,6 +310,7 @@ export const ProfilePage = () => {
             mode={templateModalMode}
             initialName={editingTemplate?.name}
             departmentOptions={DEPARTMENT_FILTER_OPTIONS}
+            currentUserId={profile.id}
             onClose={handleTemplateModalClose}
             onSave={noop}
           />
