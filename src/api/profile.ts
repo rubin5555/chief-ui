@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { registerStub } from './stubLink';
 
 // DTO owned by the api layer, independent of ProfileSidebar's ProfileInfo prop
 // type — the two happen to match today, but a UI component's prop shape
@@ -29,23 +30,32 @@ export const UPDATE_PROFILE_MUTATION = gql`
   }
 `;
 
-// ponytail: no backend/resolver yet — resolves with a hardcoded fallback
-// instead of calling apolloClient.query(GET_PROFILE_QUERY). Swap the body for
-// a real query when a resolver exists; callers already await a Promise<ProfileDto>
-// so the signature won't need to change.
-const FALLBACK_PROFILE: ProfileDto = {
+export interface GetProfileResult {
+  profile: ProfileDto;
+}
+
+export interface UpdateProfileResult {
+  updateProfile: ProfileDto;
+}
+
+interface UpdateProfileVariables {
+  input: Partial<ProfileDto>;
+}
+
+// ponytail: no backend/resolver yet — registered on stubLink instead of a
+// real resolver, so it still flows through useQuery/useMutation exactly like
+// the eventual real operation will. Delete this registration once GetProfile
+// has a real resolver; call sites don't change.
+export const PROFILE_FALLBACK: ProfileDto = {
   name: 'ישראל ישראלי',
   id: '1234567',
   organization: 'אגף המבצעים',
 };
 
-export const fetchProfile = async (): Promise<ProfileDto> => FALLBACK_PROFILE;
+registerStub('GetProfile', (): GetProfileResult => ({ profile: PROFILE_FALLBACK }));
 
-// ponytail: same ceiling as fetchProfile — mutates the in-memory fallback
-// instead of calling apolloClient.mutate(UPDATE_PROFILE_MUTATION). Swap for a
-// real mutation (with an explicit cache `update`, per state-network.md) once
-// a resolver exists.
-export const updateProfile = async (input: Partial<ProfileDto>): Promise<ProfileDto> => {
-  Object.assign(FALLBACK_PROFILE, input);
-  return FALLBACK_PROFILE;
-};
+registerStub('UpdateProfile', (variables): UpdateProfileResult => {
+  const { input } = variables as unknown as UpdateProfileVariables;
+  Object.assign(PROFILE_FALLBACK, input);
+  return { updateProfile: PROFILE_FALLBACK };
+});

@@ -1,6 +1,15 @@
+import { useQuery } from '@apollo/client';
 import { getRouteApi } from '@tanstack/react-router';
 import { User } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
+import { GET_LISTS_QUERY, type GetListsResult, LISTS_FALLBACK } from '@/api/lists';
+import { GET_PROFILE_QUERY, type GetProfileResult, PROFILE_FALLBACK } from '@/api/profile';
+import {
+  GET_SIGNATURES_QUERY,
+  type GetSignaturesResult,
+  SIGNATURES_FALLBACK,
+} from '@/api/signatures';
+import { GET_TEMPLATES_QUERY, type GetTemplatesResult, TEMPLATES_FALLBACK } from '@/api/templates';
 import { AppShell } from '@/components/layout/AppShell';
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { NotificationsMenu } from '@/components/layout/TopNavbar/components/NotificationsMenu';
@@ -23,17 +32,11 @@ import type { SignatureType } from '../components/tabs/SignaturesPanel';
 import type { Template } from '../components/tabs/TemplatesPanel';
 import { useProfilePageAnalytics } from './ProfilePage.analytics';
 import {
-  DELETED_LISTS,
-  DELETED_TEMPLATES,
   DEPARTMENT_FILTER_OPTIONS,
   DEPARTMENTS,
-  LISTS,
   PERMISSIONS,
-  PROFILE,
   PROFILE_TAB_IDS,
-  SIGNATURES,
   TABS,
-  TEMPLATES,
 } from './ProfilePage.constants';
 import {
   BrandSpan,
@@ -86,6 +89,24 @@ export const ProfilePage = () => {
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [showEnvironmentRequest, setShowEnvironmentRequest] = useState(false);
 
+  // No backend yet — each query flows through stubLink and resolves from the
+  // same hardcoded fallback the api/*.ts file registers, so this defaulting
+  // never actually kicks in today. It's here for the one tick before a real
+  // resolver's response lands, once one exists.
+  const { data: profileData } = useQuery<GetProfileResult>(GET_PROFILE_QUERY);
+  const profile = profileData?.profile ?? PROFILE_FALLBACK;
+
+  const { data: templatesData } = useQuery<GetTemplatesResult>(GET_TEMPLATES_QUERY);
+  const templates = templatesData?.templates ?? TEMPLATES_FALLBACK.templates;
+  const deletedTemplates = templatesData?.deletedTemplates ?? TEMPLATES_FALLBACK.deletedTemplates;
+
+  const { data: signaturesData } = useQuery<GetSignaturesResult>(GET_SIGNATURES_QUERY);
+  const signatures = signaturesData?.signatures ?? SIGNATURES_FALLBACK.signatures;
+
+  const { data: listsData } = useQuery<GetListsResult>(GET_LISTS_QUERY);
+  const lists = listsData?.lists ?? LISTS_FALLBACK.lists;
+  const deletedLists = listsData?.deletedLists ?? LISTS_FALLBACK.deletedLists;
+
   const {
     trackTabChanged,
     trackMailingListOpened,
@@ -107,13 +128,13 @@ export const ProfilePage = () => {
     trackMailingListOpened();
   };
   const handleListEdit = (id: string) => {
-    const list = LISTS.find((l) => l.id === id);
+    const list = lists.find((l) => l.id === id);
     if (!list) return;
     setEditingList(list);
     setListModalMode('edit');
   };
   const handleListDuplicate = (id: string) => {
-    const list = LISTS.find((l) => l.id === id);
+    const list = lists.find((l) => l.id === id);
     if (!list) return;
     setEditingList(list);
     setListModalMode('duplicate');
@@ -144,13 +165,13 @@ export const ProfilePage = () => {
     setTemplateModalMode('new');
   };
   const handleTemplateEdit = (id: string) => {
-    const template = [...TEMPLATES, ...DELETED_TEMPLATES].find((t) => t.id === id);
+    const template = [...templates, ...deletedTemplates].find((t) => t.id === id);
     if (!template) return;
     setEditingTemplate(template);
     setTemplateModalMode('edit');
   };
   const handleTemplateDuplicate = (id: string) => {
-    const template = [...TEMPLATES, ...DELETED_TEMPLATES].find((t) => t.id === id);
+    const template = [...templates, ...deletedTemplates].find((t) => t.id === id);
     if (!template) return;
     setEditingTemplate(template);
     setTemplateModalMode('duplicate');
@@ -176,8 +197,8 @@ export const ProfilePage = () => {
       case PROFILE_TAB_IDS.TEMPLATES:
         return (
           <TemplatesPanel
-            templates={TEMPLATES}
-            deletedTemplates={DELETED_TEMPLATES}
+            templates={templates}
+            deletedTemplates={deletedTemplates}
             departmentOptions={DEPARTMENT_FILTER_OPTIONS}
             onNew={handleTemplateNew}
             onEdit={handleTemplateEdit}
@@ -189,7 +210,7 @@ export const ProfilePage = () => {
       case PROFILE_TAB_IDS.SIGNATURES:
         return (
           <SignaturesPanel
-            signatures={SIGNATURES}
+            signatures={signatures}
             departmentOptions={DEPARTMENT_FILTER_OPTIONS}
             onNew={handleSignatureNew}
             onEdit={handleSignatureEdit}
@@ -200,8 +221,8 @@ export const ProfilePage = () => {
       case PROFILE_TAB_IDS.LISTS:
         return (
           <ListsPanel
-            lists={LISTS}
-            deletedLists={DELETED_LISTS}
+            lists={lists}
+            deletedLists={deletedLists}
             departmentOptions={DEPARTMENT_FILTER_OPTIONS}
             onNew={handleMailingListOpen}
             onEdit={handleListEdit}
@@ -239,7 +260,7 @@ export const ProfilePage = () => {
           <SidebarColumn>
             <SidebarDivider />
             <ProfileSidebar
-              profile={PROFILE}
+              profile={profile}
               permissions={PERMISSIONS}
               departments={DEPARTMENTS}
               onRequestEnvironment={handleEnvironmentRequestOpen}

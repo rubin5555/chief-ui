@@ -1,12 +1,11 @@
 import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { stubLink } from './stubLink';
 
-// No backend exists yet — see the resource files in this folder (profile.ts etc.),
-// which stub their fetch/mutate functions with hardcoded fallbacks instead of
-// calling this client. It's wired into the app root now (src/index.tsx) so the
-// swap to real queries later touches only the resource files, not app setup.
-const GRAPHQL_ENDPOINT = '/graphql';
-
+// No backend exists yet — every operation currently flows through stubLink,
+// which answers from the hardcoded fallbacks each resource file registers
+// (see profile.ts for the reference shape). Swap `link: stubLink` for a real
+// HttpLink once a backend exists; queries/mutations elsewhere don't change.
 export const apolloClient = new ApolloClient({
-  uri: GRAPHQL_ENDPOINT,
+  link: stubLink,
   cache: new InMemoryCache(),
 });
