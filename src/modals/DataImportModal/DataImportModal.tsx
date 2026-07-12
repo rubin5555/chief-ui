@@ -8,6 +8,7 @@ import {
   SOURCE_SYSTEMS_FALLBACK,
 } from '@/api/sourceSystems';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
+import { useDialogClose } from '@/hooks/useDialogClose';
 import { ColumnHeading, ColumnPane, RowGroup } from './components/columns.shared.styles';
 import { FieldsColumn } from './components/FieldsColumn';
 import { OperationsColumn } from './components/OperationsColumn';
@@ -71,9 +72,11 @@ export const DataImportModal = ({
     trackModalOpened();
   }, []);
 
+  const { isClosing, requestClose } = useDialogClose(onClose);
+
   const handleClose = () => {
     trackClosed(existingFields.length);
-    onClose();
+    requestClose();
   };
 
   const handleCardMouseDown = (e: MouseEvent) => e.stopPropagation();
@@ -92,7 +95,12 @@ export const DataImportModal = ({
 
   return (
     <Overlay>
-      <Card dir="rtl" onMouseDown={handleCardMouseDown} data-testid={DATA_IMPORT_IDS.root}>
+      <Card
+        dir="rtl"
+        onMouseDown={handleCardMouseDown}
+        data-testid={DATA_IMPORT_IDS.root}
+        $closing={isClosing}
+      >
         <Header data-testid={DATA_IMPORT_IDS.header}>
           <HeaderTitleWrap>
             <Database size={16} />

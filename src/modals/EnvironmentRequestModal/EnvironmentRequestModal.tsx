@@ -6,6 +6,7 @@ import { MultiSelectDropdown } from '@/components/ui/MultiSelectDropdown';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { Select } from '@/components/ui/Select';
+import { useDialogClose } from '@/hooks/useDialogClose';
 import { ApproversByRankField } from './components/ApproversByRankField';
 import { useEnvironmentRequestModalAnalytics } from './EnvironmentRequestModal.analytics';
 import type { ApproverRank, EnvironmentRequestForm } from './EnvironmentRequestModal.constants';
@@ -53,9 +54,11 @@ export const EnvironmentRequestModal = ({ onClose, onSubmit }: EnvironmentReques
     trackModalOpened();
   }, []);
 
+  const { isClosing, requestClose } = useDialogClose(onClose);
+
   const onCancelClick = () => {
     trackCancelled();
-    onClose();
+    requestClose();
   };
   const onOverlayClick = () => onCancelClick();
   const onCardClick = (e: React.MouseEvent) => e.stopPropagation();
@@ -99,12 +102,21 @@ export const EnvironmentRequestModal = ({ onClose, onSubmit }: EnvironmentReques
     e.preventDefault();
     trackSubmitClicked(form.bodyType);
     onSubmit(form);
-    onClose();
+    requestClose();
   };
 
   return (
-    <Overlay data-testid={ENV_REQUEST_MODAL_IDS.overlay} onClick={onOverlayClick}>
-      <ModalCard data-testid={ENV_REQUEST_MODAL_IDS.root} onClick={onCardClick} dir="rtl">
+    <Overlay
+      data-testid={ENV_REQUEST_MODAL_IDS.overlay}
+      onClick={onOverlayClick}
+      $closing={isClosing}
+    >
+      <ModalCard
+        data-testid={ENV_REQUEST_MODAL_IDS.root}
+        onClick={onCardClick}
+        dir="rtl"
+        $closing={isClosing}
+      >
         <ModalHeader data-testid={ENV_REQUEST_MODAL_IDS.header}>
           <HeaderTitleGroup>
             <HeaderIconBadge>

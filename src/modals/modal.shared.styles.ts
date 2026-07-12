@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { dialogEnter, overlayFadeIn } from '@/styles/animations';
+import { dialogMotion, overlayMotion } from '@/styles/animations';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 // Shared full-page modal chrome (overlay + card + header/title/close/footer).
@@ -7,7 +7,7 @@ import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 // DataImportModal's picker card is intentionally not based on these — it overlays
 // a hosting modal without dimming, with its own tinted header and radii.
 
-export const Overlay = styled.div`
+export const Overlay = styled.div<{ $closing?: boolean }>`
   position: fixed;
   inset: 0;
   display: flex;
@@ -15,10 +15,10 @@ export const Overlay = styled.div`
   justify-content: center;
   z-index: 9998;
   background: rgba(0, 0, 0, 0.5);
-  animation: ${overlayFadeIn} 150ms ease-out;
+  ${overlayMotion}
 `;
 
-export const ModalCardBase = styled.div`
+export const ModalCardBase = styled.div<{ $closing?: boolean }>`
   position: relative;
   background: ${colors.surface};
   border-radius: ${radii['3xl']};
@@ -26,7 +26,7 @@ export const ModalCardBase = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: ${dialogEnter} 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  ${dialogMotion}
 `;
 
 export const ModalHeaderBase = styled.div`

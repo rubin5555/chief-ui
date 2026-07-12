@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { dialogEnter } from '@/styles/animations';
+import { dialogMotion } from '@/styles/animations';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 import { NavRow } from './components/columns.shared.styles';
 
@@ -16,7 +16,7 @@ export const Overlay = styled.div`
   z-index: 10;
 `;
 
-export const Card = styled.div`
+export const Card = styled.div<{ $closing?: boolean }>`
   pointer-events: auto;
   background: ${colors.surface};
   border-radius: ${radii['2xl']};
@@ -24,7 +24,7 @@ export const Card = styled.div`
   width: 680px;
   max-width: 90%;
   box-shadow: ${shadows.xxl};
-  animation: ${dialogEnter} 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  ${dialogMotion}
 `;
 
 export const Header = styled.div`

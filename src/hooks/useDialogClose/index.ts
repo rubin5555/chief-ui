@@ -1,0 +1,1 @@
+export { useDialogClose } from './useDialogClose';

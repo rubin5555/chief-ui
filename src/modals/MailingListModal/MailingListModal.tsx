@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { IconTab } from '@/components/ui/IconTab';
 import { Select } from '@/components/ui/Select';
 import { SearchSlotProvider } from '@/context/SearchSlotContext';
+import { useDialogClose } from '@/hooks/useDialogClose';
 import { MembersPanel } from './components/MembersPanel';
 import { ModalSearchInput } from './components/ModalSearchInput';
 import { useMailingListModalAnalytics } from './MailingListModal.analytics';
@@ -184,9 +185,11 @@ export const MailingListModal = ({
     trackModalOpened(mode);
   }, []);
 
+  const { isClosing, requestClose } = useDialogClose(onClose);
+
   const handleCancel = () => {
     trackCancelled(mode);
-    onClose();
+    requestClose();
   };
   const handleTabSelect = (id: ImportTabId) => () => onTabChange(id);
   const onCardClick = (e: React.MouseEvent) => e.stopPropagation();
@@ -199,7 +202,7 @@ export const MailingListModal = ({
     if (isDisabled) return;
     trackSaveClicked(mode, members.length);
     onSave(listName, members);
-    onClose();
+    requestClose();
   };
 
   const tabContent: Record<ImportTabId, React.ReactNode> = {
@@ -218,8 +221,13 @@ export const MailingListModal = ({
   };
 
   return (
-    <Overlay data-testid={NEW_LIST_IDS.overlay} onClick={handleCancel}>
-      <ModalCard data-testid={NEW_LIST_IDS.root} onClick={onCardClick} dir="rtl">
+    <Overlay data-testid={NEW_LIST_IDS.overlay} onClick={handleCancel} $closing={isClosing}>
+      <ModalCard
+        data-testid={NEW_LIST_IDS.root}
+        onClick={onCardClick}
+        dir="rtl"
+        $closing={isClosing}
+      >
         <ModalHeader data-testid={NEW_LIST_IDS.header}>
           <ModalTitle>{MODAL_TITLES[mode]}</ModalTitle>
           <CloseBtn type="button" onClick={handleCancel}>
