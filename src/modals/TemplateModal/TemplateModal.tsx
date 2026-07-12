@@ -5,6 +5,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ContentEditorProvider } from '@/components/ui/ContentEditor';
 import { ModalLoading } from '@/components/ui/ModalLoading';
+import { useDialogClose } from '@/hooks/useDialogClose';
 import { useDocumentTree } from '@/hooks/useDocumentTree';
 import type { DynamicField } from '@/modals/DataImportModal';
 import { reorderById } from '@/utils/reorderById';
@@ -102,9 +103,11 @@ export const TemplateModal = ({
   const isStructureDirty =
     tree.subjects.length > 0 || appendices.length > 0 || importedFields.length > 0 || hasEmphasis;
 
+  const { isClosing, requestClose } = useDialogClose(onClose);
+
   const handleClose = () => {
     trackCancelled(mode);
-    onClose();
+    requestClose();
   };
 
   const onOverlayClick = () => handleClose();
@@ -156,8 +159,13 @@ export const TemplateModal = ({
   const isFieldBankShown = isFieldBankExpanded && importedFields.length > 0;
 
   return (
-    <Overlay data-testid={TEMPLATE_MODAL_IDS.overlay} onClick={onOverlayClick}>
-      <ModalCard data-testid={TEMPLATE_MODAL_IDS.root} onClick={onCardClick} dir="rtl">
+    <Overlay data-testid={TEMPLATE_MODAL_IDS.overlay} onClick={onOverlayClick} $closing={isClosing}>
+      <ModalCard
+        data-testid={TEMPLATE_MODAL_IDS.root}
+        onClick={onCardClick}
+        dir="rtl"
+        $closing={isClosing}
+      >
         <ModalHeader data-testid={TEMPLATE_MODAL_IDS.header}>
           <ModalTitle>{MODAL_TITLES[mode]}</ModalTitle>
           <CloseBtn type="button" data-testid={TEMPLATE_MODAL_IDS.closeBtn} onClick={handleClose}>
@@ -273,7 +281,7 @@ export const TemplateModal = ({
                 fields: importedFields,
                 emphasis: { enabled: hasEmphasis, text: emphasisText },
               });
-              onClose();
+              requestClose();
             };
 
             return (

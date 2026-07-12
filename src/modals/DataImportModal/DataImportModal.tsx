@@ -7,6 +7,8 @@ import {
   type GetSourceSystemsResult,
   SOURCE_SYSTEMS_FALLBACK,
 } from '@/api/sourceSystems';
+import { InlineSpinner } from '@/components/ui/InlineSpinner';
+import { useDialogClose } from '@/hooks/useDialogClose';
 import { ColumnHeading, ColumnPane, RowGroup } from './components/columns.shared.styles';
 import { FieldsColumn } from './components/FieldsColumn';
 import { OperationsColumn } from './components/OperationsColumn';
@@ -62,16 +64,19 @@ export const DataImportModal = ({
 
   const picker = useDataImportPicker({ existingFields, onAdd, onRemove: handleFieldRemoved });
 
-  const { data } = useQuery<GetSourceSystemsResult>(GET_SOURCE_SYSTEMS_QUERY);
+  const { data, loading: systemsLoading } =
+    useQuery<GetSourceSystemsResult>(GET_SOURCE_SYSTEMS_QUERY);
   const sourceSystems = data?.sourceSystems ?? SOURCE_SYSTEMS_FALLBACK.sourceSystems;
 
   useEffect(() => {
     trackModalOpened();
   }, []);
 
+  const { isClosing, requestClose } = useDialogClose(onClose);
+
   const handleClose = () => {
     trackClosed(existingFields.length);
-    onClose();
+    requestClose();
   };
 
   const handleCardMouseDown = (e: MouseEvent) => e.stopPropagation();
@@ -90,7 +95,12 @@ export const DataImportModal = ({
 
   return (
     <Overlay>
-      <Card dir="rtl" onMouseDown={handleCardMouseDown} data-testid={DATA_IMPORT_IDS.root}>
+      <Card
+        dir="rtl"
+        onMouseDown={handleCardMouseDown}
+        data-testid={DATA_IMPORT_IDS.root}
+        $closing={isClosing}
+      >
         <Header data-testid={DATA_IMPORT_IDS.header}>
           <HeaderTitleWrap>
             <Database size={16} />
@@ -109,24 +119,28 @@ export const DataImportModal = ({
         <PickerBody>
           <ColumnPane $width={SYSTEMS_COLUMN_WIDTH} data-testid={DATA_IMPORT_IDS.systemsColumn}>
             <ColumnHeading>מערכת</ColumnHeading>
-            {sourceSystems.map((system) => {
-              const isActive = picker.selectedSystem?.id === system.id;
-              return (
-                <RowGroup key={system.id}>
-                  <SystemRow
-                    type="button"
-                    $isActive={isActive}
-                    onClick={handleSystemPick(system)}
-                    data-testid={DATA_IMPORT_IDS.systemRow(system.id)}
-                  >
-                    <SystemChevron $isActive={isActive}>
-                      <ChevronLeft size={12} />
-                    </SystemChevron>
-                    <SystemName $isActive={isActive}>{system.name}</SystemName>
-                  </SystemRow>
-                </RowGroup>
-              );
-            })}
+            {systemsLoading ? (
+              <InlineSpinner />
+            ) : (
+              sourceSystems.map((system) => {
+                const isActive = picker.selectedSystem?.id === system.id;
+                return (
+                  <RowGroup key={system.id}>
+                    <SystemRow
+                      type="button"
+                      $isActive={isActive}
+                      onClick={handleSystemPick(system)}
+                      data-testid={DATA_IMPORT_IDS.systemRow(system.id)}
+                    >
+                      <SystemChevron $isActive={isActive}>
+                        <ChevronLeft size={12} />
+                      </SystemChevron>
+                      <SystemName $isActive={isActive}>{system.name}</SystemName>
+                    </SystemRow>
+                  </RowGroup>
+                );
+              })
+            )}
           </ColumnPane>
 
           <OperationsColumn picker={picker} onOperationSelected={handleOperationSelected} />

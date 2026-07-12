@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
+import { useDialogClose } from '@/hooks/useDialogClose';
 import {
   CloseButton,
   ModalBody,
@@ -28,8 +29,9 @@ export const Modal = ({ title, icon, onClose, children, 'data-testid': testId }:
   const base = testId ?? MODAL_IDS.root;
   const cardRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+  const { isClosing, requestClose } = useDialogClose(onClose);
+  const onCloseRef = useRef(requestClose);
+  onCloseRef.current = requestClose;
 
   useEffect(() => {
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
@@ -72,7 +74,7 @@ export const Modal = ({ title, icon, onClose, children, 'data-testid': testId }:
   };
 
   return (
-    <Overlay data-testid={`${base}-overlay`} onClick={onClose}>
+    <Overlay data-testid={`${base}-overlay`} onClick={requestClose} $closing={isClosing}>
       <ModalCard
         ref={cardRef}
         data-testid={base}
@@ -83,13 +85,14 @@ export const Modal = ({ title, icon, onClose, children, 'data-testid': testId }:
         aria-label={title}
         tabIndex={-1}
         dir="rtl"
+        $closing={isClosing}
       >
         <ModalHeader data-testid={`${base}-header`}>
           <ModalHeaderLeft>
             {icon && <ModalHeaderIcon>{icon}</ModalHeaderIcon>}
             <ModalTitle>{title}</ModalTitle>
           </ModalHeaderLeft>
-          <CloseButton data-testid={`${base}-close`} onClick={onClose}>
+          <CloseButton data-testid={`${base}-close`} onClick={requestClose}>
             <X size={20} />
           </CloseButton>
         </ModalHeader>

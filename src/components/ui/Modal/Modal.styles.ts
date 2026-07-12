@@ -1,7 +1,8 @@
 import styled from 'styled-components';
+import { dialogMotion, overlayMotion } from '@/styles/animations';
 import { colors, gray, shadows } from '@/styles/theme';
 
-export const Overlay = styled.div`
+export const Overlay = styled.div<{ $closing?: boolean }>`
   position: fixed;
   inset: 0;
   display: flex;
@@ -9,9 +10,10 @@ export const Overlay = styled.div`
   justify-content: center;
   z-index: 9998;
   background-color: rgba(0,0,0,0.5);
+  ${overlayMotion}
 `;
 
-export const ModalCard = styled.div`
+export const ModalCard = styled.div<{ $closing?: boolean }>`
   background-color: ${colors.surface};
   border-radius: 24px;
   box-shadow: ${shadows.xxl};
@@ -21,6 +23,7 @@ export const ModalCard = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  ${dialogMotion}
 `;
 
 export const ModalHeader = styled.div`

@@ -89,23 +89,33 @@ export const ProfilePage = () => {
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [showEnvironmentRequest, setShowEnvironmentRequest] = useState(false);
 
-  // No backend yet — each query flows through stubLink and resolves from the
-  // same hardcoded fallback the api/*.ts file registers, so this defaulting
-  // never actually kicks in today. It's here for the one tick before a real
-  // resolver's response lands, once one exists.
+  // No backend yet — stubLink answers after a simulated delay (see
+  // src/api/stubLink.ts) instead of on the same tick, so `loading` is
+  // genuinely true for a moment and the `?? *_FALLBACK` default genuinely
+  // applies until then.
   const { data: profileData } = useQuery<GetProfileResult>(GET_PROFILE_QUERY);
   const profile = profileData?.profile ?? PROFILE_FALLBACK;
 
-  const { data: templatesData } = useQuery<GetTemplatesResult>(GET_TEMPLATES_QUERY);
+  const { data: templatesData, loading: templatesLoading } =
+    useQuery<GetTemplatesResult>(GET_TEMPLATES_QUERY);
   const templates = templatesData?.templates ?? TEMPLATES_FALLBACK.templates;
   const deletedTemplates = templatesData?.deletedTemplates ?? TEMPLATES_FALLBACK.deletedTemplates;
 
-  const { data: signaturesData } = useQuery<GetSignaturesResult>(GET_SIGNATURES_QUERY);
+  const { data: signaturesData, loading: signaturesLoading } =
+    useQuery<GetSignaturesResult>(GET_SIGNATURES_QUERY);
   const signatures = signaturesData?.signatures ?? SIGNATURES_FALLBACK.signatures;
 
-  const { data: listsData } = useQuery<GetListsResult>(GET_LISTS_QUERY);
+  const { data: listsData, loading: listsLoading } = useQuery<GetListsResult>(GET_LISTS_QUERY);
   const lists = listsData?.lists ?? LISTS_FALLBACK.lists;
   const deletedLists = listsData?.deletedLists ?? LISTS_FALLBACK.deletedLists;
+
+  // Only the active tab's own query should gate its panel — a background tab's
+  // still-loading query (nothing fetches until its panel first mounts, so this
+  // rarely overlaps) shouldn't blank out what's currently visible.
+  const activeTabLoading =
+    (activeTab === PROFILE_TAB_IDS.TEMPLATES && templatesLoading) ||
+    (activeTab === PROFILE_TAB_IDS.SIGNATURES && signaturesLoading) ||
+    (activeTab === PROFILE_TAB_IDS.LISTS && listsLoading);
 
   const {
     trackTabChanged,
@@ -273,7 +283,9 @@ export const ProfilePage = () => {
             onTabChange={handleTabChange}
             footer={<SpellCheckBanner onInstall={handleSpellCheckOpen} />}
           >
-            <Suspense fallback={<PanelLoading />}>{renderTabPanel()}</Suspense>
+            <Suspense fallback={<PanelLoading />}>
+              {activeTabLoading ? <PanelLoading /> : renderTabPanel()}
+            </Suspense>
           </ProfileContent>
         </PageInner>
       </PageScroll>

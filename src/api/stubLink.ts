@@ -15,6 +15,11 @@ export const registerStub = (operationName: string, resolver: StubResolver): voi
   resolvers.set(operationName, resolver);
 };
 
+// Simulated network latency so useQuery's `loading` state is actually
+// observable in the UI instead of resolving on the same tick. Tune down (or
+// remove) once real latency exists to compare against.
+const STUB_DELAY_MS = 500;
+
 // ponytail: answers every registered operation from an in-memory hardcoded
 // resolver instead of a real network request — this is the whole adapter:
 // swap this link for a real HttpLink once a backend exists, and every
@@ -28,7 +33,10 @@ export const stubLink = new ApolloLink((operation) => {
       );
       return;
     }
-    observer.next({ data: resolver(operation.variables) } as FetchResult);
-    observer.complete();
+    const timer = setTimeout(() => {
+      observer.next({ data: resolver(operation.variables) } as FetchResult);
+      observer.complete();
+    }, STUB_DELAY_MS);
+    return () => clearTimeout(timer);
   });
 });

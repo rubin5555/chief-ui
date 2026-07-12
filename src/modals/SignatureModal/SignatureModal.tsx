@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ContentEditor } from '@/components/ui/ContentEditor';
 import { FileUploadField } from '@/components/ui/FileUploadField';
+import { useDialogClose } from '@/hooks/useDialogClose';
 import type { SignatureType } from '@/pages/profile/components/tabs/SignaturesPanel';
 import { SignatureTypeControl } from './components/SignatureTypeControl';
 import { useSignatureModalAnalytics } from './SignatureModal.analytics';
@@ -63,9 +64,11 @@ export const SignatureModal = ({
     trackModalOpened(mode);
   }, []);
 
+  const { isClosing, requestClose } = useDialogClose(onClose);
+
   const handleClose = () => {
     trackCancelled(mode);
-    onClose();
+    requestClose();
   };
 
   const onOverlayClick = () => handleClose();
@@ -101,12 +104,21 @@ export const SignatureModal = ({
     if (isDisabled) return;
     trackSaveClicked(mode, type);
     onSave(type, body);
-    onClose();
+    requestClose();
   };
 
   return (
-    <Overlay data-testid={SIGNATURE_MODAL_IDS.overlay} onClick={onOverlayClick}>
-      <ModalCard data-testid={SIGNATURE_MODAL_IDS.root} onClick={onCardClick} dir="rtl">
+    <Overlay
+      data-testid={SIGNATURE_MODAL_IDS.overlay}
+      onClick={onOverlayClick}
+      $closing={isClosing}
+    >
+      <ModalCard
+        data-testid={SIGNATURE_MODAL_IDS.root}
+        onClick={onCardClick}
+        dir="rtl"
+        $closing={isClosing}
+      >
         <ModalHeader data-testid={SIGNATURE_MODAL_IDS.header}>
           <ModalTitle>{MODAL_TITLES[mode]}</ModalTitle>
           <CloseBtn type="button" data-testid={SIGNATURE_MODAL_IDS.closeBtn} onClick={handleClose}>

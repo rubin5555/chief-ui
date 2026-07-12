@@ -6,6 +6,7 @@ import {
   PERSONAL_LISTS_FALLBACK,
 } from '@/api/personalLists';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
 import { gray } from '@/styles/theme';
@@ -42,7 +43,8 @@ export const PersonalTab = ({ addedListIds, onImport }: PersonalTabProps) => {
   const { selected, expanded, handleToggleExpand } = useTabSelection();
   const { search, debouncedSearch, onSearchChange } = useSearch();
 
-  const { data } = useQuery<GetPersonalListsResult>(GET_PERSONAL_LISTS_QUERY);
+  const { data, loading: personalListsLoading } =
+    useQuery<GetPersonalListsResult>(GET_PERSONAL_LISTS_QUERY);
   const personalLists = data?.personalLists ?? PERSONAL_LISTS_FALLBACK.personalLists;
 
   const onTabChange = (tab: 'mine' | 'all') => setListTab(tab);
@@ -83,40 +85,44 @@ export const PersonalTab = ({ addedListIds, onImport }: PersonalTabProps) => {
         <ModalSearchInput value={search} onChange={onSearchChange} placeholder="חיפוש רשימה..." />
       </SearchSlot>
 
-      <GridTable
-        columns={PERSONAL_GRID}
-        headers={[null, <ColHeader $align="right">שם הרשימה</ColHeader>, null]}
-        items={filtered}
-        getRowKey={(list) => list.id}
-        emptyState={<EmptyState>לא נמצאו רשימות</EmptyState>}
-        renderRow={(list: PersonalList) => {
-          const isSelected = selected.set.has(list.id);
-          const isAdded = addedListIds.has(list.id);
-          const isExpanded = expanded === list.id;
+      {personalListsLoading ? (
+        <InlineSpinner />
+      ) : (
+        <GridTable
+          columns={PERSONAL_GRID}
+          headers={[null, <ColHeader $align="right">שם הרשימה</ColHeader>, null]}
+          items={filtered}
+          getRowKey={(list) => list.id}
+          emptyState={<EmptyState>לא נמצאו רשימות</EmptyState>}
+          renderRow={(list: PersonalList) => {
+            const isSelected = selected.set.has(list.id);
+            const isAdded = addedListIds.has(list.id);
+            const isExpanded = expanded === list.id;
 
-          return (
-            <GridTableRow
-              isSelected={isSelected}
-              isAdded={isAdded}
-              onClick={handleRowClick(list.id, isAdded)}
-              expansion={isExpanded ? <ExpandedMemberBlock members={list.members} /> : null}
-            >
-              <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
-              <NameCell>
-                {list.name}
-                <CountLabel>({list.members.length})</CountLabel>
-              </NameCell>
-              <ExpandBtn
-                type="button"
-                data-testid={PERSONAL_TAB_IDS.rowExpand(list.id)}
-                onClick={handleToggleExpand(list.id)}
+            return (
+              <GridTableRow
+                isSelected={isSelected}
+                isAdded={isAdded}
+                onClick={handleRowClick(list.id, isAdded)}
+                expansion={isExpanded ? <ExpandedMemberBlock members={list.members} /> : null}
               >
-                <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
-              </ExpandBtn>
-            </GridTableRow>
-          );
-        }}
-      />
+                <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
+                <NameCell>
+                  {list.name}
+                  <CountLabel>({list.members.length})</CountLabel>
+                </NameCell>
+                <ExpandBtn
+                  type="button"
+                  data-testid={PERSONAL_TAB_IDS.rowExpand(list.id)}
+                  onClick={handleToggleExpand(list.id)}
+                >
+                  <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
+                </ExpandBtn>
+              </GridTableRow>
+            );
+          }}
+        />
+      )}
 
       <TabImportBar
         count={selected.set.size}
