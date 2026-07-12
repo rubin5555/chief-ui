@@ -1,11 +1,6 @@
-import { useQuery } from '@apollo/client';
 import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import {
-  GET_NETWORK_PEOPLE_QUERY,
-  type GetNetworkPeopleResult,
-  NETWORK_PEOPLE_FALLBACK,
-} from '@/api/networkPeople';
+import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { Pos } from '@/hooks/useFloatingPanel';
@@ -43,8 +38,8 @@ export const HamalAddMemberPanel = ({
   const debouncedQuery = useDebounce(query);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const { data } = useQuery<GetNetworkPeopleResult>(GET_NETWORK_PEOPLE_QUERY);
-  const peoplePool = data?.networkPeople ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
+  const { data } = useNetworkPeople();
+  const peoplePool = data ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
 
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {

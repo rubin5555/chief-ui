@@ -1,11 +1,6 @@
-import { useQuery } from '@apollo/client';
 import { Trash2, X } from 'lucide-react';
 import { type FormEvent, type RefObject, useState } from 'react';
-import {
-  GET_NETWORK_PEOPLE_QUERY,
-  type GetNetworkPeopleResult,
-  NETWORK_PEOPLE_FALLBACK,
-} from '@/api/networkPeople';
+import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { Pos } from '@/hooks/useFloatingPanel';
@@ -45,8 +40,8 @@ export const HamalCreateGroupPanel = ({ panelRef, pos, onClose }: HamalCreateGro
   const debouncedMemberSearch = useDebounce(memberSearch);
   const [picked, setPicked] = useState<PersonMember[]>([]);
 
-  const { data } = useQuery<GetNetworkPeopleResult>(GET_NETWORK_PEOPLE_QUERY);
-  const peoplePool = data?.networkPeople ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
+  const { data } = useNetworkPeople();
+  const peoplePool = data ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value);
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) =>

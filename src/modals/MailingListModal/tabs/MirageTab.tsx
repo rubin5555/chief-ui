@@ -1,10 +1,5 @@
-import { useQuery } from '@apollo/client';
 import { X } from 'lucide-react';
-import {
-  GET_MIRAGE_GROUPS_QUERY,
-  type GetMirageGroupsResult,
-  MIRAGE_GROUPS_FALLBACK,
-} from '@/api/mirageGroups';
+import { MIRAGE_GROUPS_FALLBACK, useMirageGroups } from '@/api/mirageGroups';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SearchSlot } from '@/context/SearchSlotContext';
@@ -41,9 +36,8 @@ export const MirageTab = ({ addedGroupIds, onImport }: MirageTabProps) => {
     useTabSelection();
   const { search, debouncedSearch, onSearchChange, onClearSearch } = useSearch();
 
-  const { data, loading: mirageGroupsLoading } =
-    useQuery<GetMirageGroupsResult>(GET_MIRAGE_GROUPS_QUERY);
-  const mirageGroups = data?.mirageGroups ?? MIRAGE_GROUPS_FALLBACK.mirageGroups;
+  const { data, loading: mirageGroupsLoading } = useMirageGroups();
+  const mirageGroups = data ?? MIRAGE_GROUPS_FALLBACK.mirageGroups;
 
   const onImportSelected = () => {
     const groups = mirageGroups.filter((g) => selected.set.has(g.id));

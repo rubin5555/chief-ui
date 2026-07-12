@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { useApiMutation, useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 // DTO owned by the api layer, independent of ProfileSidebar's ProfileInfo prop
@@ -38,9 +39,18 @@ export interface UpdateProfileResult {
   updateProfile: ProfileDto;
 }
 
-interface UpdateProfileVariables {
+export interface UpdateProfileVariables {
   input: Partial<ProfileDto>;
 }
+
+export const useProfile = () =>
+  useApiQuery(GET_PROFILE_QUERY, (result: GetProfileResult) => result.profile);
+
+export const useUpdateProfile = () =>
+  useApiMutation<UpdateProfileResult, UpdateProfileVariables, ProfileDto>(
+    UPDATE_PROFILE_MUTATION,
+    (result) => result.updateProfile,
+  );
 
 // ponytail: no backend/resolver yet — registered on stubLink instead of a
 // real resolver, so it still flows through useQuery/useMutation exactly like

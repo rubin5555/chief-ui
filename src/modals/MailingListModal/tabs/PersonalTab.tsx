@@ -1,10 +1,5 @@
-import { useQuery } from '@apollo/client';
 import { useState } from 'react';
-import {
-  GET_PERSONAL_LISTS_QUERY,
-  type GetPersonalListsResult,
-  PERSONAL_LISTS_FALLBACK,
-} from '@/api/personalLists';
+import { PERSONAL_LISTS_FALLBACK, usePersonalLists } from '@/api/personalLists';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SearchSlot } from '@/context/SearchSlotContext';
@@ -43,9 +38,8 @@ export const PersonalTab = ({ addedListIds, onImport }: PersonalTabProps) => {
   const { selected, expanded, handleToggleExpand } = useTabSelection();
   const { search, debouncedSearch, onSearchChange } = useSearch();
 
-  const { data, loading: personalListsLoading } =
-    useQuery<GetPersonalListsResult>(GET_PERSONAL_LISTS_QUERY);
-  const personalLists = data?.personalLists ?? PERSONAL_LISTS_FALLBACK.personalLists;
+  const { data, loading: personalListsLoading } = usePersonalLists();
+  const personalLists = data ?? PERSONAL_LISTS_FALLBACK.personalLists;
 
   const onTabChange = (tab: 'mine' | 'all') => setListTab(tab);
   const handleTabChange = (tab: 'mine' | 'all') => () => onTabChange(tab);

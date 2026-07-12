@@ -1,11 +1,6 @@
-import { useQuery } from '@apollo/client';
 import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
-import {
-  GET_HAMAL_GROUPS_QUERY,
-  type GetHamalGroupsResult,
-  HAMAL_GROUPS_FALLBACK,
-} from '@/api/hamalGroups';
+import { HAMAL_GROUPS_FALLBACK, useHamalGroups } from '@/api/hamalGroups';
 import { Button } from '@/components/ui/Button';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
@@ -52,9 +47,8 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
   const [addMemberPos, setAddMemberPos] = useState<Pos | null>(null);
   const createPanel = useFloatingPanel();
 
-  const { data, loading: hamalGroupsLoading } =
-    useQuery<GetHamalGroupsResult>(GET_HAMAL_GROUPS_QUERY);
-  const hamalGroups = data?.hamalGroups ?? HAMAL_GROUPS_FALLBACK.hamalGroups;
+  const { data, loading: hamalGroupsLoading } = useHamalGroups();
+  const hamalGroups = data ?? HAMAL_GROUPS_FALLBACK.hamalGroups;
 
   const onAddMemberClick = (groupId: string, e: React.MouseEvent) => {
     e.stopPropagation();

@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
 import type { HamalGroup } from '@/modals/MailingListModal';
+import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 export const GET_HAMAL_GROUPS_QUERY = gql`
@@ -22,6 +23,9 @@ export const GET_HAMAL_GROUPS_QUERY = gql`
 export interface GetHamalGroupsResult {
   hamalGroups: HamalGroup[];
 }
+
+export const useHamalGroups = () =>
+  useApiQuery(GET_HAMAL_GROUPS_QUERY, (result: GetHamalGroupsResult) => result.hamalGroups);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
 // catalog HamalTab used to import directly. Delete this registration once

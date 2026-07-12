@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
 import type { PersonalList } from '@/modals/MailingListModal';
+import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 export const GET_PERSONAL_LISTS_QUERY = gql`
@@ -21,6 +22,9 @@ export const GET_PERSONAL_LISTS_QUERY = gql`
 export interface GetPersonalListsResult {
   personalLists: PersonalList[];
 }
+
+export const usePersonalLists = () =>
+  useApiQuery(GET_PERSONAL_LISTS_QUERY, (result: GetPersonalListsResult) => result.personalLists);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
 // catalog PersonalTab used to import directly. Delete this registration once

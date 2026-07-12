@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 // Not a real GraphQL-shaped response (Record<string, string[]> has no fixed
@@ -15,6 +16,9 @@ export const GET_FIELD_CHILDREN_QUERY = gql`
 export interface GetFieldChildrenResult {
   fieldChildren: Record<string, string[]>;
 }
+
+export const useFieldChildren = () =>
+  useApiQuery(GET_FIELD_CHILDREN_QUERY, (result: GetFieldChildrenResult) => result.fieldChildren);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
 // map FieldsColumn used to import directly. Delete this registration once

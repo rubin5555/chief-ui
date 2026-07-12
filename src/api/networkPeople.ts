@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
 import type { NetworkPerson } from '@/modals/MailingListModal';
+import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 export const GET_NETWORK_PEOPLE_QUERY = gql`
@@ -18,6 +19,9 @@ export const GET_NETWORK_PEOPLE_QUERY = gql`
 export interface GetNetworkPeopleResult {
   networkPeople: NetworkPerson[];
 }
+
+export const useNetworkPeople = () =>
+  useApiQuery(GET_NETWORK_PEOPLE_QUERY, (result: GetNetworkPeopleResult) => result.networkPeople);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
 // pool NetworkTab/HamalAddMemberPanel/HamalCreateGroupPanel used to import

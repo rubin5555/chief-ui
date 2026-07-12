@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
 import type { SourceSystem } from '@/modals/DataImportModal';
+import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 export const GET_SOURCE_SYSTEMS_QUERY = gql`
@@ -20,6 +21,9 @@ export const GET_SOURCE_SYSTEMS_QUERY = gql`
 export interface GetSourceSystemsResult {
   sourceSystems: SourceSystem[];
 }
+
+export const useSourceSystems = () =>
+  useApiQuery(GET_SOURCE_SYSTEMS_QUERY, (result: GetSourceSystemsResult) => result.sourceSystems);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
 // mock catalog DataImportModal used to import directly. Delete this

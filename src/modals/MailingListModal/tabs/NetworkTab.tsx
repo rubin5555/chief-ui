@@ -1,10 +1,5 @@
-import { useQuery } from '@apollo/client';
 import { useState } from 'react';
-import {
-  GET_NETWORK_PEOPLE_QUERY,
-  type GetNetworkPeopleResult,
-  NETWORK_PEOPLE_FALLBACK,
-} from '@/api/networkPeople';
+import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
 import { PersonSearchField } from '../components/PersonSearchField';
@@ -31,8 +26,8 @@ export const NetworkTab = ({
   const { search, debouncedSearch, onSearchChange, onClearSearch } = useSearch(300, initialQuery);
   const [resultsOpen, setResultsOpen] = useState(Boolean(initialQuery.trim()));
 
-  const { data } = useQuery<GetNetworkPeopleResult>(GET_NETWORK_PEOPLE_QUERY);
-  const peoplePool = data?.networkPeople ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
+  const { data } = useNetworkPeople();
+  const peoplePool = data ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
 
   const onNetworkChange = (val: NetworkFilter) => {
     setNetwork(val);

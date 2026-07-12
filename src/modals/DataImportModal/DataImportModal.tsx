@@ -1,12 +1,7 @@
-import { useQuery } from '@apollo/client';
 import { ChevronLeft, Database, X } from 'lucide-react';
 import type { MouseEvent } from 'react';
 import { useEffect } from 'react';
-import {
-  GET_SOURCE_SYSTEMS_QUERY,
-  type GetSourceSystemsResult,
-  SOURCE_SYSTEMS_FALLBACK,
-} from '@/api/sourceSystems';
+import { SOURCE_SYSTEMS_FALLBACK, useSourceSystems } from '@/api/sourceSystems';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { useDialogClose } from '@/hooks/useDialogClose';
 import { ColumnHeading, ColumnPane, RowGroup } from './components/columns.shared.styles';
@@ -64,9 +59,8 @@ export const DataImportModal = ({
 
   const picker = useDataImportPicker({ existingFields, onAdd, onRemove: handleFieldRemoved });
 
-  const { data, loading: systemsLoading } =
-    useQuery<GetSourceSystemsResult>(GET_SOURCE_SYSTEMS_QUERY);
-  const sourceSystems = data?.sourceSystems ?? SOURCE_SYSTEMS_FALLBACK.sourceSystems;
+  const { data, loading: systemsLoading } = useSourceSystems();
+  const sourceSystems = data ?? SOURCE_SYSTEMS_FALLBACK.sourceSystems;
 
   useEffect(() => {
     trackModalOpened();

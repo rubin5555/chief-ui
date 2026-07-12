@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 export interface TemplateDto {
@@ -26,6 +27,9 @@ export interface GetTemplatesResult {
   templates: TemplateDto[];
   deletedTemplates: TemplateDto[];
 }
+
+// No `select`: the two collections travel together, so the envelope is the shape.
+export const useTemplates = () => useApiQuery<GetTemplatesResult>(GET_TEMPLATES_QUERY);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
 // catalog ProfilePage used to import directly. Delete this registration once

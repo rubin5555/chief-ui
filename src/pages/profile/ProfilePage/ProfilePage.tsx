@@ -1,15 +1,10 @@
-import { useQuery } from '@apollo/client';
 import { getRouteApi } from '@tanstack/react-router';
 import { User } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
-import { GET_LISTS_QUERY, type GetListsResult, LISTS_FALLBACK } from '@/api/lists';
-import { GET_PROFILE_QUERY, type GetProfileResult, PROFILE_FALLBACK } from '@/api/profile';
-import {
-  GET_SIGNATURES_QUERY,
-  type GetSignaturesResult,
-  SIGNATURES_FALLBACK,
-} from '@/api/signatures';
-import { GET_TEMPLATES_QUERY, type GetTemplatesResult, TEMPLATES_FALLBACK } from '@/api/templates';
+import { LISTS_FALLBACK, useLists } from '@/api/lists';
+import { PROFILE_FALLBACK, useProfile } from '@/api/profile';
+import { SIGNATURES_FALLBACK, useSignatures } from '@/api/signatures';
+import { TEMPLATES_FALLBACK, useTemplates } from '@/api/templates';
 import { AppShell } from '@/components/layout/AppShell';
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { NotificationsMenu } from '@/components/layout/TopNavbar/components/NotificationsMenu';
@@ -93,19 +88,17 @@ export const ProfilePage = () => {
   // src/api/stubLink.ts) instead of on the same tick, so `loading` is
   // genuinely true for a moment and the `?? *_FALLBACK` default genuinely
   // applies until then.
-  const { data: profileData } = useQuery<GetProfileResult>(GET_PROFILE_QUERY);
-  const profile = profileData?.profile ?? PROFILE_FALLBACK;
+  const { data: profileData } = useProfile();
+  const profile = profileData ?? PROFILE_FALLBACK;
 
-  const { data: templatesData, loading: templatesLoading } =
-    useQuery<GetTemplatesResult>(GET_TEMPLATES_QUERY);
+  const { data: templatesData, loading: templatesLoading } = useTemplates();
   const templates = templatesData?.templates ?? TEMPLATES_FALLBACK.templates;
   const deletedTemplates = templatesData?.deletedTemplates ?? TEMPLATES_FALLBACK.deletedTemplates;
 
-  const { data: signaturesData, loading: signaturesLoading } =
-    useQuery<GetSignaturesResult>(GET_SIGNATURES_QUERY);
-  const signatures = signaturesData?.signatures ?? SIGNATURES_FALLBACK.signatures;
+  const { data: signaturesData, loading: signaturesLoading } = useSignatures();
+  const signatures = signaturesData ?? SIGNATURES_FALLBACK.signatures;
 
-  const { data: listsData, loading: listsLoading } = useQuery<GetListsResult>(GET_LISTS_QUERY);
+  const { data: listsData, loading: listsLoading } = useLists();
   const lists = listsData?.lists ?? LISTS_FALLBACK.lists;
   const deletedLists = listsData?.deletedLists ?? LISTS_FALLBACK.deletedLists;
 

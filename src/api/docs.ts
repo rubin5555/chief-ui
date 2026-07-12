@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
 import type { DocItem } from '@/modals/MailingListModal';
+import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 export const GET_DOCS_QUERY = gql`
@@ -26,6 +27,8 @@ export const GET_DOCS_QUERY = gql`
 export interface GetDocsResult {
   docs: DocItem[];
 }
+
+export const useDocs = () => useApiQuery(GET_DOCS_QUERY, (result: GetDocsResult) => result.docs);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
 // catalog DocTab/DocFilterPanel used to import directly. Delete this

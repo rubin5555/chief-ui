@@ -1,11 +1,6 @@
-import { useQuery } from '@apollo/client';
 import { X } from 'lucide-react';
 import type { ChangeEvent, MouseEvent } from 'react';
-import {
-  GET_NAME_SEARCH_OPTIONS_QUERY,
-  type GetNameSearchOptionsResult,
-  NAME_SEARCH_OPTIONS_FALLBACK,
-} from '@/api/nameSearchOptions';
+import { NAME_SEARCH_OPTIONS_FALLBACK, useNameSearchOptions } from '@/api/nameSearchOptions';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { Toggle } from '@/components/ui/Toggle';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -42,9 +37,8 @@ export const OperationParams = ({ operation, picker }: OperationParamsProps) => 
   const debouncedNameSearch = useDebounce(nameSearch);
   const isNameDropdownOpen = picker.nameDropdownOperationId === operation.id;
 
-  const { data } = useQuery<GetNameSearchOptionsResult>(GET_NAME_SEARCH_OPTIONS_QUERY);
-  const nameSearchOptions =
-    data?.nameSearchOptions ?? NAME_SEARCH_OPTIONS_FALLBACK.nameSearchOptions;
+  const { data } = useNameSearchOptions();
+  const nameSearchOptions = data ?? NAME_SEARCH_OPTIONS_FALLBACK.nameSearchOptions;
 
   const filteredNames = nameSearchOptions.filter(
     (name) => debouncedNameSearch.trim() === '' || name.includes(debouncedNameSearch.trim()),

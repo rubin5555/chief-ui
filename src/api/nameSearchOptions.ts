@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 export const GET_NAME_SEARCH_OPTIONS_QUERY = gql`
@@ -10,6 +11,12 @@ export const GET_NAME_SEARCH_OPTIONS_QUERY = gql`
 export interface GetNameSearchOptionsResult {
   nameSearchOptions: string[];
 }
+
+export const useNameSearchOptions = () =>
+  useApiQuery(
+    GET_NAME_SEARCH_OPTIONS_QUERY,
+    (result: GetNameSearchOptionsResult) => result.nameSearchOptions,
+  );
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
 // list OperationParams used to import directly. Delete this registration

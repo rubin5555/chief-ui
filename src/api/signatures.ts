@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client';
+import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
 export type SignatureTypeDto = 'distribution' | 'personal' | 'approver';
@@ -34,6 +35,9 @@ export const GET_SIGNATURES_QUERY = gql`
 export interface GetSignaturesResult {
   signatures: Record<SignatureTypeDto, SignatureDto[]>;
 }
+
+export const useSignatures = () =>
+  useApiQuery(GET_SIGNATURES_QUERY, (result: GetSignaturesResult) => result.signatures);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
 // catalog ProfilePage used to import directly. Delete this registration once

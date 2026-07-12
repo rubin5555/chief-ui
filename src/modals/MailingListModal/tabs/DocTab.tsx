@@ -1,7 +1,6 @@
-import { useQuery } from '@apollo/client';
 import { Filter } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { DOCS_FALLBACK, GET_DOCS_QUERY, type GetDocsResult } from '@/api/docs';
+import { DOCS_FALLBACK, useDocs } from '@/api/docs';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SubTable, SubTableRow } from '@/components/ui/SubTable';
@@ -51,8 +50,8 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
   const { search, debouncedSearch, onSearchChange } = useSearch();
   const filters = useDocFilters();
 
-  const { data, loading: docsLoading } = useQuery<GetDocsResult>(GET_DOCS_QUERY);
-  const allDocs = data?.docs ?? DOCS_FALLBACK.docs;
+  const { data, loading: docsLoading } = useDocs();
+  const allDocs = data ?? DOCS_FALLBACK.docs;
 
   const filterBtnRef = useRef<HTMLButtonElement>(null);
   const filterPanelRef = useRef<HTMLDivElement>(null);

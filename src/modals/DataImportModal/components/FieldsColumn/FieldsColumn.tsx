@@ -1,10 +1,5 @@
-import { useQuery } from '@apollo/client';
 import { Check, ChevronDown, Plus, X } from 'lucide-react';
-import {
-  FIELD_CHILDREN_FALLBACK,
-  GET_FIELD_CHILDREN_QUERY,
-  type GetFieldChildrenResult,
-} from '@/api/fieldChildren';
+import { FIELD_CHILDREN_FALLBACK, useFieldChildren } from '@/api/fieldChildren';
 import { DATA_IMPORT_IDS } from '../../DataImportModal.testids';
 import type { DataImportPicker } from '../../useDataImportPicker';
 import { ColumnEmptyState, ColumnHeading, ColumnPane } from '../columns.shared.styles';
@@ -53,8 +48,8 @@ const LinkToggleIcons = ({ isLinked, size }: LinkToggleIconsProps) =>
 export const FieldsColumn = ({ picker, onFieldToggled }: FieldsColumnProps) => {
   const hasSelection = picker.selectedInstances.length > 0 && picker.selectedOperation !== null;
 
-  const { data } = useQuery<GetFieldChildrenResult>(GET_FIELD_CHILDREN_QUERY);
-  const fieldChildren = data?.fieldChildren ?? FIELD_CHILDREN_FALLBACK.fieldChildren;
+  const { data } = useFieldChildren();
+  const fieldChildren = data ?? FIELD_CHILDREN_FALLBACK.fieldChildren;
 
   const handleFieldClick = (fieldName: string, hasChildren: boolean) => () => {
     if (hasChildren) {
