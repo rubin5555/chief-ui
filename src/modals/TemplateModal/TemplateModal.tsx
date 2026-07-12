@@ -5,6 +5,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ContentEditorProvider } from '@/components/ui/ContentEditor';
 import { ModalLoading } from '@/components/ui/ModalLoading';
+import { CollabProvider } from '@/context/CollabContext';
 import { useDialogClose } from '@/hooks/useDialogClose';
 import { useDocumentTree } from '@/hooks/useDocumentTree';
 import type { DynamicField } from '@/modals/DataImportModal';
@@ -50,6 +51,11 @@ interface TemplateModalProps {
   mode?: TemplateModalMode;
   initialName?: string;
   departmentOptions: string[];
+  // Identifies this user on the collab server (plan §2/§6) — lock ownership
+  // and remote-cursor labels are keyed by this id. Undefined disables collab
+  // entirely (ContentEditorProvider degrades to its pre-collab local-only
+  // behavior), which is what standalone/unauthenticated callers get today.
+  currentUserId?: string;
   onClose: () => void;
   onSave: (draft: TemplateDraft) => void;
 }
@@ -65,6 +71,7 @@ export const TemplateModal = ({
   mode = 'new',
   initialName = '',
   departmentOptions,
+  currentUserId,
   onClose,
   onSave,
 }: TemplateModalProps) => {
@@ -158,6 +165,93 @@ export const TemplateModal = ({
 
   const isFieldBankShown = isFieldBankExpanded && importedFields.length > 0;
 
+  // ContentEditorProvider degrades to local-only activation (no lock
+  // gating/remote cursors) when it finds no CollabProvider above it — the
+  // wrapper is only mounted once a real user identity is available.
+  const body = (
+    <ContentEditorProvider>
+      <BodySection data-testid={TEMPLATE_MODAL_IDS.body}>
+        <Sidebar data-testid={TEMPLATE_MODAL_IDS.sidebar}>
+          {isFieldBankShown ? (
+            <>
+              <FieldBankBar
+                edge="top"
+                showFieldsToggle
+                onToggleFields={handleCollapseFieldBank}
+                onOpenPicker={handleOpenImportPicker}
+              />
+              <FieldBankList
+                fields={importedFields}
+                onRemoveField={handleRemoveImportedField}
+                onOpenPicker={handleOpenImportPicker}
+                onFieldDragStart={trackFieldDragged}
+              />
+            </>
+          ) : (
+            <>
+              <SidebarScroll>
+                <SubjectTree
+                  tree={tree}
+                  activePermissionsId={permTarget?.id ?? null}
+                  onTogglePermissions={handleTogglePermissions}
+                  onSubjectAdded={trackSubjectAdded}
+                  onSectionAdded={trackSectionAdded}
+                  onSubSectionAdded={trackSubSectionAdded}
+                />
+
+                <SidebarFooter>
+                  <AppendixList
+                    appendices={appendices}
+                    activePermissionsId={permTarget?.id ?? null}
+                    onAdd={handleAddAppendix}
+                    onRemove={handleRemoveAppendix}
+                    onTitleChange={handleAppendixTitleChange}
+                    onReorder={handleReorderAppendix}
+                    onTogglePermissions={handleTogglePermissions}
+                    onChangePermissions={handleAppendixPermissionsChange}
+                  />
+                  {hasEmphasis ? (
+                    <EmphasisBox>
+                      <EmphasisLabel>דגשים לכתיבה</EmphasisLabel>
+                      <SmallIconBtn
+                        type="button"
+                        onClick={handleRemoveEmphasis}
+                        aria-label="הסרת דגשים"
+                      >
+                        <X size={12} />
+                      </SmallIconBtn>
+                    </EmphasisBox>
+                  ) : (
+                    <AddNodeButton type="button" onClick={handleAddEmphasis}>
+                      <Plus size={14} />
+                      הוספת דגשים לכתיבת המסמך
+                    </AddNodeButton>
+                  )}
+                </SidebarFooter>
+              </SidebarScroll>
+              <FieldBankBar
+                edge="bottom"
+                showFieldsToggle={importedFields.length > 0}
+                onToggleFields={handleExpandFieldBank}
+                onOpenPicker={handleOpenImportPicker}
+              />
+            </>
+          )}
+        </Sidebar>
+
+        <DocumentPreview
+          tree={tree}
+          appendices={appendices}
+          onAppendixTitleChange={handleAppendixTitleChange}
+          onAppendixContentChange={handleAppendixContentChange}
+          hasEmphasis={hasEmphasis}
+          emphasisText={emphasisText}
+          onEmphasisTextChange={setEmphasisText}
+        />
+      </BodySection>
+    </ContentEditorProvider>
+  );
+
   return (
     <Overlay data-testid={TEMPLATE_MODAL_IDS.overlay} onClick={onOverlayClick} $closing={isClosing}>
       <ModalCard
@@ -182,87 +276,7 @@ export const TemplateModal = ({
           />
         </DetailsSection>
 
-        <ContentEditorProvider>
-          <BodySection data-testid={TEMPLATE_MODAL_IDS.body}>
-            <Sidebar data-testid={TEMPLATE_MODAL_IDS.sidebar}>
-              {isFieldBankShown ? (
-                <>
-                  <FieldBankBar
-                    edge="top"
-                    showFieldsToggle
-                    onToggleFields={handleCollapseFieldBank}
-                    onOpenPicker={handleOpenImportPicker}
-                  />
-                  <FieldBankList
-                    fields={importedFields}
-                    onRemoveField={handleRemoveImportedField}
-                    onOpenPicker={handleOpenImportPicker}
-                    onFieldDragStart={trackFieldDragged}
-                  />
-                </>
-              ) : (
-                <>
-                  <SidebarScroll>
-                    <SubjectTree
-                      tree={tree}
-                      activePermissionsId={permTarget?.id ?? null}
-                      onTogglePermissions={handleTogglePermissions}
-                      onSubjectAdded={trackSubjectAdded}
-                      onSectionAdded={trackSectionAdded}
-                      onSubSectionAdded={trackSubSectionAdded}
-                    />
-
-                    <SidebarFooter>
-                      <AppendixList
-                        appendices={appendices}
-                        activePermissionsId={permTarget?.id ?? null}
-                        onAdd={handleAddAppendix}
-                        onRemove={handleRemoveAppendix}
-                        onTitleChange={handleAppendixTitleChange}
-                        onReorder={handleReorderAppendix}
-                        onTogglePermissions={handleTogglePermissions}
-                        onChangePermissions={handleAppendixPermissionsChange}
-                      />
-                      {hasEmphasis ? (
-                        <EmphasisBox>
-                          <EmphasisLabel>דגשים לכתיבה</EmphasisLabel>
-                          <SmallIconBtn
-                            type="button"
-                            onClick={handleRemoveEmphasis}
-                            aria-label="הסרת דגשים"
-                          >
-                            <X size={12} />
-                          </SmallIconBtn>
-                        </EmphasisBox>
-                      ) : (
-                        <AddNodeButton type="button" onClick={handleAddEmphasis}>
-                          <Plus size={14} />
-                          הוספת דגשים לכתיבת המסמך
-                        </AddNodeButton>
-                      )}
-                    </SidebarFooter>
-                  </SidebarScroll>
-                  <FieldBankBar
-                    edge="bottom"
-                    showFieldsToggle={importedFields.length > 0}
-                    onToggleFields={handleExpandFieldBank}
-                    onOpenPicker={handleOpenImportPicker}
-                  />
-                </>
-              )}
-            </Sidebar>
-
-            <DocumentPreview
-              tree={tree}
-              appendices={appendices}
-              onAppendixTitleChange={handleAppendixTitleChange}
-              onAppendixContentChange={handleAppendixContentChange}
-              hasEmphasis={hasEmphasis}
-              emphasisText={emphasisText}
-              onEmphasisTextChange={setEmphasisText}
-            />
-          </BodySection>
-        </ContentEditorProvider>
+        {currentUserId ? <CollabProvider userId={currentUserId}>{body}</CollabProvider> : body}
 
         <form.Subscribe selector={(state) => ({ isDirty: state.isDirty, name: state.values.name })}>
           {({ isDirty, name }) => {

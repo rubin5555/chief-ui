@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { createContext, useContext, useRef, useState } from 'react';
+import type { CursorPath } from '@/collab/types';
+import { type LockInfo, useCollabContext } from './CollabContext';
 
 // Cap per-field history so a long editing session on a large list can't grow unbounded.
 const MAX_HISTORY_LENGTH = 100;
@@ -9,10 +11,23 @@ interface HistoryEntry {
   pointer: number;
 }
 
+const EMPTY_LOCK_STATE = new Map<string, LockInfo | null>();
+const EMPTY_CURSORS = new Map<string, CursorPath | null>();
+
 interface ContentEditorContextValue {
   toolbarId: string;
   activeId: string | null;
   setActive: (id: string | null) => void;
+  // Requests the lock for `fieldId` (the stable domain id — see
+  // ContentEditor's `id` prop) then, on grant, activates `instanceId` (the
+  // editor's own per-mount id — see ContentEditor's `myId`). The two are
+  // different things: locking is keyed by field, local activation by mount.
+  // Optimistic — activates immediately, rolls back only if denied (plan §3).
+  // With no CollabProvider above this one, degrades to the original
+  // always-succeeds setActive(instanceId).
+  requestActivate: (fieldId: string, instanceId: string) => void;
+  lockState: Map<string, LockInfo | null>;
+  remoteCursors: Map<string, CursorPath | null>;
   // Undo/redo history keyed by a stable field id rather than the editor instance,
   // so it survives the field's TinyMCE instance being unmounted and remounted
   // (e.g. scrolling a field out of and back into a virtualised list).
@@ -28,6 +43,7 @@ export const ContentEditorProvider = ({ children }: { children: ReactNode }) => 
   const toolbarId = useRef(`ce-shared-tb-${self.crypto.randomUUID()}`);
   const [activeId, setActiveId] = useState<string | null>(null);
   const historyRef = useRef(new Map<string, HistoryEntry>());
+  const collab = useCollabContext();
 
   const getEntry = (id: string, initialValue: string): HistoryEntry => {
     let entry = historyRef.current.get(id);
@@ -70,12 +86,28 @@ export const ContentEditorProvider = ({ children }: { children: ReactNode }) => 
     return entry.stack[entry.pointer];
   };
 
+  const requestActivate = (fieldId: string, instanceId: string) => {
+    if (!collab) {
+      setActiveId(instanceId);
+      return;
+    }
+    setActiveId(instanceId);
+    collab.acquireLock(fieldId).then((granted) => {
+      if (!granted) {
+        setActiveId((current) => (current === instanceId ? null : current));
+      }
+    });
+  };
+
   return (
     <ContentEditorContext.Provider
       value={{
         toolbarId: toolbarId.current,
         activeId,
         setActive: setActiveId,
+        requestActivate,
+        lockState: collab?.lockState ?? EMPTY_LOCK_STATE,
+        remoteCursors: collab?.remoteCursors ?? EMPTY_CURSORS,
         getHistoryValue,
         pushHistoryLevel,
         undoHistory,
