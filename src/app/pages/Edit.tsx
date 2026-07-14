@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { TopNavbar } from '../components/TopNavbar';
 import {
-  ChevronLeft, ChevronRight, ChevronDown, Plus, RotateCcw,
+  ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus, RotateCcw,
   Undo2, Redo2,
   Bold, Italic, Underline, Strikethrough, Highlighter,
   AlignRight, AlignCenter, AlignLeft, AlignJustify,
@@ -3289,6 +3289,12 @@ export function Edit({ navigate, doc }: EditProps) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showIssueUpdateModal, setShowIssueUpdateModal] = useState(false);
   const [showIssueNewModal, setShowIssueNewModal] = useState(false);
+  const [comparisonMode, setComparisonMode] = useState(false);
+  const [comparisonVersionLabel, setComparisonVersionLabel] = useState('');
+  const [comparisonNavIndex, setComparisonNavIndex] = useState(1);
+  const [hideDeleted, setHideDeleted] = useState(false);
+  const [showHighlight, setShowHighlight] = useState(false);
+  const comparisonTotal = 3;
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const toggleTopic = (id: string) => setExpandedTopics(prev => {
     const next = new Set(prev);
@@ -3458,7 +3464,8 @@ export function Edit({ navigate, doc }: EditProps) {
         onPermTriggerUsed={() => setPermTrigger(null)}
         docStatus={docStatus}
         onIssueUpdate={() => setShowIssueUpdateModal(true)}
-        onIssueNew={() => setShowIssueNewModal(true)} />
+        onIssueNew={() => setShowIssueNewModal(true)}
+        onStartComparison={(v) => { setComparisonVersionLabel(v.label); setComparisonNavIndex(1); setComparisonMode(true); }} />
       {showFilterPanel && <FilterPanel onClose={closeFilterPanel} appliedFilters={activeFilters} onApply={setActiveFilters} />}
 
       {/* Doc metadata pill — 1cm wider than A4 on each side */}
@@ -3483,6 +3490,62 @@ export function Edit({ navigate, doc }: EditProps) {
           ))}
         </div>
       </div>
+
+      {/* Comparison bar */}
+      {comparisonMode && (
+        <div className="w-full flex-shrink-0 border-b border-blue-100 flex justify-center"
+          style={{ background: '#EFF6FF', paddingRight: 256 }}>
+        <div dir="rtl" className="flex items-center justify-between px-4 py-2"
+          style={{ width: '230mm' }}>
+          {/* Version label — right side */}
+          <span className="text-xs font-semibold text-blue-900 whitespace-nowrap">
+            השוואה ל{comparisonVersionLabel} בסטטוס מבצעית
+          </span>
+          {/* Controls — left side */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Toggles */}
+            <button
+              onClick={() => setHideDeleted(p => !p)}
+              className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap"
+              style={hideDeleted ? { background: '#1B3A6B', color: '#fff', borderColor: '#1B3A6B' } : { background: '#fff', color: '#374151', borderColor: '#d1d5db' }}>
+              הסתרת תוכן מחוק
+            </button>
+            <button
+              onClick={() => setShowHighlight(p => !p)}
+              className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap"
+              style={showHighlight ? { background: '#1B3A6B', color: '#fff', borderColor: '#1B3A6B' } : { background: '#fff', color: '#374151', borderColor: '#d1d5db' }}>
+              הצגת מרקור טקסט
+            </button>
+            {/* Divider */}
+            <div className="w-px h-4 bg-blue-200" />
+            {/* Navigation: ↑ counter ↓ */}
+            <div dir="ltr" className="flex items-center gap-0.5">
+              <button
+                onClick={() => setComparisonNavIndex(p => Math.max(1, p - 1))}
+                className="p-1 rounded hover:bg-blue-100 transition-colors">
+                <ChevronUp className="w-3.5 h-3.5 text-blue-800" />
+              </button>
+              <span className="text-xs font-semibold text-blue-800 tabular-nums" style={{ minWidth: 28, textAlign: 'center' }}>
+                {comparisonNavIndex}/{comparisonTotal}
+              </span>
+              <button
+                onClick={() => setComparisonNavIndex(p => Math.min(comparisonTotal, p + 1))}
+                className="p-1 rounded hover:bg-blue-100 transition-colors">
+                <ChevronDown className="w-3.5 h-3.5 text-blue-800" />
+              </button>
+            </div>
+            {/* Divider */}
+            <div className="w-px h-4 bg-blue-200" />
+            {/* Close */}
+            <button
+              onClick={() => setComparisonMode(false)}
+              className="p-1 rounded hover:bg-blue-100 transition-colors">
+              <X className="w-3.5 h-3.5 text-blue-800" />
+            </button>
+          </div>
+        </div>
+        </div>
+      )}
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 

@@ -1072,11 +1072,12 @@ interface TopNavbarProps {
   docStatus?: string;
   onIssueUpdate?: () => void;
   onIssueNew?: () => void;
+  onStartComparison?: (version: { label: string }) => void;
 }
 
 type DropPos = { top: number; left: number };
 
-export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false, navigate, showDocActions = false, docHeader = null, onFilterClick, onEditDocClick, onDuplicateClick, onZoomChange, onDocSearch, permTrigger, onPermTriggerUsed, docStatus, onIssueUpdate, onIssueNew }: TopNavbarProps) {
+export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false, navigate, showDocActions = false, docHeader = null, onFilterClick, onEditDocClick, onDuplicateClick, onZoomChange, onDocSearch, permTrigger, onPermTriggerUsed, docStatus, onIssueUpdate, onIssueNew, onStartComparison }: TopNavbarProps) {
   const [realityMode, setRealityMode] = useState('מציאות');
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIcon, setActiveIcon] = useState<string | null>(null);
@@ -1668,6 +1669,7 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
                     </span>
                   </div>
                   <button
+                    onClick={() => { onStartComparison?.({ label: v.label }); setShowVersionCompare(false); }}
                     className="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
                     style={{ background: '#1B3A6B' }}>
                     השוואה
