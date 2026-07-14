@@ -3493,57 +3493,61 @@ export function Edit({ navigate, doc }: EditProps) {
 
       {/* Comparison bar */}
       {comparisonMode && (
-        <div className="w-full flex-shrink-0 border-b border-blue-100 flex justify-center"
-          style={{ background: '#EFF6FF', paddingRight: 256 }}>
-        <div dir="rtl" className="flex items-center justify-between px-4 py-2"
-          style={{ width: '230mm' }}>
-          {/* Version label — right side */}
-          <span className="text-xs font-semibold text-blue-900 whitespace-nowrap">
-            השוואה ל{comparisonVersionLabel} בסטטוס מבצעית
-          </span>
-          {/* Controls — left side */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Toggles */}
-            <button
-              onClick={() => setHideDeleted(p => !p)}
-              className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap"
-              style={hideDeleted ? { background: '#1B3A6B', color: '#fff', borderColor: '#1B3A6B' } : { background: '#fff', color: '#374151', borderColor: '#d1d5db' }}>
-              הסתרת תוכן מחוק
-            </button>
-            <button
-              onClick={() => setShowHighlight(p => !p)}
-              className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap"
-              style={showHighlight ? { background: '#1B3A6B', color: '#fff', borderColor: '#1B3A6B' } : { background: '#fff', color: '#374151', borderColor: '#d1d5db' }}>
-              הצגת מרקור טקסט
-            </button>
-            {/* Divider */}
-            <div className="w-px h-4 bg-blue-200" />
-            {/* Navigation: ↑ counter ↓ */}
-            <div dir="ltr" className="flex items-center gap-0.5">
+        <div className="w-full flex-shrink-0 flex justify-center"
+          style={{ paddingRight: 256, paddingTop: 6, paddingBottom: 6 }}>
+          <div dir="rtl" className="flex items-center justify-between rounded-2xl px-4 py-2"
+            style={{ width: '230mm', background: '#1B3A6B' }}>
+            {/* Version label */}
+            <span className="text-xs font-semibold text-white whitespace-nowrap">
+              השוואה ל{comparisonVersionLabel} בסטטוס מבצעית
+            </span>
+            {/* Controls */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Toggles */}
               <button
-                onClick={() => setComparisonNavIndex(p => Math.max(1, p - 1))}
-                className="p-1 rounded hover:bg-blue-100 transition-colors">
-                <ChevronUp className="w-3.5 h-3.5 text-blue-800" />
+                onClick={() => setHideDeleted(p => !p)}
+                className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap"
+                style={hideDeleted
+                  ? { background: '#fff', color: '#1B3A6B', borderColor: '#fff' }
+                  : { background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.5)' }}>
+                הסתרת תוכן מחוק
               </button>
-              <span className="text-xs font-semibold text-blue-800 tabular-nums" style={{ minWidth: 28, textAlign: 'center' }}>
-                {comparisonNavIndex}/{comparisonTotal}
-              </span>
               <button
-                onClick={() => setComparisonNavIndex(p => Math.min(comparisonTotal, p + 1))}
-                className="p-1 rounded hover:bg-blue-100 transition-colors">
-                <ChevronDown className="w-3.5 h-3.5 text-blue-800" />
+                onClick={() => setShowHighlight(p => !p)}
+                className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap"
+                style={showHighlight
+                  ? { background: '#fff', color: '#1B3A6B', borderColor: '#fff' }
+                  : { background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.5)' }}>
+                הצגת מרקור טקסט
+              </button>
+              {/* Divider */}
+              <div className="w-px h-4" style={{ background: 'rgba(255,255,255,0.3)' }} />
+              {/* Navigation */}
+              <div dir="ltr" className="flex items-center gap-0.5">
+                <button
+                  onClick={() => setComparisonNavIndex(p => Math.max(1, p - 1))}
+                  className="p-1 rounded transition-colors hover:bg-white/10">
+                  <ChevronUp className="w-3.5 h-3.5 text-white" />
+                </button>
+                <span className="text-xs font-semibold text-white tabular-nums" style={{ minWidth: 28, textAlign: 'center' }}>
+                  {comparisonNavIndex}/{comparisonTotal}
+                </span>
+                <button
+                  onClick={() => setComparisonNavIndex(p => Math.min(comparisonTotal, p + 1))}
+                  className="p-1 rounded transition-colors hover:bg-white/10">
+                  <ChevronDown className="w-3.5 h-3.5 text-white" />
+                </button>
+              </div>
+              {/* Divider */}
+              <div className="w-px h-4" style={{ background: 'rgba(255,255,255,0.3)' }} />
+              {/* Close */}
+              <button
+                onClick={() => setComparisonMode(false)}
+                className="p-1 rounded transition-colors hover:bg-white/10">
+                <X className="w-3.5 h-3.5 text-white" />
               </button>
             </div>
-            {/* Divider */}
-            <div className="w-px h-4 bg-blue-200" />
-            {/* Close */}
-            <button
-              onClick={() => setComparisonMode(false)}
-              className="p-1 rounded hover:bg-blue-100 transition-colors">
-              <X className="w-3.5 h-3.5 text-blue-800" />
-            </button>
           </div>
-        </div>
         </div>
       )}
 
