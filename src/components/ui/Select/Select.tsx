@@ -63,6 +63,9 @@ export const Select = ({
   const selected = value ?? internalSelected;
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  // Highlight only reflects real keyboard nav — set on open too, it'd render as an unprompted
+  // highlighted option (looks like Tab was pressed) before the user has touched the keyboard.
+  const [keyboardActive, setKeyboardActive] = useState(false);
   const [dropPos, setDropPos] = useState<DropPos | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
@@ -82,11 +85,13 @@ export const Select = ({
       }
       if (e.key === 'ArrowDown') {
         e.preventDefault();
+        setKeyboardActive(true);
         setHighlightedIndex((i) => Math.min(i + 1, options.length - 1));
         return;
       }
       if (e.key === 'ArrowUp') {
         e.preventDefault();
+        setKeyboardActive(true);
         setHighlightedIndex((i) => Math.max(i - 1, 0));
         return;
       }
@@ -135,6 +140,7 @@ export const Select = ({
       const rect = triggerRef.current.getBoundingClientRect();
       setDropPos(computeDropPos(rect));
       setHighlightedIndex(Math.max(options.indexOf(selected), 0));
+      setKeyboardActive(false);
     }
     setIsOpen((prev) => !prev);
   };
@@ -144,6 +150,8 @@ export const Select = ({
     if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onTriggerClick();
+      // opening via keyboard is itself a keyboard-nav gesture, so show the highlight immediately
+      if (e.key === 'ArrowDown') setKeyboardActive(true);
     }
   };
 
@@ -156,7 +164,8 @@ export const Select = ({
 
   const displayValue = selected || placeholder;
   const isPlaceholder = !selected;
-  const activeOptionId = isOpen ? `${base}-option-${highlightedIndex}` : undefined;
+  const activeOptionId =
+    isOpen && keyboardActive ? `${base}-option-${highlightedIndex}` : undefined;
 
   return (
     <>
@@ -187,6 +196,7 @@ export const Select = ({
           data-testid={SELECT_IDS.dropdown}
           role="listbox"
           $pos={dropPos}
+          $width={dropPos.width}
         >
           {options.map((opt, index) => (
             <OptionBtn
@@ -198,7 +208,7 @@ export const Select = ({
               role="option"
               aria-selected={selected === opt}
               $selected={selected === opt}
-              $highlighted={index === highlightedIndex}
+              $highlighted={keyboardActive && index === highlightedIndex}
               onClick={onSelect(opt)}
             >
               {opt}
