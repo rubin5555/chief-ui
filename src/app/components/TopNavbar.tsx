@@ -1,4 +1,4 @@
-import { Bell, MessageCircle, User, ChevronDown, BookOpen, Eye, Edit, X, HelpCircle, Play, ExternalLink, ArrowRight, Lock, MessageSquare, Phone, ChevronLeft, ChevronRight, Filter, FileEdit, Copy, UserCog, Loader2, Search, Plus, FileText, Users, Layers, List, PenLine, UserCheck, Network, Check } from 'lucide-react';
+import { Bell, MessageCircle, User, ChevronDown, BookOpen, Eye, Edit, X, HelpCircle, Play, ExternalLink, ArrowRight, Lock, MessageSquare, Phone, ChevronLeft, ChevronRight, Filter, FileEdit, Copy, Trash2, UserCog, Loader2, Search, Plus, FileText, FileSpreadsheet, Users, Layers, List, PenLine, UserCheck, Network, Check, Download, RefreshCw, FilePlus, GitCompare } from 'lucide-react';
 
 function WordIcon() {
   return (
@@ -129,6 +129,7 @@ const PERM_HAMAL_GROUPS = [
       { id: 'p1', name: 'אבי כהן',   idNumber: '012345678', environment: 'ארגון א׳' },
       { id: 'p2', name: 'שרה לוי',    idNumber: '023456789', environment: 'ארגון ב׳' },
       { id: 'p6', name: 'מירי פרץ',   idNumber: '067890123', environment: 'ארגון א׳' },
+      { id: 'p11', name: 'יעקב בן-דוד', idNumber: '112345678', environment: 'ארגון א׳' },
     ]},
   { id: 'h2', name: 'חמל לוגיסטי',      type: 'לוגיסטי',  environment: 'ארגון ב׳',
     members: [
@@ -146,6 +147,13 @@ const PERM_HAMAL_GROUPS = [
       { id: 'p14', name: 'ריקי נחום', idNumber: '145678901', environment: 'ארגון א׳' },
       { id: 'p12', name: 'תמר ברק',   idNumber: '123456789', environment: 'ארגון ב׳' },
     ]},
+  { id: 'h5', name: 'חמל רפואי',         type: 'רפואי',    environment: 'ארגון ב׳',
+    members: [
+      { id: 'p15', name: 'דנה אלון',   idNumber: '156789012', environment: 'ארגון ב׳' },
+      { id: 'p16', name: 'רון שפירא',  idNumber: '167890123', environment: 'ארגון א׳' },
+      { id: 'p17', name: 'מיכל דוד',   idNumber: '178901234', environment: 'ארגון ג׳' },
+      { id: 'p18', name: 'אלי גולן',   idNumber: '189012345', environment: 'ארגון ב׳' },
+    ]},
 ];
 const PERM_MIRAZ_GROUPS = [
   { id: 'm1', name: "מיראז' קרבי",   type: 'קרבי',     environment: 'ארגון א׳',
@@ -160,25 +168,57 @@ const PERM_MIRAZ_GROUPS = [
       { id: 'p12', name: 'תמר ברק',  idNumber: '123456789', environment: 'ארגון ב׳' },
       { id: 'p10', name: 'נועה גרין', idNumber: '101234567', environment: 'ארגון ג׳' },
     ]},
-  { id: 'm3', name: "מיראז' לוגיסטי", type: 'לוגיסטי', environment: 'ארגון ג׳',
+  { id: 'm3', name: "מיראז' מודיעין", type: 'מודיעיני', environment: 'ארגון א׳',
+    members: [
+      { id: 'p9',  name: 'אורן שמש',  idNumber: '090123456', environment: 'ארגון א׳' },
+      { id: 'p13', name: 'דני אברהם', idNumber: '134567890', environment: 'ארגון ב׳' },
+    ]},
+  { id: 'm4', name: "מיראז' לוגיסטי", type: 'לוגיסטי', environment: 'ארגון ג׳',
     members: [
       { id: 'p3', name: 'משה ישראלי', idNumber: '034567890', environment: 'ארגון א׳' },
       { id: 'p5', name: 'יוסף מזרחי', idNumber: '056789012', environment: 'ארגון ב׳' },
+      { id: 'p8', name: 'לאה כץ',     idNumber: '089012345', environment: 'ארגון ב׳' },
+    ]},
+  { id: 'm5', name: "מיראז' רפואי",   type: 'רפואי',    environment: 'ארגון ב׳',
+    members: [
+      { id: 'p15', name: 'דנה אלון',  idNumber: '156789012', environment: 'ארגון ב׳' },
+      { id: 'p16', name: 'רון שפירא', idNumber: '167890123', environment: 'ארגון א׳' },
+      { id: 'p17', name: 'מיכל דוד',  idNumber: '178901234', environment: 'ארגון ג׳' },
+      { id: 'p18', name: 'אלי גולן',  idNumber: '189012345', environment: 'ארגון ב׳' },
+    ]},
+];
+const PERM_PERSONAL_LISTS = [
+  { id: 'pl1', name: 'רשימת הפצה — מטה מבצעי', members: [
+      { id: 'p1', name: 'אבי כהן',   idNumber: '012345678', environment: 'ארגון א׳' },
+      { id: 'p2', name: 'שרה לוי',   idNumber: '023456789', environment: 'ארגון ב׳' },
+      { id: 'p3', name: 'משה ישראלי',idNumber: '034567890', environment: 'ארגון א׳' },
+    ]},
+  { id: 'pl2', name: 'רשימת הפצה — לוגיסטיקה', members: [
+      { id: 'p5', name: 'יוסף מזרחי', idNumber: '056789012', environment: 'ארגון ב׳' },
+      { id: 'p8', name: 'לאה כץ',     idNumber: '089012345', environment: 'ארגון ב׳' },
+      { id: 'p9', name: 'אורן שמש',   idNumber: '090123456', environment: 'ארגון א׳' },
+      { id: 'p10', name: 'נועה גרין', idNumber: '101234567', environment: 'ארגון ג׳' },
+    ]},
+  { id: 'pl3', name: 'צוות מודיעין — רשימה א׳', members: [
+      { id: 'p11', name: 'יעקב בן-דוד', idNumber: '112345678', environment: 'ארגון א׳' },
+      { id: 'p12', name: 'תמר ברק',     idNumber: '123456789', environment: 'ארגון ב׳' },
     ]},
 ];
 
 // ─── DocPermissionsModal ──────────────────────────────────────────────────────
 type PermUser = { id: string; name: string; idNumber: string; environment: string; subLabel?: string };
 
-function DocPermissionsModal({ onClose }: { onClose: () => void }) {
+function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = false }: { onClose: () => void; initialTab?: number; isDistributed?: boolean }) {
   const PERMISSIONS = [
     {
       label: 'צפייה לאחר הפצה', Icon: Eye, color: '#111827',
       desc: 'המשתמשים עם הרשאה זו יוכלו לצפות בתוכן הפקודה לאחר הפצתה.',
     },
     {
-      label: 'צפייה טרם הפצה', Icon: Eye, color: '#111827',
-      desc: 'המשתמשים עם הרשאה זו יוכלו לצפות בתוכן הפקודה כשהיא בסטטוס ״בהכנה״ או ״בסבב אישורים״, וייצא אותה ל-Word ו-PDF. הם לא יוכלו לערוך תוכן זה.',
+      label: isDistributed ? 'מורשים לייצוא לוורד' : 'צפייה טרם הפצה', Icon: Eye, color: '#111827',
+      desc: isDistributed
+        ? 'המשתמשים עם הרשאה זו יוכלו לייצא את הפקודה ל-Word.'
+        : 'המשתמשים עם הרשאה זו יוכלו לצפות בתוכן הפקודה כשהיא בסטטוס ״בהכנה״ או ״בסבב אישורים״, וייצא אותה ל-Word ו-PDF. הם לא יוכלו לערוך תוכן זה.',
     },
     {
       label: 'ניהול פקודה', Icon: Network, color: '#111827',
@@ -194,9 +234,11 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
     },
   ];
 
-  const [activeIdx, setActiveIdx]           = useState(0);
+  const [activeIdx, setActiveIdx]           = useState(initialTab);
   const [members,   setMembers]             = useState<Record<number, PermUser[]>>({0:[],1:[],2:[],3:[],4:[]});
-  const [importTab, setImportTab]           = useState<'doc'|'hamal'|'miraz'|'personal'|'network'|null>(null);
+  const [importTab, setImportTab]           = useState<'doc'|'hamal'|'miraz'|'personal'|'network'|'excel'|null>(null);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const exportBtnRef = useRef<HTMLButtonElement>(null);
   const [searchQuery, setSearchQuery]       = useState('');
   const [searchOpen,  setSearchOpen]        = useState(false);
   const [networkFilter, setNetworkFilter]   = useState<'sodibioti'|'sodi'|'aman'>('sodibioti');
@@ -214,6 +256,10 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
   const manualAddBtnRef = useRef<HTMLButtonElement>(null);
   const [docTabFilter, setDocTabFilter] = useState<'distributed'|'drafts'>('distributed');
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+  const [personalListTab, setPersonalListTab] = useState<'mine'|'all'>('mine');
+  const [addToGroupModal, setAddToGroupModal] = useState<{ groupId: string; groupName: string; x: number; y: number } | null>(null);
+  const [addToGroupSearch, setAddToGroupSearch] = useState('');
 
   const isClauseMode = activeIdx === 3 || activeIdx === 4;
 
@@ -247,12 +293,22 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const addMany = (people: PermUser[]) =>
+  const addMany = (people: PermUser[]) => {
     setMembers(prev => {
       const cur = prev[activeIdx] || [];
       const next = people.filter(p => !cur.some(m => m.id === p.id));
       return next.length ? { ...prev, [activeIdx]: [...cur, ...next] } : prev;
     });
+    if (isClauseMode && selectedClauses.length > 0) {
+      setMemberClauses(prev => {
+        const updated = { ...prev };
+        people.forEach(p => {
+          updated[p.id] = [...new Set([...(prev[p.id] || []), ...selectedClauses])];
+        });
+        return updated;
+      });
+    }
+  };
 
   const removeMember = (id: string) =>
     setMembers(prev => ({ ...prev, [activeIdx]: (prev[activeIdx]||[]).filter(m => m.id !== id) }));
@@ -263,60 +319,105 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
         .filter(p => p.name.includes(searchQuery) || p.idNumber.includes(searchQuery))
     : [];
 
-  const GroupList = ({ groups, iconEl }: { groups: typeof PERM_HAMAL_GROUPS; iconEl: React.ReactNode }) => (
-    <div>
-      {groups.map(g => (
-        <div key={g.id} className="border-b border-gray-50 last:border-0">
-          <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-right"
-            onClick={() => setExpandedId(expandedId === g.id ? null : g.id)}>
-            <span className="flex-shrink-0 w-4 h-4 text-gray-300">{iconEl}</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-800">{g.name}</p>
-              <p className="text-xs text-gray-400">{g.type} · {g.members.length} חברים</p>
-            </div>
-            <button onMouseDown={e => { e.stopPropagation(); addMany(g.members); }}
-              className="text-[11px] px-2 py-1 rounded-lg font-semibold transition-colors whitespace-nowrap flex-shrink-0"
-              style={{ background: '#1B3A6B14', color: '#1B3A6B' }}>
-              הוסף הכל
-            </button>
-            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform flex-shrink-0 ${expandedId === g.id ? 'rotate-180' : ''}`} />
-          </button>
-          {expandedId === g.id && (
-            <div className="bg-gray-50/50 border-t border-gray-50">
-              {g.members.map(p => (
-                <button key={p.id} onMouseDown={() => addMember(p)}
-                  className="w-full flex items-center gap-3 px-6 py-2.5 hover:bg-gray-100/60 text-right transition-colors">
-                  <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500 flex-shrink-0">
-                    {p.name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-700">{p.name}</p>
-                    <p className="text-[10px] text-gray-400">{p.idNumber}</p>
-                  </div>
-                  <Plus className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
-                </button>
-              ))}
-            </div>
-          )}
+  const GroupList = ({ groups, colHeader, showAdd = true }: { groups: typeof PERM_HAMAL_GROUPS; colHeader: string; showAdd?: boolean }) => {
+    const allSelected = groups.every(g => selectedGroupIds.includes(g.id));
+    const toggleGroup = (id: string) =>
+      setSelectedGroupIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    return (
+      <div className="flex flex-col" dir="rtl">
+        {/* header row */}
+        <div className="grid items-center px-4 py-1.5 text-[10px] font-semibold text-gray-400 select-none border-b border-gray-100 bg-gray-50/60"
+          style={{ gridTemplateColumns: '24px 1fr 32px 28px' }}>
+          <span />
+          <span className="text-right">{colHeader}</span>
+          <span />
+          <span />
         </div>
-      ))}
-    </div>
-  );
+        {/* rows */}
+        <div>
+          {groups.map(g => {
+            const isSel = selectedGroupIds.includes(g.id);
+            const isExp = expandedId === g.id;
+            return (
+              <div key={g.id} className={`border-b border-gray-100 last:border-0 ${isSel ? 'bg-blue-50/20' : ''}`}>
+                <div className="grid items-center px-4 py-2.5 hover:bg-gray-50/80 transition-colors cursor-pointer"
+                  style={{ gridTemplateColumns: '24px 1fr 32px 28px' }}
+                  onClick={() => toggleGroup(g.id)}>
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${isSel ? 'border-[#1B3A6B]' : 'border-gray-300'}`}
+                    style={isSel ? { background: '#1B3A6B' } : {}}>
+                    {isSel && <Check className="w-2.5 h-2.5 text-white" />}
+                  </div>
+                  <span className="text-xs font-semibold text-gray-800 truncate pr-1">
+                    {g.name} <span className="font-normal text-gray-400">({g.members.length})</span>
+                  </span>
+                  {showAdd ? (
+                    <button onClick={e => { e.stopPropagation(); const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setAddToGroupSearch(''); setAddToGroupModal({ groupId: g.id, groupName: g.name, x: r.left, y: r.bottom + 6 }); }}
+                      className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200 transition-colors"
+                      title="הוסף משתמש">
+                      <Plus className="w-3.5 h-3.5 text-gray-400" />
+                    </button>
+                  ) : <span />}
+                  <button onClick={e => { e.stopPropagation(); setExpandedId(isExp ? null : g.id); }}
+                    className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200 transition-colors">
+                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isExp ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+                {isExp && (
+                  <div className="border-t border-gray-100" style={{ borderRight: '3px solid #1B3A6B20' }}>
+                    {g.members.map(p => {
+                      const added = curMembers.some(m => m.id === p.id);
+                      return (
+                        <button key={p.id} disabled={added}
+                          onMouseDown={() => { if (!added) addMember(p); }}
+                          className={`w-full grid items-center px-8 py-2 border-b border-gray-50 last:border-0 transition-colors text-right ${added ? 'opacity-50 cursor-default' : 'hover:bg-blue-50/40'}`}
+                          style={{ gridTemplateColumns: '1fr 120px' }}>
+                          <span className="text-xs font-semibold text-gray-800">{p.name}</span>
+                          <span className="text-xs text-gray-400">{p.idNumber}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        {/* footer when groups selected */}
+        {selectedGroupIds.length > 0 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-white sticky bottom-0" dir="rtl">
+            <span className="text-xs text-gray-500">{selectedGroupIds.length} קבוצות נבחרו</span>
+            <button onClick={() => {
+              const people = groups.filter(g => selectedGroupIds.includes(g.id)).flatMap(g => g.members);
+              addMany(people);
+              setSelectedGroupIds([]);
+            }} className="px-4 py-2 rounded-xl text-xs font-semibold text-white transition-colors" style={{ background: '#1B3A6B' }}>
+              הוסף לרשימה
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (<>
     <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.45)', zIndex: 99999 }}
       onClick={onClose}>
       <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col" dir="rtl"
-        style={{ width: isClauseMode ? 1140 : 1080, height: 600, maxWidth: '96vw', maxHeight: '92vh', transition: 'width 0.2s' }}
+        style={{ width: isClauseMode ? 1260 : 1200, height: 600, maxWidth: '96vw', maxHeight: '92vh', transition: 'width 0.2s' }}
         onClick={e => e.stopPropagation()}>
+        {/* ── UNIFIED HEADER ── */}
+        <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100 flex-shrink-0">
+          <h2 className="text-sm font-semibold text-gray-900">הרשאות מסמך</h2>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors">
+            <X className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
+
         {/* ── BODY (3 columns) ── */}
         <div className="flex flex-1 min-h-0">
 
         {/* ── LEFT: permission type list ── */}
         <div className="w-52 flex-shrink-0 border-l border-gray-100 bg-gray-50/60 flex flex-col">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="text-base font-bold text-gray-900">הרשאות מסמך</h2>
-          </div>
           <nav className="py-1">
             {PERMISSIONS.map(({ label, Icon, color }, i) => {
               const active = i === activeIdx;
@@ -338,22 +439,12 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* ── MIDDLE: search + import panel ── */}
-        <div className="flex-1 flex flex-col min-w-0">
-
-          {/* header */}
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 flex-shrink-0">
-            {activeIdx === 2
-              ? <span />
-              : <span className="text-sm font-semibold text-gray-800">הוספת משתמשים</span>}
-            <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors">
-              <X className="w-4 h-4 text-gray-400" />
-            </button>
-          </div>
+        <div className={`flex flex-col min-w-0 ${isClauseMode ? 'flex-1 border-r border-gray-100' : 'flex-1'}`}
+          style={isClauseMode ? { order: 3 } : undefined}>
 
           {/* source chips — fixed single row */}
-          <div className="px-4 pt-4 pb-3 flex-shrink-0" dir="rtl">
-            <p className="text-[11px] text-gray-400 mb-2 font-medium">ייבוא ממקורות נוספים</p>
-            <div className="flex gap-1.5 flex-wrap">
+          <div className="px-4 pt-1 pb-3 flex-shrink-0" dir="rtl">
+            <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
               {([
                 { key: 'network'  as const, label: 'הוסף מרשתות',   Icon: Network  },
                 { key: 'doc'      as const, label: 'ממסמך קיים',    Icon: FileText },
@@ -365,7 +456,7 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
                 return (
                   <button key={key}
                     onClick={() => { setImportTab(active ? null : key); setExpandedId(null); setSearchQuery(''); setSearchOpen(false); if (!active && key !== 'network') setNetworkFilter('sodibioti'); }}
-                    className={`flex items-center gap-1.5 flex-1 px-2.5 py-2 rounded-xl border transition-all text-right ${
+                    className={`flex items-center gap-1.5 flex-1 min-w-0 px-2 py-2 rounded-xl border transition-all text-right ${
                       active ? '' : 'border-gray-100 bg-gray-50/60 hover:bg-white hover:border-gray-200 hover:shadow-sm'
                     }`}
                     style={active ? { background: '#1B3A6B07', borderColor: '#1B3A6B35', boxShadow: '0 1px 3px rgba(27,58,107,0.08)' } : undefined}>
@@ -377,6 +468,22 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
                   </button>
                 );
               })}
+              {/* Excel import chip — compact, fixed width */}
+              {(() => {
+                const active = importTab === 'excel';
+                return (
+                  <button
+                    onClick={() => setImportTab(active ? null : 'excel')}
+                    className={`flex items-center gap-1 flex-shrink-0 px-2 py-2 rounded-xl border transition-all ${active ? '' : 'border-gray-100 bg-gray-50/60 hover:bg-white hover:border-gray-200 hover:shadow-sm'}`}
+                    style={active ? { background: '#1B3A6B07', borderColor: '#1B3A6B35', boxShadow: '0 1px 3px rgba(27,58,107,0.08)' } : undefined}>
+                    <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={active ? { background: '#1B3A6B18' } : { background: 'white', border: '1px solid #f3f4f6' }}>
+                      <FileSpreadsheet className="w-2.5 h-2.5" style={{ color: active ? '#1B3A6B' : '#1D6F42' }} />
+                    </div>
+                    <span className="text-[11px] font-semibold" style={{ color: active ? '#1B3A6B' : '#374151' }}>Excel</span>
+                  </button>
+                );
+              })()}
             </div>
           </div>
 
@@ -567,19 +674,105 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
 
                 {/* HAMAL */}
                 {importTab === 'hamal' && (
-                  <GroupList groups={PERM_HAMAL_GROUPS} iconEl={<Users className="w-4 h-4 text-gray-300" />} />
+                  <GroupList groups={PERM_HAMAL_GROUPS} colHeader="שם הקבוצה" />
                 )}
 
                 {/* MIRAZ */}
                 {importTab === 'miraz' && (
-                  <GroupList groups={PERM_MIRAZ_GROUPS} iconEl={<Layers className="w-4 h-4 text-gray-300" />} />
+                  <GroupList groups={PERM_MIRAZ_GROUPS} colHeader="שם הקבוצה" showAdd={false} />
                 )}
 
                 {/* PERSONAL */}
                 {importTab === 'personal' && (
-                  <div className="flex flex-col items-center justify-center py-12 gap-2">
-                    <List className="w-8 h-8" style={{ color: '#e5e7eb' }} />
-                    <p className="text-xs text-gray-400">אין רשימות אישיות שמורות</p>
+                  <div className="flex flex-col" dir="rtl">
+                    {/* tabs */}
+                    <div className="flex gap-5 px-4 pt-3 border-b border-gray-100">
+                      {[{ key: 'mine' as const, label: 'רשימות של המכלול שלי' }, { key: 'all' as const, label: 'כלל רשימות התפוצה' }].map(({ key, label }) => (
+                        <button key={key} onClick={() => setPersonalListTab(key)}
+                          className={`pb-2.5 text-xs transition-colors whitespace-nowrap ${personalListTab === key ? 'font-semibold text-gray-900 border-b-2 border-gray-900' : 'text-gray-400'}`}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    {/* header */}
+                    <div className="grid items-center px-4 py-1.5 text-[10px] font-semibold text-gray-400 select-none border-b border-gray-100 bg-gray-50/60"
+                      style={{ gridTemplateColumns: '24px 1fr 28px' }}>
+                      <span />
+                      <span className="text-right">שם הרשימה</span>
+                      <span />
+                    </div>
+                    {/* rows */}
+                    <div>
+                      {PERM_PERSONAL_LISTS.map(list => {
+                        const isSel = selectedGroupIds.includes(list.id);
+                        const isExp = expandedId === list.id;
+                        return (
+                          <div key={list.id} className={`border-b border-gray-100 last:border-0 ${isSel ? 'bg-blue-50/20' : ''}`}>
+                            <div className="grid items-center px-4 py-2.5 hover:bg-gray-50/80 transition-colors cursor-pointer"
+                              style={{ gridTemplateColumns: '24px 1fr 28px' }}
+                              onClick={() => setSelectedGroupIds(prev => prev.includes(list.id) ? prev.filter(x => x !== list.id) : [...prev, list.id])}>
+                              <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${isSel ? 'border-[#1B3A6B]' : 'border-gray-300'}`}
+                                style={isSel ? { background: '#1B3A6B' } : {}}>
+                                {isSel && <Check className="w-2.5 h-2.5 text-white" />}
+                              </div>
+                              <span className="text-xs font-semibold text-gray-800 truncate pr-1">
+                                {list.name} <span className="font-normal text-gray-400">({list.members.length})</span>
+                              </span>
+                              <button onMouseDown={e => { e.stopPropagation(); setExpandedId(isExp ? null : list.id); }}
+                                className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200 transition-colors">
+                                <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isExp ? 'rotate-180' : ''}`} />
+                              </button>
+                            </div>
+                            {isExp && (
+                              <div className="border-t border-gray-100" style={{ borderRight: '3px solid #1B3A6B20' }}>
+                                {list.members.map(p => {
+                                  const added = curMembers.some(m => m.id === p.id);
+                                  return (
+                                    <button key={p.id} disabled={added}
+                                      onMouseDown={() => { if (!added) addMember(p); }}
+                                      className={`w-full grid items-center px-8 py-2 border-b border-gray-50 last:border-0 transition-colors text-right ${added ? 'opacity-50 cursor-default' : 'hover:bg-blue-50/40'}`}
+                                      style={{ gridTemplateColumns: '1fr 120px' }}>
+                                      <span className="text-xs font-semibold text-gray-800">{p.name}</span>
+                                      <span className="text-xs text-gray-400">{p.idNumber}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {selectedGroupIds.length > 0 && (
+                      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-white sticky bottom-0" dir="rtl">
+                        <span className="text-xs text-gray-500">{selectedGroupIds.length} רשימות נבחרו</span>
+                        <button onClick={() => {
+                          const people = PERM_PERSONAL_LISTS.filter(l => selectedGroupIds.includes(l.id)).flatMap(l => l.members);
+                          addMany(people);
+                          setSelectedGroupIds([]);
+                        }} className="px-4 py-2 rounded-xl text-xs font-semibold text-white" style={{ background: '#1B3A6B' }}>
+                          הוסף לרשימה
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* EXCEL */}
+                {importTab === 'excel' && (
+                  <div className="flex flex-col h-full" dir="rtl">
+                    {/* import button */}
+                    <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-colors hover:opacity-90" style={{ background: '#1D6F42' }}>
+                        <Plus className="w-3.5 h-3.5" />
+                        ייבוא מאקסל
+                      </button>
+                      <span className="text-[11px] text-gray-400">העלה קובץ .xlsx עם עמודות: שם מלא, תעודת זהות, ארגון</span>
+                    </div>
+                    {/* preview area — placeholder until design arrives */}
+                    <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6">
+                      <FileSpreadsheet className="w-10 h-10" style={{ color: '#d1d5db' }} />
+                      <p className="text-xs text-gray-400 text-center">לאחר ייבוא הקובץ תופיע כאן תצוגה מקדימה של הנתונים</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -593,16 +786,17 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* ── FAR LEFT: added members list (always) / clause hierarchy (editor & approver) ── */}
-        <div className="w-60 flex-shrink-0 border-r border-gray-100 bg-gray-50/40 flex flex-col overflow-y-auto" dir="ltr">
+        <div className={`flex-shrink-0 border-r border-gray-100 bg-gray-50/40 flex flex-col overflow-y-auto ${isClauseMode ? 'w-72' : 'w-60'}`}
+          dir="ltr" style={isClauseMode ? { order: 2 } : undefined}>
           {isClauseMode ? (
             <div dir="rtl" className="flex flex-col flex-1 min-h-0">
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 flex-shrink-0">
-              <span className="text-xs font-semibold text-gray-700">סעיפים</span>
-              <span className="text-[11px]">
-                {selectedClauses.length > 0
-                  ? <button onClick={() => setSelectedClauses([])} className="hover:underline" style={{ color: '#1B3A6B' }}>{selectedClauses.length} נבחרו · נקה</button>
-                  : <span className="text-gray-400">בחר סעיפים לשיוך</span>}
-              </span>
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+              <span className="text-xs font-semibold text-gray-700">בחר סעיפים לשיוך</span>
+              {selectedClauses.length > 0 && (
+                <button onClick={() => setSelectedClauses([])} className="text-[11px] hover:underline" style={{ color: '#1B3A6B' }}>
+                  {selectedClauses.length} נבחרו · נקה
+                </button>
+              )}
             </div>
             <div className="flex flex-col gap-0.5 p-3">
               {PERM_DOC_STRUCTURE.map(ch => {
@@ -646,7 +840,7 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
 
                               {/* assigned users — table under the relevant section */}
                               {sMembersOpen && sMembers.length > 0 && (
-                                <div className="mt-0.5 mb-1 rounded-xl overflow-hidden border border-gray-100 bg-white" style={{ marginRight: 20 }}>
+                                <div className="mt-0.5 mb-1 rounded-xl overflow-hidden border border-gray-100 bg-white">
                                   <table className="w-full text-xs" dir="rtl">
                                     <thead>
                                       <tr className="bg-gray-50/80 border-b border-gray-100">
@@ -686,11 +880,6 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
             </div>
           ) : (
             <div dir="rtl" className="flex flex-col flex-1 min-h-0">
-              <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-                <span className="text-sm font-semibold text-gray-800">
-                  רשימת אנשים{curMembers.length > 0 && <span className="font-normal text-gray-500 mr-1">({curMembers.length})</span>}
-                </span>
-              </div>
               <div className="flex-1 overflow-y-auto">
                 {/* Column header */}
                 <div className="sticky top-0 grid items-center px-3 py-2 text-[10px] font-semibold text-gray-500 select-none z-10"
@@ -701,7 +890,7 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
                   <span />
                 </div>
                 {curMembers.length === 0 ? (
-                  <div className="px-4 py-14 text-center">
+                  <div className="px-4 py-14 text-center mt-[177px]">
                     <Users className="w-9 h-9 text-gray-200 mx-auto mb-2.5" />
                     <p className="text-xs text-gray-400">הוסף אנשים לרשימה באמצעות<br />החיפוש או ייבוא מהפאנל הימני</p>
                   </div>
@@ -718,6 +907,38 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
                   </div>
                 ))}
               </div>
+              {/* Export icon — only when list has members */}
+              {curMembers.length > 0 && (
+                <div className="flex items-center justify-end px-3 py-2 border-t border-gray-100 flex-shrink-0 relative" dir="rtl">
+                  <button
+                    ref={exportBtnRef}
+                    title="ייצוא"
+                    onClick={() => setExportMenuOpen(o => !o)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+                    <Download className="w-4 h-4" />
+                  </button>
+                  {exportMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-[99998]" onClick={() => setExportMenuOpen(false)} />
+                      <div className="absolute bottom-full left-2 mb-1 z-[99999] bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-w-[130px]" dir="rtl">
+                        <button
+                          onClick={() => setExportMenuOpen(false)}
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50 transition-colors text-right">
+                          <FileEdit className="w-3.5 h-3.5 text-[#2B579A] flex-shrink-0" />
+                          <span className="text-xs font-medium text-gray-700">ייצוא ל-Word</span>
+                        </button>
+                        <div className="h-px bg-gray-100 mx-2" />
+                        <button
+                          onClick={() => setExportMenuOpen(false)}
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-gray-50 transition-colors text-right">
+                          <FileText className="w-3.5 h-3.5 text-[#1D6F42] flex-shrink-0" />
+                          <span className="text-xs font-medium text-gray-700">ייצוא ל-Excel</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -779,6 +1000,53 @@ function DocPermissionsModal({ onClose }: { onClose: () => void }) {
         </div>
       </div>
     )}
+
+    {/* add to group popover */}
+    {addToGroupModal && (() => {
+      const searchResults = PERM_PEOPLE_POOL.filter(p =>
+        (p.name.includes(addToGroupSearch) || p.idNumber.includes(addToGroupSearch)) && addToGroupSearch.trim()
+      ).slice(0, 8);
+      return (
+        <>
+          <div className="fixed inset-0 z-[999998]" onClick={() => setAddToGroupModal(null)} />
+          <div dir="rtl" className="fixed bg-white rounded-2xl shadow-xl border border-gray-100 z-[999999]"
+            style={{ top: addToGroupModal.y, left: addToGroupModal.x - 280, width: 280 }}>
+            <div className="px-3 pt-3 pb-2">
+              <p className="text-[11px] font-semibold text-gray-500 mb-2">הוסף משתמש ל{addToGroupModal.groupName}</p>
+              <div className="relative">
+                <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                <input type="text" value={addToGroupSearch} onChange={e => setAddToGroupSearch(e.target.value)}
+                  autoFocus placeholder="חפש לפי שם או ת.ז..." autoComplete="new-password"
+                  className="w-full pr-8 pl-3 py-1.5 text-xs rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#1B3A6B] transition-colors text-right" dir="rtl" />
+              </div>
+            </div>
+            {addToGroupSearch.trim() && (
+              <div className="border-t border-gray-100 overflow-hidden">
+                {searchResults.length === 0 ? (
+                  <p className="px-3 py-3 text-xs text-gray-400 text-center">לא נמצאו תוצאות</p>
+                ) : searchResults.map(p => (
+                  <button key={p.id} type="button"
+                    onClick={() => { addMember(p); setAddToGroupSearch(''); }}
+                    className="w-full flex items-center justify-start px-3 py-2 hover:bg-gray-50 text-xs border-b border-gray-50 last:border-0" dir="rtl">
+                    <span className="font-medium text-gray-800">{p.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2 px-3 py-2.5 border-t border-gray-100">
+              <button type="button" onClick={() => setAddToGroupModal(null)}
+                className="flex-1 py-1.5 rounded-xl text-[11px] font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
+                ביטול
+              </button>
+              <button type="button" onClick={() => setAddToGroupModal(null)}
+                className="flex-1 py-1.5 rounded-xl text-[11px] font-semibold bg-[#1B3A6B] text-white hover:bg-[#152e54] transition-colors">
+                אישור
+              </button>
+            </div>
+          </div>
+        </>
+      );
+    })()}
   </>);
 }
 
@@ -799,11 +1067,16 @@ interface TopNavbarProps {
   onDuplicateClick?: () => void;
   onZoomChange?: (z: number) => void;
   onDocSearch?: (q: string) => void;
+  permTrigger?: { tab: number } | null;
+  onPermTriggerUsed?: () => void;
+  docStatus?: string;
+  onIssueUpdate?: () => void;
+  onIssueNew?: () => void;
 }
 
 type DropPos = { top: number; left: number };
 
-export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false, navigate, showDocActions = false, docHeader = null, onFilterClick, onEditDocClick, onDuplicateClick, onZoomChange, onDocSearch }: TopNavbarProps) {
+export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false, navigate, showDocActions = false, docHeader = null, onFilterClick, onEditDocClick, onDuplicateClick, onZoomChange, onDocSearch, permTrigger, onPermTriggerUsed, docStatus, onIssueUpdate, onIssueNew }: TopNavbarProps) {
   const [realityMode, setRealityMode] = useState('מציאות');
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeIcon, setActiveIcon] = useState<string | null>(null);
@@ -814,7 +1087,21 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const [showDocPermissions, setShowDocPermissions] = useState(false);
+  const [showReadingControl, setShowReadingControl] = useState(false);
+  const [showIssueUpdate, setShowIssueUpdate] = useState(false);
+  const [showIssueNew, setShowIssueNew] = useState(false);
+  const [showVersionCompare, setShowVersionCompare] = useState(false);
+  const isDistributed = ['מבצעית', 'נצורה', 'הסתיימה', 'התבטלה'].includes(docStatus ?? '');
+  const [permModalTab, setPermModalTab] = useState(0);
   const [loadingExport, setLoadingExport] = useState<'word' | 'pdf' | null>(null);
+
+  useEffect(() => {
+    if (permTrigger) {
+      setPermModalTab(permTrigger.tab);
+      setShowDocPermissions(true);
+      onPermTriggerUsed?.();
+    }
+  }, [permTrigger]);
   const [docZoom, setDocZoom] = useState(100);
   const [searchActive, setSearchActive] = useState(false);
   const [navSearch, setNavSearch] = useState('');
@@ -904,24 +1191,11 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
       <nav className="px-6 py-6 relative" style={{ zIndex: 100 }} dir="rtl">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <h2 className="text-[#1E3A8A]">Chief</h2>
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+              <img src="/Chief.svg" alt="Chief" style={{ width: 26, height: 24 }} />
+              <h2 className="text-[#1E3A8A]">Chief</h2>
+            </div>
 
-            {showBackArrow && (
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => navigate('/')}
-                  className="p-1 rounded transition-colors hover:bg-gray-100 cursor-pointer"
-                >
-                  <ChevronRight className="w-5 h-5 text-gray-700" />
-                </button>
-                <button
-                  disabled
-                  className="p-1 rounded cursor-default"
-                >
-                  <ChevronLeft className="w-5 h-5 text-gray-300" />
-                </button>
-              </div>
-            )}
 
             <div className="relative">
               <button
@@ -951,24 +1225,46 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
 
             {showDocActions && (
               <div className="flex items-center gap-1 mr-1">
-                {/* all action icons */}
-                <button title="סינון" onClick={onFilterClick}
+                {/* action icons — differ by docStatus */}
+                {!isDistributed && (
+                  <button title="סינון" onClick={onFilterClick}
+                    className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
+                    <Filter className="w-4 h-4 text-gray-500" />
+                  </button>
+                )}
+                <button title={isDistributed ? 'פרטי מסמך' : 'עריכת פרטי מסמך'} onClick={onEditDocClick}
                   className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
-                  <Filter className="w-4 h-4 text-gray-500" />
-                </button>
-                <button title="עריכת פרטי מסמך" onClick={onEditDocClick}
-                  className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
-                  <FileEdit className="w-4 h-4 text-gray-500" />
+                  {isDistributed
+                    ? <FileText className="w-4 h-4 text-gray-500" />
+                    : <FileEdit className="w-4 h-4 text-gray-500" />}
                 </button>
                 {([
-                  { icon: Copy,     title: 'שכפול', onClick: onDuplicateClick },
-                  { icon: UserCog,  title: 'הרשאות', onClick: () => setShowDocPermissions(true) },
+                  { icon: Copy,    title: 'שכפול', onClick: onDuplicateClick },
+                  { icon: UserCog, title: isDistributed ? 'הרשאות ייצוא לוורד' : 'הרשאות', onClick: () => setShowDocPermissions(true) },
                 ] as { icon: React.ElementType; title: string; onClick?: () => void }[]).map(({ icon: Icon, title, onClick }) => (
                   <button key={title} title={title} onClick={onClick}
                     className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
                     <Icon className="w-4 h-4 text-gray-500" />
                   </button>
                 ))}
+                {isDistributed && (<>
+                  <button title="השוואת גרסאות" onClick={() => setShowVersionCompare(true)}
+                    className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
+                    <GitCompare className="w-4 h-4 text-gray-500" />
+                  </button>
+                  <button title="בקרת קריאה" onClick={() => setShowReadingControl(true)}
+                    className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
+                    <Eye className="w-4 h-4 text-gray-500" />
+                  </button>
+                  <button title="הוצאת עדכון למסמך" onClick={() => setShowIssueUpdate(true)}
+                    className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
+                    <RefreshCw className="w-4 h-4 text-gray-500" />
+                  </button>
+                  <button title="הוצאת מספר פקודה חדש" onClick={() => setShowIssueNew(true)}
+                    className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
+                    <FilePlus className="w-4 h-4 text-gray-500" />
+                  </button>
+                </>)}
                 <button title="ייצוא ל-Word" onClick={() => handleExport('word')}
                   className="p-1.5 rounded-full transition-colors hover:bg-gray-100">
                   {loadingExport === 'word'
@@ -1216,7 +1512,171 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
       )}
 
       {showDocPermissions && (
-        <DocPermissionsModal onClose={() => setShowDocPermissions(false)} />
+        <DocPermissionsModal onClose={() => setShowDocPermissions(false)} initialTab={permModalTab} isDistributed={isDistributed} />
+      )}
+
+      {/* Reading control modal */}
+      {showReadingControl && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.45)' }} onClick={() => setShowReadingControl(false)}>
+          <div dir="rtl" className="bg-white rounded-2xl shadow-2xl flex flex-col" style={{ width: 480, maxHeight: '70vh' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <h2 className="font-bold text-base text-gray-900">בקרת קריאה</h2>
+              <button onClick={() => setShowReadingControl(false)} className="p-1 rounded hover:bg-gray-100"><X className="w-4 h-4 text-gray-500" /></button>
+            </div>
+            <div className="overflow-y-auto flex-1 px-5 py-4">
+              <table className="w-full text-sm text-right border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="pb-2 font-semibold text-gray-600 text-xs">שם משתמש</th>
+                    <th className="pb-2 font-semibold text-gray-600 text-xs">דרגה</th>
+                    <th className="pb-2 font-semibold text-gray-600 text-xs">תאריך צפייה</th>
+                    <th className="pb-2 font-semibold text-gray-600 text-xs">שעה</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { name: 'אלוף משנה כהן דוד', rank: 'אמ״ן', date: '12/07/2026', time: '09:14' },
+                    { name: 'סגן אלוף לוי יוסף', rank: 'חיל השריון', date: '12/07/2026', time: '10:32' },
+                    { name: 'רב סרן גולן אריאל', rank: 'חיל הרגלים', date: '13/07/2026', time: '07:55' },
+                    { name: 'סגן מזרחי נועם', rank: 'חיל האוויר', date: '13/07/2026', time: '11:20' },
+                  ].map((u, i) => (
+                    <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
+                      <td className="py-2 text-xs text-gray-800">{u.name}</td>
+                      <td className="py-2 text-xs text-gray-500">{u.rank}</td>
+                      <td className="py-2 text-xs text-gray-500">{u.date}</td>
+                      <td className="py-2 text-xs text-gray-500">{u.time}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Issue update warning modal */}
+      {showIssueUpdate && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }} onClick={() => setShowIssueUpdate(false)}>
+          <div dir="rtl" className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ width: 500 }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-base font-bold text-gray-800">שימו לב</h2>
+              <button onClick={() => setShowIssueUpdate(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-6 py-5 flex flex-col gap-4">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                עדכון חדש למסמך יוצר גרסה נוספת למסמך. ברגע שמסמך זה ייכנס לתוקף, הוא יבטל את המסמך הקודם והמסמך הקודם יישמר בהיסטורית הפקודה.
+              </p>
+              <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 flex flex-col gap-2">
+                <p className="text-xs font-semibold text-gray-700">מה ההבדל בין יצירת מס׳ פקודה חדש לבין הוצאת עדכון?</p>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  <span className="font-medium text-gray-700">כאשר מוציאים מס׳ פקודה חדש</span> — מחליטים על שינוי מהותי של תכלית המסמך.
+                </p>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  <span className="font-medium text-gray-700">כאשר מוציאים עדכון לפקודה</span> — ישנם סעיפים שמשתנים מהפקודה הקודמת, אך תכליתו נשארת זהה.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 py-4 border-t border-gray-100">
+              <button onClick={() => setShowIssueUpdate(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+                ביטול
+              </button>
+              <button onClick={() => { setShowIssueUpdate(false); onIssueUpdate?.(); }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: '#1B3A6B' }}>
+                המשך
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Issue new command number warning modal */}
+      {showIssueNew && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }} onClick={() => setShowIssueNew(false)}>
+          <div dir="rtl" className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ width: 500 }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-base font-bold text-gray-800">שימו לב</h2>
+              <button onClick={() => setShowIssueNew(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-6 py-5 flex flex-col gap-4">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                יצירת מס׳ פקודה חדש יוצרת גרסה נוספת למסמך. ברגע שמסמך זה ייכנס לתוקף, הוא יבטל את המסמך הקודם והמסמך הקודם יישמר בהיסטורית הפקודה.
+              </p>
+              <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 flex flex-col gap-2">
+                <p className="text-xs font-semibold text-gray-700">מה ההבדל בין יצירת מס׳ פקודה חדש לבין הוצאת עדכון?</p>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  <span className="font-medium text-gray-700">כאשר מוציאים מס׳ פקודה חדש</span> — מחליטים על שינוי מהותי של תכלית המסמך.
+                </p>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  <span className="font-medium text-gray-700">כאשר מוציאים עדכון לפקודה</span> — ישנם סעיפים שמשתנים מהפקודה הקודמת, אך תכליתו נשארת זהה.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 py-4 border-t border-gray-100">
+              <button onClick={() => setShowIssueNew(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+                ביטול
+              </button>
+              <button onClick={() => { setShowIssueNew(false); onIssueNew?.(); }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: '#1B3A6B' }}>
+                המשך
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Version compare modal */}
+      {showVersionCompare && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center"
+          style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }}
+          onClick={() => setShowVersionCompare(false)}>
+          <div dir="rtl" className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" style={{ width: 720 }}
+            onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+              <h2 className="text-sm font-bold text-gray-800">השוואת גרסאות</h2>
+              <button onClick={() => setShowVersionCompare(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {/* Version list */}
+            <div className="flex flex-col divide-y divide-gray-100">
+              {[
+                { label: 'עדכון מס׳ 2', datetime: '14.07.2026, 09:32', ref: 'א׳-2026-147', approvedBy: 'אל״מ דוד כהן', tag: 'נוכחית' },
+                { label: 'עדכון מס׳ 1', datetime: '01.06.2026, 14:15', ref: 'א׳-2026-088', approvedBy: 'אל״מ דוד כהן', tag: '' },
+                { label: 'פקודה מס׳ 001', datetime: '15.03.2026, 11:00', ref: 'א׳-2026-031', approvedBy: 'תא״ל רונן לוי', tag: '' },
+              ].map((v, i) => (
+                <div key={i} className="flex items-center justify-between px-6 py-4 gap-4">
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-800">{v.label}</span>
+                      {v.tag && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                          style={{ background: '#1B3A6B18', color: '#1B3A6B' }}>{v.tag}</span>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                      עודכן ב-{v.datetime} &nbsp;·&nbsp; סימוכין: {v.ref} &nbsp;·&nbsp; אושר ע״י: {v.approvedBy}
+                    </span>
+                  </div>
+                  <button
+                    className="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:opacity-90"
+                    style={{ background: '#1B3A6B' }}>
+                    השוואה
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {showPermissionsModal && (

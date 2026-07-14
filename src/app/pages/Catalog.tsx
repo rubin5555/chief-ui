@@ -36,14 +36,16 @@ interface Version {
 
 // Exact colors per spec
 const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  'מבצעית':          { bg: '#dcfce7', color: '#16a34a' },
-  'נצורה':            { bg: '#fef3c7', color: '#d97706' },
   'טיוטה פנימית':    { bg: '#f3f4f6', color: '#6b7280' },
   'בהכנה':            { bg: '#e0f2fe', color: '#0284c7' },
   'בסבב אישורים':    { bg: '#f3e8ff', color: '#7c3aed' },
+  'נדחתה':            { bg: '#fee2e2', color: '#dc2626' },
+  'נדרסה':            { bg: '#fce7f3', color: '#db2777' },
   'ממתין להפצה':     { bg: '#fefce8', color: '#ca8a04' },
-  'מבוטלת':          { bg: '#f1f5f9', color: '#1e293b' },
-  'הסתיימה':          { bg: '#dcfce7', color: '#15803d' },
+  'מבצעית':          { bg: '#dcfce7', color: '#16a34a' },
+  'נצורה':            { bg: '#fef3c7', color: '#d97706' },
+  'הסתיימה':          { bg: '#f0fdf4', color: '#15803d' },
+  'התבטלה':          { bg: '#f1f5f9', color: '#64748b' },
 };
 
 const TABS: { key: Tab; label: string }[] = [
@@ -109,18 +111,18 @@ const DOCS: Record<Tab, Doc[]> = {
     { id: 'd4', name: 'פקודת ניהול סיכונים',         type: 'פקודה',  orderNum: '2024-004', updateNum: '1', effectiveDate: '01/04/2024', refNum: 'סימ-1237', status: 'בסבב אישורים', env: 'משרד הבריאות',  dept: 'משאבי אנוש' },
     { id: 'd5', name: 'הוראת תדרוך עובדים חדשים',   type: 'הוראה', orderNum: '2024-005', updateNum: '4', effectiveDate: '05/04/2024', refNum: 'סימ-1238', status: 'בהכנה',          env: 'משרד הביטחון', dept: 'כספים' },
     { id: 'd6', name: 'מסמך נהלי דיווח',             type: 'מסמך',  orderNum: '2024-006', updateNum: '1', effectiveDate: '10/04/2024', refNum: 'סימ-1239', status: 'טיוטה פנימית',  env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
-    { id: 'd7', name: 'פקודת תגובה לאירועים',        type: 'פקודה',  orderNum: '2024-007', updateNum: '2', effectiveDate: '15/04/2024', refNum: 'סימ-1240', status: 'בסבב אישורים', env: 'משרד החינוך',   dept: 'משאבי אנוש' },
-    { id: 'd8', name: 'הוראת ניהול ציוד',            type: 'הוראה', orderNum: '2024-008', updateNum: '1', effectiveDate: '20/04/2024', refNum: 'סימ-1241', status: 'בהכנה',          env: 'ארגון א׳',       dept: 'כספים' },
+    { id: 'd7', name: 'פקודת תגובה לאירועים',        type: 'פקודה',  orderNum: '2024-007', updateNum: '2', effectiveDate: '15/04/2024', refNum: 'סימ-1240', status: 'נדחתה',          env: 'משרד החינוך',   dept: 'משאבי אנוש' },
+    { id: 'd8', name: 'הוראת ניהול ציוד',            type: 'הוראה', orderNum: '2024-008', updateNum: '1', effectiveDate: '20/04/2024', refNum: 'סימ-1241', status: 'נדרסה',          env: 'ארגון א׳',       dept: 'כספים' },
   ],
   distribution: [
-    { id: 'p1', name: 'פקודת מבצע קיץ',             type: 'פקודה',  orderNum: '2024-101', updateNum: '5', effectiveDate: '01/05/2024', refNum: 'סימ-2001', status: 'ממתין להפצה', env: 'הסביבה שלי',    dept: 'משאבי אנוש' },
-    { id: 'p2', name: 'הוראת בטיחות שגרתית',        type: 'הוראה', orderNum: '2024-102', updateNum: '3', effectiveDate: '05/05/2024', refNum: 'סימ-2002', status: 'מבצעית',        env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
-    { id: 'p3', name: 'מסמך תכנון שנתי',             type: 'מסמך',  orderNum: '2024-103', updateNum: '2', effectiveDate: '10/05/2024', refNum: 'סימ-2003', status: 'מבוטלת',        env: 'משרד הבריאות',  dept: 'כספים' },
-    { id: 'p4', name: 'פקודת סיום פעילות מבצע א׳',  type: 'פקודה',  orderNum: '2024-104', updateNum: '1', effectiveDate: '15/05/2024', refNum: 'סימ-2004', status: 'נצורה',          env: 'משרד הביטחון', dept: 'משאבי אנוש' },
-    { id: 'p5', name: 'הוראת ניהול אירועים',         type: 'הוראה', orderNum: '2024-105', updateNum: '4', effectiveDate: '20/05/2024', refNum: 'סימ-2005', status: 'ממתין להפצה', env: 'הסביבה שלי',    dept: 'כספים' },
-    { id: 'p6', name: 'מסמך הנחיות לוגיסטיות',      type: 'מסמך',  orderNum: '2024-106', updateNum: '2', effectiveDate: '25/05/2024', refNum: 'סימ-2006', status: 'מבצעית',        env: 'משרד החינוך',   dept: 'טכנולוגיה' },
-    { id: 'p7', name: 'פקודת עדכון נהלים',          type: 'פקודה',  orderNum: '2024-107', updateNum: '3', effectiveDate: '01/06/2024', refNum: 'סימ-2007', status: 'מבוטלת',        env: 'ארגון א׳',       dept: 'משאבי אנוש' },
-    { id: 'p8', name: 'הוראת תפעול מיוחד',          type: 'הוראה', orderNum: '2024-108', updateNum: '1', effectiveDate: '05/06/2024', refNum: 'סימ-2008', status: 'נצורה',          env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
+    { id: 'p1', name: 'פקודת מבצע קיץ',             type: 'פקודה',  orderNum: '2024-101', updateNum: '5', effectiveDate: '01/05/2024', refNum: 'סימ-2001', status: 'ממתין להפצה',  env: 'הסביבה שלי',    dept: 'משאבי אנוש' },
+    { id: 'p2', name: 'הוראת בטיחות שגרתית',        type: 'הוראה', orderNum: '2024-102', updateNum: '3', effectiveDate: '05/05/2024', refNum: 'סימ-2002', status: 'בסבב אישורים', env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
+    { id: 'p3', name: 'מסמך תכנון שנתי',             type: 'מסמך',  orderNum: '2024-103', updateNum: '2', effectiveDate: '10/05/2024', refNum: 'סימ-2003', status: 'נדחתה',          env: 'משרד הבריאות',  dept: 'כספים' },
+    { id: 'p4', name: 'פקודת סיום פעילות מבצע א׳',  type: 'פקודה',  orderNum: '2024-104', updateNum: '1', effectiveDate: '15/05/2024', refNum: 'סימ-2004', status: 'ממתין להפצה',  env: 'משרד הביטחון', dept: 'משאבי אנוש' },
+    { id: 'p5', name: 'הוראת ניהול אירועים',         type: 'הוראה', orderNum: '2024-105', updateNum: '4', effectiveDate: '20/05/2024', refNum: 'סימ-2005', status: 'בסבב אישורים', env: 'הסביבה שלי',    dept: 'כספים' },
+    { id: 'p6', name: 'מסמך הנחיות לוגיסטיות',      type: 'מסמך',  orderNum: '2024-106', updateNum: '2', effectiveDate: '25/05/2024', refNum: 'סימ-2006', status: 'נדחתה',          env: 'משרד החינוך',   dept: 'טכנולוגיה' },
+    { id: 'p7', name: 'פקודת עדכון נהלים',          type: 'פקודה',  orderNum: '2024-107', updateNum: '3', effectiveDate: '01/06/2024', refNum: 'סימ-2007', status: 'ממתין להפצה',  env: 'ארגון א׳',       dept: 'משאבי אנוש' },
+    { id: 'p8', name: 'הוראת תפעול מיוחד',          type: 'הוראה', orderNum: '2024-108', updateNum: '1', effectiveDate: '05/06/2024', refNum: 'סימ-2008', status: 'בסבב אישורים', env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
   ],
   distributed: [
     { id: 'r1',  name: 'פקודת בטיחות מרחב א׳',       type: 'פקודה',  orderNum: '2024-201', updateNum: '7', effectiveDate: '10/01/2024', refNum: 'סימ-3001', status: 'מבצעית', env: 'הסביבה שלי',    dept: 'משאבי אנוש',
@@ -144,14 +146,14 @@ const DOCS: Record<Tab, Doc[]> = {
     { id: 'r10', name: 'פקודת עדכון כללי',           type: 'פקודה',  orderNum: '2024-210', updateNum: '5', effectiveDate: '25/02/2024', refNum: 'סימ-3010', status: 'מבצעית', env: 'הסביבה שלי',    dept: 'משאבי אנוש' },
   ],
   archive: [
-    { id: 'a1', name: 'פקודת מבצע חורף 2023',        type: 'פקודה',  orderNum: '2023-501', updateNum: '9', effectiveDate: '01/12/2023', refNum: 'סימ-4001', status: 'הסתיימה', env: 'הסביבה שלי',    dept: 'משאבי אנוש' },
-    { id: 'a2', name: 'הוראת נהלי 2022',             type: 'הוראה', orderNum: '2022-502', updateNum: '6', effectiveDate: '15/12/2022', refNum: 'סימ-4002', status: 'מבוטלת',  env: 'משרד הבריאות',  dept: 'כספים' },
-    { id: 'a3', name: 'מסמך תכנון 2021',             type: 'מסמך',  orderNum: '2021-503', updateNum: '4', effectiveDate: '20/11/2021', refNum: 'סימ-4003', status: 'הסתיימה', env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
-    { id: 'a4', name: 'פקודת סיום שנה',              type: 'פקודה',  orderNum: '2023-504', updateNum: '3', effectiveDate: '31/12/2023', refNum: 'סימ-4004', status: 'הסתיימה', env: 'משרד הביטחון', dept: 'משאבי אנוש' },
-    { id: 'a5', name: 'הוראת ביטול נוהל ישן',        type: 'הוראה', orderNum: '2022-505', updateNum: '2', effectiveDate: '30/06/2022', refNum: 'סימ-4005', status: 'מבוטלת',  env: 'ארגון א׳',       dept: 'כספים' },
-    { id: 'a6', name: 'מסמך ארכיוני שנתי',           type: 'מסמך',  orderNum: '2021-506', updateNum: '1', effectiveDate: '31/12/2021', refNum: 'סימ-4006', status: 'הסתיימה', env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
-    { id: 'a7', name: 'פקודת חיסול ציוד',            type: 'פקודה',  orderNum: '2022-507', updateNum: '5', effectiveDate: '01/09/2022', refNum: 'סימ-4007', status: 'מבוטלת',  env: 'משרד החינוך',   dept: 'משאבי אנוש' },
-    { id: 'a8', name: 'הוראת סגירת שנה',             type: 'הוראה', orderNum: '2023-508', updateNum: '2', effectiveDate: '31/12/2023', refNum: 'סימ-4008', status: 'הסתיימה', env: 'הסביבה שלי',    dept: 'כספים' },
+    { id: 'a1', name: 'פקודת מבצע חורף 2023',        type: 'פקודה',  orderNum: '2023-501', updateNum: '9', effectiveDate: '01/12/2023', refNum: 'סימ-4001', status: 'הסתיימה',  env: 'הסביבה שלי',    dept: 'משאבי אנוש' },
+    { id: 'a2', name: 'הוראת נהלי 2022',             type: 'הוראה', orderNum: '2022-502', updateNum: '6', effectiveDate: '15/12/2022', refNum: 'סימ-4002', status: 'התבטלה',   env: 'משרד הבריאות',  dept: 'כספים' },
+    { id: 'a3', name: 'מסמך תכנון 2021',             type: 'מסמך',  orderNum: '2021-503', updateNum: '4', effectiveDate: '20/11/2021', refNum: 'סימ-4003', status: 'הסתיימה',  env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
+    { id: 'a4', name: 'פקודת סיום שנה',              type: 'פקודה',  orderNum: '2023-504', updateNum: '3', effectiveDate: '31/12/2023', refNum: 'סימ-4004', status: 'הסתיימה',  env: 'משרד הביטחון', dept: 'משאבי אנוש' },
+    { id: 'a5', name: 'הוראת ביטול נוהל ישן',        type: 'הוראה', orderNum: '2022-505', updateNum: '2', effectiveDate: '30/06/2022', refNum: 'סימ-4005', status: 'התבטלה',   env: 'ארגון א׳',       dept: 'כספים' },
+    { id: 'a6', name: 'מסמך ארכיוני שנתי',           type: 'מסמך',  orderNum: '2021-506', updateNum: '1', effectiveDate: '31/12/2021', refNum: 'סימ-4006', status: 'הסתיימה',  env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
+    { id: 'a7', name: 'פקודת חיסול ציוד',            type: 'פקודה',  orderNum: '2022-507', updateNum: '5', effectiveDate: '01/09/2022', refNum: 'סימ-4007', status: 'התבטלה',   env: 'משרד החינוך',   dept: 'משאבי אנוש' },
+    { id: 'a8', name: 'הוראת סגירת שנה',             type: 'הוראה', orderNum: '2023-508', updateNum: '2', effectiveDate: '31/12/2023', refNum: 'סימ-4008', status: 'הסתיימה',  env: 'הסביבה שלי',    dept: 'כספים' },
   ],
 };
 
@@ -536,9 +538,12 @@ function FilterFunnel({
    ══════════════════════════════════════ */
 
 const ENVIRONMENTS_LIST  = ['הסביבה שלי', 'משרד הבריאות', 'משרד הביטחון', 'משרד החינוך', 'משרד הפנים', 'ארגון א׳', 'ארגון ב׳'];
-const CLASSIFICATIONS    = ['לא מסווג', 'מוגבל', 'סודי', 'סודי ביותר', 'חסוי ביותר'];
-const HIGH_CLASSIFY      = ['סודי', 'סודי ביותר', 'חסוי ביותר'];
-const CLASSIFY_TAGS      = ['תגית א׳', 'תגית ב׳', 'תגית ג׳', 'תגית ד׳'];
+const CLASSIFICATIONS    = ['בלמ"ס', 'סודי', 'סודי ביותר', 'סודי ביותר לשו"ס'];
+const HIGH_CLASSIFY      = ['סודי ביותר', 'סודי ביותר לשו"ס'];
+const CLASSIFY_TAGS: Record<string, string[]> = {
+  'סודי ביותר':         ['ללא', 'תגית א׳', 'תגית ב׳'],
+  'סודי ביותר לשו"ס':  ['תגית א׳', 'תגית ב׳'],
+};
 const DOC_TYPES_FORM     = ['פקודה', 'הוראה', 'מסמך'];
 const TEMPLATES_FORM     = ['תבנית פקודה מבצעית', 'תבנית הוראת נהלים', 'תבנית מדיניות', 'תבנית דוח', 'תבנית חוזר'];
 const OPERATIVE_FOLDERS  = ['תיקייה מבצעית א׳', 'תיקייה מבצעית ב׳', 'תיקייה מבצעית ג׳'];
@@ -558,17 +563,17 @@ interface NewDocFormData {
   operativeFolder: string; amazonEntityType: string; amazonRef: string; summary: string;
   effectiveFrom: string; effectiveTo: string;
   pdfExportScope: 'all' | 'authorized';
-  skipApproval: boolean; watermark: boolean;
+  skipApproval: boolean; watermark: boolean; distributeNatzura: boolean;
 }
 
 const EMPTY_FORM: NewDocFormData = {
-  environment: '', classification: 'לא מסווג', classificationTag: '',
+  environment: '', classification: '', classificationTag: '',
   dept: '', docType: '', template: '',
   name: '', org: '', displayName: '',
   orderNum: '1', updateNum: '',
   operativeFolder: '', amazonEntityType: '', amazonRef: '', summary: '',
   effectiveFrom: '', effectiveTo: '',
-  pdfExportScope: 'all', skipApproval: false, watermark: false,
+  pdfExportScope: 'all', skipApproval: false, watermark: false, distributeNatzura: false,
 };
 
 /* small form primitives */
@@ -879,11 +884,10 @@ function DuplicateSearchModal({ onSelect, onClose }: { onSelect: (doc: Doc) => v
   );
 }
 
-/* ── New document form modal — 2-step, no scroll ── */
-function NewDocModal({ onClose, initialData, title = 'פתיחת מסמך חדש' }: {
-  onClose: () => void; initialData?: Partial<NewDocFormData>; title?: string;
+/* ── New document form modal — single scrollable page ── */
+function NewDocModal({ onClose, onSuccess, initialData, title = 'פתיחת מסמך חדש' }: {
+  onClose: () => void; onSuccess?: () => void; initialData?: Partial<NewDocFormData>; title?: string;
 }) {
-  const [step, setStep] = useState(1);
   const [form, setForm] = useState<NewDocFormData>({ ...EMPTY_FORM, ...initialData });
   const upd = <K extends keyof NewDocFormData>(k: K, v: NewDocFormData[K]) =>
     setForm(f => ({ ...f, [k]: v }));
@@ -893,207 +897,182 @@ function NewDocModal({ onClose, initialData, title = 'פתיחת מסמך חדש
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={onClose}>
-      <div className="bg-white rounded-3xl shadow-2xl w-[660px] max-w-[95vw] flex flex-col"
+      <div className="bg-white rounded-3xl shadow-2xl w-[660px] max-w-[95vw] max-h-[85vh] flex flex-col"
         onClick={e => e.stopPropagation()} dir="rtl">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+          <h2 className="text-base font-bold text-gray-900">{title}</h2>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-xl text-gray-400 transition-colors">
             <X className="w-4 h-4" />
           </button>
-          <div className="flex flex-col items-center gap-2">
-            <h2 className="text-base font-bold text-gray-900">{title}</h2>
-            {/* Step indicator */}
-            <div className="flex items-center gap-1.5">
-              <div className={`h-1.5 rounded-full transition-all duration-300 ${step === 1 ? 'w-8 bg-[#1B3A6B]' : 'w-4 bg-gray-200'}`} />
-              <div className={`h-1.5 rounded-full transition-all duration-300 ${step === 2 ? 'w-8 bg-[#1B3A6B]' : 'w-4 bg-gray-200'}`} />
-            </div>
-          </div>
-          <div className="w-8" />
         </div>
 
-        {/* ── STEP 1: פרטי זיהוי + פרטי המסמך ── */}
-        {step === 1 && (
-          <div className="px-6 py-5 space-y-4">
-            <FSectionTitle>פרטי זיהוי</FSectionTitle>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+
+          {/* ── פרטי זיהוי ── */}
+          <FSectionTitle>פרטי זיהוי</FSectionTitle>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <div>
+              <FLabel>ארגון</FLabel>
+              <FSelect value={form.org} onChange={v => upd('org', v)} options={ENVIRONMENTS_LIST} placeholder="בחר ארגון" />
+            </div>
+            <div>
+              <FLabel>סיווג</FLabel>
+              <FSelect
+                value={form.classification}
+                onChange={v => { upd('classification', v); upd('classificationTag', ''); }}
+                options={CLASSIFICATIONS}
+                placeholder="בחר סיווג"
+              />
+            </div>
+            <div>
+              <FLabel>מחלקה</FLabel>
+              <FSelect value={form.dept} onChange={v => upd('dept', v)} options={DEPARTMENTS} placeholder="בחר מחלקה" />
+            </div>
+            {isHighClass ? (
               <div>
-                <FLabel>ארגון</FLabel>
-                <FSelect value={form.org} onChange={v => upd('org', v)} options={ENVIRONMENTS_LIST} placeholder="בחר ארגון" />
+                <FLabel>תגית סיווג</FLabel>
+                <FSelect
+                  value={form.classificationTag}
+                  onChange={v => upd('classificationTag', v)}
+                  options={CLASSIFY_TAGS[form.classification] ?? []}
+                  placeholder="בחר תגית"
+                />
               </div>
-              <div>
-                <FLabel>סיווג</FLabel>
-                <FSelect value={form.classification} onChange={v => upd('classification', v)} options={CLASSIFICATIONS} />
-              </div>
-              <div>
-                {isHighClass ? (
-                  <>
-                    <FLabel>תגית סיווג</FLabel>
-                    <FSelect value={form.classificationTag} onChange={v => upd('classificationTag', v)} options={CLASSIFY_TAGS} placeholder="בחר תגית" />
-                  </>
-                ) : (
-                  <>
-                    <FLabel>מחלקה</FLabel>
-                    <FSelect value={form.dept} onChange={v => upd('dept', v)} options={DEPARTMENTS} placeholder="בחר מחלקה" />
-                  </>
+            ) : <div />}
+          </div>
+
+          <FSep />
+
+          {/* ── פרטי המסמך ── */}
+          <FSectionTitle>פרטי המסמך</FSectionTitle>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <div>
+              <FLabel>סוג מסמך</FLabel>
+              <FSelect value={form.docType} onChange={v => upd('docType', v)} options={DOC_TYPES_FORM} placeholder="בחר סוג" />
+            </div>
+            <div>
+              <FLabel>בחירת תבנית</FLabel>
+              <FSelect value={form.template} onChange={v => upd('template', v)} options={TEMPLATES_FORM} placeholder="בחר תבנית" />
+            </div>
+            <div className="col-span-2">
+              <FLabel>שם המסמך</FLabel>
+              <FInput value={form.name} onChange={v => upd('name', v)} placeholder="הזן את שם המסמך" />
+            </div>
+            <div>
+              <FLabel>סוג המסמך — שם תצוגה</FLabel>
+              <FInput value={form.displayName} onChange={v => upd('displayName', v)} placeholder="שם לתצוגה" />
+            </div>
+            <div>
+              <FLabel>מס׳ פקודה</FLabel>
+              <FInput value={form.orderNum} onChange={v => upd('orderNum', v)} placeholder="1" />
+            </div>
+            <div>
+              <FLabel>מספר עדכון (מקור)</FLabel>
+              <FInput value={form.updateNum} onChange={v => upd('updateNum', v)} placeholder="מספר עדכון" />
+            </div>
+          </div>
+
+          <FSep />
+
+          {/* ── שיוך ── */}
+          <FSectionTitle>שיוך</FSectionTitle>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <div className="col-span-2">
+              <FLabel>שיוך לתיקייה מבצעית</FLabel>
+              <FSelect value={form.operativeFolder} onChange={v => upd('operativeFolder', v)} options={OPERATIVE_FOLDERS} placeholder="בחר תיקייה" />
+            </div>
+            <div className="col-span-2">
+              <FLabel>שיוך לאמזונס</FLabel>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <FSelect value={form.amazonEntityType}
+                    onChange={v => { upd('amazonEntityType', v); upd('amazonRef', ''); }}
+                    options={Object.keys(AMAZON_ENTITIES)} placeholder="בחר ישות" />
+                </div>
+                {form.amazonEntityType && (
+                  <div className="flex-1">
+                    <FSelect value={form.amazonRef} onChange={v => upd('amazonRef', v)}
+                      options={AMAZON_ENTITIES[form.amazonEntityType]} placeholder="בחר שם" />
+                  </div>
                 )}
               </div>
-              {isHighClass && (
-                <div>
-                  <FLabel>מחלקה</FLabel>
-                  <FSelect value={form.dept} onChange={v => upd('dept', v)} options={DEPARTMENTS} placeholder="בחר מחלקה" />
-                </div>
-              )}
-            </div>
-
-            <FSep />
-
-            <FSectionTitle>פרטי המסמך</FSectionTitle>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-              <div>
-                <FLabel>סוג מסמך</FLabel>
-                <FSelect value={form.docType} onChange={v => upd('docType', v)} options={DOC_TYPES_FORM} placeholder="בחר סוג" />
-              </div>
-              <div>
-                <FLabel>בחירת תבנית</FLabel>
-                <FSelect value={form.template} onChange={v => upd('template', v)} options={TEMPLATES_FORM} placeholder="בחר תבנית" />
-              </div>
-              <div className="col-span-2">
-                <FLabel>שם המסמך</FLabel>
-                <FInput value={form.name} onChange={v => upd('name', v)} placeholder="הזן את שם המסמך" />
-              </div>
-              <div>
-                <FLabel>סוג המסמך — שם תצוגה</FLabel>
-                <FInput value={form.displayName} onChange={v => upd('displayName', v)} placeholder="שם לתצוגה" />
-              </div>
-              <div>
-                <FLabel>מס׳ פקודה</FLabel>
-                <FInput value={form.orderNum} onChange={v => upd('orderNum', v)} placeholder="1" />
-              </div>
-              <div>
-                <FLabel>מספר עדכון (מקור)</FLabel>
-                <FInput value={form.updateNum} onChange={v => upd('updateNum', v)} placeholder="מספר עדכון" />
-              </div>
             </div>
           </div>
-        )}
 
-        {/* ── STEP 2: שיוך + תוכן + תוקף + הגדרות ── */}
-        {step === 2 && (
-          <div className="px-6 py-5 space-y-4">
+          <FSep />
 
-            <FSectionTitle>שיוך</FSectionTitle>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-              <div className="col-span-2">
-                <FLabel>שיוך לתיקייה מבצעית</FLabel>
-                <FSelect value={form.operativeFolder} onChange={v => upd('operativeFolder', v)} options={OPERATIVE_FOLDERS} placeholder="בחר תיקייה" />
-              </div>
-              <div className="col-span-2">
-                <FLabel>שיוך לאמזונס</FLabel>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <FSelect value={form.amazonEntityType}
-                      onChange={v => { upd('amazonEntityType', v); upd('amazonRef', ''); }}
-                      options={Object.keys(AMAZON_ENTITIES)} placeholder="בחר ישות" />
-                  </div>
-                  {form.amazonEntityType && (
-                    <div className="flex-1">
-                      <FSelect value={form.amazonRef} onChange={v => upd('amazonRef', v)}
-                        options={AMAZON_ENTITIES[form.amazonEntityType]} placeholder="בחר שם" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <FSep />
-
-            <FSectionTitle>תוכן ותוקף</FSectionTitle>
+          {/* ── תוכן ותוקף ── */}
+          <FSectionTitle>תוכן ותוקף</FSectionTitle>
+          <div>
+            <FLabel>עיקרי המסמך</FLabel>
+            <input type="text" value={form.summary} onChange={e => upd('summary', e.target.value)}
+              placeholder="תאר את עיקרי המסמך..." dir="rtl"
+              className="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/50 hover:border-gray-400 text-right transition-colors" />
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
             <div>
-              <FLabel>עיקרי המסמך</FLabel>
-              <input type="text" value={form.summary} onChange={e => upd('summary', e.target.value)}
-                placeholder="תאר את עיקרי המסמך..." dir="rtl"
-                className="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/50 hover:border-gray-400 text-right transition-colors" />
+              <FLabel>כניסה לתוקף</FLabel>
+              <DateTimePicker value={form.effectiveFrom} onChange={v => upd('effectiveFrom', v)} placeholder="בחר תאריך ושעה" />
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-              <div>
-                <FLabel>כניסה לתוקף</FLabel>
-                <DateTimePicker value={form.effectiveFrom} onChange={v => upd('effectiveFrom', v)} placeholder="בחר תאריך ושעה" />
-              </div>
-              <div>
-                <FLabel>יציאה מתוקף</FLabel>
-                <DateTimePicker value={form.effectiveTo} onChange={v => upd('effectiveTo', v)} placeholder="בחר תאריך ושעה" />
-              </div>
+            <div>
+              <FLabel>יציאה מתוקף</FLabel>
+              <DateTimePicker value={form.effectiveTo} onChange={v => upd('effectiveTo', v)} placeholder="בחר תאריך ושעה" />
             </div>
-
-            <FSep />
-
-            <FSectionTitle>הגדרות</FSectionTitle>
-            <div className="flex flex-col rounded-xl overflow-hidden border border-gray-100">
-
-              {/* PDF export — segmented control */}
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <span className="text-sm text-gray-700">ייצוא ל-PDF</span>
-                <div className="flex rounded-lg overflow-hidden border border-gray-200">
-                  {(['authorized', 'all'] as const).map((opt, i) => (
-                    <button key={opt} type="button" onClick={() => upd('pdfExportScope', opt)}
-                      className="px-3 py-1.5 text-xs font-medium transition-colors"
-                      style={{
-                        background: form.pdfExportScope === opt ? '#1B3A6B' : '#fff',
-                        color: form.pdfExportScope === opt ? '#fff' : '#6b7280',
-                        borderRight: i === 0 ? '1px solid #e5e7eb' : undefined,
-                      }}>
-                      {opt === 'authorized' ? 'למורשים בלבד' : 'לאפשר לכולם'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
-                style={{ borderTop: '1px solid #f3f4f6' }}>
-                <span className="text-sm text-gray-700">ביטול סבב אישורים על סעיפי הפקודה</span>
-                <Toggle checked={form.skipApproval} onChange={() => upd('skipApproval', !form.skipApproval)} />
-              </div>
-
-              <div className="flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
-                style={{ borderTop: '1px solid #f3f4f6' }}>
-                <span className="text-sm text-gray-700">הוספת סימן מים</span>
-                <Toggle checked={form.watermark} onChange={() => upd('watermark', !form.watermark)} />
-              </div>
-
-            </div>
-
           </div>
-        )}
+
+          <FSep />
+
+          {/* ── הגדרות ── */}
+          <FSectionTitle>הגדרות</FSectionTitle>
+          <div className="flex flex-col rounded-xl overflow-hidden border border-gray-100">
+            <div className="flex items-center justify-between px-4 py-3 bg-white">
+              <span className="text-sm text-gray-700">ייצוא ל-PDF</span>
+              <div className="flex rounded-lg overflow-hidden border border-gray-200">
+                {(['authorized', 'all'] as const).map((opt, i) => (
+                  <button key={opt} type="button" onClick={() => upd('pdfExportScope', opt)}
+                    className="px-3 py-1.5 text-xs font-medium transition-colors"
+                    style={{
+                      background: form.pdfExportScope === opt ? '#1B3A6B' : '#fff',
+                      color: form.pdfExportScope === opt ? '#fff' : '#6b7280',
+                      borderRight: i === 0 ? '1px solid #e5e7eb' : undefined,
+                    }}>
+                    {opt === 'authorized' ? 'למורשים בלבד' : 'לאפשר לכולם'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+              style={{ borderTop: '1px solid #f3f4f6' }}>
+              <span className="text-sm text-gray-700">ביטול סבב אישורים על סעיפי הפקודה</span>
+              <Toggle checked={form.skipApproval} onChange={() => upd('skipApproval', !form.skipApproval)} />
+            </div>
+            <div className="flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+              style={{ borderTop: '1px solid #f3f4f6' }}>
+              <span className="text-sm text-gray-700">הוספת סימן מים</span>
+              <Toggle checked={form.watermark} onChange={() => upd('watermark', !form.watermark)} />
+            </div>
+            <div className="flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+              style={{ borderTop: '1px solid #f3f4f6' }}>
+              <span className="text-sm text-gray-700">האם תרצה להפיץ את הפקודה כפקודה נצורה?</span>
+              <Toggle checked={form.distributeNatzura} onChange={() => upd('distributeNatzura', !form.distributeNatzura)} />
+            </div>
+          </div>
+
+        </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 flex-shrink-0">
-          {step === 1 ? (
-            <>
-              <button onClick={onClose} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
-                ביטול
-              </button>
-              <button onClick={() => setStep(2)}
-                className="flex items-center gap-2 px-6 py-2 text-sm font-semibold rounded-xl text-white transition-all hover:opacity-90 active:scale-95"
-                style={{ background: '#1B3A6B', boxShadow: '0 2px 8px rgba(27,58,107,0.3)' }}>
-                <span>המשך</span>
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            </>
-          ) : (
-            <>
-              <button onClick={() => setStep(1)}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
-                <ChevronRight className="w-4 h-4" />
-                <span>חזרה</span>
-              </button>
-              <button onClick={onClose}
-                className="px-6 py-2 text-sm font-semibold rounded-xl text-white transition-all hover:opacity-90 active:scale-95"
-                style={{ background: '#1B3A6B', boxShadow: '0 2px 8px rgba(27,58,107,0.3)' }}>
-                יצירת מסמך
-              </button>
-            </>
-          )}
+          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+            ביטול
+          </button>
+          <button onClick={() => { onClose(); onSuccess?.(); }}
+            className="px-6 py-2 text-sm font-semibold rounded-xl text-white transition-all hover:opacity-90 active:scale-95"
+            style={{ background: '#1B3A6B', boxShadow: '0 2px 8px rgba(27,58,107,0.3)' }}>
+            יצירת מסמך
+          </button>
         </div>
       </div>
     </div>
@@ -1277,6 +1256,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
   const [dateFrom,       setDateFrom]       = useState('');
   const [dateTo,         setDateTo]         = useState('');
   const [page, setPage] = useState(1);
+  const [distSubFilter, setDistSubFilter] = useState<string>('כל המסמכים');
   const [historyDoc, setHistoryDoc] = useState<Doc | null>(null);
   const [menuRow, setMenuRow] = useState<{ id: string; x: number; y: number; flipped: boolean } | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -1286,6 +1266,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
   const [showNewDoc, setShowNewDoc] = useState(false);
   const [showDuplicate, setShowDuplicate] = useState(false);
   const [newDocInit, setNewDocInit] = useState<Partial<NewDocFormData>>({});
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const toggleExpand = (id: string) => {
     setExpandedRows(prev => {
@@ -1299,6 +1280,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
     setPage(1); setSearch('');
     setTemplateFilter([]); setStatusFilter([]); setDeptFilter([]);
     setOrgFilter([]); setDateFrom(''); setDateTo('');
+    setDistSubFilter('כל המסמכים');
   }, [tab, department]);
   useEffect(() => { setPage(1); }, [search, templateFilter, statusFilter, deptFilter, orgFilter, dateFrom, dateTo]);
 
@@ -1318,6 +1300,13 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
   const gridCols = `1.5rem 3fr ${Array(5 + extraCols).fill('1fr').join(' ')} 2.5rem`;
   const col4Label = tab === 'drafts' ? 'תאריך עדכון' : tab === 'distribution' ? 'תאריך הפצה' : 'כניסה לתוקף';
 
+  const DIST_SUB_STATUS: Record<string, string> = {
+    'בסבב אישורים':    'בסבב אישורים',
+    'ממתינות לחמ״ל':  'ממתין להפצה',
+    'הופצו':            'מבצעית',
+    'בוטלו':            'התבטלה',
+  };
+
   const filtered = allDocs.filter(d => {
     const q = search.trim();
     if (q && !d.name.includes(q) && !d.orderNum.includes(q) && !d.refNum.includes(q)) return false;
@@ -1330,6 +1319,10 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
       const iso = `${yy}-${mm}-${dd}`;
       if (dateFrom && iso < dateFrom) return false;
       if (dateTo   && iso > dateTo)   return false;
+    }
+    if (tab === 'distribution' && distSubFilter !== 'כל המסמכים') {
+      const expectedStatus = DIST_SUB_STATUS[distSubFilter];
+      if (expectedStatus && d.status !== expectedStatus) return false;
     }
     return true;
   });
@@ -1444,6 +1437,33 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
         </div>
       )}
 
+      {/* ── Distribution sub-filter tabs ── */}
+      {tab === 'distribution' && (
+        <div className="flex-shrink-0 flex items-end" style={{ borderBottom: '1px solid #e5e7eb' }}>
+          {['כל המסמכים', 'בסבב אישורים', 'ממתינות לחמ״ל', 'הופצו', 'בוטלו'].map(label => {
+            const active = distSubFilter === label;
+            return (
+              <button key={label} onClick={() => { setDistSubFilter(label); setPage(1); }}
+                className="px-5 py-2 text-sm transition-colors whitespace-nowrap"
+                style={{
+                  color: active ? '#1B3A6B' : '#9ca3af',
+                  fontWeight: active ? 600 : 400,
+                  cursor: 'pointer',
+                  background: active ? '#fff' : 'transparent',
+                  border: active ? '1px solid #e5e7eb' : 'none',
+                  borderBottom: active ? '1px solid #fff' : 'none',
+                  borderRadius: active ? '6px 6px 0 0' : 0,
+                  position: 'relative',
+                  bottom: active ? -1 : 0,
+                  outline: 'none',
+                }}>
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* ── White card ── */}
       <div className="flex-1 flex flex-col rounded-2xl overflow-hidden bg-white"
         style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)' }}>
@@ -1475,13 +1495,13 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
             return (
               <div key={doc.id}>
                 {/* Main row */}
-                <div className={`group grid items-center px-4 py-3 rounded-xl transition-colors hover:bg-gray-50 ${tab === 'drafts' ? 'cursor-pointer' : 'cursor-default'}`}
+                <div className="group grid items-center px-4 py-3 rounded-xl transition-colors hover:bg-gray-50 cursor-pointer"
                   style={{ borderBottom: isExpanded ? 'none' : '1px solid #f5f5f5', gridTemplateColumns: gridCols, columnGap: '1rem' }}
-                  onClick={() => { if (tab === 'drafts') onEditDoc?.({ id: doc.id, name: doc.name, status: doc.status, orderNum: doc.orderNum }); }}>
+                  onClick={() => onEditDoc?.({ id: doc.id, name: doc.name, status: doc.status, orderNum: doc.orderNum })}>
                   {/* Expand arrow — far right, always visible for parent docs */}
                   <div className="flex items-center justify-center">
                     {hasChildren ? (
-                      <button onClick={() => toggleExpand(doc.id)}
+                      <button onClick={e => { e.stopPropagation(); toggleExpand(doc.id); }}
                         className="p-0.5 rounded text-gray-400 hover:text-gray-600 transition-colors"
                         title="הצג מסמכים תחת מסמך זה">
                         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -1612,9 +1632,33 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
       {showNewDoc && (
         <NewDocModal
           onClose={() => setShowNewDoc(false)}
+          onSuccess={() => setShowSuccessToast(true)}
           initialData={newDocInit}
           title={Object.keys(newDocInit).length > 0 ? 'שכפול מסמך קיים' : 'פתיחת מסמך חדש'}
         />
+      )}
+
+      {/* ── Success toast ── */}
+      {showSuccessToast && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center pointer-events-none">
+          <div dir="rtl" className="pointer-events-auto bg-white rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-3 text-center relative"
+            style={{ width: 340, boxShadow: '0 8px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06)' }}>
+            <button onClick={() => setShowSuccessToast(false)}
+              className="absolute top-3 left-3 p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-1"
+              style={{ background: '#dcfce7' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M5 13l4 4L19 7" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <p className="text-base font-bold text-gray-900">מסמך חדש נוצר בהצלחה</p>
+            <p className="text-sm text-gray-500">המסמך ממתין לך בטיוטות</p>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -2976,7 +2976,7 @@ export function PersonalArea() {
                 </div>
 
                 {/* Tab content — flex-1 scrollable */}
-                <div className="flex-1 overflow-y-auto border-t border-gray-100">
+                <div className="flex-1 min-h-0 overflow-hidden flex flex-col border-t border-gray-100">
 
                   {/* ── NETWORK TAB ── */}
                   {listImportTab === 'network' && (
@@ -3224,10 +3224,10 @@ export function PersonalArea() {
                     const allFilteredIds = filteredHamal.map(g => g.id);
                     const allSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => hamalSelected.has(id));
                     return (
-                      <div className="flex flex-col h-full">
+                      <div className="flex-1 min-h-0 flex flex-col">
                         {/* Create group floating panel — rendered via portal below */}
                         {/* Table — CSS grid like doc tab */}
-                        <div className="flex-1 overflow-y-auto">
+                        <div className="flex-1 overflow-y-auto min-h-0">
                           {/* Header row */}
                           <div className="sticky top-0 grid items-center px-3 py-2 text-[10px] font-semibold text-gray-500 select-none z-10"
                             style={{ background: '#EBEBEB', gridTemplateColumns: '28px 1fr 28px 28px', columnGap: '6px' }}>
@@ -3336,9 +3336,9 @@ export function PersonalArea() {
                       g.name.includes(listSearchQuery) || g.type.includes(listSearchQuery) || g.environment.includes(listSearchQuery)
                     );
                     return (
-                      <div className="flex flex-col h-full">
+                      <div className="flex-1 min-h-0 flex flex-col">
                         {/* Groups list */}
-                        <div className="flex-1 overflow-y-auto">
+                        <div className="flex-1 overflow-y-auto min-h-0">
                           {/* Header */}
                           <div className="sticky top-0 grid items-center px-3 py-2 text-[10px] font-semibold text-gray-500 select-none z-10"
                             style={{ background: '#EBEBEB', gridTemplateColumns: '28px 1fr 28px', columnGap: '6px' }}>
@@ -3435,7 +3435,7 @@ export function PersonalArea() {
                       (listSearchQuery === '' || l.name.includes(listSearchQuery))
                     );
                     return (
-                      <div className="flex flex-col h-full">
+                      <div className="flex-1 min-h-0 flex flex-col">
                         {/* Sub-tabs */}
                         <div className="flex items-center border-b border-gray-100 px-4 bg-gray-50/50 flex-shrink-0">
                           {(['mine', 'all'] as const).map(tab => (
@@ -3455,7 +3455,7 @@ export function PersonalArea() {
                           <span />
                         </div>
                         {/* Rows */}
-                        <div className="flex-1 overflow-y-auto">
+                        <div className="flex-1 overflow-y-auto min-h-0">
                           {filteredPersonal.length === 0 ? (
                             <div className="py-10 text-center text-sm text-gray-400">לא נמצאו רשימות</div>
                           ) : filteredPersonal.map(list => {

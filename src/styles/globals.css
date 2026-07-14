@@ -1,5 +1,31 @@
 /* globals */
 
+/* ── Content editor (contenteditable) ── */
+.content-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.content-editor {
+  word-break: break-word;
+  outline: none;
+}
+
+.content-editor [data-chip-id] {
+  cursor: grab;
+}
+
+.content-editor [data-chip-id]:active {
+  cursor: grabbing;
+  opacity: 0.75;
+}
+
+.content-editor [data-chip-remove]:hover {
+  opacity: 1 !important;
+  color: #ef4444 !important;
+}
+
 /* Scrollbar — always visible, medium gray at rest, darker on use */
 ::-webkit-scrollbar {
   width: 6px;
