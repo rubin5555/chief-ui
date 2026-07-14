@@ -3496,9 +3496,9 @@ export function Edit({ navigate, doc }: EditProps) {
         <div className="w-full flex-shrink-0 flex justify-center"
           style={{ paddingRight: 256, paddingTop: 6, paddingBottom: 6 }}>
           <div dir="rtl" className="flex items-center justify-between rounded-2xl px-4 py-2"
-            style={{ width: '230mm', background: '#1B3A6B' }}>
+            style={{ width: '230mm', background: '#DBEAFE' }}>
             {/* Version label */}
-            <span className="text-xs font-semibold text-white whitespace-nowrap">
+            <span className="text-xs font-semibold whitespace-nowrap" style={{ color: '#1B3A6B' }}>
               השוואה ל{comparisonVersionLabel} בסטטוס מבצעית
             </span>
             {/* Controls */}
@@ -3508,43 +3508,43 @@ export function Edit({ navigate, doc }: EditProps) {
                 onClick={() => setHideDeleted(p => !p)}
                 className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap"
                 style={hideDeleted
-                  ? { background: '#fff', color: '#1B3A6B', borderColor: '#fff' }
-                  : { background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.5)' }}>
+                  ? { background: '#1B3A6B', color: '#fff', borderColor: '#1B3A6B' }
+                  : { background: '#fff', color: '#1B3A6B', borderColor: '#93C5FD' }}>
                 הסתרת תוכן מחוק
               </button>
               <button
                 onClick={() => setShowHighlight(p => !p)}
                 className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors whitespace-nowrap"
                 style={showHighlight
-                  ? { background: '#fff', color: '#1B3A6B', borderColor: '#fff' }
-                  : { background: 'transparent', color: '#fff', borderColor: 'rgba(255,255,255,0.5)' }}>
+                  ? { background: '#1B3A6B', color: '#fff', borderColor: '#1B3A6B' }
+                  : { background: '#fff', color: '#1B3A6B', borderColor: '#93C5FD' }}>
                 הצגת מרקור טקסט
               </button>
               {/* Divider */}
-              <div className="w-px h-4" style={{ background: 'rgba(255,255,255,0.3)' }} />
+              <div className="w-px h-4" style={{ background: '#93C5FD' }} />
               {/* Navigation */}
               <div dir="ltr" className="flex items-center gap-0.5">
                 <button
                   onClick={() => setComparisonNavIndex(p => Math.max(1, p - 1))}
-                  className="p-1 rounded transition-colors hover:bg-white/10">
-                  <ChevronUp className="w-3.5 h-3.5 text-white" />
+                  className="p-1 rounded transition-colors hover:bg-blue-200">
+                  <ChevronUp className="w-3.5 h-3.5" style={{ color: '#1B3A6B' }} />
                 </button>
-                <span className="text-xs font-semibold text-white tabular-nums" style={{ minWidth: 28, textAlign: 'center' }}>
+                <span className="text-xs font-semibold tabular-nums" style={{ color: '#1B3A6B', minWidth: 28, textAlign: 'center' }}>
                   {comparisonNavIndex}/{comparisonTotal}
                 </span>
                 <button
                   onClick={() => setComparisonNavIndex(p => Math.min(comparisonTotal, p + 1))}
-                  className="p-1 rounded transition-colors hover:bg-white/10">
-                  <ChevronDown className="w-3.5 h-3.5 text-white" />
+                  className="p-1 rounded transition-colors hover:bg-blue-200">
+                  <ChevronDown className="w-3.5 h-3.5" style={{ color: '#1B3A6B' }} />
                 </button>
               </div>
               {/* Divider */}
-              <div className="w-px h-4" style={{ background: 'rgba(255,255,255,0.3)' }} />
+              <div className="w-px h-4" style={{ background: '#93C5FD' }} />
               {/* Close */}
               <button
                 onClick={() => setComparisonMode(false)}
-                className="p-1 rounded transition-colors hover:bg-white/10">
-                <X className="w-3.5 h-3.5 text-white" />
+                className="p-1 rounded transition-colors hover:bg-blue-200">
+                <X className="w-3.5 h-3.5" style={{ color: '#1B3A6B' }} />
               </button>
             </div>
           </div>
