@@ -24,11 +24,11 @@ import {
 } from './ContentEditor.styles';
 import { CONTENT_EDITOR_IDS } from './ContentEditor.testids';
 import type { TinyMceEditor } from './ContentEditor.types';
-import { CursorOverlay } from './CursorOverlay';
-import { runAfterFrame } from './domCaret';
-import { useContentEditorCollab } from './useContentEditorCollab';
-import { usePreviewActivation } from './usePreviewActivation';
-import { useTinyMceSetup } from './useTinyMceSetup';
+import { CursorOverlay } from './components/CursorOverlay';
+import { useContentEditorCollab } from './hooks/useContentEditorCollab';
+import { usePreviewActivation } from './hooks/usePreviewActivation';
+import { useTinyMceSetup } from './hooks/useTinyMceSetup';
+import { runAfterFrame } from './utils/domCaret';
 
 export interface ContentEditorProps {
   // Stable identity for the field's content (e.g. a section id), used to keep undo/redo

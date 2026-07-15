@@ -4,7 +4,7 @@ import { CONTENT_CHIP_HTML_MIME, CONTENT_CHIP_MIME } from '@/components/ui/Conte
 import type { DynamicField } from '@/modals/DataImportModal/DataImportModal.constants';
 // Deep import keeps the DataImportModal component itself out of this chunk — the modal
 // is lazy-loaded by TemplateModal, and pulling its barrel here would defeat that split.
-import { buildFieldChipHtml } from '@/modals/DataImportModal/fieldChipHtml';
+import { buildFieldChipHtml } from '@/modals/DataImportModal/utils/fieldChipHtml';
 import {
   AddMoreBtn,
   BankList,

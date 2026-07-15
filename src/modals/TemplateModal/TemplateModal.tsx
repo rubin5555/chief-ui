@@ -15,10 +15,10 @@ import type { TemplateDraft, TemplateModalMode } from './TemplateModal.constants
 import { emptyTemplateFormValues, MODAL_TITLES, SAVE_LABELS } from './TemplateModal.constants';
 import { DetailsSection } from './TemplateModal.styles';
 import { TEMPLATE_MODAL_IDS } from './TemplateModal.testids';
-import { useAppendices } from './useAppendices';
-import { useEmphasis } from './useEmphasis';
-import { useFieldBank } from './useFieldBank';
-import { usePermissionsTarget } from './usePermissionsTarget';
+import { useAppendices } from './hooks/useAppendices';
+import { useEmphasis } from './hooks/useEmphasis';
+import { useFieldBank } from './hooks/useFieldBank';
+import { usePermissionsTarget } from './hooks/usePermissionsTarget';
 
 const DataImportModal = lazy(() =>
   import('@/modals/DataImportModal').then((m) => ({ default: m.DataImportModal })),

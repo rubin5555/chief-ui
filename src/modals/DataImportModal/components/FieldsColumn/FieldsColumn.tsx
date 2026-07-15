@@ -1,7 +1,7 @@
 import { Check, ChevronDown, Plus, X } from 'lucide-react';
 import { FIELD_CHILDREN_FALLBACK, useFieldChildren } from '@/api/fieldChildren';
 import { DATA_IMPORT_IDS } from '../../DataImportModal.testids';
-import type { DataImportPicker } from '../../useDataImportPicker';
+import type { DataImportPicker } from '../../hooks/useDataImportPicker';
 import { ColumnEmptyState, ColumnHeading, ColumnPane } from '../columns.shared.styles';
 import {
   FieldChevron,

@@ -13,7 +13,7 @@ import { HamalTab } from './tabs/HamalTab';
 import { MirageTab } from './tabs/MirageTab';
 import { NetworkTab } from './tabs/NetworkTab';
 import { PersonalTab } from './tabs/PersonalTab';
-import { useImportSource } from './useImportSource';
+import { useImportSource } from './hooks/useImportSource';
 
 export type ModalMode = 'new' | 'edit' | 'duplicate';
 

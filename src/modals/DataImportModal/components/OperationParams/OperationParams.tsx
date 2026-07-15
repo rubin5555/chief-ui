@@ -6,7 +6,7 @@ import { Toggle } from '@/components/ui/Toggle';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { SourceOperation } from '../../DataImportModal.constants';
 import { DATA_IMPORT_IDS } from '../../DataImportModal.testids';
-import type { DataImportPicker } from '../../useDataImportPicker';
+import type { DataImportPicker } from '../../hooks/useDataImportPicker';
 import { PickerSearchInput } from '../PickerSearchInput';
 import {
   ClearNameBtn,

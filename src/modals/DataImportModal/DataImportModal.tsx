@@ -26,7 +26,7 @@ import {
   SystemRow,
 } from './DataImportModal.styles';
 import { DATA_IMPORT_IDS } from './DataImportModal.testids';
-import { useDataImportPicker } from './useDataImportPicker';
+import { useDataImportPicker } from './hooks/useDataImportPicker';
 
 export interface DataImportModalProps {
   existingFields: DynamicField[];
