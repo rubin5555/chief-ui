@@ -136,22 +136,24 @@ export const DateTimePicker = ({
         <CalendarPanel
           dropRef={dropRef}
           dropPos={dropPos}
-          viewMonth={viewMonth}
-          days={days}
-          selectedDate={selectedDate}
-          onPrevMonth={onPrevMonth}
-          onNextMonth={onNextMonth}
-          onSelectDay={onSelectDay}
-          hourInput={hourInput}
-          minuteInput={minuteInput}
-          onHourChange={onHourChange}
-          onHourBlur={onHourBlur}
-          onMinuteChange={onMinuteChange}
-          onMinuteBlur={onMinuteBlur}
-          onTimeInputKeyDown={onTimeInputKeyDown}
-          onClear={onClear}
-          onNow={onNow}
-          onApply={closeDropdown}
+          calendarNav={{
+            viewMonth,
+            days,
+            selectedDate,
+            onPrevMonth,
+            onNextMonth,
+            onSelectDay,
+          }}
+          timeInputs={{
+            hourInput,
+            minuteInput,
+            onHourChange,
+            onHourBlur,
+            onMinuteChange,
+            onMinuteBlur,
+            onTimeInputKeyDown,
+          }}
+          actions={{ onClear, onNow, onApply: closeDropdown }}
         />
       )}
     </>

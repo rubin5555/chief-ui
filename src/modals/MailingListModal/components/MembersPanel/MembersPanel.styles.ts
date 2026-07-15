@@ -56,12 +56,6 @@ export const CellText = styled.span<{ $tabular?: boolean }>`
   ${(p) => (p.$tabular ? 'font-variant-numeric: tabular-nums;' : '')}
 `;
 
-export const ColHeader = styled.span<{ $align?: 'right' | 'center' }>`
-  display: block;
-  width: 100%;
-  text-align: ${(p) => p.$align ?? 'center'};
-`;
-
 export const SubMemberName = styled.span`
   text-align: right;
   font-size: 11px;
@@ -98,12 +92,6 @@ export const MemberCount = styled.span`
   font-size: 12px;
   color: ${gray[400]};
   font-weight: 400;
-`;
-
-export const ExpandedBlock = styled.div`
-  background: color-mix(in srgb, ${colors.primaryLight} 40%, transparent);
-  border-top: 1px solid color-mix(in srgb, ${colors.primary} 25%, transparent);
-  padding: 4px 0;
 `;
 
 export const EmptyMembersState = styled.div`

@@ -1,6 +1,12 @@
 import styled from 'styled-components';
 import { colors, gray, radii } from '@/styles/theme';
 
+export const ColHeader = styled.span<{ $align?: 'right' | 'center' }>`
+  display: block;
+  width: 100%;
+  text-align: ${(p) => p.$align ?? 'center'};
+`;
+
 // Shared styles for floating popover panels (add member, create group, manual entry, etc.)
 export const PopoverHeader = styled.div`
   display: flex;

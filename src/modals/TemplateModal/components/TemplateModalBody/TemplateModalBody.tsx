@@ -1,97 +1,66 @@
 import { Plus, X } from 'lucide-react';
 import { ContentEditorProvider } from '@/components/ui/ContentEditor';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
-import type { DynamicField } from '@/modals/DataImportModal';
-import type { Appendix, PermissionsTarget } from '../../TemplateModal.constants';
+import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
+import type { useAppendices } from '../../useAppendices';
+import type { useEmphasis } from '../../useEmphasis';
+import type { useFieldBank } from '../../useFieldBank';
+import type { usePermissionsTarget } from '../../usePermissionsTarget';
+import { AppendixList } from '../AppendixList';
+import { DocumentPreview } from '../DocumentPreview';
+import { FieldBankBar, FieldBankList } from '../FieldBank';
+import { SubjectTree } from '../SubjectTree';
+import { AddNodeButton, SmallIconBtn } from '../TemplateModal.shared.styles';
 import {
-  AddNodeButton,
   BodySection,
   EmphasisBox,
   EmphasisLabel,
   Sidebar,
   SidebarFooter,
   SidebarScroll,
-  SmallIconBtn,
-} from '../../TemplateModal.styles';
-import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
-import { AppendixList } from '../AppendixList';
-import { DocumentPreview } from '../DocumentPreview';
-import { FieldBankBar, FieldBankList } from '../FieldBank';
-import { SubjectTree } from '../SubjectTree';
+} from './TemplateModalBody.styles';
 
 interface TemplateModalBodyProps {
   tree: ReturnType<typeof useDocumentTree>;
-  permTarget: PermissionsTarget | null;
-  onTogglePermissions: (target: PermissionsTarget) => void;
+  permissions: ReturnType<typeof usePermissionsTarget>;
+  appendicesState: ReturnType<typeof useAppendices>;
+  fieldBank: ReturnType<typeof useFieldBank>;
+  emphasis: ReturnType<typeof useEmphasis>;
   onSubjectAdded: () => void;
   onSectionAdded: () => void;
   onSubSectionAdded: () => void;
-  appendices: Appendix[];
-  onAddAppendix: () => void;
-  onRemoveAppendix: (id: string) => void;
-  onReorderAppendix: (draggedId: string, targetId: string) => void;
-  onAppendixTitleChange: (id: string, title: string) => void;
-  onAppendixContentChange: (id: string, content: string) => void;
-  onAppendixPermissionsChange: (id: string, permissions: Appendix['permissions']) => void;
-  hasEmphasis: boolean;
-  emphasisText: string;
-  onEmphasisTextChange: (text: string) => void;
-  onAddEmphasis: () => void;
-  onRemoveEmphasis: () => void;
-  isFieldBankShown: boolean;
-  importedFields: DynamicField[];
-  onOpenImportPicker: () => void;
-  onCollapseFieldBank: () => void;
-  onExpandFieldBank: () => void;
-  onRemoveImportedField: (id: string) => void;
   onFieldDragged: (fieldName: string) => void;
 }
 
 export const TemplateModalBody = ({
   tree,
-  permTarget,
-  onTogglePermissions,
+  permissions,
+  appendicesState,
+  fieldBank,
+  emphasis,
   onSubjectAdded,
   onSectionAdded,
   onSubSectionAdded,
-  appendices,
-  onAddAppendix,
-  onRemoveAppendix,
-  onReorderAppendix,
-  onAppendixTitleChange,
-  onAppendixContentChange,
-  onAppendixPermissionsChange,
-  hasEmphasis,
-  emphasisText,
-  onEmphasisTextChange,
-  onAddEmphasis,
-  onRemoveEmphasis,
-  isFieldBankShown,
-  importedFields,
-  onOpenImportPicker,
-  onCollapseFieldBank,
-  onExpandFieldBank,
-  onRemoveImportedField,
   onFieldDragged,
 }: TemplateModalBodyProps) => {
-  const activePermissionsId = permTarget?.id ?? null;
+  const activePermissionsId = permissions.permTarget?.id ?? null;
 
   return (
     <ContentEditorProvider>
       <BodySection data-testid={TEMPLATE_MODAL_IDS.body}>
         <Sidebar data-testid={TEMPLATE_MODAL_IDS.sidebar}>
-          {isFieldBankShown ? (
+          {fieldBank.isFieldBankShown ? (
             <>
               <FieldBankBar
                 edge="top"
                 showFieldsToggle
-                onToggleFields={onCollapseFieldBank}
-                onOpenPicker={onOpenImportPicker}
+                onToggleFields={fieldBank.collapseFieldBank}
+                onOpenPicker={fieldBank.openImportPicker}
               />
               <FieldBankList
-                fields={importedFields}
-                onRemoveField={onRemoveImportedField}
-                onOpenPicker={onOpenImportPicker}
+                fields={fieldBank.importedFields}
+                onRemoveField={fieldBank.removeImportedField}
+                onOpenPicker={fieldBank.openImportPicker}
                 onFieldDragStart={onFieldDragged}
               />
             </>
@@ -101,7 +70,7 @@ export const TemplateModalBody = ({
                 <SubjectTree
                   tree={tree}
                   activePermissionsId={activePermissionsId}
-                  onTogglePermissions={onTogglePermissions}
+                  onTogglePermissions={permissions.togglePermissions}
                   onSubjectAdded={onSubjectAdded}
                   onSectionAdded={onSectionAdded}
                   onSubSectionAdded={onSubSectionAdded}
@@ -109,28 +78,28 @@ export const TemplateModalBody = ({
 
                 <SidebarFooter>
                   <AppendixList
-                    appendices={appendices}
+                    appendices={appendicesState.appendices}
                     activePermissionsId={activePermissionsId}
-                    onAdd={onAddAppendix}
-                    onRemove={onRemoveAppendix}
-                    onTitleChange={onAppendixTitleChange}
-                    onReorder={onReorderAppendix}
-                    onTogglePermissions={onTogglePermissions}
-                    onChangePermissions={onAppendixPermissionsChange}
+                    onAdd={appendicesState.addAppendix}
+                    onRemove={appendicesState.removeAppendix}
+                    onTitleChange={appendicesState.changeAppendixTitle}
+                    onReorder={appendicesState.reorderAppendix}
+                    onTogglePermissions={permissions.togglePermissions}
+                    onChangePermissions={appendicesState.changeAppendixPermissions}
                   />
-                  {hasEmphasis ? (
+                  {emphasis.hasEmphasis ? (
                     <EmphasisBox>
                       <EmphasisLabel>דגשים לכתיבה</EmphasisLabel>
                       <SmallIconBtn
                         type="button"
-                        onClick={onRemoveEmphasis}
+                        onClick={emphasis.removeEmphasis}
                         aria-label="הסרת דגשים"
                       >
                         <X size={12} />
                       </SmallIconBtn>
                     </EmphasisBox>
                   ) : (
-                    <AddNodeButton type="button" onClick={onAddEmphasis}>
+                    <AddNodeButton type="button" onClick={emphasis.addEmphasis}>
                       <Plus size={14} />
                       הוספת דגשים לכתיבת המסמך
                     </AddNodeButton>
@@ -139,9 +108,9 @@ export const TemplateModalBody = ({
               </SidebarScroll>
               <FieldBankBar
                 edge="bottom"
-                showFieldsToggle={importedFields.length > 0}
-                onToggleFields={onExpandFieldBank}
-                onOpenPicker={onOpenImportPicker}
+                showFieldsToggle={fieldBank.importedFields.length > 0}
+                onToggleFields={fieldBank.expandFieldBank}
+                onOpenPicker={fieldBank.openImportPicker}
               />
             </>
           )}
@@ -149,12 +118,12 @@ export const TemplateModalBody = ({
 
         <DocumentPreview
           tree={tree}
-          appendices={appendices}
-          onAppendixTitleChange={onAppendixTitleChange}
-          onAppendixContentChange={onAppendixContentChange}
-          hasEmphasis={hasEmphasis}
-          emphasisText={emphasisText}
-          onEmphasisTextChange={onEmphasisTextChange}
+          appendices={appendicesState.appendices}
+          onAppendixTitleChange={appendicesState.changeAppendixTitle}
+          onAppendixContentChange={appendicesState.changeAppendixContent}
+          hasEmphasis={emphasis.hasEmphasis}
+          emphasisText={emphasis.emphasisText}
+          onEmphasisTextChange={emphasis.setEmphasisText}
         />
       </BodySection>
     </ContentEditorProvider>

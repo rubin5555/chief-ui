@@ -1,8 +1,11 @@
 import { Network, User } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { ModalLoading } from '@/components/ui/ModalLoading';
 import { colors } from '@/styles/theme';
+import { useProfileSidebarAnalytics } from './ProfileSidebar.analytics';
 import {
   AvatarWrap,
   EntryRow,
@@ -35,19 +38,32 @@ export interface ListEntry {
   label: string;
 }
 
+const noop = () => {};
+
+// EnvironmentRequestModal is only needed once the user asks to request an
+// environment — lazy-loaded so it doesn't ship in the main bundle.
+const EnvironmentRequestModal = lazy(() =>
+  import('@/modals/EnvironmentRequestModal').then((m) => ({
+    default: m.EnvironmentRequestModal,
+  })),
+);
+
 interface ProfileSidebarProps {
   profile: ProfileInfo;
   permissions: ListEntry[];
   departments: ListEntry[];
-  onRequestEnvironment: () => void;
 }
 
-export const ProfileSidebar = ({
-  profile,
-  permissions,
-  departments,
-  onRequestEnvironment,
-}: ProfileSidebarProps) => {
+export const ProfileSidebar = ({ profile, permissions, departments }: ProfileSidebarProps) => {
+  const [showEnvironmentRequest, setShowEnvironmentRequest] = useState(false);
+  const { trackEnvironmentModalOpened } = useProfileSidebarAnalytics();
+
+  const handleRequestEnvironment = () => {
+    setShowEnvironmentRequest(true);
+    trackEnvironmentModalOpened();
+  };
+  const handleEnvironmentRequestClose = () => setShowEnvironmentRequest(false);
+
   return (
     <SidebarRoot data-testid={PROFILE_SIDEBAR_IDS.root}>
       <AvatarWrap>
@@ -98,12 +114,18 @@ export const ProfileSidebar = ({
           <Button
             size="xs"
             data-testid={PROFILE_SIDEBAR_IDS.envButton}
-            onClick={onRequestEnvironment}
+            onClick={handleRequestEnvironment}
           >
             שלח בקשה
           </Button>
         </EnvRow>
       </Section>
+
+      {showEnvironmentRequest && (
+        <Suspense fallback={<ModalLoading />}>
+          <EnvironmentRequestModal onClose={handleEnvironmentRequestClose} onSubmit={noop} />
+        </Suspense>
+      )}
     </SidebarRoot>
   );
 };

@@ -30,7 +30,3 @@ export const SidebarDivider = styled.div`
 	width: 1px;
 	background-color: ${colors.border};
 `;
-
-export const BrandSpan = styled.span`
-	color: ${colors.primary};
-`;

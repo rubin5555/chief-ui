@@ -3,15 +3,15 @@ import type { ChangeEvent } from 'react';
 import { useDragReorder } from '@/hooks/useDragReorder';
 import type { Appendix, PermissionsTarget } from '../../TemplateModal.constants';
 import { HE_ALPHA } from '../../TemplateModal.constants';
+import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
 import {
   AddNodeButton,
-  AppendixRow,
   DragHandle,
   NodeIndex,
   SmallIconBtn,
   TitleInput,
-} from '../../TemplateModal.styles';
-import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
+} from '../TemplateModal.shared.styles';
+import { AppendixRow } from './AppendixList.styles';
 
 interface AppendixListProps {
   appendices: Appendix[];

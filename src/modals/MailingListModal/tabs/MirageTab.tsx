@@ -6,10 +6,10 @@ import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
 import { gray } from '@/styles/theme';
 import { ExpandedMemberBlock } from '../components/ExpandedMemberBlock';
-import { ColHeader } from '../components/MembersPanel/MembersPanel.styles';
 import { ModalSearchInput } from '../components/ModalSearchInput';
 import { SelectionCheckbox } from '../components/SelectionCheckbox';
 import type { Member, MirageGroup } from '../MailingListModal.constants';
+import { ColHeader } from '../MailingListModal.shared.styles';
 import { MIRAGE_TAB_IDS } from './MirageTab.testids';
 import { TabImportBar } from './TabImportBar';
 import {

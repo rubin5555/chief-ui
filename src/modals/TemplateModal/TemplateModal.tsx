@@ -1,6 +1,6 @@
 import { useForm } from '@tanstack/react-form';
 import type { FormEvent } from 'react';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
 import type { ModalHandle } from '@/components/ui/Modal';
 import { Modal } from '@/components/ui/Modal';
@@ -16,6 +16,7 @@ import { emptyTemplateFormValues, MODAL_TITLES, SAVE_LABELS } from './TemplateMo
 import { DetailsSection } from './TemplateModal.styles';
 import { TEMPLATE_MODAL_IDS } from './TemplateModal.testids';
 import { useAppendices } from './useAppendices';
+import { useEmphasis } from './useEmphasis';
 import { useFieldBank } from './useFieldBank';
 import { usePermissionsTarget } from './usePermissionsTarget';
 
@@ -51,8 +52,7 @@ export const TemplateModal = ({
     onSubmit: () => {},
   });
   const tree = useDocumentTree();
-  const [hasEmphasis, setHasEmphasis] = useState(false);
-  const [emphasisText, setEmphasisText] = useState('');
+  const emphasis = useEmphasis();
 
   const {
     trackModalOpened,
@@ -81,19 +81,13 @@ export const TemplateModal = ({
     tree.subjects.length > 0 ||
     appendicesState.appendices.length > 0 ||
     fieldBank.importedFields.length > 0 ||
-    hasEmphasis;
+    emphasis.hasEmphasis;
 
   const modalRef = useRef<ModalHandle>(null);
 
   const handleClose = () => {
     trackCancelled(mode);
     modalRef.current?.requestClose();
-  };
-
-  const handleAddEmphasis = () => setHasEmphasis(true);
-  const handleRemoveEmphasis = () => {
-    setHasEmphasis(false);
-    setEmphasisText('');
   };
 
   const onDetailsFormSubmit = (e: FormEvent) => {
@@ -109,7 +103,7 @@ export const TemplateModal = ({
       subjects: tree.subjects,
       appendices: appendicesState.appendices,
       fields: fieldBank.importedFields,
-      emphasis: { enabled: hasEmphasis, text: emphasisText },
+      emphasis: { enabled: emphasis.hasEmphasis, text: emphasis.emphasisText },
     });
     modalRef.current?.requestClose();
   };
@@ -120,29 +114,13 @@ export const TemplateModal = ({
   const body = (
     <TemplateModalBody
       tree={tree}
-      permTarget={permissions.permTarget}
-      onTogglePermissions={permissions.togglePermissions}
+      permissions={permissions}
+      appendicesState={appendicesState}
+      fieldBank={fieldBank}
+      emphasis={emphasis}
       onSubjectAdded={trackSubjectAdded}
       onSectionAdded={trackSectionAdded}
       onSubSectionAdded={trackSubSectionAdded}
-      appendices={appendicesState.appendices}
-      onAddAppendix={appendicesState.addAppendix}
-      onRemoveAppendix={appendicesState.removeAppendix}
-      onReorderAppendix={appendicesState.reorderAppendix}
-      onAppendixTitleChange={appendicesState.changeAppendixTitle}
-      onAppendixContentChange={appendicesState.changeAppendixContent}
-      onAppendixPermissionsChange={appendicesState.changeAppendixPermissions}
-      hasEmphasis={hasEmphasis}
-      emphasisText={emphasisText}
-      onEmphasisTextChange={setEmphasisText}
-      onAddEmphasis={handleAddEmphasis}
-      onRemoveEmphasis={handleRemoveEmphasis}
-      isFieldBankShown={fieldBank.isFieldBankShown}
-      importedFields={fieldBank.importedFields}
-      onOpenImportPicker={fieldBank.openImportPicker}
-      onCollapseFieldBank={fieldBank.collapseFieldBank}
-      onExpandFieldBank={fieldBank.expandFieldBank}
-      onRemoveImportedField={fieldBank.removeImportedField}
       onFieldDragged={trackFieldDragged}
     />
   );

@@ -9,6 +9,8 @@ import {
   HIGH_CLASSIFICATIONS,
   TEMPLATE_DOC_TYPE_OPTIONS,
 } from '../../TemplateModal.constants';
+import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
+import { DocTypeToggle } from '../DocTypeToggle';
 import {
   ApprovalLabel,
   ApprovalRow,
@@ -18,9 +20,7 @@ import {
   FieldRow,
   NameInput,
   WarnText,
-} from '../../TemplateModal.styles';
-import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
-import { DocTypeToggle } from '../DocTypeToggle';
+} from './DocumentDetailsForm.styles';
 
 interface DocumentDetailsFormProps {
   form: TemplateFormApi;

@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react';
 import { ContentEditor, ContentEditorToolbar } from '@/components/ui/ContentEditor';
 import type { Appendix, DocumentTreeApi } from '../../TemplateModal.constants';
 import { HE_ALPHA } from '../../TemplateModal.constants';
+import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
 import {
   AppendixPreviewBlock,
   EmphasisPreviewBox,
@@ -17,8 +18,7 @@ import {
   SectionPreviewBlock,
   SubjectHeading,
   SubSectionPreviewBlock,
-} from '../../TemplateModal.styles';
-import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
+} from './DocumentPreview.styles';
 
 interface DocumentPreviewProps {
   tree: DocumentTreeApi;

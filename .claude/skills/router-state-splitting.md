@@ -51,6 +51,49 @@ const SignaturesPanel = lazy(() =>
 
 - **Wrap the switch/conditional in `<Suspense>`, not each branch individually** — one boundary around `renderTabPanel()` covers every tab. Use `src/components/ui/PanelLoading` as the fallback for a content area with visible real estate (tab panels). Use `fallback={null}` for modals — they have no backdrop of their own to show a spinner against, and their chunks are small enough that a flash of nothing beats a loading skeleton with no frame around it.
 - **This pays off most for panels/modals pulling a heavy dependency.** `SignatureModal` drags in `ContentEditor` (TinyMCE, ~1MB+) — lazy-loading it means that weight only downloads when a user actually opens the signature editor, not on first page load. Before reaching for a new heavy dependency, check whether the consuming component is already behind a lazy boundary; if not, add one rather than letting it inflate the main chunk.
+- **The data query moves with the component, not just the JS.** Lazy-loading a panel's *code* while its parent still calls `useTemplates()`/`useSignatures()`/`useLists()` up front only splits half the cost — the network request fires on page load regardless of which tab is active, even though the chunk that needs the response doesn't load until later. Put the query call *inside* the lazy component itself (`TemplatesPanel` calls `useTemplates()`, not `ProfilePage`), so both the code and the fetch are gated by the same "user is actually looking at this" trigger. The parent should only hold data genuinely shared by multiple siblings (e.g. `ProfilePage` still calls `useProfile()` because both `ProfileSidebar` and `TemplatesPanel` need it) — not data that belongs to exactly one lazy child.
+
+```tsx
+// ❌ Wrong — page fetches every tab's data up front, only the JS is deferred
+const ProfilePage = () => {
+  const { data: templatesData } = useTemplates();
+  const { data: signaturesData } = useSignatures();
+  const { data: listsData } = useLists();
+  // ...renders whichever lazy panel matches the active tab, passing its slice down
+};
+
+// ✅ Correct — each lazy panel owns its own query; fetch and chunk load together
+const TemplatesPanel = () => {
+  const { data, loading } = useTemplates();
+  if (loading) return <PanelLoading />;
+  // ...
+};
+```
+
+## Shared Chrome Lives at the Root Layout, Not Inside Pages
+
+- **Anything rendered on every route belongs next to `<Outlet/>` in `src/routes/__root.tsx`**, not inside an individual page component — even while the app only has one route today. A navbar, app shell, or global menu isn't "the profile page's UI" just because the profile page happens to be the only thing currently rendering under it; it's app-wide chrome that would otherwise have to be copy-pasted into every future page.
+- **Pattern:** a dedicated `AppLayout` component (`src/components/layout/AppLayout/`) composes the shell + navbar and renders `<Outlet/>` where the routed page goes. `__root.tsx`'s route component renders `<AppLayout/>` instead of `<Outlet/>` directly:
+
+```tsx
+// src/components/layout/AppLayout/AppLayout.tsx
+export const AppLayout = () => (
+  <AppShell>
+    <TopNavbar start={...} end={...} />
+    <Outlet />
+  </AppShell>
+);
+
+// src/routes/__root.tsx
+const RootRoute = () => (
+  <>
+    <AppLayout />
+    <TanStackRouterDevtools />
+  </>
+);
+```
+
+- **Test:** if a second route were added tomorrow, would it need to re-render the navbar itself to get one? If yes, the navbar is in the wrong place — it should already be showing up for free because it's a sibling of `<Outlet/>`, not a child of the first page that happened to need it.
 
 ## Known Shared Utilities
 

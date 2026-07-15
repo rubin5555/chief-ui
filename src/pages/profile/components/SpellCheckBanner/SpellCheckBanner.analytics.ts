@@ -4,6 +4,7 @@ const ANALYTICS_CATEGORY = 'באנר בדיקת איות';
 
 const ACTIONS = {
   INSTALL_CLICKED: 'לחיצה על התקנת בדיקת איות',
+  SPELL_CHECK_MODAL_OPENED: 'פתיחת מודאל בדיקת איות',
 } as const;
 
 export const useSpellCheckBannerAnalytics = () => {
@@ -14,7 +15,15 @@ export const useSpellCheckBannerAnalytics = () => {
     });
   };
 
+  const trackSpellCheckModalOpened = () => {
+    analytics.trackEvent({
+      category: ANALYTICS_CATEGORY,
+      action: ACTIONS.SPELL_CHECK_MODAL_OPENED,
+    });
+  };
+
   return {
     trackInstallClicked,
+    trackSpellCheckModalOpened,
   };
 };

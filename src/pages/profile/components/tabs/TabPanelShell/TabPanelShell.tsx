@@ -12,12 +12,14 @@ interface TabPanelShellProps {
   toolbarTestId: string;
   primaryLabel: string;
   onPrimaryClick: () => void;
-  search: string;
-  onSearchChange: (value: string) => void;
-  filterOptions: string[];
-  filter: string;
-  onFilterChange: (value: string) => void;
-  onClearFilter: () => void;
+  filterable: {
+    search: string;
+    onSearchChange: (value: string) => void;
+    filterOptions: string[];
+    filter: string;
+    onFilterChange: (value: string) => void;
+    onClearFilter: () => void;
+  };
   tabs: UnderlineTab[];
   activeTab: string;
   onTabChange: (id: string) => void;
@@ -31,12 +33,7 @@ export const TabPanelShell = ({
   toolbarTestId,
   primaryLabel,
   onPrimaryClick,
-  search,
-  onSearchChange,
-  filterOptions,
-  filter,
-  onFilterChange,
-  onClearFilter,
+  filterable,
   tabs,
   activeTab,
   onTabChange,
@@ -51,17 +48,17 @@ export const TabPanelShell = ({
           {primaryLabel}
         </Button>
         <SearchBar
-          value={search}
-          onChange={onSearchChange}
-          filterOptions={filterOptions}
-          selectedFilter={filter}
-          onFilterChange={onFilterChange}
+          value={filterable.search}
+          onChange={filterable.onSearchChange}
+          filterOptions={filterable.filterOptions}
+          selectedFilter={filterable.filter}
+          onFilterChange={filterable.onFilterChange}
         />
       </PanelToolbar>
 
-      {filter && (
+      {filterable.filter && (
         <FilterChipRow>
-          <FilterChip label={filter} onClear={onClearFilter} />
+          <FilterChip label={filterable.filter} onClear={filterable.onClearFilter} />
         </FilterChipRow>
       )}
 

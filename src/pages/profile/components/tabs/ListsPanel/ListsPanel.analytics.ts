@@ -4,6 +4,7 @@ const ANALYTICS_CATEGORY = 'פאנל רשימות תפוצה';
 
 const ACTIONS = {
   NEW_LIST: 'יצירת רשימת תפוצה חדשה',
+  LIST_MODAL_OPENED: 'פתיחת מודאל רשימה חדשה',
   EDIT_LIST: 'עריכת רשימת תפוצה',
   DUPLICATE_LIST: 'שכפול רשימת תפוצה',
   DELETE_LIST: 'מחיקת רשימת תפוצה',
@@ -16,6 +17,13 @@ export const useListsPanelAnalytics = () => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,
       action: ACTIONS.NEW_LIST,
+    });
+  };
+
+  const trackMailingListOpened = () => {
+    analytics.trackEvent({
+      category: ANALYTICS_CATEGORY,
+      action: ACTIONS.LIST_MODAL_OPENED,
     });
   };
 
@@ -61,6 +69,7 @@ export const useListsPanelAnalytics = () => {
 
   return {
     trackMailingList,
+    trackMailingListOpened,
     trackEditList,
     trackDuplicateList,
     trackDeleteList,

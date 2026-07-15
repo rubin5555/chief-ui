@@ -4,14 +4,14 @@ import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { SubTable, SubTableRow } from '@/components/ui/SubTable';
 import type { Member, PersonMember } from '../../MailingListModal.constants';
 import { MEMBERS_GRID, SUB_MEMBER_GRID } from '../../MailingListModal.constants';
+import { ColHeader } from '../../MailingListModal.shared.styles';
+import { ExpandedBlock } from '../components.shared.styles';
 import {
   CellText,
-  ColHeader,
   EmptyMembersIcon,
   EmptyMembersState,
   EmptyMembersText,
   ExpandBtn,
-  ExpandedBlock,
   ExpandIcon,
   MemberCount,
   MemberName,

@@ -1,5 +1,8 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ChangeEvent, KeyboardEvent, Ref } from 'react';
+import { DATE_TIME_PICKER_IDS } from '../../DateTimePicker.testids';
+import type { CalendarDay, DropPos } from '../../DateTimePicker.utils';
+import { dayKey, isSameDay, MONTH_LABELS, WEEKDAY_LABELS } from '../../DateTimePicker.utils';
 import {
   ApplyBtn,
   ClearBtn,
@@ -16,51 +19,41 @@ import {
   TimeRow,
   WeekdayLabel,
   WeekdayRow,
-} from '../../DateTimePicker.styles';
-import { DATE_TIME_PICKER_IDS } from '../../DateTimePicker.testids';
-import type { CalendarDay, DropPos } from '../../DateTimePicker.utils';
-import { dayKey, isSameDay, MONTH_LABELS, WEEKDAY_LABELS } from '../../DateTimePicker.utils';
+} from './CalendarPanel.styles';
 
 interface CalendarPanelProps {
   dropRef: Ref<HTMLDivElement>;
   dropPos: DropPos;
-  viewMonth: Date;
-  days: CalendarDay[];
-  selectedDate: Date | null;
-  onPrevMonth: () => void;
-  onNextMonth: () => void;
-  onSelectDay: (day: Date) => () => void;
-  hourInput: string;
-  minuteInput: string;
-  onHourChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onHourBlur: () => void;
-  onMinuteChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onMinuteBlur: () => void;
-  onTimeInputKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
-  onClear: () => void;
-  onNow: () => void;
-  onApply: () => void;
+  calendarNav: {
+    viewMonth: Date;
+    days: CalendarDay[];
+    selectedDate: Date | null;
+    onPrevMonth: () => void;
+    onNextMonth: () => void;
+    onSelectDay: (day: Date) => () => void;
+  };
+  timeInputs: {
+    hourInput: string;
+    minuteInput: string;
+    onHourChange: (e: ChangeEvent<HTMLInputElement>) => void;
+    onHourBlur: () => void;
+    onMinuteChange: (e: ChangeEvent<HTMLInputElement>) => void;
+    onMinuteBlur: () => void;
+    onTimeInputKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void;
+  };
+  actions: {
+    onClear: () => void;
+    onNow: () => void;
+    onApply: () => void;
+  };
 }
 
 export const CalendarPanel = ({
   dropRef,
   dropPos,
-  viewMonth,
-  days,
-  selectedDate,
-  onPrevMonth,
-  onNextMonth,
-  onSelectDay,
-  hourInput,
-  minuteInput,
-  onHourChange,
-  onHourBlur,
-  onMinuteChange,
-  onMinuteBlur,
-  onTimeInputKeyDown,
-  onClear,
-  onNow,
-  onApply,
+  calendarNav,
+  timeInputs,
+  actions,
 }: CalendarPanelProps) => {
   const today = new Date();
 
@@ -71,18 +64,18 @@ export const CalendarPanel = ({
           type="button"
           data-testid={DATE_TIME_PICKER_IDS.prevMonth}
           aria-label="חודש קודם"
-          onClick={onPrevMonth}
+          onClick={calendarNav.onPrevMonth}
         >
           <ChevronRight size={16} />
         </MonthNavBtn>
         <MonthLabel>
-          {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
+          {MONTH_LABELS[calendarNav.viewMonth.getMonth()]} {calendarNav.viewMonth.getFullYear()}
         </MonthLabel>
         <MonthNavBtn
           type="button"
           data-testid={DATE_TIME_PICKER_IDS.nextMonth}
           aria-label="חודש הבא"
-          onClick={onNextMonth}
+          onClick={calendarNav.onNextMonth}
         >
           <ChevronLeft size={16} />
         </MonthNavBtn>
@@ -95,15 +88,15 @@ export const CalendarPanel = ({
       </WeekdayRow>
 
       <DayGrid>
-        {days.map(({ date, inMonth }) => (
+        {calendarNav.days.map(({ date, inMonth }) => (
           <DayBtn
             key={dayKey(date)}
             type="button"
             data-testid={DATE_TIME_PICKER_IDS.day(dayKey(date))}
             $inMonth={inMonth}
             $isToday={isSameDay(date, today)}
-            $isSelected={!!selectedDate && isSameDay(date, selectedDate)}
-            onClick={onSelectDay(date)}
+            $isSelected={!!calendarNav.selectedDate && isSameDay(date, calendarNav.selectedDate)}
+            onClick={calendarNav.onSelectDay(date)}
           >
             {date.getDate()}
           </DayBtn>
@@ -112,34 +105,42 @@ export const CalendarPanel = ({
 
       <TimeRow>
         <TimeInput
-          value={hourInput}
+          value={timeInputs.hourInput}
           data-testid={DATE_TIME_PICKER_IDS.hourInput}
-          onChange={onHourChange}
-          onBlur={onHourBlur}
-          onKeyDown={onTimeInputKeyDown}
+          onChange={timeInputs.onHourChange}
+          onBlur={timeInputs.onHourBlur}
+          onKeyDown={timeInputs.onTimeInputKeyDown}
           inputMode="numeric"
           aria-label="שעה"
         />
         <TimeColon>:</TimeColon>
         <TimeInput
-          value={minuteInput}
+          value={timeInputs.minuteInput}
           data-testid={DATE_TIME_PICKER_IDS.minuteInput}
-          onChange={onMinuteChange}
-          onBlur={onMinuteBlur}
-          onKeyDown={onTimeInputKeyDown}
+          onChange={timeInputs.onMinuteChange}
+          onBlur={timeInputs.onMinuteBlur}
+          onKeyDown={timeInputs.onTimeInputKeyDown}
           inputMode="numeric"
           aria-label="דקות"
         />
       </TimeRow>
 
       <PanelFooter>
-        <ClearBtn type="button" data-testid={DATE_TIME_PICKER_IDS.clearBtn} onClick={onClear}>
+        <ClearBtn
+          type="button"
+          data-testid={DATE_TIME_PICKER_IDS.clearBtn}
+          onClick={actions.onClear}
+        >
           נקה
         </ClearBtn>
-        <NowBtn type="button" data-testid={DATE_TIME_PICKER_IDS.nowBtn} onClick={onNow}>
+        <NowBtn type="button" data-testid={DATE_TIME_PICKER_IDS.nowBtn} onClick={actions.onNow}>
           עכשיו
         </NowBtn>
-        <ApplyBtn type="button" data-testid={DATE_TIME_PICKER_IDS.applyBtn} onClick={onApply}>
+        <ApplyBtn
+          type="button"
+          data-testid={DATE_TIME_PICKER_IDS.applyBtn}
+          onClick={actions.onApply}
+        >
           אישור
         </ApplyBtn>
       </PanelFooter>

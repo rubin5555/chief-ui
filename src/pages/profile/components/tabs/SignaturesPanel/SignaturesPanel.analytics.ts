@@ -5,6 +5,7 @@ const ANALYTICS_CATEGORY = 'פאנל חתימות';
 
 const ACTIONS = {
   NEW_SIGNATURE: 'יצירת חתימה חדשה',
+  SIGNATURE_MODAL_OPENED: 'פתיחת מודאל חתימה חדשה',
   EDIT_SIGNATURE: 'עריכת חתימה',
   DUPLICATE_SIGNATURE: 'שכפול חתימה',
   DELETE_SIGNATURE: 'מחיקת חתימה',
@@ -25,6 +26,13 @@ export const useSignaturesPanelAnalytics = () => {
       category: ANALYTICS_CATEGORY,
       action: ACTIONS.NEW_SIGNATURE,
       label: `סוג: ${SIGNATURE_TYPE_LABELS[type]}`,
+    });
+  };
+
+  const trackSignatureModalOpened = () => {
+    analytics.trackEvent({
+      category: ANALYTICS_CATEGORY,
+      action: ACTIONS.SIGNATURE_MODAL_OPENED,
     });
   };
 
@@ -78,6 +86,7 @@ export const useSignaturesPanelAnalytics = () => {
 
   return {
     trackNewSignature,
+    trackSignatureModalOpened,
     trackEditSignature,
     trackDuplicateSignature,
     trackDeleteSignature,

@@ -5,6 +5,8 @@ import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { Pos } from '@/hooks/useFloatingPanel';
 import { gray } from '@/styles/theme';
+import { PersonSearchField } from '../components/PersonSearchField';
+import type { NetworkPerson, PersonMember } from '../MailingListModal.constants';
 import {
   PickedList,
   PickedListLabel,
@@ -18,9 +20,7 @@ import {
   PopoverPickedRow,
   PopoverSaveBtn,
   PopoverTitle,
-} from '../components/ManualAddPanel/ManualAddPanel.styles';
-import { PersonSearchField } from '../components/PersonSearchField';
-import type { NetworkPerson, PersonMember } from '../MailingListModal.constants';
+} from '../MailingListModal.shared.styles';
 import { toPersonMember } from '../utils/toPersonMember';
 import { HAMAL_TAB_IDS } from './HamalTab.testids';
 

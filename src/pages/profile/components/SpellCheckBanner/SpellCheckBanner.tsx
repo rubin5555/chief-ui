@@ -1,5 +1,7 @@
 import { Check } from 'lucide-react';
+import { lazy, Suspense, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { ModalLoading } from '@/components/ui/ModalLoading';
 import { useSpellCheckBannerAnalytics } from './SpellCheckBanner.analytics';
 import {
   BannerIcon,
@@ -10,17 +12,20 @@ import {
 } from './SpellCheckBanner.styles';
 import { SPELL_CHECK_BANNER_IDS } from './SpellCheckBanner.testids';
 
-interface SpellCheckBannerProps {
-  onInstall: () => void;
-}
+const SpellCheckModal = lazy(() =>
+  import('@/modals/SpellCheckModal').then((m) => ({ default: m.SpellCheckModal })),
+);
 
-export const SpellCheckBanner = ({ onInstall }: SpellCheckBannerProps) => {
-  const { trackInstallClicked } = useSpellCheckBannerAnalytics();
+export const SpellCheckBanner = () => {
+  const [showSpellCheck, setShowSpellCheck] = useState(false);
+  const { trackInstallClicked, trackSpellCheckModalOpened } = useSpellCheckBannerAnalytics();
 
   const handleInstall = () => {
-    onInstall();
+    setShowSpellCheck(true);
     trackInstallClicked();
+    trackSpellCheckModalOpened();
   };
+  const handleClose = () => setShowSpellCheck(false);
 
   return (
     <BannerRoot data-testid={SPELL_CHECK_BANNER_IDS.root}>
@@ -34,6 +39,12 @@ export const SpellCheckBanner = ({ onInstall }: SpellCheckBannerProps) => {
       <Button size="xs" data-testid={SPELL_CHECK_BANNER_IDS.install} onClick={handleInstall}>
         התקן
       </Button>
+
+      {showSpellCheck && (
+        <Suspense fallback={<ModalLoading />}>
+          <SpellCheckModal onClose={handleClose} />
+        </Suspense>
+      )}
     </BannerRoot>
   );
 };

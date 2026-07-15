@@ -13,7 +13,7 @@ import {
   PopoverLabel,
   PopoverSaveBtn,
   PopoverTitle,
-} from './ManualAddPanel.styles';
+} from '../../MailingListModal.shared.styles';
 
 interface Props {
   onSave: (member: Member) => void;

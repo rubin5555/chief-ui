@@ -3,49 +3,37 @@ import type { ChangeEvent } from 'react';
 import type { useDragReorder } from '@/hooks/useDragReorder';
 import type { Section, SubSection } from '../../../../TemplateModal.constants';
 import { HE_ALPHA } from '../../../../TemplateModal.constants';
+import { TEMPLATE_MODAL_IDS } from '../../../../TemplateModal.testids';
 import {
   AddChildLink,
   DragHandle,
   NodeIndex,
+  SmallIconBtn,
+  TitleInput,
+} from '../../../TemplateModal.shared.styles';
+import {
   SectionBlock,
   SectionRowBox,
-  SmallIconBtn,
   SubSectionRowBox,
   SubSectionsWrap,
-  TitleInput,
-} from '../../../../TemplateModal.styles';
-import { TEMPLATE_MODAL_IDS } from '../../../../TemplateModal.testids';
+} from './SectionRow.styles';
 
 interface SectionRowProps {
-  subjectId: string;
   section: Section;
   sectionIndex: number;
   activePermissionsId: string | null;
   sectionDrag: ReturnType<typeof useDragReorder>;
   subSectionDrag: ReturnType<typeof useDragReorder>;
-  onTitleChange: (
-    subjectId: string,
-    sectionId: string,
-  ) => (e: ChangeEvent<HTMLInputElement>) => void;
-  onRemove: (subjectId: string, sectionId: string) => () => void;
-  onTogglePermissions: (subjectId: string, section: Section, label: string) => () => void;
-  onAddSubSection: (subjectId: string, sectionId: string) => () => void;
-  onSubSectionTitleChange: (
-    subjectId: string,
-    sectionId: string,
-    subSectionId: string,
-  ) => (e: ChangeEvent<HTMLInputElement>) => void;
-  onRemoveSubSection: (subjectId: string, sectionId: string, subSectionId: string) => () => void;
-  onSubSectionPermissions: (
-    subjectId: string,
-    sectionId: string,
-    subSection: SubSection,
-    label: string,
-  ) => () => void;
+  onTitleChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onRemove: () => void;
+  onTogglePermissions: () => void;
+  onAddSubSection: () => void;
+  onSubSectionTitleChange: (subSectionId: string) => (e: ChangeEvent<HTMLInputElement>) => void;
+  onRemoveSubSection: (subSectionId: string) => () => void;
+  onSubSectionPermissions: (subSection: SubSection, label: string) => () => void;
 }
 
 export const SectionRow = ({
-  subjectId,
   section,
   sectionIndex,
   activePermissionsId,
@@ -79,7 +67,7 @@ export const SectionRow = ({
         <NodeIndex>{sectionIndex + 1}.</NodeIndex>
         <TitleInput
           value={section.title}
-          onChange={onTitleChange(subjectId, section.id)}
+          onChange={onTitleChange}
           placeholder="שם הסעיף..."
           dir="rtl"
         />
@@ -88,11 +76,11 @@ export const SectionRow = ({
           data-testid={TEMPLATE_MODAL_IDS.permissionsBtn(section.id)}
           $active={isActive}
           $muted={!hasPerms}
-          onClick={onTogglePermissions(subjectId, section, `הרשאות סעיף ${sectionIndex + 1}`)}
+          onClick={onTogglePermissions}
         >
           <User size={12} />
         </SmallIconBtn>
-        <SmallIconBtn type="button" onClick={onRemove(subjectId, section.id)}>
+        <SmallIconBtn type="button" onClick={onRemove}>
           <Trash2 size={12} />
         </SmallIconBtn>
       </SectionRowBox>
@@ -121,7 +109,7 @@ export const SectionRow = ({
                 <NodeIndex>{HE_ALPHA[subIndex]}.</NodeIndex>
                 <TitleInput
                   value={subSection.title}
-                  onChange={onSubSectionTitleChange(subjectId, section.id, subSection.id)}
+                  onChange={onSubSectionTitleChange(subSection.id)}
                   placeholder="תת סעיף..."
                   dir="rtl"
                 />
@@ -131,18 +119,13 @@ export const SectionRow = ({
                   $active={subIsActive}
                   $muted={!subHasPerms}
                   onClick={onSubSectionPermissions(
-                    subjectId,
-                    section.id,
                     subSection,
                     `הרשאות תת סעיף ${HE_ALPHA[subIndex]}`,
                   )}
                 >
                   <User size={12} />
                 </SmallIconBtn>
-                <SmallIconBtn
-                  type="button"
-                  onClick={onRemoveSubSection(subjectId, section.id, subSection.id)}
-                >
+                <SmallIconBtn type="button" onClick={onRemoveSubSection(subSection.id)}>
                   <Trash2 size={12} />
                 </SmallIconBtn>
               </SubSectionRowBox>
@@ -151,7 +134,7 @@ export const SectionRow = ({
         </SubSectionsWrap>
       )}
 
-      <AddChildLink type="button" onClick={onAddSubSection(subjectId, section.id)}>
+      <AddChildLink type="button" onClick={onAddSubSection}>
         <Plus size={11} />
         תת סעיף
       </AddChildLink>

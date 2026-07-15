@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { ellipsis } from '@/styles/mixins';
 import { gray } from '@/styles/theme';
-import { ExpandedBlock } from '../MembersPanel/MembersPanel.styles';
+import { ExpandedBlock } from '../components.shared.styles';
 
 export const MemberExpandedBlock = styled(ExpandedBlock)``;
 

@@ -1,11 +1,12 @@
 import type { ErrorRouteProps } from '@tanstack/react-router';
-import { createRootRoute, Outlet } from '@tanstack/react-router';
+import { createRootRoute } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { StatusDetails, StatusMessage, StatusRoot, StatusTitle } from './-root.styles';
 
 const RootRoute = () => (
   <>
-    <Outlet />
+    <AppLayout />
     <TanStackRouterDevtools />
   </>
 );
