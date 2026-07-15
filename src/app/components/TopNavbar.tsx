@@ -766,12 +766,31 @@ function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = false }:
                         <Plus className="w-3.5 h-3.5" />
                         ייבוא מאקסל
                       </button>
-                      <span className="text-[11px] text-gray-400">העלה קובץ .xlsx עם עמודות: שם מלא, תעודת זהות, ארגון</span>
+                      <span className="text-[11px] text-gray-400">העלה קובץ .xlsx עם עמודה A בלבד ורשימת מספרים אישיים</span>
                     </div>
-                    {/* preview area — placeholder until design arrives */}
-                    <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6">
-                      <FileSpreadsheet className="w-10 h-10" style={{ color: '#d1d5db' }} />
-                      <p className="text-xs text-gray-400 text-center">לאחר ייבוא הקובץ תופיע כאן תצוגה מקדימה של הנתונים</p>
+                    {/* preview area — excel mockup */}
+                    <div className="flex-1 flex flex-col items-center justify-center px-6">
+                      <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm" style={{ direction: 'ltr', fontSize: 12, userSelect: 'none', width: 340 }}>
+                        {/* header row */}
+                        <div className="flex" style={{ background: '#f8f9fa' }}>
+                          <div style={{ width: 32, borderRight: '1px solid #e2e4e7', borderBottom: '1px solid #e2e4e7', padding: '4px 0', textAlign: 'center', color: '#999', fontSize: 11 }} />
+                          {['A', 'B', 'C', 'D'].map((col, i) => (
+                            <div key={col} style={{ flex: 1, borderRight: i < 3 ? '1px solid #e2e4e7' : undefined, borderBottom: '1px solid #e2e4e7', padding: '4px 8px', textAlign: 'center', fontWeight: 600, background: col === 'A' ? '#1B3A6B' : undefined, color: col === 'A' ? '#fff' : '#555' }}>
+                              {col}
+                            </div>
+                          ))}
+                        </div>
+                        {/* data rows */}
+                        {(['s1234567', 's7654321', 'm1234567', 'm7654321', '', '', '']).map((val, i) => (
+                          <div key={i} className="flex" style={{ background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                            <div style={{ width: 32, borderRight: '1px solid #e2e4e7', borderBottom: '1px solid #e2e4e7', padding: '4px 0', textAlign: 'center', color: '#aaa', fontSize: 10, background: '#f8f9fa' }}>{i + 1}</div>
+                            <div style={{ flex: 1, borderRight: '1px solid #e2e4e7', borderBottom: '1px solid #e2e4e7', padding: '4px 8px', textAlign: 'right', color: '#1a1a1a', background: i === 0 ? '#EBF0FA' : undefined, outline: i === 0 ? '2px solid #1B3A6B' : undefined, outlineOffset: -2 }}>{val}</div>
+                            {['', '', ''].map((_, j) => (
+                              <div key={j} style={{ flex: 1, borderRight: j < 2 ? '1px solid #e2e4e7' : undefined, borderBottom: '1px solid #e2e4e7', padding: '4px 8px' }} />
+                            ))}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
