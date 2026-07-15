@@ -2525,6 +2525,15 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
   const [rejectReason, setRejectReason] = useState('');
   const [showDistributePrompt, setShowDistributePrompt] = useState(false);
   const [signatureData, setSignatureData] = useState<string | null>(null);
+  const [showSigMenu, setShowSigMenu] = useState(false);
+  const sigMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showSigMenu) return;
+    const h = (e: MouseEvent) => { if (sigMenuRef.current && !sigMenuRef.current.contains(e.target as Node)) setShowSigMenu(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [showSigMenu]);
+  const USER_SIGNATURES = ['חתימה ראשית', 'חתימה רשמית', 'חתימת שדה'];
 
   const isHmlSelected = stages[selectedStageIdx]?.type === 'hml';
   const currentStage = stages[selectedStageIdx];
@@ -2635,24 +2644,46 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
             {/* Signature area */}
             <div className="flex flex-col gap-1.5 mt-1">
               <span className="text-xs font-semibold text-gray-600">חתימת המאשר</span>
-              <div className="rounded-xl flex flex-col items-center justify-between overflow-hidden px-4 py-3"
-                style={{ background: '#F3F4F6', height: 110 }}>
-                <div className="flex-1 flex items-center justify-center w-full">
+              <div className="rounded-xl flex flex-col items-center justify-between overflow-hidden px-4 py-3 relative"
+                style={{ background: '#F3F4F6', height: 130 }}>
+                <div className="flex-1 flex items-center justify-center w-full relative">
                   {signatureData ? (
-                    <svg width="200" height="56" viewBox="0 0 200 56" fill="none">
-                      <path d="M16 42 Q36 12 56 28 Q76 44 96 20 Q116 2 136 24 Q156 44 180 16" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                      <path d="M30 50 Q80 40 130 48 Q162 52 184 42" stroke="#1a1a1a" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.35"/>
-                    </svg>
+                    <div className="relative flex items-center justify-center">
+                      {/* Rubber stamp */}
+                      <svg width="90" height="90" viewBox="0 0 90 90" fill="none" style={{ position: 'absolute', opacity: 0.55 }}>
+                        <circle cx="45" cy="45" r="40" stroke="#1B3A6B" strokeWidth="2.5" strokeDasharray="5 2"/>
+                        <circle cx="45" cy="45" r="33" stroke="#1B3A6B" strokeWidth="1.5"/>
+                        <text x="45" y="42" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1B3A6B" fontFamily="serif">אושר</text>
+                        <text x="45" y="56" textAnchor="middle" fontSize="8" fill="#1B3A6B" fontFamily="serif">{carouselLabel}</text>
+                      </svg>
+                      {/* Handwritten signature on top */}
+                      <svg width="130" height="50" viewBox="0 0 130 50" fill="none" style={{ position: 'relative', zIndex: 1 }}>
+                        <path d="M10 36 Q24 12 38 26 Q52 40 66 18 Q80 2 94 22 Q108 40 122 14" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                        <path d="M18 43 Q50 35 82 41 Q106 46 122 38" stroke="#1a1a1a" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.3"/>
+                      </svg>
+                    </div>
                   ) : (
                     <span className="text-xs text-gray-400">אין חתימה</span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 self-start">
-                  <button onClick={() => setSignatureData('sig')}
+                <div ref={sigMenuRef} className="flex items-center gap-2 self-start relative">
+                  <button onClick={() => setShowSigMenu(o => !o)}
                     className="text-[11px] font-medium text-gray-500 hover:text-[#1B3A6B] transition-colors">בחירת חתימה</button>
                   <span className="text-[11px] text-gray-300">|</span>
                   <button onClick={() => setSignatureData(null)}
                     className="text-[11px] text-gray-500 hover:text-red-400 transition-colors">נקה חתימה</button>
+                  {showSigMenu && (
+                    <div className="absolute bottom-full mb-2 right-0 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-20" style={{ minWidth: 150 }}>
+                      {USER_SIGNATURES.map(sig => (
+                        <button key={sig} type="button"
+                          onClick={() => { setSignatureData(sig); setShowSigMenu(false); }}
+                          className="w-full text-right px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors"
+                          style={{ fontWeight: signatureData === sig ? 600 : 400, color: signatureData === sig ? '#1B3A6B' : undefined }}>
+                          {sig}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
