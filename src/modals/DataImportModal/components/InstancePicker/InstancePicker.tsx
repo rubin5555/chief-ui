@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { DATA_IMPORT_IDS } from '../../DataImportModal.testids';
-import type { DataImportPicker } from '../../useDataImportPicker';
+import type { DataImportPicker } from '../../hooks/useDataImportPicker';
 import { PickerSearchInput } from '../PickerSearchInput';
 import {
   CheckBox,

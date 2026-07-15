@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 import type { SourceOperation } from '../../DataImportModal.constants';
 import { DATA_IMPORT_IDS } from '../../DataImportModal.testids';
-import type { DataImportPicker } from '../../useDataImportPicker';
+import type { DataImportPicker } from '../../hooks/useDataImportPicker';
 import { ColumnEmptyState, ColumnHeading, ColumnPane, RowGroup } from '../columns.shared.styles';
 import { InstancePicker } from '../InstancePicker';
 import { OperationParams } from '../OperationParams';
