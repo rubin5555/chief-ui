@@ -762,7 +762,8 @@ function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = false }:
                   <div className="flex flex-col h-full" dir="rtl">
                     {/* import button */}
                     <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-colors hover:opacity-90" style={{ background: '#1D6F42' }}>
+                      <input type="file" accept=".xlsx,.xls" style={{ display: 'none' }} id="excel-import-input" onChange={() => {}} />
+                      <button onClick={() => document.getElementById('excel-import-input')?.click()} className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-colors hover:opacity-90" style={{ background: '#1D6F42' }}>
                         <Plus className="w-3.5 h-3.5" />
                         ייבוא מאקסל
                       </button>
