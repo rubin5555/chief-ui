@@ -1,7 +1,6 @@
 import styled, { css } from 'styled-components';
 import { colors, gray, transitions } from '@/styles/theme';
 
-// Scrollable vertical pane — one per picker column.
 export const ColumnPane = styled.div<{ $width?: number }>`
   ${({ $width }) =>
     $width
@@ -32,14 +31,12 @@ export const ColumnHeading = styled.p<{ $raised?: boolean }>`
   ${({ $raised }) => $raised && css`z-index: 10;`}
 `;
 
-// Row wrapper — draws a hairline between consecutive rows.
 export const RowGroup = styled.div`
   &:not(:first-child) {
     border-top: 1px solid ${gray[50]};
   }
 `;
 
-// Selectable list row with a right accent bar + gradient when active.
 export const NavRow = styled.button<{ $isActive: boolean }>`
   position: relative;
   width: 100%;

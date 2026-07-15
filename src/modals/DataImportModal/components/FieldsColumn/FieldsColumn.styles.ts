@@ -1,21 +1,18 @@
 import styled, { css } from 'styled-components';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-// Icon visible by default, hidden while the row is hovered.
 export const HideOnHover = styled.span`
   display: inline-flex;
   flex-shrink: 0;
   color: color-mix(in srgb, ${colors.primary} 40%, transparent);
 `;
 
-// Icon hidden by default, revealed while the row is hovered.
 export const ShowOnHover = styled.span`
   display: none;
   flex-shrink: 0;
   color: ${colors.primary};
 `;
 
-// Invisible until the row is hovered — the "add" affordance.
 export const GhostIcon = styled.span`
   display: inline-flex;
   flex-shrink: 0;

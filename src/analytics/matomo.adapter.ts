@@ -1,4 +1,3 @@
-// matomo.adapter.ts
 import type { AnalyticsTracker } from './analytics.interface';
 
 export const MatomoAdapter: AnalyticsTracker = {
@@ -6,7 +5,7 @@ export const MatomoAdapter: AnalyticsTracker = {
     if (typeof window !== 'undefined' && window._paq) {
       window._paq.push(['trackEvent', category, action, label, value]);
     } else {
-      console.log(`[Matomo Log]: ${category} - ${action}`); // Fallback for local dev
+      console.log(`[Matomo Log]: ${category} - ${action}`);
     }
   },
   trackPageView: (url) => {

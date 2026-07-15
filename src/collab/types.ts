@@ -1,5 +1,4 @@
-// Hand-duplicated from server/src/types.ts (a sibling worktree — see the plan
-// at C:/Users/Chief/.claude/plans/vast-juggling-hummingbird.md §1: no shared
+// Hand-duplicated from server/src/types.ts (a sibling worktree — no shared
 // package exists yet). Keep the two definitions in sync by hand.
 
 // A structural DOM position, serialized the same way ContentEditor's
