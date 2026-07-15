@@ -3494,22 +3494,20 @@ export function Edit({ navigate, doc }: EditProps) {
         </div>
       </div>
 
-      {/* Source systems notice — shown when doc has sections with external source */}
+      {/* Source systems notice */}
       {!isReadOnly && (
         <div className="w-full flex-shrink-0 flex justify-center"
-          style={{ paddingRight: 256, paddingTop: 4, paddingBottom: 4 }}>
-          <div dir="rtl" className="flex items-center justify-between rounded-2xl px-4 py-2 gap-3"
-            style={{ width: '230mm', background: '#FFFBEB', border: '1px solid #FCD34D' }}>
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs" style={{ color: '#92400E' }}>⚠</span>
-              <span className="text-xs text-amber-800 leading-snug">
-                <span className="font-semibold">שים לב,</span> חלק מהמידע הקיים במסמך זה נוצר ממערכות מקור
-              </span>
-            </div>
+          style={{ paddingRight: 256, paddingTop: 3, paddingBottom: 3 }}>
+          <div dir="rtl" className="flex items-center justify-center gap-2"
+            style={{ width: '230mm' }}>
+            <span className="text-xs" style={{ color: '#92400E' }}>⚠</span>
+            <span className="text-xs leading-snug" style={{ color: '#92400E' }}>
+              <span className="font-semibold">שים לב,</span> חלק מהמידע הקיים במסמך זה נוצר ממערכות מקור
+            </span>
             <button
               onClick={() => { setSourceSystemsContext('doc'); setShowSourceSystemsModal(true); }}
-              className="flex-shrink-0 text-xs font-semibold px-3 py-1 rounded-full border transition-colors hover:bg-amber-100 whitespace-nowrap"
-              style={{ color: '#92400E', borderColor: '#FCD34D', background: '#FEF3C7' }}>
+              className="text-xs font-semibold underline underline-offset-2 transition-colors hover:opacity-70 whitespace-nowrap"
+              style={{ color: '#92400E' }}>
               לצפייה במערכות
             </button>
           </div>
