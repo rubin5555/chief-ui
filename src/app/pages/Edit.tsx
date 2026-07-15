@@ -3289,6 +3289,8 @@ export function Edit({ navigate, doc }: EditProps) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showIssueUpdateModal, setShowIssueUpdateModal] = useState(false);
   const [showIssueNewModal, setShowIssueNewModal] = useState(false);
+  const [showSourceSystemsModal, setShowSourceSystemsModal] = useState(false);
+  const [sourceSystemsContext, setSourceSystemsContext] = useState<'doc' | string>('doc');
   const [comparisonMode, setComparisonMode] = useState(false);
   const [comparisonVersionLabel, setComparisonVersionLabel] = useState('');
   const [comparisonNavIndex, setComparisonNavIndex] = useState(1);
@@ -3491,6 +3493,28 @@ export function Edit({ navigate, doc }: EditProps) {
           ))}
         </div>
       </div>
+
+      {/* Source systems notice — shown when doc has sections with external source */}
+      {!isReadOnly && (
+        <div className="w-full flex-shrink-0 flex justify-center"
+          style={{ paddingRight: 256, paddingTop: 4, paddingBottom: 4 }}>
+          <div dir="rtl" className="flex items-center justify-between rounded-2xl px-4 py-2 gap-3"
+            style={{ width: '230mm', background: '#FFFBEB', border: '1px solid #FCD34D' }}>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs" style={{ color: '#92400E' }}>⚠</span>
+              <span className="text-xs text-amber-800 leading-snug">
+                <span className="font-semibold">שים לב,</span> חלק מהמידע הקיים במסמך זה נוצר ממערכות מקור
+              </span>
+            </div>
+            <button
+              onClick={() => { setSourceSystemsContext('doc'); setShowSourceSystemsModal(true); }}
+              className="flex-shrink-0 text-xs font-semibold px-3 py-1 rounded-full border transition-colors hover:bg-amber-100 whitespace-nowrap"
+              style={{ color: '#92400E', borderColor: '#FCD34D', background: '#FEF3C7' }}>
+              לצפייה במערכות
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Comparison bar */}
       {comparisonMode && (
@@ -4029,6 +4053,14 @@ export function Edit({ navigate, doc }: EditProps) {
                           {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
                             עודכן ב‏25-06-2026 11:18 ע״י s2345678
                           </span>}
+                          {!isReadOnly && SECTIONS_WITH_SOURCE.has(section.id) && (
+                            <button
+                              onClick={() => { setSourceSystemsContext(section.id); setShowSourceSystemsModal(true); }}
+                              className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors hover:bg-amber-50"
+                              style={{ color: '#92400E', background: '#FEF3C7', border: '1px solid #FCD34D', marginLeft: 4 }}>
+                              קיים מידע ממערכת מקור
+                            </button>
+                          )}
                           {!isReadOnly && (
                             <button
                               title={SECTIONS_WITH_SOURCE.has(section.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
@@ -4192,6 +4224,14 @@ export function Edit({ navigate, doc }: EditProps) {
                             {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap', letterSpacing: 0 }}>
                               עודכן ב‏25-06-2026 11:18 ע״י s2345678
                             </span>}
+                            {!isReadOnly && SECTIONS_WITH_SOURCE.has(child.id) && (
+                              <button
+                                onClick={() => { setSourceSystemsContext(child.id); setShowSourceSystemsModal(true); }}
+                                className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors hover:bg-amber-50"
+                                style={{ color: '#92400E', background: '#FEF3C7', border: '1px solid #FCD34D', marginLeft: 4 }}>
+                                קיים מידע ממערכת מקור
+                              </button>
+                            )}
                             {!isReadOnly && (
                               <button
                                 title={SECTIONS_WITH_SOURCE.has(child.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
@@ -4391,6 +4431,14 @@ export function Edit({ navigate, doc }: EditProps) {
                                 {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
                                   עודכן ב‏25-06-2026 11:18 ע״י s2345678
                                 </span>}
+                                {!isReadOnly && SECTIONS_WITH_SOURCE.has(sub.id) && (
+                                  <button
+                                    onClick={() => { setSourceSystemsContext(sub.id); setShowSourceSystemsModal(true); }}
+                                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors hover:bg-amber-50"
+                                    style={{ color: '#92400E', background: '#FEF3C7', border: '1px solid #FCD34D', marginLeft: 4 }}>
+                                    קיים מידע ממערכת מקור
+                                  </button>
+                                )}
                                 {!isReadOnly && (
                                   <button
                                     title={SECTIONS_WITH_SOURCE.has(sub.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
@@ -4704,6 +4752,62 @@ export function Edit({ navigate, doc }: EditProps) {
         <EditDocDetailsModal doc={doc} mode="issue-new" onClose={() => setShowIssueNewModal(false)}
           onConfirmIssue={() => { setShowIssueNewModal(false); setDocStatus('טיוטה פנימית'); }} />
       )}
+
+      {/* Source systems modal */}
+      {showSourceSystemsModal && (() => {
+        const SOURCE_MAP: Record<string, { name: string; field: string }[]> = {
+          doc: [
+            { name: 'מערכת כוח אדם', field: 'נתוני כוח אדם ותפקידים' },
+            { name: 'מערכת ניהול תחמושת', field: 'מלאי ציוד' },
+            { name: 'מערכת לוגיסטיקה', field: 'תהליכי שילוח ואספקה' },
+          ],
+          's1-1': [{ name: 'מערכת כוח אדם', field: 'נתוני כוח אדם ותפקידים' }],
+          's2-1': [{ name: 'מערכת ניהול תחמושת', field: 'מלאי ציוד ותחמושת' }],
+          's3-1': [{ name: 'מערכת לוגיסטיקה', field: 'תהליכי שילוח ואספקה' }],
+        };
+        const systems = SOURCE_MAP[sourceSystemsContext] ?? SOURCE_MAP['doc'];
+        return (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center"
+            style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }}
+            onClick={() => setShowSourceSystemsModal(false)}>
+            <div dir="rtl" className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+              style={{ width: 440 }}
+              onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h2 className="text-sm font-bold text-gray-800">מערכות מקור</h2>
+                <button onClick={() => setShowSourceSystemsModal(false)}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="px-6 py-4 flex flex-col gap-3">
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  {sourceSystemsContext === 'doc'
+                    ? 'המסמך מכיל מידע שנוצר ממערכות המקור הבאות:'
+                    : 'סעיף זה מכיל מידע שנוצר ממערכת המקור הבאה:'}
+                </p>
+                <div className="flex flex-col gap-2">
+                  {systems.map((s, i) => (
+                    <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-gray-50">
+                      <div className="flex flex-col gap-0.5 flex-1">
+                        <span className="text-xs font-semibold text-gray-800">{s.name}</span>
+                        <span className="text-[11px] text-gray-500">{s.field}</span>
+                      </div>
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                        style={{ background: '#DCFCE7', color: '#166534' }}>מחובר</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end px-6 py-4 border-t border-gray-100">
+                <button onClick={() => setShowSourceSystemsModal(false)}
+                  className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                  style={{ background: '#1B3A6B' }}>סגור</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
       {showShareModal && (
         <ShareDocModal
           docName={name}
