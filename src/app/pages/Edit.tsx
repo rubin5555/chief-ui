@@ -2497,9 +2497,11 @@ const MOCK_ROUND_STAGES = [
 
 const MOCK_DOC_SECTIONS = ['מטרה ורקע', 'הגדרות ומונחים', 'נהלים ותהליכים', 'הוראות ביצוע', 'נספחים'];
 
+type ApproverSig = { rank: string; name: string; signatureData: string | null };
+
 function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribute }: {
   onClose: () => void;
-  onApprove: () => void;
+  onApprove: (sig: ApproverSig) => void;
   onReject: () => void;
   docName: string;
   onDistribute: () => void;
@@ -2562,6 +2564,8 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
   const carouselLabel = isHmlSelected ? currentStage.rank : currentStage.users[userInStage];
 
   const handleApprove = () => {
+    onApprove({ rank: currentStage.rank, name: carouselLabel, signatureData });
+    setSignatureData(null);
     const next = new Set(approvedIdxs);
     next.add(currentActiveIdx);
     setApprovedIdxs(next);
@@ -3368,6 +3372,7 @@ export function Edit({ navigate, doc }: EditProps) {
   const [showApprovalChangedWarning, setShowApprovalChangedWarning] = useState(false);
   const [showApprovalDetails, setShowApprovalDetails] = useState(false);
   const [showApprovalRound, setShowApprovalRound] = useState(false);
+  const [approverSigs, setApproverSigs] = useState<ApproverSig[]>([]);
   const [showDistributeModal, setShowDistributeModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showIssueUpdateModal, setShowIssueUpdateModal] = useState(false);
@@ -4171,6 +4176,30 @@ export function Edit({ navigate, doc }: EditProps) {
                     {/* Content box for leaf topics (no children) */}
                     {!section.children && (section.title === 'חתימות' ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, direction: 'rtl' }}>
+                        {/* Approver signature stamps */}
+                        {approverSigs.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: '8px 0' }}>
+                            {approverSigs.map((as, i) => (
+                              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                                <div style={{ position: 'relative', width: 100, height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <svg width="100" height="100" viewBox="0 0 100 100" fill="none" style={{ position: 'absolute', opacity: 0.6 }}>
+                                    <circle cx="50" cy="50" r="46" stroke="#1B3A6B" strokeWidth="2.5" strokeDasharray="5 2"/>
+                                    <circle cx="50" cy="50" r="38" stroke="#1B3A6B" strokeWidth="1.5"/>
+                                    <text x="50" y="46" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1B3A6B" fontFamily="serif">אושר</text>
+                                    <text x="50" y="60" textAnchor="middle" fontSize="9" fill="#1B3A6B" fontFamily="serif">{as.name}</text>
+                                  </svg>
+                                  {as.signatureData && (
+                                    <svg width="80" height="36" viewBox="0 0 80 36" fill="none" style={{ position: 'relative', zIndex: 1 }}>
+                                      <path d="M6 26 Q16 8 26 18 Q36 28 46 12 Q56 2 66 16 Q74 26 78 10" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                                      <path d="M10 30 Q30 24 50 28 Q66 32 76 24" stroke="#1a1a1a" strokeWidth="0.9" strokeLinecap="round" fill="none" opacity="0.3"/>
+                                    </svg>
+                                  )}
+                                </div>
+                                <span style={{ fontSize: 10, color: '#6b7280' }}>{as.rank} — {as.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         {signatures.map((sig, idx) => (
                           <textarea
                             key={idx}
@@ -4770,7 +4799,7 @@ export function Edit({ navigate, doc }: EditProps) {
       {showApprovalRound && (
         <ApprovalRoundModal
           onClose={() => setShowApprovalRound(false)}
-          onApprove={() => { setShowApprovalRound(false); setDocStatus('ממתין להפצה'); }}
+          onApprove={(sig) => { setApproverSigs(prev => [...prev, sig]); }}
           onReject={() => { setShowApprovalRound(false); setDocStatus('בהכנה'); }}
           onDistribute={() => { setShowApprovalRound(false); setDocStatus('מבצעית'); setShowShareModal(true); }}
           docName={name}
