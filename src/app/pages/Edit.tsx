@@ -2524,6 +2524,16 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [showDistributePrompt, setShowDistributePrompt] = useState(false);
+  const [showSignatureDropdown, setShowSignatureDropdown] = useState(false);
+  const [selectedSignature, setSelectedSignature] = useState<string | null>(null);
+  const signatureRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showSignatureDropdown) return;
+    const h = (e: MouseEvent) => { if (signatureRef.current && !signatureRef.current.contains(e.target as Node)) setShowSignatureDropdown(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [showSignatureDropdown]);
+  const MOCK_SIGNATURES = ['חתימה ראשית', 'חתימה רשמית', 'חתימת שדה'];
 
   const isHmlSelected = stages[selectedStageIdx]?.type === 'hml';
   const currentStage = stages[selectedStageIdx];
@@ -2625,6 +2635,46 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
             <textarea value={userNotes[noteKey] ?? ''} onChange={e => setUserNotes(prev => ({ ...prev, [noteKey]: e.target.value }))}
               placeholder={`הערות ${carouselLabel}...`} dir="rtl" rows={3}
               className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 resize-none outline-none focus:border-gray-300 transition-colors placeholder-gray-300" />
+
+            {/* Signature area */}
+            {selectedSignature ? (
+              <div className="flex flex-col items-center gap-1 pt-2 pb-1 relative">
+                {/* Handwritten-style signature */}
+                <svg width="140" height="38" viewBox="0 0 140 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 28 Q25 8 40 22 Q55 36 70 18 Q85 2 100 20 Q115 36 130 15" stroke="#1B3A6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7"/>
+                  <path d="M20 32 Q50 24 80 30 Q110 36 125 28" stroke="#1B3A6B" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.4"/>
+                </svg>
+                {/* Rubber stamp */}
+                <div className="relative flex items-center justify-center" style={{ width: 80, height: 80 }}>
+                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="40" cy="40" r="36" stroke="#1B3A6B" strokeWidth="2.5" strokeDasharray="4 2" opacity="0.6"/>
+                    <circle cx="40" cy="40" r="30" stroke="#1B3A6B" strokeWidth="1.5" opacity="0.4"/>
+                    <text x="40" y="36" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1B3A6B" opacity="0.75" fontFamily="serif">אושר</text>
+                    <text x="40" y="50" textAnchor="middle" fontSize="8" fill="#1B3A6B" opacity="0.55" fontFamily="serif">{carouselLabel}</text>
+                  </svg>
+                </div>
+                <button onClick={() => setSelectedSignature(null)} className="text-[10px] text-gray-400 hover:text-red-400 transition-colors mt-1">הסר חתימה</button>
+              </div>
+            ) : (
+              <div ref={signatureRef} className="relative self-start">
+                <button onClick={() => setShowSignatureDropdown(o => !o)}
+                  className="flex items-center gap-1.5 text-xs font-semibold transition-colors hover:opacity-80"
+                  style={{ color: '#1B3A6B' }}>
+                  <Plus className="w-3.5 h-3.5" /> הוסף חתימת מאשר
+                </button>
+                {showSignatureDropdown && (
+                  <div className="absolute bottom-full mb-2 right-0 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10" style={{ minWidth: 160 }}>
+                    {MOCK_SIGNATURES.map(sig => (
+                      <button key={sig} type="button"
+                        onClick={() => { setSelectedSignature(sig); setShowSignatureDropdown(false); }}
+                        className="w-full text-right px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
+                        {sig}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Section comment — right aligned, closes modal */}
