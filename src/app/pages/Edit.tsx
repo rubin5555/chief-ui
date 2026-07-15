@@ -3373,6 +3373,8 @@ export function Edit({ navigate, doc }: EditProps) {
   const [showApprovalDetails, setShowApprovalDetails] = useState(false);
   const [showApprovalRound, setShowApprovalRound] = useState(false);
   const [approverSigs, setApproverSigs] = useState<ApproverSig[]>([]);
+  const [sigSectionRequired, setSigSectionRequired] = useState(false);
+  const sigSectionRef = useRef<HTMLDivElement>(null);
   const [showDistributeModal, setShowDistributeModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showIssueUpdateModal, setShowIssueUpdateModal] = useState(false);
@@ -4175,12 +4177,18 @@ export function Edit({ navigate, doc }: EditProps) {
 
                     {/* Content box for leaf topics (no children) */}
                     {!section.children && (section.title === 'חתימות' ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, direction: 'rtl' }}>
+                      <div ref={sigSectionRef} style={{ display: 'flex', flexDirection: 'column', gap: 10, direction: 'rtl', borderRadius: 12, padding: sigSectionRequired ? 12 : 0, border: sigSectionRequired ? '2px solid #9B1C1C' : 'none', transition: 'border 0.3s' }}>
+                        {sigSectionRequired && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#9B1C1C', fontSize: 12, fontWeight: 600 }}>
+                            <span>⚠</span>
+                            <span>נדרש לחתום על מסמך זה</span>
+                          </div>
+                        )}
                         {signatures.map((sig, idx) => (
                           <textarea
                             key={idx}
                             value={sig}
-                            onChange={e => { const v = e.target.value; setSignatures(prev => prev.map((s, i) => i === idx ? v : s)); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+                            onChange={e => { const v = e.target.value; setSignatures(prev => prev.map((s, i) => i === idx ? v : s)); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; if (v.trim()) setSigSectionRequired(false); }}
                             ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
                             placeholder={SIG_PLACEHOLDER}
                             dir="rtl"
@@ -4786,6 +4794,13 @@ export function Edit({ navigate, doc }: EditProps) {
       {showApprovalFlow && (
         <EditDocDetailsModal doc={doc} mode="approval" onClose={() => setShowApprovalFlow(false)}
           onContinue={dirty => {
+            const sigsFilled = signatures.some(s => s.trim().length > 0);
+            if (!sigsFilled) {
+              setShowApprovalFlow(false);
+              setSigSectionRequired(true);
+              setTimeout(() => { sigSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+              return;
+            }
             if (dirty) { setShowApprovalChangedWarning(true); }
             else { setShowApprovalDetails(true); }
           }} />
