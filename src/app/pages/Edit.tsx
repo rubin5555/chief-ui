@@ -2101,13 +2101,37 @@ function EditableField({ label, value, onChange, type = 'text' }: { label: strin
 }
 
 function SelectField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [open]);
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-gray-500 font-medium">{label}</span>
-      <select value={value} onChange={e => onChange(e.target.value)} dir="rtl"
-        className="text-sm text-gray-800 rounded-lg px-3 py-1.5 border border-gray-200 bg-white focus:outline-none focus:border-[#1B3A6B] transition-colors appearance-none">
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
+      <div ref={ref} className="relative">
+        <button type="button" onClick={() => setOpen(o => !o)}
+          className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 focus:outline-none transition-colors"
+          style={{ color: value ? '#374151' : '#9ca3af' }}>
+          <ChevronLeft className="w-4 h-4 text-gray-400 flex-shrink-0" style={{ transform: open ? 'rotate(-90deg)' : 'rotate(90deg)', transition: 'transform 0.15s' }} />
+          <span>{value || 'בחר'}</span>
+        </button>
+        {open && (
+          <div className="absolute top-full mt-1 right-0 left-0 bg-white rounded-xl shadow-lg border border-gray-100 z-10 py-1 max-h-48 overflow-y-auto">
+            {options.map(opt => (
+              <button key={opt} type="button"
+                onClick={() => { onChange(opt); setOpen(false); }}
+                className="w-full text-right px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
+                style={{ color: value === opt ? '#1B3A6B' : '#374151', fontWeight: value === opt ? 600 : 400 }}>
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
