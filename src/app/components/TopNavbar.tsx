@@ -770,6 +770,9 @@ function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = false }:
                     </div>
                     {/* preview area — excel mockup */}
                     <div className="flex-1 flex flex-col items-center justify-center px-6">
+                      <div style={{ width: 340, textAlign: 'right', marginBottom: 6 }}>
+                        <span className="text-xs text-gray-400 font-medium">:לדוגמא</span>
+                      </div>
                       <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm" style={{ direction: 'ltr', fontSize: 12, userSelect: 'none', width: 340 }}>
                         {/* header row */}
                         <div className="flex" style={{ background: '#f8f9fa' }}>
