@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { flexBetween } from '@/styles/mixins';
+import { flexBetween, focusPrimaryBorder, rtlTextInput } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const DetailsGrid = styled.div`
@@ -33,15 +33,10 @@ export const NameInput = styled.input<{ $warn?: boolean }>`
   border: 1px solid ${({ $warn }) => ($warn ? colors.dangerLight : gray[200])};
   background: ${({ $warn }) => ($warn ? colors.dangerLight : colors.surface)};
   border-radius: ${radii.xl};
-  font-size: 14px;
-  text-align: right;
-  direction: rtl;
+  ${rtlTextInput}
   box-sizing: border-box;
   transition: border-color ${transitions.fast};
-  &:focus {
-    outline: none;
-    border-color: ${colors.primary};
-  }
+  ${focusPrimaryBorder}
 `;
 
 export const WarnText = styled.p`

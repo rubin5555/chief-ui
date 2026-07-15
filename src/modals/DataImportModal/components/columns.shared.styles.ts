@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { flexGap } from '@/styles/mixins';
+import { flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const ColumnPane = styled.div<{ $width?: number }>`
@@ -10,8 +10,7 @@ export const ColumnPane = styled.div<{ $width?: number }>`
           flex-shrink: 0;
         `
       : css`
-          flex: 1;
-          min-width: 0;
+          ${flexFill}
         `}
   overflow-y: auto;
   border-left: 1px solid ${gray[100]};

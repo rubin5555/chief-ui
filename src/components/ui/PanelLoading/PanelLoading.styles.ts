@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { flexBetween, flexGap } from '@/styles/mixins';
+import { flexBetween, flexFill, flexGap } from '@/styles/mixins';
 import { gray, radii } from '@/styles/theme';
 
 export const LoadingRoot = styled.div`
@@ -25,8 +25,7 @@ export const SkeletonRow = styled.div`
 
 export const SkeletonRowLeft = styled.div`
   ${flexGap(12)}
-  flex: 1;
-  min-width: 0;
+  ${flexFill}
 `;
 
 export const SkeletonRowActions = styled.div`

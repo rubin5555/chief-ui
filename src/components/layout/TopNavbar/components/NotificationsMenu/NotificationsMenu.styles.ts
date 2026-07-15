@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { flexBetween, flexCenter } from '@/styles/mixins';
+import { flexBetween, flexCenter, flexFill, flexScroll } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
 export const PanelHeader = styled.div`
@@ -23,9 +23,7 @@ export const MarkAllReadBtn = styled.button`
 `;
 
 export const NotificationList = styled.div`
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  ${flexScroll}
 `;
 
 export const NotificationItemRow = styled.div`
@@ -48,8 +46,7 @@ export const NotificationIconWrap = styled.span`
 `;
 
 export const NotificationBody = styled.div`
-  flex: 1;
-  min-width: 0;
+  ${flexFill}
 `;
 
 export const NotificationText = styled.p`

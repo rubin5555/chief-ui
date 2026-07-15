@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { ellipsis, flexBetween, flexCenter, flexGap } from '@/styles/mixins';
+import { ellipsis, flexBetween, flexCenter, flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray } from '@/styles/theme';
 
 export const RowRoot = styled.div<{ $clickable: boolean }>`
@@ -13,8 +13,7 @@ export const RowRoot = styled.div<{ $clickable: boolean }>`
 
 export const RowLabel = styled.div`
   ${flexGap(12)}
-  flex: 1;
-  min-width: 0;
+  ${flexFill}
 `;
 
 export const RowText = styled.span`

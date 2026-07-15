@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { flexGap } from '@/styles/mixins';
+import { flexGap, focusPrimaryBorder, rtlTextInput } from '@/styles/mixins';
 
 import { colors, gray, radii } from '@/styles/theme';
 
@@ -10,18 +10,13 @@ export const Trigger = styled.button<{ $isPlaceholder?: boolean }>`
 	padding: 8px 12px;
 	border: 1px solid ${gray[200]};
 	border-radius: ${radii.xl};
-	font-size: 14px;
-	text-align: right;
-	direction: rtl;
+	${rtlTextInput}
 	background: ${colors.surface};
 	color: ${({ $isPlaceholder }) => ($isPlaceholder ? gray[400] : gray[800])};
 	cursor: pointer;
 	transition: border-color 0.15s;
 	box-sizing: border-box;
-	&:focus {
-		outline: none;
-		border-color: ${colors.primary};
-	}
+	${focusPrimaryBorder}
 	&:hover {
 		border-color: ${gray[300]};
 	}

@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import styled from 'styled-components';
-import { flexBetween, flexCenter, flexGap } from '@/styles/mixins';
+import { flexBetween, flexCenter, flexGap, flexScroll } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
 export const FaqHeader = styled.div`
@@ -28,9 +28,7 @@ export const FaqList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  ${flexScroll}
 `;
 
 export const FaqItem = styled.div`

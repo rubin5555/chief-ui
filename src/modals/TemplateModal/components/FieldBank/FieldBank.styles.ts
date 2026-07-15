@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { ellipsis, flexBetween, flexGap } from '@/styles/mixins';
+import { ellipsis, flexBetween, flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const Bar = styled.div<{ $edge: 'top' | 'bottom' }>`
@@ -97,8 +97,7 @@ export const ChipGrip = styled.span`
 `;
 
 export const ChipInfo = styled.div`
-  flex: 1;
-  min-width: 0;
+  ${flexFill}
 `;
 
 export const ChipName = styled.div`

@@ -1,12 +1,10 @@
 import styled from 'styled-components';
-import { flexGap } from '@/styles/mixins';
+import { flexGap, flexScroll } from '@/styles/mixins';
 import { gray, radii } from '@/styles/theme';
 
 export const PanelBody = styled.div`
   padding: 8px;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  ${flexScroll}
 `;
 
 export const PanelOption = styled.button`

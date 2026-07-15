@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { flexBetween, flexGap } from '@/styles/mixins';
+import { flexBetween, flexGap, flexScroll } from '@/styles/mixins';
 
 import { colors, gray, radii } from '@/styles/theme';
 
@@ -85,9 +85,7 @@ export const SearchInput = styled.input`
 `;
 
 export const OptionsList = styled.div`
-	flex: 1;
-	min-height: 0;
-	overflow-y: auto;
+	${flexScroll}
 `;
 
 export const OptionBtn = styled.button<{ $selected?: boolean }>`

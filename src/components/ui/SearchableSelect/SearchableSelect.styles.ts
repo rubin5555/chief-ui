@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { flexBetween, flexGap } from '@/styles/mixins';
+import { flexBetween, flexGap, flexScroll, rtlTextInput } from '@/styles/mixins';
 
 import { colors, gray, radii } from '@/styles/theme';
 
@@ -11,9 +11,7 @@ export const Trigger = styled.button<{ $isPlaceholder?: boolean; $noBorder?: boo
 	padding: 8px 12px;
 	border: ${({ $noBorder }) => ($noBorder ? 'none' : `1px solid ${gray[300]}`)};
 	border-radius: ${({ $noBorder }) => ($noBorder ? '0' : radii.xl)};
-	font-size: 14px;
-	text-align: right;
-	direction: rtl;
+	${rtlTextInput}
 	background: ${colors.surface};
 	color: ${({ $isPlaceholder }) => ($isPlaceholder ? gray[400] : gray[800])};
 	cursor: pointer;
@@ -65,9 +63,7 @@ export const SearchInput = styled.input`
 `;
 
 export const OptionsList = styled.div`
-	flex: 1;
-	min-height: 0;
-	overflow-y: auto;
+	${flexScroll}
 `;
 
 export const OptionBtn = styled.button<{ $selected?: boolean }>`

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { flexBetween, flexCenter } from '@/styles/mixins';
+import { flexBetween, flexCenter, focusPrimaryBorder } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 export const Dropdown = styled.div`
@@ -106,10 +106,7 @@ export const TimeInput = styled.input`
 	color: ${gray[800]};
 	transition: border-color ${transitions.normal};
 
-	&:focus {
-		outline: none;
-		border-color: ${colors.primary};
-	}
+	${focusPrimaryBorder}
 `;
 
 export const TimeColon = styled.span`

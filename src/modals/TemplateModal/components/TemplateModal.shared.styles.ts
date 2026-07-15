@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { flexCenter, flexGap } from '@/styles/mixins';
+import { flexCenter, flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 // Shared across AppendixList/SubjectTree/SectionRow/TemplateModalBody — these
@@ -8,8 +8,7 @@ import { colors, gray, radii, transitions } from '@/styles/theme';
 // for the same pattern used elsewhere in the codebase.
 
 export const TitleInput = styled.input`
-  flex: 1;
-  min-width: 0;
+  ${flexFill}
   background: transparent;
   border: none;
   font-size: 12px;

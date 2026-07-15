@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { flexGap } from '@/styles/mixins';
+import { flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const FormEl = styled.form`
@@ -83,6 +83,5 @@ export const RankLabel = styled.span`
 `;
 
 export const RankField = styled.div`
-	flex: 1;
-	min-width: 0;
+	${flexFill}
 `;

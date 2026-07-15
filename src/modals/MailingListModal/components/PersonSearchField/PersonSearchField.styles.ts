@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import styled from 'styled-components';
-import { ellipsis, flexGap } from '@/styles/mixins';
+import { ellipsis, flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 
 export const SearchFieldWrap = styled.div`
@@ -13,8 +13,7 @@ export const SearchFieldRow = styled.div`
 `;
 
 export const SearchResultContent = styled.div`
-  flex: 1;
-  min-width: 0;
+  ${flexFill}
 `;
 
 export const SearchResultName = styled.p`
