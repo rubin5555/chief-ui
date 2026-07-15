@@ -1551,24 +1551,29 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
               <table className="w-full text-sm text-right border-collapse">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="pb-2 font-semibold text-gray-600 text-xs">שם משתמש</th>
-                    <th className="pb-2 font-semibold text-gray-600 text-xs">דרגה</th>
-                    <th className="pb-2 font-semibold text-gray-600 text-xs">תאריך צפייה</th>
-                    <th className="pb-2 font-semibold text-gray-600 text-xs">שעה</th>
+                    <th className="pb-2 font-semibold text-gray-600 text-xs">שם מלא</th>
+                    <th className="pb-2 font-semibold text-gray-600 text-xs">תעודת זהות</th>
+                    <th className="pb-2 font-semibold text-gray-600 text-xs">סביבה</th>
+                    <th className="pb-2 font-semibold text-gray-600 text-xs">צפייה</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[
-                    { name: 'אלוף משנה כהן דוד', rank: 'אמ״ן', date: '12/07/2026', time: '09:14' },
-                    { name: 'סגן אלוף לוי יוסף', rank: 'חיל השריון', date: '12/07/2026', time: '10:32' },
-                    { name: 'רב סרן גולן אריאל', rank: 'חיל הרגלים', date: '13/07/2026', time: '07:55' },
-                    { name: 'סגן מזרחי נועם', rank: 'חיל האוויר', date: '13/07/2026', time: '11:20' },
+                    { name: 'כהן דוד', id: '123456789', env: 'אמ״ן', viewed: true },
+                    { name: 'לוי יוסף', id: '987654321', env: 'חיל השריון', viewed: true },
+                    { name: 'גולן אריאל', id: '456789123', env: 'חיל הרגלים', viewed: false },
+                    { name: 'מזרחי נועם', id: '321654987', env: 'חיל האוויר', viewed: false },
                   ].map((u, i) => (
                     <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
                       <td className="py-2 text-xs text-gray-800">{u.name}</td>
-                      <td className="py-2 text-xs text-gray-500">{u.rank}</td>
-                      <td className="py-2 text-xs text-gray-500">{u.date}</td>
-                      <td className="py-2 text-xs text-gray-500">{u.time}</td>
+                      <td className="py-2 text-xs text-gray-500">{u.id}</td>
+                      <td className="py-2 text-xs text-gray-500">{u.env}</td>
+                      <td className="py-2 text-xs">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                          style={u.viewed ? { background: '#DCFCE7', color: '#166534' } : { background: '#F3F4F6', color: '#6B7280' }}>
+                          {u.viewed ? 'נצפה' : 'טרם נצפה'}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
