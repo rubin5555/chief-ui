@@ -2116,8 +2116,8 @@ function SelectField({ label, value, options, onChange }: { label: string; value
         <button type="button" onClick={() => setOpen(o => !o)}
           className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 focus:outline-none transition-colors"
           style={{ color: value ? '#374151' : '#9ca3af' }}>
-          <ChevronLeft className="w-4 h-4 text-gray-400 flex-shrink-0" style={{ transform: open ? 'rotate(-90deg)' : 'rotate(90deg)', transition: 'transform 0.15s' }} />
           <span>{value || 'בחר'}</span>
+          <ChevronLeft className="w-4 h-4 text-gray-400 flex-shrink-0" style={{ transform: open ? 'rotate(-90deg)' : 'rotate(90deg)', transition: 'transform 0.15s' }} />
         </button>
         {open && (
           <div className="absolute top-full mt-1 right-0 left-0 bg-white rounded-xl shadow-lg border border-gray-100 z-10 py-1 max-h-48 overflow-y-auto">
