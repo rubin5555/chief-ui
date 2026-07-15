@@ -3929,7 +3929,7 @@ export function Edit({ navigate, doc }: EditProps) {
                       <span style={{ fontSize: 12, fontWeight: 700, color: '#92400e', flex: 1 }}>דגשים לכתיבה</span>
                       {/* Action row — same as section headings */}
                       <div className="flex items-center gap-0.5" style={{ flexShrink: 0 }}>
-                        {!isReadOnly && <span style={{ fontSize: 9, color: '#b0b7c3', marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap' }}>
+                        {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap' }}>
                           עודכן ב‏25-06-2026 11:18 ע״י s2345678
                         </span>}
                         {!isReadOnly && (
@@ -3940,19 +3940,19 @@ export function Edit({ navigate, doc }: EditProps) {
                             <RefreshCw className="w-3 h-3" />
                           </button>
                         )}
-                        <button title="העתק" className="p-1 rounded hover:bg-amber-100 transition-colors text-gray-400 hover:text-gray-600">
+                        <button title="העתק" className="p-1 rounded hover:bg-amber-100 transition-colors text-gray-500 hover:text-gray-700">
                           <Copy className="w-3 h-3" />
                         </button>
                         {!isReadOnly && <>
-                          <button title="הוספת קבצים" className="p-1 rounded hover:bg-amber-100 transition-colors text-gray-400 hover:text-gray-600">
+                          <button title="הוספת קבצים" className="p-1 rounded hover:bg-amber-100 transition-colors text-gray-500 hover:text-gray-700">
                             <Paperclip className="w-3 h-3" />
                           </button>
-                          <button title="צאט" className="p-1 rounded hover:bg-amber-100 transition-colors text-gray-400 hover:text-gray-600">
+                          <button title="צאט" className="p-1 rounded hover:bg-amber-100 transition-colors text-gray-500 hover:text-gray-700">
                             <MessageSquare className="w-3 h-3" />
                           </button>
                         </>}
                         <button title="אפשרויות" onClick={openEmphasisMenu}
-                          className="p-1 rounded hover:bg-amber-100 transition-colors text-gray-400 hover:text-gray-600">
+                          className="p-1 rounded hover:bg-amber-100 transition-colors text-gray-500 hover:text-gray-700">
                           <MoreHorizontal className="w-3 h-3" />
                         </button>
                       </div>
@@ -4026,18 +4026,18 @@ export function Edit({ navigate, doc }: EditProps) {
                       {/* Action icons row — only for leaf topics (appendices etc.), not signatures */}
                       {!section.children && section.title !== 'חתימות' && (
                         <div className="flex items-center gap-0.5" style={{ flexShrink: 0 }}>
-                          {!isReadOnly && <span style={{ fontSize: 9, color: '#b0b7c3', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
+                          {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
                             עודכן ב‏25-06-2026 11:18 ע״י s2345678
                           </span>}
                           {!isReadOnly && (
                             <button
                               title={SECTIONS_WITH_SOURCE.has(section.id) ? 'רענן נתונים ממקור' : 'אין מקור חיצוני מחובר'}
                               disabled={!SECTIONS_WITH_SOURCE.has(section.id)}
-                              className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(section.id) ? 'text-gray-400 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
+                              className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(section.id) ? 'text-gray-500 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
                               <RefreshCw className="w-3 h-3" />
                             </button>
                           )}
-                          <button title="העתק" className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+                          <button title="העתק" className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700">
                             <Copy className="w-3 h-3" />
                           </button>
                           {!isReadOnly && <>
@@ -4056,7 +4056,7 @@ export function Edit({ navigate, doc }: EditProps) {
                             </button>
                           </>}
                           <button title="אפשרויות" onClick={e => openSectionMenu(e, undefined, isReadOnly ? READ_ONLY_SECTION_ACTIONS : undefined)}
-                            className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+                            className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700">
                             <MoreHorizontal className="w-3 h-3" />
                           </button>
                         </div>
@@ -4189,18 +4189,18 @@ export function Edit({ navigate, doc }: EditProps) {
                             </span>
                           )}
                           <div className="flex items-center gap-0.5" style={{ flexShrink: 0 }}>
-                            {!isReadOnly && <span style={{ fontSize: 9, color: '#b0b7c3', marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap', letterSpacing: 0 }}>
+                            {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap', letterSpacing: 0 }}>
                               עודכן ב‏25-06-2026 11:18 ע״י s2345678
                             </span>}
                             {!isReadOnly && (
                               <button
                                 title={SECTIONS_WITH_SOURCE.has(child.id) ? 'רענן נתונים ממקור' : 'אין מקור חיצוני מחובר'}
                                 disabled={!SECTIONS_WITH_SOURCE.has(child.id)}
-                                className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(child.id) ? 'text-gray-400 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
+                                className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(child.id) ? 'text-gray-500 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
                                 <RefreshCw className="w-3 h-3" />
                               </button>
                             )}
-                            <button title="העתק סעיף" className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+                            <button title="העתק סעיף" className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700">
                               <Copy className="w-3 h-3" />
                             </button>
                             {!isReadOnly && <>
@@ -4219,7 +4219,7 @@ export function Edit({ navigate, doc }: EditProps) {
                               </button>
                             </>}
                             <button title="אפשרויות" onClick={e => openSectionMenu(e, child.id, isReadOnly ? READ_ONLY_SECTION_ACTIONS : undefined)}
-                              className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+                              className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700">
                               <MoreHorizontal className="w-3 h-3" />
                             </button>
                           </div>
@@ -4388,18 +4388,18 @@ export function Edit({ navigate, doc }: EditProps) {
                               />
                               {/* Sub-section action row */}
                               <div className="flex items-center gap-0.5" style={{ flexShrink: 0 }}>
-                                {!isReadOnly && <span style={{ fontSize: 9, color: '#b0b7c3', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
+                                {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
                                   עודכן ב‏25-06-2026 11:18 ע״י s2345678
                                 </span>}
                                 {!isReadOnly && (
                                   <button
                                     title={SECTIONS_WITH_SOURCE.has(sub.id) ? 'רענן נתונים ממקור' : 'אין מקור חיצוני מחובר'}
                                     disabled={!SECTIONS_WITH_SOURCE.has(sub.id)}
-                                    className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(sub.id) ? 'text-gray-400 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
+                                    className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(sub.id) ? 'text-gray-500 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
                                     <RefreshCw className="w-3 h-3" />
                                   </button>
                                 )}
-                                <button title="העתק תת-סעיף" className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+                                <button title="העתק תת-סעיף" className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700">
                                   <Copy className="w-3 h-3" />
                                 </button>
                                 {!isReadOnly && <>
@@ -4418,7 +4418,7 @@ export function Edit({ navigate, doc }: EditProps) {
                                   </button>
                                 </>}
                                 <button title="אפשרויות" onClick={e => openSectionMenu(e, sub.id, isReadOnly ? READ_ONLY_SECTION_ACTIONS : undefined)}
-                                  className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+                                  className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700">
                                   <MoreHorizontal className="w-3 h-3" />
                                 </button>
                               </div>
