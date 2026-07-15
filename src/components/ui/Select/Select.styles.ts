@@ -1,13 +1,12 @@
 import styled from 'styled-components';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
+import { flexGap } from '@/styles/mixins';
 
 import { colors, gray, radii } from '@/styles/theme';
 
 export const Trigger = styled.button<{ $isPlaceholder?: boolean }>`
 	width: 100%;
-	display: flex;
-	align-items: center;
-	gap: 8px;
+	${flexGap(8)}
 	padding: 8px 12px;
 	border: 1px solid ${gray[200]};
 	border-radius: ${radii.xl};

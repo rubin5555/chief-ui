@@ -1,10 +1,9 @@
 import styled from 'styled-components';
+import { ellipsis, flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 export const IconTabButton = styled.button<{ $isActive: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  ${flexGap(6)}
   flex: 1;
   padding: 8px 10px;
   border-radius: ${radii.xl};
@@ -29,9 +28,7 @@ export const IconTabIconWrap = styled.span<{ $isActive: boolean }>`
   width: 20px;
   height: 20px;
   border-radius: ${radii.lg};
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   flex-shrink: 0;
   background: ${(p) =>
     p.$isActive ? `color-mix(in srgb, ${colors.primary} 18%, transparent)` : colors.surface};
@@ -48,7 +45,5 @@ export const IconTabLabel = styled.span<{ $isActive: boolean }>`
   font-size: 11px;
   font-weight: 600;
   color: ${(p) => (p.$isActive ? colors.primary : gray[700])};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  ${ellipsis}
 `;

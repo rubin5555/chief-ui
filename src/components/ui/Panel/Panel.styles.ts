@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexGap } from '@/styles/mixins';
 import { radii } from '@/styles/theme';
 import { PANEL_IDS } from './Panel.testids';
 
@@ -14,9 +15,7 @@ export const PanelRoot = styled.div.attrs<{ 'data-testid'?: string }>((props) =>
 export const PanelToolbar = styled.div.attrs<{ 'data-testid'?: string }>((props) => ({
   'data-testid': props['data-testid'] ?? PANEL_IDS.toolbar,
 }))`
-	display: flex;
-	align-items: center;
-	gap: 12px;
+	${flexGap(12)}
 `;
 
 export const FilterChipRow = styled.div`

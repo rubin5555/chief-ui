@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components';
+import { flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 
 // Shared between the live TinyMCE body and the inactive-state preview (see
@@ -227,9 +228,7 @@ export const LockBadge = styled.div`
 	top: 6px;
 	left: 8px;
 	z-index: 2;
-	display: flex;
-	align-items: center;
-	gap: 4px;
+	${flexGap(4)}
 	background: color-mix(in srgb, ${colors.accent} 12%, ${colors.surface});
 	color: ${colors.accent};
 	font-size: 10.5px;

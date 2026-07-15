@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import { colors, gray, shadows } from '@/styles/theme';
+import { flexCenter } from '@/styles/mixins';
+import { colors, gray, radii, shadows } from '@/styles/theme';
 
 export const StepList = styled.ol`
   list-style: none;
@@ -18,14 +19,12 @@ export const StepNumber = styled.span`
   flex-shrink: 0;
   width: 24px;
   height: 24px;
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   background-color: ${colors.primary};
   color: ${colors.surface};
   font-size: 12px;
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   margin-top: 2px;
 `;
 
@@ -51,7 +50,7 @@ export const MenuIconBadge = styled.span`
 export const MenuDot = styled.span`
   width: 4px;
   height: 4px;
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   background-color: ${gray[500]};
 `;
 
@@ -59,7 +58,7 @@ export const ToggleWidget = styled.div`
   display: inline-flex;
   width: 36px;
   height: 20px;
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   align-items: center;
   padding: 0 2px;
   background-color: ${colors.primary};
@@ -71,7 +70,7 @@ export const ToggleWidget = styled.div`
 export const ToggleKnob = styled.div`
   width: 16px;
   height: 16px;
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   background-color: ${colors.surface};
   box-shadow: ${shadows.sm};
   margin-left: auto;

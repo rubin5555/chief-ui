@@ -1,12 +1,11 @@
 import styled from 'styled-components';
+import { flexCenter } from '@/styles/mixins';
 import { colors } from '@/styles/theme';
 
 export const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   z-index: 9998;
   background-color: rgba(0, 0, 0, 0.5);
 `;

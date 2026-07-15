@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 // Shared across AppendixList/SubjectTree/SectionRow/TemplateModalBody — these
@@ -25,9 +26,7 @@ export const TitleInput = styled.input`
 `;
 
 export const DragHandle = styled.span`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   flex-shrink: 0;
   color: ${gray[300]};
   cursor: grab;
@@ -43,9 +42,7 @@ export const DragHandle = styled.span`
 `;
 
 export const SmallIconBtn = styled.button<{ $active?: boolean; $muted?: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   flex-shrink: 0;
   padding: 2px;
   border: none;
@@ -61,9 +58,7 @@ export const SmallIconBtn = styled.button<{ $active?: boolean; $muted?: boolean 
 `;
 
 export const AddNodeButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  ${flexGap(6)}
   width: 100%;
   padding: 8px 12px;
   background: ${colors.surface};
@@ -80,9 +75,7 @@ export const AddNodeButton = styled.button`
 `;
 
 export const AddChildLink = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  ${flexGap(4)}
   background: none;
   border: none;
   padding: 4px 0;

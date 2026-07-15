@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import { colors, gray, shadows } from '@/styles/theme';
+import { flexBetween } from '@/styles/mixins';
+import { colors, gray, radii, shadows } from '@/styles/theme';
 
 export const SearchRoot = styled.div`
 	position: relative;
@@ -11,7 +12,7 @@ export const SearchInput = styled.input`
 	padding: 8px 40px;
 	background-color: color-mix(in srgb, ${colors.surface} 70%, transparent);
 	backdrop-filter: blur(12px);
-	border-radius: 12px;
+	border-radius: ${radii.xl};
 	font-size: 14px;
 	border: 1px solid ${gray[200]};
 	outline: none;
@@ -58,7 +59,7 @@ export const FilterMenu = styled.div`
 	left: 0;
 	min-width: 200px;
 	background: ${colors.surface};
-	border-radius: 16px;
+	border-radius: ${radii['2xl']};
 	border: 1px solid ${gray[100]};
 	box-shadow: ${shadows.xl};
 	padding: 6px 0;
@@ -76,9 +77,7 @@ export const FilterMenuTitle = styled.p`
 
 export const FilterOptionBtn = styled.button<{ $selected?: boolean }>`
 	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	${flexBetween}
 	gap: 8px;
 	padding: 8px 16px;
 	font-size: 14px;

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 export const SectionsList = styled.div`
@@ -21,9 +22,7 @@ export const SubjectCard = styled.div<{ $isDragging?: boolean; $isDragOver?: boo
 `;
 
 export const SubjectHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  ${flexGap(6)}
   padding: 8px 10px;
   background: ${colors.primaryLight};
   border-bottom: 1px solid ${gray[100]};

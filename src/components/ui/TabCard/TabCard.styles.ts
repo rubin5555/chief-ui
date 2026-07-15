@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, gray, shadows } from '@/styles/theme';
+import { colors, gray, radii, shadows } from '@/styles/theme';
 
 export const TabCardButton = styled.button<{ $isActive: boolean }>`
   height: 96px;
@@ -9,7 +9,7 @@ export const TabCardButton = styled.button<{ $isActive: boolean }>`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 16px;
+  border-radius: ${radii['2xl']};
   padding: 16px;
   transition: background-color 0.15s, box-shadow 0.15s;
   cursor: pointer;

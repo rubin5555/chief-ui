@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexBetween, flexGap } from '@/styles/mixins';
 import { gray, radii } from '@/styles/theme';
 
 export const LoadingRoot = styled.div`
@@ -8,38 +9,28 @@ export const LoadingRoot = styled.div`
 `;
 
 export const SkeletonToolbar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  ${flexGap(12)}
 `;
 
 export const SkeletonTabsRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  ${flexGap(16)}
   padding-bottom: 8px;
 `;
 
 export const SkeletonRow = styled.div`
   padding: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   gap: 12px;
 `;
 
 export const SkeletonRowLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  ${flexGap(12)}
   flex: 1;
   min-width: 0;
 `;
 
 export const SkeletonRowActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
   flex-shrink: 0;
 `;
 

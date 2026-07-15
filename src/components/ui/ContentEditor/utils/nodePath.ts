@@ -49,7 +49,10 @@ export const clampOffset = (node: Node, offset: number): number => {
 // Serializes the browser's real Selection (if fully contained in `root`)
 // into a CursorPath, the shape both the chip-drop caret-preservation flow
 // and remote cursor broadcasting use.
-export const serializeSelection = (root: Node | null, selection: Selection | null): CursorPath | null => {
+export const serializeSelection = (
+  root: Node | null,
+  selection: Selection | null,
+): CursorPath | null => {
   if (!root || !selection || selection.rangeCount === 0) return null;
   const range = selection.getRangeAt(0);
   if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) return null;

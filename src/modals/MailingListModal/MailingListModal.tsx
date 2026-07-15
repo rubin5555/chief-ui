@@ -4,6 +4,7 @@ import type { ModalHandle } from '@/components/ui/Modal';
 import { Modal } from '@/components/ui/Modal';
 import { ImportPanel } from './components/ImportPanel';
 import { MembersPanel } from './components/MembersPanel';
+import { useImportSource } from './hooks/useImportSource';
 import { useMailingListModalAnalytics } from './MailingListModal.analytics';
 import type { ImportTabId, Member } from './MailingListModal.constants';
 import { BodyLayout, CancelBtn, LeftPanel } from './MailingListModal.styles';
@@ -13,7 +14,6 @@ import { HamalTab } from './tabs/HamalTab';
 import { MirageTab } from './tabs/MirageTab';
 import { NetworkTab } from './tabs/NetworkTab';
 import { PersonalTab } from './tabs/PersonalTab';
-import { useImportSource } from './hooks/useImportSource';
 
 export type ModalMode = 'new' | 'edit' | 'duplicate';
 

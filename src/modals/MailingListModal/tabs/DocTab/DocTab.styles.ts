@@ -1,16 +1,14 @@
 import styled from 'styled-components';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { ellipsis } from '@/styles/mixins';
-import { colors, gray } from '@/styles/theme';
+import { ellipsis, flexGap, resetButton } from '@/styles/mixins';
+import { colors, gray, radii } from '@/styles/theme';
 
 export const FilterBtnInline = styled.button<{ $active: boolean }>`
   position: absolute;
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  cursor: pointer;
+  ${resetButton}
   display: flex;
   align-items: center;
   padding: 0;
@@ -28,9 +26,7 @@ export const DateFilterSection = styled.div`
 `;
 
 export const DateRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
 `;
 
 export const DateLabel = styled.span`
@@ -46,7 +42,7 @@ export const DateInput = styled.input`
   padding: 6px 8px;
   font-size: 12px;
   border: 1px solid ${gray[200]};
-  border-radius: 8px;
+  border-radius: ${radii.lg};
   outline: none;
   &:focus {
     border-color: ${colors.primary};
@@ -60,7 +56,7 @@ export const ClearFiltersBtn = styled.button`
   padding: 6px;
   font-size: 11px;
   border: 1px solid ${gray[200]};
-  border-radius: 8px;
+  border-radius: ${radii.lg};
   background: transparent;
   cursor: pointer;
   color: ${gray[500]};
@@ -106,9 +102,7 @@ export const FilterSectionTitle = styled.p`
 
 export const FilterOption = styled.button<{ $active: boolean }>`
   width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
   padding: 6px 16px;
   font-size: 12px;
   text-align: right;

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 
 export const SwitchRoot = styled.div`
@@ -6,9 +7,7 @@ export const SwitchRoot = styled.div`
 `;
 
 export const SwitchTrigger = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  ${flexGap(6)}
   background: ${colors.muted};
   padding: 6px 16px;
   border-radius: ${radii.full};

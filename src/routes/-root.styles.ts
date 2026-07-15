@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, gray } from '@/styles/theme';
+import { colors, gray, radii } from '@/styles/theme';
 
 export const StatusRoot = styled.div`
   display: flex;
@@ -31,7 +31,7 @@ export const StatusDetails = styled.pre`
   font-size: 12px;
   color: ${colors.danger};
   background-color: ${colors.dangerLight};
-  border-radius: 8px;
+  border-radius: ${radii.lg};
   padding: 12px 16px;
   max-width: 480px;
   overflow-x: auto;

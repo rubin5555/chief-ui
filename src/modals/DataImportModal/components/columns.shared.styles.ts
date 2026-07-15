@@ -1,5 +1,6 @@
 import styled, { css } from 'styled-components';
-import { colors, gray, transitions } from '@/styles/theme';
+import { flexGap } from '@/styles/mixins';
+import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const ColumnPane = styled.div<{ $width?: number }>`
   ${({ $width }) =>
@@ -40,9 +41,7 @@ export const RowGroup = styled.div`
 export const NavRow = styled.button<{ $isActive: boolean }>`
   position: relative;
   width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
   text-align: right;
   transition: background ${transitions.fast};
   background: ${({ $isActive }) =>
@@ -68,7 +67,7 @@ export const NavRow = styled.button<{ $isActive: boolean }>`
         top: 8px;
         bottom: 8px;
         width: 3px;
-        border-radius: 9999px;
+        border-radius: ${radii.full};
         background: ${colors.primary};
       }
     `}

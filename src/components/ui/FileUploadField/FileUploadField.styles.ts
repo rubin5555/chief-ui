@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { ellipsis, flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 export const Wrapper = styled.div`
@@ -8,9 +9,7 @@ export const Wrapper = styled.div`
 `;
 
 export const UploadRow = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 16px;
+	${flexGap(16)}
 `;
 
 export const UploadArea = styled.label<{ $isDragging?: boolean }>`
@@ -38,9 +37,7 @@ export const UploadIconCircle = styled.div`
 	border-radius: ${radii.full};
 	background: ${gray[100]};
 	color: ${gray[400]};
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 `;
 
 export const PreviewWrapper = styled.div`
@@ -63,9 +60,7 @@ export const PreviewRemoveBtn = styled.button`
 	width: 24px;
 	height: 24px;
 	padding: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 	border-radius: ${radii.full};
 	border: none;
 	background: ${colors.surface};
@@ -113,7 +108,5 @@ export const FileNameHint = styled.span`
 	font-size: 12px;
 	color: ${gray[500]};
 	text-align: right;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	${ellipsis}
 `;

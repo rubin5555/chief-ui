@@ -1,13 +1,12 @@
 import styled from 'styled-components';
 import { dialogMotion, overlayMotion } from '@/styles/animations';
-import { colors, gray, shadows } from '@/styles/theme';
+import { flexBetween, flexCenter, flexGap } from '@/styles/mixins';
+import { colors, gray, radii, shadows } from '@/styles/theme';
 
 export const Overlay = styled.div<{ $closing?: boolean }>`
   position: fixed;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   z-index: 9998;
   background-color: rgba(0,0,0,0.5);
   ${overlayMotion}
@@ -21,7 +20,7 @@ export const ModalCard = styled.div<{
   $maxHeight?: string;
 }>`
   background-color: ${colors.surface};
-  border-radius: 24px;
+  border-radius: ${radii['3xl']};
   box-shadow: ${shadows.xxl};
   width: ${({ $width }) => $width ?? 540}px;
   max-width: ${({ $maxWidth }) => $maxWidth ?? '90vw'};
@@ -35,28 +34,22 @@ export const ModalCard = styled.div<{
 
 export const ModalHeader = styled.div`
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 16px 32px;
   background-color: ${colors.surface};
   border-bottom: 1px solid ${gray[100]};
 `;
 
 export const ModalHeaderLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
 `;
 
 export const ModalHeaderIcon = styled.div`
   width: 32px;
   height: 32px;
-  border-radius: 12px;
+  border-radius: ${radii.xl};
   background-color: ${gray[100]};
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   color: ${colors.primary};
 `;
 
@@ -71,9 +64,7 @@ export const CloseButton = styled.button`
   color: ${gray[400]};
   transition: color 0.15s;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   &:hover { color: ${gray[600]}; }
 `;
 

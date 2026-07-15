@@ -5,8 +5,6 @@ import { colors, gray } from '@/styles/theme';
 import { ExpandedMemberBlock } from '../../../../components/ExpandedMemberBlock';
 import { SelectionCheckbox } from '../../../../components/SelectionCheckbox';
 import type { HamalGroup, PersonMember } from '../../../../MailingListModal.constants';
-import { IconActionBtn } from '../../HamalTab.styles';
-import { HAMAL_TAB_IDS } from '../../HamalTab.testids';
 import {
   CheckboxCell,
   CountLabel,
@@ -14,6 +12,8 @@ import {
   ExpandChevron,
   NameCell,
 } from '../../../tabs.shared.styles';
+import { IconActionBtn } from '../../HamalTab.styles';
+import { HAMAL_TAB_IDS } from '../../HamalTab.testids';
 
 interface HamalGroupRowProps {
   group: HamalGroup;

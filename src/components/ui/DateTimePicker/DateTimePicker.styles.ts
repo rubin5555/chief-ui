@@ -1,12 +1,11 @@
 import { Calendar } from 'lucide-react';
 import styled from 'styled-components';
+import { ellipsis, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const Trigger = styled.button<{ $isPlaceholder?: boolean }>`
 	width: 100%;
-	display: flex;
-	align-items: center;
-	gap: 8px;
+	${flexGap(8)}
 	padding: 8px 12px;
 	border: 1px solid ${gray[200]};
 	border-radius: ${radii.xl};
@@ -34,7 +33,5 @@ export const CalendarIcon = styled(Calendar)`
 
 export const TriggerText = styled.span`
 	flex: 1;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	${ellipsis}
 `;

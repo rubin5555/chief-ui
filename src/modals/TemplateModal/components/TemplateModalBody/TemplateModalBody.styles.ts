@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import { colors, gray } from '@/styles/theme';
+import { flexBetween } from '@/styles/mixins';
+import { colors, gray, radii } from '@/styles/theme';
 
 export const BodySection = styled.div`
   flex: 1;
@@ -36,13 +37,11 @@ export const SidebarFooter = styled.div`
 `;
 
 export const EmphasisBox = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 6px 8px;
   background: color-mix(in srgb, ${colors.accent} 12%, ${colors.surface});
   border: 1px solid ${colors.accent};
-  border-radius: 8px;
+  border-radius: ${radii.lg};
 `;
 
 export const EmphasisLabel = styled.span`

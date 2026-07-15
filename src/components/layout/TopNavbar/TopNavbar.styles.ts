@@ -1,9 +1,8 @@
 import styled from 'styled-components';
+import { flexBetween, flexGap } from '@/styles/mixins';
 
 export const Nav = styled.nav`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 24px;
   position: relative;
   flex-shrink: 0;
@@ -11,19 +10,13 @@ export const Nav = styled.nav`
 `;
 
 export const NavStart = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  ${flexGap(12)}
 `;
 
 export const NavCenter = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  ${flexGap(16)}
 `;
 
 export const NavEnd = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
 `;

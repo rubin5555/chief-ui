@@ -6,8 +6,6 @@ import { SelectionCheckbox } from '../../../../components/SelectionCheckbox';
 import type { DocItem, PersonMember } from '../../../../MailingListModal.constants';
 import { DOC_GRID } from '../../../../MailingListModal.constants';
 import { ColHeader } from '../../../../MailingListModal.shared.styles';
-import { ColCenter, SubCell, SubNameCell } from '../../DocTab.styles';
-import { DOC_TAB_IDS } from '../../DocTab.testids';
 import {
   CheckboxCell,
   CountLabel,
@@ -15,6 +13,8 @@ import {
   ExpandChevron,
   NameCell,
 } from '../../../tabs.shared.styles';
+import { ColCenter, SubCell, SubNameCell } from '../../DocTab.styles';
+import { DOC_TAB_IDS } from '../../DocTab.testids';
 
 interface DocRowProps {
   doc: DocItem;

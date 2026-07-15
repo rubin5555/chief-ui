@@ -45,12 +45,12 @@ const sizeMap = {
   sm: css`
 		padding: 8px 16px;
 		font-size: 14px;
-		border-radius: 12px;
+		border-radius: ${radii.xl};
 	`,
   md: css`
 		padding: 8px 16px;
 		font-size: 14px;
-		border-radius: 8px;
+		border-radius: ${radii.lg};
 	`,
   lg: css`
 		padding: 10px 24px;
@@ -69,7 +69,7 @@ export const StyledButton = styled.button<{
 	gap: 8px;
 	font-weight: 500;
 	line-height: 1.5;
-	border-radius: 8px;
+	border-radius: ${radii.lg};
 	transition:
 		background-color 0.15s,
 		color 0.15s,

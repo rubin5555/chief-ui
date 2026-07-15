@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors } from '@/styles/theme';
+import { colors, radii } from '@/styles/theme';
 
 export const FilterChipRoot = styled.span`
   display: inline-flex;
@@ -10,7 +10,7 @@ export const FilterChipRoot = styled.span`
   color: ${colors.primary};
   font-size: 12px;
   font-weight: 500;
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   border: 1px solid color-mix(in srgb, ${colors.primary} 35%, transparent);
 `;
 

@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import { gray } from '@/styles/theme';
+import { flexGap } from '@/styles/mixins';
+import { gray, radii } from '@/styles/theme';
 
 export const PanelBody = styled.div`
   padding: 8px;
@@ -10,11 +11,9 @@ export const PanelBody = styled.div`
 
 export const PanelOption = styled.button`
   width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  ${flexGap(12)}
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: ${radii.xl};
   text-align: right;
   transition: background-color 0.15s;
   &:hover { background-color: ${gray[50]}; }

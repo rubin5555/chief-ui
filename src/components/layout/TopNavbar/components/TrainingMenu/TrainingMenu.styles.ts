@@ -1,21 +1,18 @@
 import { ChevronDown } from 'lucide-react';
 import styled from 'styled-components';
+import { flexBetween, flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
 export const FaqHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  ${flexGap(12)}
   padding: 16px 16px 8px;
   flex-shrink: 0;
 `;
 
 export const FaqBackButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   padding: 4px;
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   transition: background-color 0.15s;
   &:hover { background-color: ${gray[100]}; }
 `;
@@ -44,9 +41,7 @@ export const FaqItem = styled.div`
 
 export const FaqQuestion = styled.button`
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 12px 16px;
   text-align: right;
   transition: background-color 0.15s;

@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import styled from 'styled-components';
-import { ellipsis } from '@/styles/mixins';
+import { ellipsis, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 
 export const SearchFieldWrap = styled.div`
@@ -9,9 +9,7 @@ export const SearchFieldWrap = styled.div`
 `;
 
 export const SearchFieldRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
 `;
 
 export const SearchResultContent = styled.div`
@@ -49,9 +47,7 @@ export const SearchResultsDropdown = styled.div`
 
 export const SearchResultRow = styled.button`
   width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  ${flexGap(12)}
   padding: 12px 16px;
   border: none;
   border-bottom: 1px solid ${gray[50]};

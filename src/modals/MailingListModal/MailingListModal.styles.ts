@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexGap, resetButton } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
 export const BodyLayout = styled.div`
@@ -86,9 +87,7 @@ export const PlaceholderText = styled.p`
 export const CancelBtn = styled.button`
 	font-size: 14px;
 	color: ${gray[500]};
-	background: transparent;
-	border: none;
-	cursor: pointer;
+	${resetButton}
 	transition: color 0.15s;
 	&:hover {
 		color: ${gray[700]};
@@ -96,9 +95,7 @@ export const CancelBtn = styled.button`
 `;
 
 export const SearchRow = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 8px;
+	${flexGap(8)}
 	padding: 12px 16px;
 	border-bottom: 1px solid ${colors.border};
 	flex-shrink: 0;

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray } from '@/styles/theme';
 
 export const SidebarRoot = styled.div`
@@ -67,9 +68,7 @@ export const ScrollList = styled.div`
 `;
 
 export const EntryRow = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 8px;
+	${flexGap(8)}
 	text-align: right;
 `;
 
@@ -87,17 +86,13 @@ export const ListEntryText = styled.span`
 `;
 
 export const EnvRow = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 12px;
+	${flexGap(12)}
 `;
 
 export const EnvIcon = styled.div`
 	width: 32px;
 	height: 32px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 	flex-shrink: 0;
 	color: ${colors.primary};
 `;

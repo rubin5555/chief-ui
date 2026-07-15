@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { dialogMotion } from '@/styles/animations';
+import { ellipsis, flexBetween, flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 import { NavRow } from './components/columns.shared.styles';
 
@@ -9,9 +10,7 @@ import { NavRow } from './components/columns.shared.styles';
 export const Overlay = styled.div`
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   pointer-events: none;
   z-index: 10;
 `;
@@ -28,9 +27,7 @@ export const Card = styled.div<{ $closing?: boolean }>`
 `;
 
 export const Header = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 14px 20px;
   border-bottom: 1px solid ${gray[100]};
   background: ${colors.primaryLight};
@@ -38,9 +35,7 @@ export const Header = styled.div`
 `;
 
 export const HeaderTitleWrap = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
   color: ${colors.primary};
 `;
 
@@ -85,9 +80,7 @@ export const SystemChevron = styled.span<{ $isActive: boolean }>`
 
 export const SystemName = styled.span<{ $isActive: boolean }>`
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  ${ellipsis}
   text-align: right;
   font-size: 11px;
   font-weight: ${({ $isActive }) => ($isActive ? 700 : 500)};
@@ -95,9 +88,7 @@ export const SystemName = styled.span<{ $isActive: boolean }>`
 `;
 
 export const Footer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 12px 20px;
   border-top: 1px solid ${gray[100]};
   background: ${colors.surface};

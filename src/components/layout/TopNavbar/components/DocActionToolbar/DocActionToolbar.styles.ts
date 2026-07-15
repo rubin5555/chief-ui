@@ -1,20 +1,17 @@
 import styled from 'styled-components';
-import { colors, gray } from '@/styles/theme';
+import { flexCenter, flexGap } from '@/styles/mixins';
+import { colors, gray, radii } from '@/styles/theme';
 
 export const ToolbarRoot = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  ${flexGap(4)}
   margin-right: 4px;
 `;
 
 export const IconAction = styled.button`
   padding: 6px;
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   transition: background-color 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   color: ${gray[500]};
   &:hover { background-color: ${gray[100]}; }
 `;
@@ -34,10 +31,8 @@ export const ZoomControlRoot = styled.div`
 export const ZoomButton = styled.button`
   width: 24px;
   height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
+  ${flexCenter}
+  border-radius: ${radii.full};
   transition: background-color 0.15s;
   color: ${gray[600]};
   font-weight: 700;
@@ -56,11 +51,9 @@ export const ZoomValue = styled.span`
 `;
 
 export const SearchField = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  ${flexGap(6)}
   background: ${gray[100]};
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   padding: 4px 12px;
 `;
 
@@ -76,11 +69,9 @@ export const SearchFieldInput = styled.input`
 
 export const SearchCloseButton = styled.button`
   padding: 2px;
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   transition: background-color 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   &:hover { background-color: ${gray[200]}; }
 `;
 

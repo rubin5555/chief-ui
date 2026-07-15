@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components';
+import { ellipsis, flexBetween, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const HideOnHover = styled.span`
@@ -21,9 +22,7 @@ export const GhostIcon = styled.span`
 `;
 
 const fieldRowBase = css`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   gap: 6px;
   border-radius: ${radii.lg};
   font-size: 11px;
@@ -59,9 +58,7 @@ export const FieldRow = styled.button<{ $isExpanded: boolean }>`
 `;
 
 export const FieldLabel = styled.span<{ $weight: number }>`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  ${ellipsis}
   font-weight: ${({ $weight }) => $weight};
 
   ${FieldRow}:hover & {
@@ -102,9 +99,7 @@ export const SubFieldRow = styled.button<{ $isLinked: boolean }>`
 `;
 
 export const SubFieldContent = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  ${flexGap(6)}
   min-width: 0;
 `;
 
@@ -115,9 +110,7 @@ export const SubFieldGlyph = styled.span`
 `;
 
 export const SubFieldLabel = styled.span<{ $isLinked: boolean }>`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  ${ellipsis}
   font-size: 10px;
   font-weight: ${({ $isLinked }) => ($isLinked ? 600 : 400)};
 

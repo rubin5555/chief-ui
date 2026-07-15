@@ -1,10 +1,9 @@
 import styled from 'styled-components';
+import { flexCenter } from '@/styles/mixins';
 import { colors, gray } from '@/styles/theme';
 
 export const IconActionBtn = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   width: 20px;
   height: 20px;
   border-radius: 4px;
