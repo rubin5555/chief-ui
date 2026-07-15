@@ -4031,7 +4031,7 @@ export function Edit({ navigate, doc }: EditProps) {
                           </span>}
                           {!isReadOnly && (
                             <button
-                              title={SECTIONS_WITH_SOURCE.has(section.id) ? 'רענן נתונים ממקור' : 'אין מקור חיצוני מחובר'}
+                              title={SECTIONS_WITH_SOURCE.has(section.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
                               disabled={!SECTIONS_WITH_SOURCE.has(section.id)}
                               className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(section.id) ? 'text-gray-500 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
                               <RefreshCw className="w-3 h-3" />
@@ -4194,7 +4194,7 @@ export function Edit({ navigate, doc }: EditProps) {
                             </span>}
                             {!isReadOnly && (
                               <button
-                                title={SECTIONS_WITH_SOURCE.has(child.id) ? 'רענן נתונים ממקור' : 'אין מקור חיצוני מחובר'}
+                                title={SECTIONS_WITH_SOURCE.has(child.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
                                 disabled={!SECTIONS_WITH_SOURCE.has(child.id)}
                                 className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(child.id) ? 'text-gray-500 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
                                 <RefreshCw className="w-3 h-3" />
@@ -4393,7 +4393,7 @@ export function Edit({ navigate, doc }: EditProps) {
                                 </span>}
                                 {!isReadOnly && (
                                   <button
-                                    title={SECTIONS_WITH_SOURCE.has(sub.id) ? 'רענן נתונים ממקור' : 'אין מקור חיצוני מחובר'}
+                                    title={SECTIONS_WITH_SOURCE.has(sub.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
                                     disabled={!SECTIONS_WITH_SOURCE.has(sub.id)}
                                     className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(sub.id) ? 'text-gray-500 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
                                     <RefreshCw className="w-3 h-3" />
