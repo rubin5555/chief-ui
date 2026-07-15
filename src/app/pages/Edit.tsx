@@ -4177,7 +4177,7 @@ export function Edit({ navigate, doc }: EditProps) {
 
                     {/* Content box for leaf topics (no children) */}
                     {!section.children && (section.title === 'חתימות' ? (
-                      <div ref={sigSectionRef} style={{ display: 'flex', flexDirection: 'column', gap: 10, direction: 'rtl', borderRadius: 12, padding: sigSectionRequired ? 12 : 0, border: sigSectionRequired ? '2px solid #9B1C1C' : 'none', transition: 'border 0.3s' }}>
+                      <div ref={sigSectionRef} style={{ display: 'flex', flexDirection: 'column', gap: 10, direction: 'rtl' }}>
                         {sigSectionRequired && (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#9B1C1C', fontSize: 12, fontWeight: 600 }}>
                             <span>⚠</span>
@@ -4194,7 +4194,7 @@ export function Edit({ navigate, doc }: EditProps) {
                             dir="rtl"
                             style={{
                               width: '100%', minHeight: '80px', borderRadius: 12,
-                              background: '#f9fafb', border: '1px solid #f1f5f9',
+                              background: '#f9fafb', border: sigSectionRequired ? '1px solid #9B1C1C' : '1px solid #f1f5f9',
                               padding: '10px 14px', fontSize: 11, textAlign: 'right',
                               color: '#374151', resize: 'none', outline: 'none', overflow: 'hidden',
                               fontFamily: 'inherit', lineHeight: 1.9,
