@@ -4176,6 +4176,24 @@ export function Edit({ navigate, doc }: EditProps) {
                     {/* Content box for leaf topics (no children) */}
                     {!section.children && (section.title === 'חתימות' ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, direction: 'rtl' }}>
+                        {signatures.map((sig, idx) => (
+                          <textarea
+                            key={idx}
+                            value={sig}
+                            onChange={e => { const v = e.target.value; setSignatures(prev => prev.map((s, i) => i === idx ? v : s)); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
+                            ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
+                            placeholder={SIG_PLACEHOLDER}
+                            dir="rtl"
+                            style={{
+                              width: '100%', minHeight: '80px', borderRadius: 12,
+                              background: '#f9fafb', border: '1px solid #f1f5f9',
+                              padding: '10px 14px', fontSize: 11, textAlign: 'right',
+                              color: '#374151', resize: 'none', outline: 'none', overflow: 'hidden',
+                              fontFamily: 'inherit', lineHeight: 1.9,
+                            }}
+                            className="focus:border-gray-300 transition-colors placeholder-gray-300"
+                          />
+                        ))}
                         {/* Approver signature stamps */}
                         {approverSigs.length > 0 && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, padding: '8px 0' }}>
@@ -4200,24 +4218,6 @@ export function Edit({ navigate, doc }: EditProps) {
                             ))}
                           </div>
                         )}
-                        {signatures.map((sig, idx) => (
-                          <textarea
-                            key={idx}
-                            value={sig}
-                            onChange={e => { const v = e.target.value; setSignatures(prev => prev.map((s, i) => i === idx ? v : s)); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; }}
-                            ref={el => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
-                            placeholder={SIG_PLACEHOLDER}
-                            dir="rtl"
-                            style={{
-                              width: '100%', minHeight: '80px', borderRadius: 12,
-                              background: '#f9fafb', border: '1px solid #f1f5f9',
-                              padding: '10px 14px', fontSize: 11, textAlign: 'right',
-                              color: '#374151', resize: 'none', outline: 'none', overflow: 'hidden',
-                              fontFamily: 'inherit', lineHeight: 1.9,
-                            }}
-                            className="focus:border-gray-300 transition-colors placeholder-gray-300"
-                          />
-                        ))}
                       </div>
                     ) : (
                       <>
