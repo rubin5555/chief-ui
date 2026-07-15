@@ -2668,14 +2668,24 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
                 בחירת חתימת מאשר
               </button>
               {showSignatureDropdown && (
-                <div className="absolute top-full mt-1 right-0 left-0 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10">
-                  {MOCK_SIGNATURES.map(sig => (
-                    <button key={sig} type="button"
-                      onClick={() => { setSelectedSignature(sig); setShowSignatureDropdown(false); }}
-                      className="w-full text-right px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                      {sig}
-                    </button>
-                  ))}
+                <div className="absolute top-full mt-2 right-0 left-0 bg-white rounded-2xl shadow-xl border border-gray-100 p-3 z-10">
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { name: 'חתימה ראשית', path: 'M8 26 Q18 10 28 22 Q38 34 48 16 Q58 2 68 18 Q78 32 88 14' },
+                      { name: 'חתימה רשמית', path: 'M8 20 Q20 8 32 20 Q44 32 56 12 Q68 2 80 22 Q88 32 92 18' },
+                      { name: 'חתימת שדה',   path: 'M8 28 Q22 14 36 24 Q50 34 64 10 Q74 4 88 20' },
+                    ].map(sig => (
+                      <button key={sig.name} type="button"
+                        onClick={() => { setSelectedSignature(sig.name); setShowSignatureDropdown(false); }}
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-gray-100 hover:border-[#1B3A6B] hover:bg-blue-50 transition-all group">
+                        <svg width="100" height="40" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d={sig.path} stroke="#1B3A6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7"/>
+                          <line x1="8" y1="35" x2="92" y2="35" stroke="#1B3A6B" strokeWidth="0.8" opacity="0.25"/>
+                        </svg>
+                        <span className="text-[11px] text-gray-500 group-hover:text-[#1B3A6B] transition-colors">{sig.name}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
