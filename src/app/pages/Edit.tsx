@@ -3527,7 +3527,7 @@ export function Edit({ navigate, doc }: EditProps) {
             style={{ width: '230mm' }}>
             <span className="text-xs" style={{ color: '#92400E' }}>⚠</span>
             <span className="text-xs leading-snug" style={{ color: '#92400E' }}>
-              <span className="font-semibold">שים לב,</span> חלק מהמידע הקיים במסמך זה נוצר ממערכות מקור
+              <span className="font-semibold">שים לב,</span> מסמך זה נוצר ממערכת מקור
             </span>
             <button
               onClick={() => { setSourceSystemsContext('doc'); setShowSourceSystemsModal(true); }}
