@@ -2635,23 +2635,25 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
             {/* Signature area */}
             <div className="flex flex-col gap-1.5 mt-1">
               <span className="text-xs font-semibold text-gray-600">חתימת המאשר</span>
-              <div className="rounded-xl flex items-center justify-center overflow-hidden"
-                style={{ background: '#F3F4F6', height: 100 }}>
-                {signatureData ? (
-                  <svg width="200" height="70" viewBox="0 0 200 70" fill="none">
-                    <path d="M16 52 Q36 16 56 36 Q76 56 96 28 Q116 4 136 32 Q156 56 180 24" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                    <path d="M30 60 Q80 48 130 58 Q162 64 184 52" stroke="#1a1a1a" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.35"/>
-                  </svg>
-                ) : (
-                  <span className="text-xs text-gray-400">אין חתימה</span>
-                )}
-              </div>
-              <div className="flex items-center gap-2 self-start text-xs text-gray-500">
-                <button onClick={() => setSignatureData('sig')}
-                  className="hover:text-[#1B3A6B] transition-colors font-medium">בחירת חתימה</button>
-                <span className="text-gray-300">|</span>
-                <button onClick={() => setSignatureData(null)}
-                  className="hover:text-red-400 transition-colors">נקה חתימה</button>
+              <div className="rounded-xl flex flex-col items-center justify-between overflow-hidden px-4 py-3"
+                style={{ background: '#F3F4F6', height: 110 }}>
+                <div className="flex-1 flex items-center justify-center w-full">
+                  {signatureData ? (
+                    <svg width="200" height="56" viewBox="0 0 200 56" fill="none">
+                      <path d="M16 42 Q36 12 56 28 Q76 44 96 20 Q116 2 136 24 Q156 44 180 16" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      <path d="M30 50 Q80 40 130 48 Q162 52 184 42" stroke="#1a1a1a" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.35"/>
+                    </svg>
+                  ) : (
+                    <span className="text-xs text-gray-400">אין חתימה</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 self-start">
+                  <button onClick={() => setSignatureData('sig')}
+                    className="text-[11px] font-medium text-gray-500 hover:text-[#1B3A6B] transition-colors">בחירת חתימה</button>
+                  <span className="text-[11px] text-gray-300">|</span>
+                  <button onClick={() => setSignatureData(null)}
+                    className="text-[11px] text-gray-500 hover:text-red-400 transition-colors">נקה חתימה</button>
+                </div>
               </div>
             </div>
           </div>
