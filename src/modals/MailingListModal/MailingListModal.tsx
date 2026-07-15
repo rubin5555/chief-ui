@@ -1,43 +1,26 @@
-import { X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { IconTab } from '@/components/ui/IconTab';
-import { Select } from '@/components/ui/Select';
-import { SearchSlotProvider } from '@/context/SearchSlotContext';
-import { useDialogClose } from '@/hooks/useDialogClose';
+import type { ModalHandle } from '@/components/ui/Modal';
+import { Modal } from '@/components/ui/Modal';
+import { ImportPanel } from './components/ImportPanel';
 import { MembersPanel } from './components/MembersPanel';
-import { ModalSearchInput } from './components/ModalSearchInput';
 import { useMailingListModalAnalytics } from './MailingListModal.analytics';
 import type { ImportTabId, Member } from './MailingListModal.constants';
-import { AGAF_OPTIONS, IMPORT_TABS } from './MailingListModal.constants';
-import {
-  CancelBtn,
-  CloseBtn,
-  FieldInput,
-  FieldLabel,
-  FormSection,
-  LeftPanel,
-  ModalBody,
-  ModalCard,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle,
-  Overlay,
-  PlaceholderText,
-  RightPanel,
-  SearchRow,
-  TabBar,
-  TabContent,
-  WarnText,
-} from './MailingListModal.styles';
+import { BodyLayout, CancelBtn, LeftPanel } from './MailingListModal.styles';
 import { NEW_LIST_IDS } from './MailingListModal.testids';
 import { DocTab } from './tabs/DocTab';
 import { HamalTab } from './tabs/HamalTab';
 import { MirageTab } from './tabs/MirageTab';
 import { NetworkTab } from './tabs/NetworkTab';
 import { PersonalTab } from './tabs/PersonalTab';
+import { useImportSource } from './useImportSource';
 
 export type ModalMode = 'new' | 'edit' | 'duplicate';
+
+const FORM_ID = 'mailing-list-form';
+
+const byIdNumber = (m: Member) => m.idNumber;
+const byId = (m: Member) => m.id;
 
 interface MailingListModalProps {
   mode?: ModalMode;
@@ -70,16 +53,35 @@ export const MailingListModal = ({
   const [dirty, setDirty] = useState(false);
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [activeTab, setActiveTab] = useState<ImportTabId | null>(null);
-  const [preSearchQuery, setPreSearchQuery] = useState('');
+  const [networkInitialQuery, setNetworkInitialQuery] = useState('');
   const [autoFocusNetworkSearch, setAutoFocusNetworkSearch] = useState(false);
   const [groupExpanded, setGroupExpanded] = useState<string | null>(null);
-  const [searchSlotNode, setSearchSlotNode] = useState<HTMLDivElement | null>(null);
 
-  const [docAdded, setDocAdded] = useState<Set<string>>(new Set());
-  const [hamalAdded, setHamalAdded] = useState<Set<string>>(new Set());
-  const [mirageAdded, setMirageAdded] = useState<Set<string>>(new Set());
-  const [personalAdded, setPersonalAdded] = useState<Set<string>>(new Set());
   const addedMemberIds = new Set(members.map((m) => m.id));
+
+  const addMembers = (newMembers: Member[], dedupeKey: (member: Member) => string | undefined) => {
+    setMembers((prev) => {
+      const existingKeys = new Set(prev.map(dedupeKey));
+      return [...prev, ...newMembers.filter((m) => !existingKeys.has(dedupeKey(m)))];
+    });
+    setDirty(true);
+  };
+
+  const { addedIds: docAdded, onImport: onDocImport } = useImportSource(byIdNumber, addMembers);
+  const { addedIds: hamalAdded, onImport: onHamalImport } = useImportSource(byId, addMembers);
+  const { addedIds: mirageAdded, onImport: onMirageImport } = useImportSource(byId, addMembers);
+  const { addedIds: personalAdded, onImport: onPersonalImport } = useImportSource(
+    byIdNumber,
+    addMembers,
+  );
+
+  const {
+    trackModalOpened,
+    trackTabChanged,
+    trackMemberRemoved,
+    trackSaveClicked,
+    trackCancelled,
+  } = useMailingListModalAnalytics();
 
   const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setListName(e.target.value);
@@ -91,26 +93,29 @@ export const MailingListModal = ({
     trackTabChanged(id);
   };
 
-  const activateNetworkFromSearch = () => {
+  // Called at most once per modal lifetime: ImportPanel's pre-search box unmounts as soon as
+  // activeTab flips away from null, so this only fires on the focus/first-keystroke that
+  // switches into the network tab.
+  const onActivateNetworkFromSearch = (query: string) => {
     if (activeTab !== null) return;
+    setNetworkInitialQuery(query);
     setAutoFocusNetworkSearch(true);
     onTabChange('network');
   };
 
-  const onPreSearchFocus = () => activateNetworkFromSearch();
+  const onToggleGroup = useCallback(
+    (id: string) => setGroupExpanded((prev) => (prev === id ? null : id)),
+    [],
+  );
 
-  const onPreSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPreSearchQuery(e.target.value);
-    activateNetworkFromSearch();
-  };
-
-  const onToggleGroup = (id: string) => setGroupExpanded((prev) => (prev === id ? null : id));
-
-  const onRemoveMember = (id: string) => {
-    setMembers((prev) => prev.filter((m) => m.id !== id));
-    setDirty(true);
-    trackMemberRemoved();
-  };
+  const onRemoveMember = useCallback(
+    (id: string) => {
+      setMembers((prev) => prev.filter((m) => m.id !== id));
+      setDirty(true);
+      trackMemberRemoved();
+    },
+    [trackMemberRemoved],
+  );
 
   const onAddMember = (member: Member) => {
     setMembers((prev) => {
@@ -121,88 +126,28 @@ export const MailingListModal = ({
     setDirty(true);
   };
 
-  const onDocImport = (newMembers: Member[], docIds: string[]) => {
-    setMembers((prev) => {
-      const existingIds = new Set(prev.map((m) => m.idNumber));
-      return [...prev, ...newMembers.filter((m) => !existingIds.has(m.idNumber))];
-    });
-    setDocAdded((prev) => {
-      const next = new Set(prev);
-      docIds.forEach((id) => next.add(id));
-      return next;
-    });
-    setDirty(true);
-  };
-
-  const onHamalImport = (groups: Member[], groupIds: string[]) => {
-    setMembers((prev) => {
-      const existingIds = new Set(prev.map((m) => m.id));
-      return [...prev, ...groups.filter((g) => !existingIds.has(g.id))];
-    });
-    setHamalAdded((prev) => {
-      const next = new Set(prev);
-      groupIds.forEach((id) => next.add(id));
-      return next;
-    });
-    setDirty(true);
-  };
-
-  const onMirageImport = (groups: Member[], groupIds: string[]) => {
-    setMembers((prev) => {
-      const existingIds = new Set(prev.map((m) => m.id));
-      return [...prev, ...groups.filter((g) => !existingIds.has(g.id))];
-    });
-    setMirageAdded((prev) => {
-      const next = new Set(prev);
-      groupIds.forEach((id) => next.add(id));
-      return next;
-    });
-    setDirty(true);
-  };
-
-  const onPersonalImport = (newMembers: Member[], listIds: string[]) => {
-    setMembers((prev) => {
-      const existingIds = new Set(prev.map((m) => m.idNumber));
-      return [...prev, ...newMembers.filter((m) => !existingIds.has(m.idNumber))];
-    });
-    setPersonalAdded((prev) => {
-      const next = new Set(prev);
-      listIds.forEach((id) => next.add(id));
-      return next;
-    });
-    setDirty(true);
-  };
-
-  const {
-    trackModalOpened,
-    trackTabChanged,
-    trackMemberRemoved,
-    trackSaveClicked,
-    trackCancelled,
-  } = useMailingListModalAnalytics();
-
   useEffect(() => {
     trackModalOpened(mode);
   }, []);
 
-  const { isClosing, requestClose } = useDialogClose(onClose);
+  const modalRef = useRef<ModalHandle>(null);
 
   const handleCancel = () => {
     trackCancelled(mode);
-    requestClose();
+    modalRef.current?.requestClose();
   };
   const handleTabSelect = (id: ImportTabId) => () => onTabChange(id);
-  const onCardClick = (e: React.MouseEvent) => e.stopPropagation();
 
   const isDupBlocked = mode === 'duplicate' && listName === initialName;
   const isEditBlocked = mode === 'edit' && !dirty;
   const isDisabled = isDupBlocked || isEditBlocked;
 
-  const onSaveClick = () => {
+  const onFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (isDisabled) return;
     trackSaveClicked(mode, members.length);
     onSave(listName, members);
-    requestClose();
+    modalRef.current?.requestClose();
   };
 
   const tabContent: Record<ImportTabId, React.ReactNode> = {
@@ -210,7 +155,7 @@ export const MailingListModal = ({
       <NetworkTab
         addedMemberIds={addedMemberIds}
         onAdd={onAddMember}
-        initialQuery={preSearchQuery}
+        initialQuery={networkInitialQuery}
         autoFocus={autoFocusNetworkSearch}
       />
     ),
@@ -220,107 +165,59 @@ export const MailingListModal = ({
     personal: <PersonalTab addedListIds={personalAdded} onImport={onPersonalImport} />,
   };
 
-  return (
-    <Overlay data-testid={NEW_LIST_IDS.overlay} onClick={handleCancel} $closing={isClosing}>
-      <ModalCard
-        data-testid={NEW_LIST_IDS.root}
-        onClick={onCardClick}
-        dir="rtl"
-        $closing={isClosing}
+  const footer = (
+    <>
+      <CancelBtn type="button" data-testid={NEW_LIST_IDS.cancelBtn} onClick={handleCancel}>
+        ביטול
+      </CancelBtn>
+      <Button
+        type="submit"
+        form={FORM_ID}
+        size="lg"
+        data-testid={NEW_LIST_IDS.saveBtn}
+        disabled={isDisabled}
       >
-        <ModalHeader data-testid={NEW_LIST_IDS.header}>
-          <ModalTitle>{MODAL_TITLES[mode]}</ModalTitle>
-          <CloseBtn type="button" onClick={handleCancel}>
-            <X size={20} />
-          </CloseBtn>
-        </ModalHeader>
+        {SAVE_LABELS[mode]}
+      </Button>
+    </>
+  );
 
-        <ModalBody>
-          <RightPanel>
-            <SearchSlotProvider value={searchSlotNode}>
-              <FormSection>
-                <div>
-                  <FieldLabel htmlFor="list-name">שם רשימת התפוצה</FieldLabel>
-                  <FieldInput
-                    id="list-name"
-                    data-testid={NEW_LIST_IDS.nameInput}
-                    type="text"
-                    value={listName}
-                    onChange={onNameChange}
-                    placeholder="הזן שם רשימה..."
-                    $warn={isDupBlocked}
-                  />
-                  {isDupBlocked && <WarnText>יש לשנות את שם הרשימה לפני השכפול</WarnText>}
-                </div>
-                <div>
-                  <FieldLabel htmlFor="list-agaf">בחירת אגף</FieldLabel>
-                  <Select
-                    id="list-agaf"
-                    data-testid={NEW_LIST_IDS.agafSelect}
-                    options={AGAF_OPTIONS}
-                    placeholder="בחר אגף..."
-                  />
-                </div>
-              </FormSection>
+  return (
+    <Modal
+      ref={modalRef}
+      title={MODAL_TITLES[mode]}
+      onClose={onClose}
+      onRequestClose={handleCancel}
+      footer={footer}
+      footerAlign="between"
+      width={1140}
+      maxWidth="96vw"
+      height="90vh"
+      noBodyPadding
+      data-testid={NEW_LIST_IDS.root}
+    >
+      <BodyLayout>
+        <ImportPanel
+          formId={FORM_ID}
+          onFormSubmit={onFormSubmit}
+          listName={listName}
+          onNameChange={onNameChange}
+          isDupBlocked={isDupBlocked}
+          activeTab={activeTab}
+          onTabSelect={handleTabSelect}
+          onActivateNetworkFromSearch={onActivateNetworkFromSearch}
+          tabContent={tabContent}
+        />
 
-              <TabBar data-testid={NEW_LIST_IDS.tabBar}>
-                {IMPORT_TABS.map(({ id, label, Icon }) => (
-                  <IconTab
-                    key={id}
-                    icon={Icon}
-                    label={label}
-                    isActive={activeTab === id}
-                    onClick={handleTabSelect(id)}
-                  />
-                ))}
-              </TabBar>
-
-              <SearchRow ref={setSearchSlotNode} data-testid={NEW_LIST_IDS.searchBar}>
-                {activeTab === null && (
-                  <ModalSearchInput
-                    value={preSearchQuery}
-                    onChange={onPreSearchQueryChange}
-                    onFocus={onPreSearchFocus}
-                    placeholder="בחר מקור ייבוא או חפש לפי שם"
-                  />
-                )}
-              </SearchRow>
-
-              <TabContent data-testid={NEW_LIST_IDS.tabContent}>
-                {activeTab !== null ? (
-                  tabContent[activeTab]
-                ) : (
-                  <PlaceholderText>בחר מקור ייבוא או חפש לפי שם</PlaceholderText>
-                )}
-              </TabContent>
-            </SearchSlotProvider>
-          </RightPanel>
-
-          <LeftPanel data-testid={NEW_LIST_IDS.membersPanel}>
-            <MembersPanel
-              members={members}
-              groupExpanded={groupExpanded}
-              onToggleGroup={onToggleGroup}
-              onRemove={onRemoveMember}
-            />
-          </LeftPanel>
-        </ModalBody>
-
-        <ModalFooter data-testid={NEW_LIST_IDS.footer}>
-          <CancelBtn type="button" data-testid={NEW_LIST_IDS.cancelBtn} onClick={handleCancel}>
-            ביטול
-          </CancelBtn>
-          <Button
-            type="button"
-            size="lg"
-            data-testid={NEW_LIST_IDS.saveBtn}
-            disabled={isDisabled}
-            onClick={onSaveClick}
-          >
-            {SAVE_LABELS[mode]}
-          </Button>
-        </ModalFooter>
-      </ModalCard>
-    </Overlay>
+        <LeftPanel data-testid={NEW_LIST_IDS.membersPanel}>
+          <MembersPanel
+            members={members}
+            groupExpanded={groupExpanded}
+            onToggleGroup={onToggleGroup}
+            onRemove={onRemoveMember}
+          />
+        </LeftPanel>
+      </BodyLayout>
+    </Modal>
   );
 };

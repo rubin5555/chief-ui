@@ -15,6 +15,7 @@ import { TrainingMenu } from '@/components/layout/TopNavbar/components/TrainingM
 import { IconButton } from '@/components/ui/IconButton';
 import { ModalLoading } from '@/components/ui/ModalLoading';
 import { PanelLoading } from '@/components/ui/PanelLoading';
+import { useEntityModal } from '@/hooks/useEntityModal';
 import type { EnvironmentRequestForm } from '@/modals/EnvironmentRequestModal';
 import type { ModalMode } from '@/modals/MailingListModal';
 import type { SignatureModalMode } from '@/modals/SignatureModal';
@@ -45,8 +46,8 @@ const noop = () => {};
 const routeApi = getRouteApi('/');
 
 // Route/tab-gated subtrees load on demand instead of in the main bundle —
-// each is behind a Suspense boundary so switching tabs (or opening a modal)
-// is the trigger that fetches its chunk.
+// each is behind a Suspense boundary so switching tabs is the trigger that
+// fetches its chunk.
 const TemplatesPanel = lazy(() =>
   import('../components/tabs/TemplatesPanel').then((m) => ({ default: m.TemplatesPanel })),
 );
@@ -56,6 +57,11 @@ const SignaturesPanel = lazy(() =>
 const ListsPanel = lazy(() =>
   import('../components/tabs/ListsPanel').then((m) => ({ default: m.ListsPanel })),
 );
+
+// Each modal loads on demand instead of in the main bundle — opening one is
+// the trigger that fetches its chunk. Rendered directly here (the page that
+// owns each modal's open/close state) rather than through a shared aggregator,
+// so each stays next to the state and handlers it belongs to.
 const SpellCheckModal = lazy(() =>
   import('@/modals/SpellCheckModal').then((m) => ({ default: m.SpellCheckModal })),
 );
@@ -76,13 +82,11 @@ export const ProfilePage = () => {
   const { tab: activeTab } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
   const [showSpellCheck, setShowSpellCheck] = useState(false);
-  const [listModalMode, setListModalMode] = useState<ModalMode | null>(null);
-  const [editingList, setEditingList] = useState<DistributionList | null>(null);
-  const [signatureModalMode, setSignatureModalMode] = useState<SignatureModalMode | null>(null);
-  const [editingSignatureType, setEditingSignatureType] = useState<SignatureType | null>(null);
-  const [templateModalMode, setTemplateModalMode] = useState<TemplateModalMode | null>(null);
-  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [showEnvironmentRequest, setShowEnvironmentRequest] = useState(false);
+
+  const listModal = useEntityModal<ModalMode, DistributionList>();
+  const signatureModal = useEntityModal<SignatureModalMode, SignatureType>();
+  const templateModal = useEntityModal<TemplateModalMode, Template>();
 
   // No backend yet — stubLink answers after a simulated delay (see
   // src/api/stubLink.ts) instead of on the same tick, so `loading` is
@@ -126,62 +130,37 @@ export const ProfilePage = () => {
     trackTabChanged(tab);
   };
   const handleMailingListOpen = () => {
-    setEditingList(null);
-    setListModalMode('new');
+    listModal.open('new');
     trackMailingListOpened();
   };
   const handleListEdit = (id: string) => {
     const list = lists.find((l) => l.id === id);
     if (!list) return;
-    setEditingList(list);
-    setListModalMode('edit');
+    listModal.open('edit', list);
   };
   const handleListDuplicate = (id: string) => {
     const list = lists.find((l) => l.id === id);
     if (!list) return;
-    setEditingList(list);
-    setListModalMode('duplicate');
-  };
-  const handleListModalClose = () => {
-    setListModalMode(null);
-    setEditingList(null);
+    listModal.open('duplicate', list);
   };
   const handleSignatureNew = (type: SignatureType) => {
-    setEditingSignatureType(type);
-    setSignatureModalMode('new');
+    signatureModal.open('new', type);
     trackSignatureModalOpened();
   };
-  const handleSignatureEdit = (_id: string, type: SignatureType) => {
-    setEditingSignatureType(type);
-    setSignatureModalMode('edit');
-  };
-  const handleSignatureDuplicate = (_id: string, type: SignatureType) => {
-    setEditingSignatureType(type);
-    setSignatureModalMode('duplicate');
-  };
-  const handleSignatureModalClose = () => {
-    setSignatureModalMode(null);
-    setEditingSignatureType(null);
-  };
-  const handleTemplateNew = () => {
-    setEditingTemplate(null);
-    setTemplateModalMode('new');
-  };
+  const handleSignatureEdit = (_id: string, type: SignatureType) =>
+    signatureModal.open('edit', type);
+  const handleSignatureDuplicate = (_id: string, type: SignatureType) =>
+    signatureModal.open('duplicate', type);
+  const handleTemplateNew = () => templateModal.open('new');
   const handleTemplateEdit = (id: string) => {
     const template = [...templates, ...deletedTemplates].find((t) => t.id === id);
     if (!template) return;
-    setEditingTemplate(template);
-    setTemplateModalMode('edit');
+    templateModal.open('edit', template);
   };
   const handleTemplateDuplicate = (id: string) => {
     const template = [...templates, ...deletedTemplates].find((t) => t.id === id);
     if (!template) return;
-    setEditingTemplate(template);
-    setTemplateModalMode('duplicate');
-  };
-  const handleTemplateModalClose = () => {
-    setTemplateModalMode(null);
-    setEditingTemplate(null);
+    templateModal.open('duplicate', template);
   };
   const handleSpellCheckOpen = () => {
     setShowSpellCheck(true);
@@ -288,39 +267,43 @@ export const ProfilePage = () => {
           <SpellCheckModal onClose={handleSpellCheckClose} />
         </Suspense>
       )}
-      {listModalMode && (
+
+      {listModal.mode && (
         <Suspense fallback={<ModalLoading />}>
           <MailingListModal
-            mode={listModalMode}
-            initialName={editingList?.name}
-            initialMembers={editingList?.members}
-            onClose={handleListModalClose}
+            mode={listModal.mode}
+            initialName={listModal.editing?.name}
+            initialMembers={listModal.editing?.members}
+            onClose={listModal.close}
             onSave={noop}
           />
         </Suspense>
       )}
-      {signatureModalMode && (
+
+      {signatureModal.mode && (
         <Suspense fallback={<ModalLoading />}>
           <SignatureModal
-            mode={signatureModalMode}
-            initialType={editingSignatureType}
-            onClose={handleSignatureModalClose}
+            mode={signatureModal.mode}
+            initialType={signatureModal.editing}
+            onClose={signatureModal.close}
             onSave={noop}
           />
         </Suspense>
       )}
-      {templateModalMode && (
+
+      {templateModal.mode && (
         <Suspense fallback={<ModalLoading />}>
           <TemplateModal
-            mode={templateModalMode}
-            initialName={editingTemplate?.name}
+            mode={templateModal.mode}
+            initialName={templateModal.editing?.name}
             departmentOptions={DEPARTMENT_FILTER_OPTIONS}
             currentUserId={profile.id}
-            onClose={handleTemplateModalClose}
+            onClose={templateModal.close}
             onSave={noop}
           />
         </Suspense>
       )}
+
       {showEnvironmentRequest && (
         <Suspense fallback={<ModalLoading />}>
           <EnvironmentRequestModal

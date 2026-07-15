@@ -1,47 +1,23 @@
 import { useForm } from '@tanstack/react-form';
-import { Plus, X } from 'lucide-react';
-import type { MouseEvent } from 'react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { ContentEditorProvider } from '@/components/ui/ContentEditor';
+import type { ModalHandle } from '@/components/ui/Modal';
+import { Modal } from '@/components/ui/Modal';
 import { ModalLoading } from '@/components/ui/ModalLoading';
 import { CollabProvider } from '@/context/CollabContext';
-import { useDialogClose } from '@/hooks/useDialogClose';
 import { useDocumentTree } from '@/hooks/useDocumentTree';
-import type { DynamicField } from '@/modals/DataImportModal';
-import { reorderById } from '@/utils/reorderById';
-import { AppendixList } from './components/AppendixList';
 import { DocumentDetailsForm } from './components/DocumentDetailsForm';
-import { DocumentPreview } from './components/DocumentPreview';
-import { FieldBankBar, FieldBankList } from './components/FieldBank';
 import { PermissionsPopover } from './components/PermissionsPopover';
-import { SubjectTree } from './components/SubjectTree';
+import { TemplateModalBody } from './components/TemplateModalBody';
 import { useTemplateModalAnalytics } from './TemplateModal.analytics';
-import type {
-  Appendix,
-  PermissionsTarget,
-  TemplateDraft,
-  TemplateModalMode,
-} from './TemplateModal.constants';
+import type { TemplateDraft, TemplateModalMode } from './TemplateModal.constants';
 import { emptyTemplateFormValues, MODAL_TITLES, SAVE_LABELS } from './TemplateModal.constants';
-import {
-  AddNodeButton,
-  BodySection,
-  CloseBtn,
-  DetailsSection,
-  EmphasisBox,
-  EmphasisLabel,
-  ModalCard,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle,
-  Overlay,
-  Sidebar,
-  SidebarFooter,
-  SidebarScroll,
-  SmallIconBtn,
-} from './TemplateModal.styles';
+import { DetailsSection } from './TemplateModal.styles';
 import { TEMPLATE_MODAL_IDS } from './TemplateModal.testids';
+import { useAppendices } from './useAppendices';
+import { useFieldBank } from './useFieldBank';
+import { usePermissionsTarget } from './usePermissionsTarget';
 
 const DataImportModal = lazy(() =>
   import('@/modals/DataImportModal').then((m) => ({ default: m.DataImportModal })),
@@ -60,12 +36,7 @@ interface TemplateModalProps {
   onSave: (draft: TemplateDraft) => void;
 }
 
-const makeAppendix = (): Appendix => ({
-  id: `appendix-${self.crypto.randomUUID()}`,
-  title: '',
-  content: '',
-  permissions: { approvers: [], editors: [] },
-});
+const FORM_ID = 'template-details-form';
 
 export const TemplateModal = ({
   mode = 'new',
@@ -80,13 +51,8 @@ export const TemplateModal = ({
     onSubmit: () => {},
   });
   const tree = useDocumentTree();
-  const [appendices, setAppendices] = useState<Appendix[]>([]);
   const [hasEmphasis, setHasEmphasis] = useState(false);
   const [emphasisText, setEmphasisText] = useState('');
-  const [permTarget, setPermTarget] = useState<PermissionsTarget | null>(null);
-  const [importedFields, setImportedFields] = useState<DynamicField[]>([]);
-  const [isFieldBankExpanded, setIsFieldBankExpanded] = useState(false);
-  const [isImportPickerOpen, setIsImportPickerOpen] = useState(false);
 
   const {
     trackModalOpened,
@@ -100,6 +66,10 @@ export const TemplateModal = ({
     trackCancelled,
   } = useTemplateModalAnalytics();
 
+  const appendicesState = useAppendices();
+  const fieldBank = useFieldBank(trackFieldsImported);
+  const permissions = usePermissionsTarget(trackPermissionsChanged);
+
   useEffect(() => {
     trackModalOpened(mode);
   }, []);
@@ -108,42 +78,17 @@ export const TemplateModal = ({
   // appendix, imported field, or emphasis text present means the user changed
   // something this session.
   const isStructureDirty =
-    tree.subjects.length > 0 || appendices.length > 0 || importedFields.length > 0 || hasEmphasis;
+    tree.subjects.length > 0 ||
+    appendicesState.appendices.length > 0 ||
+    fieldBank.importedFields.length > 0 ||
+    hasEmphasis;
 
-  const { isClosing, requestClose } = useDialogClose(onClose);
+  const modalRef = useRef<ModalHandle>(null);
 
   const handleClose = () => {
     trackCancelled(mode);
-    requestClose();
+    modalRef.current?.requestClose();
   };
-
-  const onOverlayClick = () => handleClose();
-  const onCardClick = (e: MouseEvent) => e.stopPropagation();
-
-  const handleTogglePermissions = (target: PermissionsTarget) => {
-    setPermTarget((prev) => (prev?.id === target.id ? null : target));
-  };
-
-  const handleClosePermissions = () => setPermTarget(null);
-
-  const handlePermissionsChanged = (role: 'approvers' | 'editors', value: string[]) => {
-    trackPermissionsChanged(role);
-    setPermTarget((prev) =>
-      prev ? { ...prev, permissions: { ...prev.permissions, [role]: value } } : prev,
-    );
-  };
-
-  const handleAddAppendix = () => setAppendices((prev) => [...prev, makeAppendix()]);
-  const handleRemoveAppendix = (id: string) =>
-    setAppendices((prev) => prev.filter((appendix) => appendix.id !== id));
-  const handleReorderAppendix = (draggedId: string, targetId: string) =>
-    setAppendices((prev) => reorderById(prev, draggedId, targetId));
-  const handleAppendixTitleChange = (id: string, title: string) =>
-    setAppendices((prev) => prev.map((a) => (a.id !== id ? a : { ...a, title })));
-  const handleAppendixContentChange = (id: string, content: string) =>
-    setAppendices((prev) => prev.map((a) => (a.id !== id ? a : { ...a, content })));
-  const handleAppendixPermissionsChange = (id: string, permissions: Appendix['permissions']) =>
-    setAppendices((prev) => prev.map((a) => (a.id !== id ? a : { ...a, permissions })));
 
   const handleAddEmphasis = () => setHasEmphasis(true);
   const handleRemoveEmphasis = () => {
@@ -151,197 +96,132 @@ export const TemplateModal = ({
     setEmphasisText('');
   };
 
-  const handleOpenImportPicker = () => setIsImportPickerOpen(true);
-  const handleCloseImportPicker = () => setIsImportPickerOpen(false);
-  const handleCollapseFieldBank = () => setIsFieldBankExpanded(false);
-  const handleExpandFieldBank = () => setIsFieldBankExpanded(true);
-  const handleAddImportedFields = (fields: DynamicField[]) => {
-    trackFieldsImported(fields.length);
-    setImportedFields((prev) => [...prev, ...fields]);
-    setIsFieldBankExpanded(true);
+  const onDetailsFormSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const isDupBlocked = mode === 'duplicate' && form.state.values.name === initialName;
+    const isEditBlocked = mode === 'edit' && !form.state.isDirty && !isStructureDirty;
+    if (isDupBlocked || isEditBlocked) return;
+
+    trackSaveClicked(mode);
+    onSave({
+      mode,
+      values: form.state.values,
+      subjects: tree.subjects,
+      appendices: appendicesState.appendices,
+      fields: fieldBank.importedFields,
+      emphasis: { enabled: hasEmphasis, text: emphasisText },
+    });
+    modalRef.current?.requestClose();
   };
-  const handleRemoveImportedField = (id: string) =>
-    setImportedFields((prev) => prev.filter((field) => field.id !== id));
 
-  const isFieldBankShown = isFieldBankExpanded && importedFields.length > 0;
-
-  // ContentEditorProvider degrades to local-only activation (no lock
-  // gating/remote cursors) when it finds no CollabProvider above it — the
-  // wrapper is only mounted once a real user identity is available.
+  // ContentEditorProvider (inside TemplateModalBody) degrades to local-only
+  // activation (no lock gating/remote cursors) when it finds no CollabProvider
+  // above it — the wrapper is only mounted once a real user identity is available.
   const body = (
-    <ContentEditorProvider>
-      <BodySection data-testid={TEMPLATE_MODAL_IDS.body}>
-        <Sidebar data-testid={TEMPLATE_MODAL_IDS.sidebar}>
-          {isFieldBankShown ? (
-            <>
-              <FieldBankBar
-                edge="top"
-                showFieldsToggle
-                onToggleFields={handleCollapseFieldBank}
-                onOpenPicker={handleOpenImportPicker}
-              />
-              <FieldBankList
-                fields={importedFields}
-                onRemoveField={handleRemoveImportedField}
-                onOpenPicker={handleOpenImportPicker}
-                onFieldDragStart={trackFieldDragged}
-              />
-            </>
-          ) : (
-            <>
-              <SidebarScroll>
-                <SubjectTree
-                  tree={tree}
-                  activePermissionsId={permTarget?.id ?? null}
-                  onTogglePermissions={handleTogglePermissions}
-                  onSubjectAdded={trackSubjectAdded}
-                  onSectionAdded={trackSectionAdded}
-                  onSubSectionAdded={trackSubSectionAdded}
-                />
+    <TemplateModalBody
+      tree={tree}
+      permTarget={permissions.permTarget}
+      onTogglePermissions={permissions.togglePermissions}
+      onSubjectAdded={trackSubjectAdded}
+      onSectionAdded={trackSectionAdded}
+      onSubSectionAdded={trackSubSectionAdded}
+      appendices={appendicesState.appendices}
+      onAddAppendix={appendicesState.addAppendix}
+      onRemoveAppendix={appendicesState.removeAppendix}
+      onReorderAppendix={appendicesState.reorderAppendix}
+      onAppendixTitleChange={appendicesState.changeAppendixTitle}
+      onAppendixContentChange={appendicesState.changeAppendixContent}
+      onAppendixPermissionsChange={appendicesState.changeAppendixPermissions}
+      hasEmphasis={hasEmphasis}
+      emphasisText={emphasisText}
+      onEmphasisTextChange={setEmphasisText}
+      onAddEmphasis={handleAddEmphasis}
+      onRemoveEmphasis={handleRemoveEmphasis}
+      isFieldBankShown={fieldBank.isFieldBankShown}
+      importedFields={fieldBank.importedFields}
+      onOpenImportPicker={fieldBank.openImportPicker}
+      onCollapseFieldBank={fieldBank.collapseFieldBank}
+      onExpandFieldBank={fieldBank.expandFieldBank}
+      onRemoveImportedField={fieldBank.removeImportedField}
+      onFieldDragged={trackFieldDragged}
+    />
+  );
 
-                <SidebarFooter>
-                  <AppendixList
-                    appendices={appendices}
-                    activePermissionsId={permTarget?.id ?? null}
-                    onAdd={handleAddAppendix}
-                    onRemove={handleRemoveAppendix}
-                    onTitleChange={handleAppendixTitleChange}
-                    onReorder={handleReorderAppendix}
-                    onTogglePermissions={handleTogglePermissions}
-                    onChangePermissions={handleAppendixPermissionsChange}
-                  />
-                  {hasEmphasis ? (
-                    <EmphasisBox>
-                      <EmphasisLabel>דגשים לכתיבה</EmphasisLabel>
-                      <SmallIconBtn
-                        type="button"
-                        onClick={handleRemoveEmphasis}
-                        aria-label="הסרת דגשים"
-                      >
-                        <X size={12} />
-                      </SmallIconBtn>
-                    </EmphasisBox>
-                  ) : (
-                    <AddNodeButton type="button" onClick={handleAddEmphasis}>
-                      <Plus size={14} />
-                      הוספת דגשים לכתיבת המסמך
-                    </AddNodeButton>
-                  )}
-                </SidebarFooter>
-              </SidebarScroll>
-              <FieldBankBar
-                edge="bottom"
-                showFieldsToggle={importedFields.length > 0}
-                onToggleFields={handleExpandFieldBank}
-                onOpenPicker={handleOpenImportPicker}
-              />
-            </>
-          )}
-        </Sidebar>
+  const footer = (
+    <form.Subscribe selector={(state) => ({ isDirty: state.isDirty, name: state.values.name })}>
+      {({ isDirty, name }) => {
+        const isDupBlocked = mode === 'duplicate' && name === initialName;
+        const isEditBlocked = mode === 'edit' && !isDirty && !isStructureDirty;
+        const isDisabled = isDupBlocked || isEditBlocked;
 
-        <DocumentPreview
-          tree={tree}
-          appendices={appendices}
-          onAppendixTitleChange={handleAppendixTitleChange}
-          onAppendixContentChange={handleAppendixContentChange}
-          hasEmphasis={hasEmphasis}
-          emphasisText={emphasisText}
-          onEmphasisTextChange={setEmphasisText}
-        />
-      </BodySection>
-    </ContentEditorProvider>
+        return (
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              size="lg"
+              data-testid={TEMPLATE_MODAL_IDS.cancelBtn}
+              onClick={handleClose}
+            >
+              ביטול
+            </Button>
+            <Button
+              type="submit"
+              form={FORM_ID}
+              size="lg"
+              disabled={isDisabled}
+              data-testid={TEMPLATE_MODAL_IDS.saveBtn}
+            >
+              {SAVE_LABELS[mode]}
+            </Button>
+          </>
+        );
+      }}
+    </form.Subscribe>
   );
 
   return (
-    <Overlay data-testid={TEMPLATE_MODAL_IDS.overlay} onClick={onOverlayClick} $closing={isClosing}>
-      <ModalCard
-        data-testid={TEMPLATE_MODAL_IDS.root}
-        onClick={onCardClick}
-        dir="rtl"
-        $closing={isClosing}
-      >
-        <ModalHeader data-testid={TEMPLATE_MODAL_IDS.header}>
-          <ModalTitle>{MODAL_TITLES[mode]}</ModalTitle>
-          <CloseBtn type="button" data-testid={TEMPLATE_MODAL_IDS.closeBtn} onClick={handleClose}>
-            <X size={20} />
-          </CloseBtn>
-        </ModalHeader>
+    <Modal
+      ref={modalRef}
+      title={MODAL_TITLES[mode]}
+      onClose={onClose}
+      onRequestClose={handleClose}
+      footer={footer}
+      width={1140}
+      maxWidth="96vw"
+      height="90vh"
+      noBodyPadding
+      data-testid={TEMPLATE_MODAL_IDS.root}
+    >
+      <DetailsSection id={FORM_ID} onSubmit={onDetailsFormSubmit}>
+        <DocumentDetailsForm
+          form={form}
+          mode={mode}
+          initialName={initialName}
+          departmentOptions={departmentOptions}
+        />
+      </DetailsSection>
 
-        <DetailsSection>
-          <DocumentDetailsForm
-            form={form}
-            mode={mode}
-            initialName={initialName}
-            departmentOptions={departmentOptions}
+      {currentUserId ? <CollabProvider userId={currentUserId}>{body}</CollabProvider> : body}
+
+      {permissions.permTarget && (
+        <PermissionsPopover
+          target={permissions.permTarget}
+          onClose={permissions.closePermissions}
+          onPermissionsChanged={permissions.changePermissions}
+        />
+      )}
+
+      {fieldBank.isImportPickerOpen && (
+        <Suspense fallback={<ModalLoading />}>
+          <DataImportModal
+            existingFields={fieldBank.importedFields}
+            onAdd={fieldBank.addImportedFields}
+            onRemove={fieldBank.removeImportedField}
+            onClose={fieldBank.closeImportPicker}
           />
-        </DetailsSection>
-
-        {currentUserId ? <CollabProvider userId={currentUserId}>{body}</CollabProvider> : body}
-
-        <form.Subscribe selector={(state) => ({ isDirty: state.isDirty, name: state.values.name })}>
-          {({ isDirty, name }) => {
-            const isDupBlocked = mode === 'duplicate' && name === initialName;
-            const isEditBlocked = mode === 'edit' && !isDirty && !isStructureDirty;
-            const isDisabled = isDupBlocked || isEditBlocked;
-
-            const handleSaveClick = () => {
-              if (isDisabled) return;
-              trackSaveClicked(mode);
-              onSave({
-                mode,
-                values: form.state.values,
-                subjects: tree.subjects,
-                appendices,
-                fields: importedFields,
-                emphasis: { enabled: hasEmphasis, text: emphasisText },
-              });
-              requestClose();
-            };
-
-            return (
-              <ModalFooter data-testid={TEMPLATE_MODAL_IDS.footer}>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="lg"
-                  data-testid={TEMPLATE_MODAL_IDS.cancelBtn}
-                  onClick={handleClose}
-                >
-                  ביטול
-                </Button>
-                <Button
-                  type="button"
-                  size="lg"
-                  disabled={isDisabled}
-                  data-testid={TEMPLATE_MODAL_IDS.saveBtn}
-                  onClick={handleSaveClick}
-                >
-                  {SAVE_LABELS[mode]}
-                </Button>
-              </ModalFooter>
-            );
-          }}
-        </form.Subscribe>
-
-        {permTarget && (
-          <PermissionsPopover
-            target={permTarget}
-            onClose={handleClosePermissions}
-            onPermissionsChanged={handlePermissionsChanged}
-          />
-        )}
-
-        {isImportPickerOpen && (
-          <Suspense fallback={<ModalLoading />}>
-            <DataImportModal
-              existingFields={importedFields}
-              onAdd={handleAddImportedFields}
-              onRemove={handleRemoveImportedField}
-              onClose={handleCloseImportPicker}
-            />
-          </Suspense>
-        )}
-      </ModalCard>
-    </Overlay>
+        </Suspense>
+      )}
+    </Modal>
   );
 };

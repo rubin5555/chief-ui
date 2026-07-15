@@ -2,32 +2,20 @@ import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { HAMAL_GROUPS_FALLBACK, useHamalGroups } from '@/api/hamalGroups';
 import { Button } from '@/components/ui/Button';
-import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { type Pos, useFloatingPanel } from '@/hooks/useFloatingPanel';
 import { useSearch } from '@/hooks/useSearch';
-import { colors, gray } from '@/styles/theme';
-import { ExpandedMemberBlock } from '../components/ExpandedMemberBlock';
 import { ColHeader } from '../components/MembersPanel/MembersPanel.styles';
 import { ModalSearchInput } from '../components/ModalSearchInput';
-import { SelectionCheckbox } from '../components/SelectionCheckbox';
 import type { HamalGroup, Member, PersonMember } from '../MailingListModal.constants';
 import { HamalAddMemberPanel } from './HamalAddMemberPanel';
 import { HamalCreateGroupPanel } from './HamalCreateGroupPanel';
-import { IconActionBtn } from './HamalTab.styles';
+import { HamalGroupRow } from './HamalGroupRow';
 import { HAMAL_TAB_IDS } from './HamalTab.testids';
 import { TabImportBar } from './TabImportBar';
-import {
-  CheckboxCell,
-  ClearBtn,
-  CountLabel,
-  EmptyState,
-  ExpandBtn,
-  ExpandChevron,
-  NameCell,
-  TabRoot,
-} from './tabs.shared.styles';
+import { ClearBtn, EmptyState, TabRoot } from './tabs.shared.styles';
 import { useTabSelection } from './useTabSelection';
 
 const HAMAL_GRID = '28px 1fr 28px 28px';
@@ -143,55 +131,20 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
           items={filtered}
           getRowKey={(group) => group.id}
           emptyState={<EmptyState>לא נמצאו קבוצות</EmptyState>}
-          renderRow={(group: HamalGroup) => {
-            const isSelected = selected.set.has(group.id);
-            const isAdded = addedGroupIds.has(group.id);
-            const isExpanded = expanded === group.id;
-            const totalCount = group.members.length + (extraMembers[group.id]?.length ?? 0);
-
-            return (
-              <GridTableRow
-                isSelected={isSelected}
-                isAdded={isAdded}
-                onClick={handleRowClick(group.id, isAdded)}
-                expansion={
-                  isExpanded ? (
-                    <ExpandedMemberBlock
-                      members={[...group.members, ...(extraMembers[group.id] ?? [])]}
-                    />
-                  ) : null
-                }
-              >
-                <CheckboxCell
-                  data-testid={HAMAL_TAB_IDS.rowCheckbox(group.id)}
-                  onClick={handleCheckClick(group.id, isAdded)}
-                >
-                  <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
-                </CheckboxCell>
-                <NameCell>
-                  {group.name}
-                  <CountLabel>({totalCount})</CountLabel>
-                </NameCell>
-                <IconActionBtn
-                  type="button"
-                  data-testid={HAMAL_TAB_IDS.rowAddMember(group.id)}
-                  onClick={handleAddMemberClick(group.id)}
-                >
-                  <Plus
-                    size={14}
-                    color={addMemberGroupId === group.id ? colors.primary : gray[400]}
-                  />
-                </IconActionBtn>
-                <ExpandBtn
-                  type="button"
-                  data-testid={HAMAL_TAB_IDS.rowExpand(group.id)}
-                  onClick={handleToggleExpand(group.id)}
-                >
-                  <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
-                </ExpandBtn>
-              </GridTableRow>
-            );
-          }}
+          renderRow={(group: HamalGroup) => (
+            <HamalGroupRow
+              group={group}
+              extraMembers={extraMembers[group.id] ?? []}
+              isSelected={selected.set.has(group.id)}
+              isAdded={addedGroupIds.has(group.id)}
+              isExpanded={expanded === group.id}
+              isAddMemberOpen={addMemberGroupId === group.id}
+              onRowClick={handleRowClick(group.id, addedGroupIds.has(group.id))}
+              onCheckClick={handleCheckClick(group.id, addedGroupIds.has(group.id))}
+              onAddMemberClick={handleAddMemberClick(group.id)}
+              onToggleExpand={handleToggleExpand(group.id)}
+            />
+          )}
         />
       )}
 

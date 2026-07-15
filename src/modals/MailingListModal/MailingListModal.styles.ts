@@ -1,28 +1,7 @@
 import styled from 'styled-components';
 import { colors, gray, radii } from '@/styles/theme';
-import {
-  CloseBtnBase,
-  ModalCardBase,
-  ModalFooterBase,
-  ModalHeaderBase,
-  ModalTitleBase,
-} from '../modal.shared.styles';
 
-export { Overlay } from '../modal.shared.styles';
-
-export const ModalCard = styled(ModalCardBase)`
-	width: 1140px;
-	max-width: 96vw;
-	height: 90vh;
-`;
-
-export const ModalHeader = ModalHeaderBase;
-
-export const ModalTitle = ModalTitleBase;
-
-export const CloseBtn = CloseBtnBase;
-
-export const ModalBody = styled.div`
+export const BodyLayout = styled.div`
 	flex: 1;
 	display: flex;
 	overflow: hidden;
@@ -44,7 +23,7 @@ export const LeftPanel = styled.div`
 	overflow: hidden;
 `;
 
-export const FormSection = styled.div`
+export const FormSection = styled.form`
 	flex-shrink: 0;
 	padding: 16px 20px;
 	border-bottom: 1px solid ${colors.border};
@@ -102,10 +81,6 @@ export const PlaceholderText = styled.p`
 	margin: auto;
 	color: ${gray[400]};
 	font-size: 12px;
-`;
-
-export const ModalFooter = styled(ModalFooterBase)`
-	justify-content: space-between;
 `;
 
 export const CancelBtn = styled.button`

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { createContext, useContext, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import type { CursorPath } from '@/collab/types';
 import { type LockInfo, useCollabContext } from './CollabContext';
 
@@ -14,7 +14,7 @@ interface HistoryEntry {
 const EMPTY_LOCK_STATE = new Map<string, LockInfo | null>();
 const EMPTY_CURSORS = new Map<string, CursorPath | null>();
 
-interface ContentEditorContextValue {
+export interface ContentEditorContextValue {
   toolbarId: string;
   activeId: string | null;
   setActive: (id: string | null) => void;
@@ -45,78 +45,94 @@ export const ContentEditorProvider = ({ children }: { children: ReactNode }) => 
   const historyRef = useRef(new Map<string, HistoryEntry>());
   const collab = useCollabContext();
 
-  const getEntry = (id: string, initialValue: string): HistoryEntry => {
+  const getEntry = useCallback((id: string, initialValue: string): HistoryEntry => {
     let entry = historyRef.current.get(id);
     if (!entry) {
       entry = { stack: [initialValue], pointer: 0 };
       historyRef.current.set(id, entry);
     }
     return entry;
-  };
+  }, []);
 
-  const getHistoryValue = (id: string, initialValue: string) => {
-    const entry = getEntry(id, initialValue);
-    return entry.stack[entry.pointer];
-  };
+  const getHistoryValue = useCallback(
+    (id: string, initialValue: string) => {
+      const entry = getEntry(id, initialValue);
+      return entry.stack[entry.pointer];
+    },
+    [getEntry],
+  );
 
-  const pushHistoryLevel = (id: string, value: string) => {
-    const entry = getEntry(id, value);
-    if (entry.stack[entry.pointer] === value) return;
+  const pushHistoryLevel = useCallback(
+    (id: string, value: string) => {
+      const entry = getEntry(id, value);
+      if (entry.stack[entry.pointer] === value) return;
 
-    entry.stack = entry.stack.slice(0, entry.pointer + 1);
-    entry.stack.push(value);
+      entry.stack = entry.stack.slice(0, entry.pointer + 1);
+      entry.stack.push(value);
 
-    if (entry.stack.length > MAX_HISTORY_LENGTH) {
-      entry.stack = entry.stack.slice(entry.stack.length - MAX_HISTORY_LENGTH);
-    }
-    entry.pointer = entry.stack.length - 1;
-  };
+      if (entry.stack.length > MAX_HISTORY_LENGTH) {
+        entry.stack = entry.stack.slice(entry.stack.length - MAX_HISTORY_LENGTH);
+      }
+      entry.pointer = entry.stack.length - 1;
+    },
+    [getEntry],
+  );
 
-  const undoHistory = (id: string) => {
+  const undoHistory = useCallback((id: string) => {
     const entry = historyRef.current.get(id);
     if (!entry || entry.pointer <= 0) return null;
     entry.pointer -= 1;
     return entry.stack[entry.pointer];
-  };
+  }, []);
 
-  const redoHistory = (id: string) => {
+  const redoHistory = useCallback((id: string) => {
     const entry = historyRef.current.get(id);
     if (!entry || entry.pointer >= entry.stack.length - 1) return null;
     entry.pointer += 1;
     return entry.stack[entry.pointer];
-  };
+  }, []);
 
-  const requestActivate = (fieldId: string, instanceId: string) => {
-    if (!collab) {
-      setActiveId(instanceId);
-      return;
-    }
-    setActiveId(instanceId);
-    collab.acquireLock(fieldId).then((granted) => {
-      if (!granted) {
-        setActiveId((current) => (current === instanceId ? null : current));
+  const requestActivate = useCallback(
+    (fieldId: string, instanceId: string) => {
+      if (!collab) {
+        setActiveId(instanceId);
+        return;
       }
-    });
-  };
-
-  return (
-    <ContentEditorContext.Provider
-      value={{
-        toolbarId: toolbarId.current,
-        activeId,
-        setActive: setActiveId,
-        requestActivate,
-        lockState: collab?.lockState ?? EMPTY_LOCK_STATE,
-        remoteCursors: collab?.remoteCursors ?? EMPTY_CURSORS,
-        getHistoryValue,
-        pushHistoryLevel,
-        undoHistory,
-        redoHistory,
-      }}
-    >
-      {children}
-    </ContentEditorContext.Provider>
+      setActiveId(instanceId);
+      collab.acquireLock(fieldId).then((granted) => {
+        if (!granted) {
+          setActiveId((current) => (current === instanceId ? null : current));
+        }
+      });
+    },
+    [collab],
   );
+
+  const value = useMemo<ContentEditorContextValue>(
+    () => ({
+      toolbarId: toolbarId.current,
+      activeId,
+      setActive: setActiveId,
+      requestActivate,
+      lockState: collab?.lockState ?? EMPTY_LOCK_STATE,
+      remoteCursors: collab?.remoteCursors ?? EMPTY_CURSORS,
+      getHistoryValue,
+      pushHistoryLevel,
+      undoHistory,
+      redoHistory,
+    }),
+    [
+      activeId,
+      collab,
+      requestActivate,
+      getHistoryValue,
+      pushHistoryLevel,
+      undoHistory,
+      redoHistory,
+    ],
+  );
+
+  return <ContentEditorContext.Provider value={value}>{children}</ContentEditorContext.Provider>;
 };
 
 export const useContentEditorContext = () => {

@@ -1,27 +1,15 @@
-import { X } from 'lucide-react';
-import type { MouseEvent } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ContentEditor } from '@/components/ui/ContentEditor';
 import { FileUploadField } from '@/components/ui/FileUploadField';
-import { useDialogClose } from '@/hooks/useDialogClose';
+import type { ModalHandle } from '@/components/ui/Modal';
+import { Modal } from '@/components/ui/Modal';
 import type { SignatureType } from '@/pages/profile/components/tabs/SignaturesPanel';
 import { SignatureTypeControl } from './components/SignatureTypeControl';
 import { useSignatureModalAnalytics } from './SignatureModal.analytics';
 import type { SignatureModalMode } from './SignatureModal.constants';
 import { SIGNATURE_TYPE_OPTIONS } from './SignatureModal.constants';
-import {
-  CloseBtn,
-  EditorSection,
-  ModalBody,
-  ModalCard,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle,
-  Overlay,
-  TypeSection,
-  UploadSection,
-} from './SignatureModal.styles';
+import { BodyStack, EditorSection, TypeSection, UploadSection } from './SignatureModal.styles';
 import { SIGNATURE_MODAL_IDS } from './SignatureModal.testids';
 
 interface SignatureModalProps {
@@ -64,15 +52,12 @@ export const SignatureModal = ({
     trackModalOpened(mode);
   }, []);
 
-  const { isClosing, requestClose } = useDialogClose(onClose);
+  const modalRef = useRef<ModalHandle>(null);
 
   const handleClose = () => {
     trackCancelled(mode);
-    requestClose();
+    modalRef.current?.requestClose();
   };
-
-  const onOverlayClick = () => handleClose();
-  const onCardClick = (e: MouseEvent) => e.stopPropagation();
 
   const handleTypeChange = (nextType: SignatureType) => {
     setType(nextType);
@@ -104,82 +89,75 @@ export const SignatureModal = ({
     if (isDisabled) return;
     trackSaveClicked(mode, type);
     onSave(type, body);
-    requestClose();
+    modalRef.current?.requestClose();
   };
 
-  return (
-    <Overlay
-      data-testid={SIGNATURE_MODAL_IDS.overlay}
-      onClick={onOverlayClick}
-      $closing={isClosing}
-    >
-      <ModalCard
-        data-testid={SIGNATURE_MODAL_IDS.root}
-        onClick={onCardClick}
-        dir="rtl"
-        $closing={isClosing}
+  const footer = (
+    <>
+      <Button
+        type="button"
+        variant="secondary"
+        size="lg"
+        data-testid={SIGNATURE_MODAL_IDS.cancelBtn}
+        onClick={handleClose}
       >
-        <ModalHeader data-testid={SIGNATURE_MODAL_IDS.header}>
-          <ModalTitle>{MODAL_TITLES[mode]}</ModalTitle>
-          <CloseBtn type="button" data-testid={SIGNATURE_MODAL_IDS.closeBtn} onClick={handleClose}>
-            <X size={20} />
-          </CloseBtn>
-        </ModalHeader>
+        ביטול
+      </Button>
+      <Button
+        type="button"
+        size="lg"
+        data-testid={SIGNATURE_MODAL_IDS.saveBtn}
+        disabled={isDisabled}
+        onClick={onSaveClick}
+      >
+        {SAVE_LABELS[mode]}
+      </Button>
+    </>
+  );
 
-        <ModalBody data-testid={SIGNATURE_MODAL_IDS.body}>
-          <TypeSection data-testid={SIGNATURE_MODAL_IDS.typeControl}>
-            <SignatureTypeControl
-              options={SIGNATURE_TYPE_OPTIONS}
-              activeId={type}
-              onChange={handleTypeChange}
-            />
-          </TypeSection>
+  return (
+    <Modal
+      ref={modalRef}
+      title={MODAL_TITLES[mode]}
+      onClose={onClose}
+      onRequestClose={handleClose}
+      footer={footer}
+      width={700}
+      maxWidth="95vw"
+      data-testid={SIGNATURE_MODAL_IDS.root}
+    >
+      <BodyStack>
+        <TypeSection data-testid={SIGNATURE_MODAL_IDS.typeControl}>
+          <SignatureTypeControl
+            options={SIGNATURE_TYPE_OPTIONS}
+            activeId={type}
+            onChange={handleTypeChange}
+          />
+        </TypeSection>
 
-          <EditorSection data-testid={SIGNATURE_MODAL_IDS.editor}>
-            <ContentEditor
-              id="signature-body"
-              value={body}
-              onChange={onBodyChange}
-              placeholder="הזן את תוכן החתימה..."
-              minHeight={160}
-            />
-          </EditorSection>
+        <EditorSection data-testid={SIGNATURE_MODAL_IDS.editor}>
+          <ContentEditor
+            id="signature-body"
+            value={body}
+            onChange={onBodyChange}
+            placeholder="הזן את תוכן החתימה..."
+            minHeight={160}
+          />
+        </EditorSection>
 
-          <UploadSection>
-            <FileUploadField
-              id="signature-upload"
-              data-testid={SIGNATURE_MODAL_IDS.uploadInput}
-              removeTestId={SIGNATURE_MODAL_IDS.uploadRemove}
-              previewUrl={imagePreview}
-              valueLabel={imageName ?? undefined}
-              label="העלאת תמונת חתימה"
-              onFileSelect={onImageSelect}
-              onClear={onImageClear}
-            />
-          </UploadSection>
-        </ModalBody>
-
-        <ModalFooter data-testid={SIGNATURE_MODAL_IDS.footer}>
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            data-testid={SIGNATURE_MODAL_IDS.cancelBtn}
-            onClick={handleClose}
-          >
-            ביטול
-          </Button>
-          <Button
-            type="button"
-            size="lg"
-            data-testid={SIGNATURE_MODAL_IDS.saveBtn}
-            disabled={isDisabled}
-            onClick={onSaveClick}
-          >
-            {SAVE_LABELS[mode]}
-          </Button>
-        </ModalFooter>
-      </ModalCard>
-    </Overlay>
+        <UploadSection>
+          <FileUploadField
+            id="signature-upload"
+            data-testid={SIGNATURE_MODAL_IDS.uploadInput}
+            removeTestId={SIGNATURE_MODAL_IDS.uploadRemove}
+            previewUrl={imagePreview}
+            valueLabel={imageName ?? undefined}
+            label="העלאת תמונת חתימה"
+            onFileSelect={onImageSelect}
+            onClear={onImageClear}
+          />
+        </UploadSection>
+      </BodyStack>
+    </Modal>
   );
 };

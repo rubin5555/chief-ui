@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
 import type { ApproverRank } from '../../EnvironmentRequestModal.constants';
 import { APPROVER_RANKS } from '../../EnvironmentRequestModal.constants';
@@ -10,7 +11,7 @@ interface ApproversByRankFieldProps {
   options: string[];
 }
 
-export const ApproversByRankField = ({ value, onChange, options }: ApproversByRankFieldProps) => {
+const ApproversByRankFieldComponent = ({ value, onChange, options }: ApproversByRankFieldProps) => {
   const onRankChange = (rank: ApproverRank) => (selected: string[]) => onChange(rank, selected);
 
   return (
@@ -33,3 +34,5 @@ export const ApproversByRankField = ({ value, onChange, options }: ApproversByRa
     </RanksList>
   );
 };
+
+export const ApproversByRankField = memo(ApproversByRankFieldComponent);

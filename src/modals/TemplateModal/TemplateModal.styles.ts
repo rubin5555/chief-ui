@@ -1,30 +1,7 @@
 import styled from 'styled-components';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
-import {
-  CloseBtnBase,
-  ModalCardBase,
-  ModalFooterBase,
-  ModalHeaderBase,
-  ModalTitleBase,
-} from '../modal.shared.styles';
 
-export { Overlay } from '../modal.shared.styles';
-
-export const ModalCard = styled(ModalCardBase)`
-  width: 1140px;
-  max-width: 96vw;
-  height: 90vh;
-`;
-
-export const ModalHeader = styled(ModalHeaderBase)`
-  padding: 12px 32px;
-`;
-
-export const ModalTitle = ModalTitleBase;
-
-export const CloseBtn = CloseBtnBase;
-
-export const DetailsSection = styled.div`
+export const DetailsSection = styled.form`
   flex-shrink: 0;
   padding: 10px 32px;
   border-bottom: 1px solid ${colors.border};
@@ -453,5 +430,3 @@ export const PreviewEmpty = styled.div`
   color: ${gray[400]};
   font-size: 14px;
 `;
-
-export const ModalFooter = ModalFooterBase;

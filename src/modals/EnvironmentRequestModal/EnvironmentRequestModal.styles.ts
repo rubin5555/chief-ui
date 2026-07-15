@@ -1,57 +1,7 @@
 import styled from 'styled-components';
 import { colors, gray, radii, transitions } from '@/styles/theme';
-import {
-  CloseBtnBase,
-  ModalCardBase,
-  ModalFooterBase,
-  ModalHeaderBase,
-  ModalTitleBase,
-} from '../modal.shared.styles';
 
-export { Overlay } from '../modal.shared.styles';
-
-export const ModalCard = styled(ModalCardBase)`
-	width: 620px;
-	max-width: 90vw;
-	max-height: 90vh;
-`;
-
-export const ModalHeader = ModalHeaderBase;
-
-export const HeaderTitleGroup = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 8px;
-`;
-
-export const HeaderIconBadge = styled.div`
-	width: 32px;
-	height: 32px;
-	border-radius: ${radii.xl};
-	background: ${gray[100]};
-	color: ${colors.primary};
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-`;
-
-export const ModalTitle = styled(ModalTitleBase)`
-	font-size: 18px;
-`;
-
-export const CloseBtn = styled(CloseBtnBase)`
-	padding: 6px;
-	color: ${gray[400]};
-	&:hover {
-		color: ${gray[600]};
-	}
-`;
-
-export const ModalBody = styled.form`
-	flex: 1;
-	overflow-y: auto;
-	padding: 24px 32px;
+export const FormEl = styled.form`
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
@@ -137,5 +87,3 @@ export const RankField = styled.div`
 	flex: 1;
 	min-width: 0;
 `;
-
-export const ModalFooter = ModalFooterBase;

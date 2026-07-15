@@ -20,7 +20,7 @@ interface RemoteContentUpdate {
   receivedAt: number;
 }
 
-interface CollabContextValue {
+export interface CollabContextValue {
   userId: string;
   connected: boolean;
   // All three keyed by field id (Section/SubSection/Appendix id, plan §3) —
