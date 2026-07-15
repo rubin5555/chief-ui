@@ -2292,7 +2292,8 @@ function EditDocDetailsModal({ doc, onClose, mode = 'edit', readOnly = false, on
               <SelectField label="סוג מסמך" value={docType} onChange={v => { setDocType(v); dirty(); }}
                 options={['פקודה', 'נוהל', 'הוראה', 'הנחיה', 'נספח']} />
               <div className="col-span-2">
-                <EditableField label="שיוך לתיקייה מבצעית" value={folder} onChange={v => { setFolder(v); dirty(); }} />
+                <SelectField label="שיוך לתיקייה מבצעית" value={folder} onChange={v => { setFolder(v); dirty(); }}
+                  options={['תיקיית מבצעים 2026', 'תיקיית נהלים', 'תיקיית הוראות', 'תיקיית לוגיסטיקה', 'תיקיית משאבי אנוש']} />
               </div>
               <div className="col-span-2">
                 <AmazonSelector entityType={amazonType} entityName={amazonName}
@@ -4051,14 +4052,6 @@ export function Edit({ navigate, doc }: EditProps) {
                           {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
                             עודכן ב‏25-06-2026 11:18 ע״י s2345678
                           </span>}
-                          {!isReadOnly && SECTIONS_WITH_SOURCE.has(section.id) && (
-                            <button
-                              onClick={() => { setSourceSystemsContext(section.id); setShowSourceSystemsModal(true); }}
-                              className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors hover:bg-amber-50"
-                              style={{ color: '#92400E', background: '#FEF3C7', border: '1px solid #FCD34D', marginLeft: 4 }}>
-                              קיים מידע ממערכת מקור
-                            </button>
-                          )}
                           {!isReadOnly && (
                             <button
                               title={SECTIONS_WITH_SOURCE.has(section.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
@@ -4222,14 +4215,6 @@ export function Edit({ navigate, doc }: EditProps) {
                             {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap', letterSpacing: 0 }}>
                               עודכן ב‏25-06-2026 11:18 ע״י s2345678
                             </span>}
-                            {!isReadOnly && SECTIONS_WITH_SOURCE.has(child.id) && (
-                              <button
-                                onClick={() => { setSourceSystemsContext(child.id); setShowSourceSystemsModal(true); }}
-                                className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors hover:bg-amber-50"
-                                style={{ color: '#92400E', background: '#FEF3C7', border: '1px solid #FCD34D', marginLeft: 4 }}>
-                                קיים מידע ממערכת מקור
-                              </button>
-                            )}
                             {!isReadOnly && (
                               <button
                                 title={SECTIONS_WITH_SOURCE.has(child.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
@@ -4429,14 +4414,6 @@ export function Edit({ navigate, doc }: EditProps) {
                                 {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
                                   עודכן ב‏25-06-2026 11:18 ע״י s2345678
                                 </span>}
-                                {!isReadOnly && SECTIONS_WITH_SOURCE.has(sub.id) && (
-                                  <button
-                                    onClick={() => { setSourceSystemsContext(sub.id); setShowSourceSystemsModal(true); }}
-                                    className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap transition-colors hover:bg-amber-50"
-                                    style={{ color: '#92400E', background: '#FEF3C7', border: '1px solid #FCD34D', marginLeft: 4 }}>
-                                    קיים מידע ממערכת מקור
-                                  </button>
-                                )}
                                 {!isReadOnly && (
                                   <button
                                     title={SECTIONS_WITH_SOURCE.has(sub.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
