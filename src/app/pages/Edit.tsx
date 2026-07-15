@@ -2524,16 +2524,9 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [showDistributePrompt, setShowDistributePrompt] = useState(false);
-  const [showSignatureDropdown, setShowSignatureDropdown] = useState(false);
-  const [selectedSignature, setSelectedSignature] = useState<string | null>(null);
-  const signatureRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!showSignatureDropdown) return;
-    const h = (e: MouseEvent) => { if (signatureRef.current && !signatureRef.current.contains(e.target as Node)) setShowSignatureDropdown(false); };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, [showSignatureDropdown]);
   const MOCK_SIGNATURES = ['חתימה ראשית', 'חתימה רשמית', 'חתימת שדה'];
+  const [showSignatureStep, setShowSignatureStep] = useState(false);
+  const [selectedSignature, setSelectedSignature] = useState<string | null>(MOCK_SIGNATURES.length === 1 ? MOCK_SIGNATURES[0] : null);
 
   const isHmlSelected = stages[selectedStageIdx]?.type === 'hml';
   const currentStage = stages[selectedStageIdx];
@@ -2649,50 +2642,72 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
           <button onClick={onClose} className="px-5 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">
             ביטול
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex gap-3">
             <button onClick={() => setShowRejectForm(true)}
               className="px-5 py-2 rounded-full text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
               דחה
             </button>
-            {/* Signature in footer */}
-            <div ref={signatureRef} className="relative">
-              {selectedSignature ? (
-                <button onClick={() => setSelectedSignature(null)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold border transition-colors"
-                  style={{ borderColor: '#1B3A6B', color: '#1B3A6B', background: '#EBF0FA' }}>
-                  <svg width="32" height="14" viewBox="0 0 32 14" fill="none"><path d="M2 10 Q6 3 10 8 Q14 13 18 5 Q22 1 26 7 Q29 11 31 6" stroke="#1B3A6B" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.8"/></svg>
-                  {selectedSignature}
-                  <X className="w-3 h-3 opacity-50" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    if (MOCK_SIGNATURES.length === 1) { setSelectedSignature(MOCK_SIGNATURES[0]); }
-                    else { setShowSignatureDropdown(o => !o); }
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors">
-                  <Plus className="w-3.5 h-3.5" /> הוסף חתימה
-                </button>
-              )}
-              {showSignatureDropdown && (
-                <div className="absolute bottom-full mb-2 left-0 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10" style={{ minWidth: 160 }}>
-                  {MOCK_SIGNATURES.map(sig => (
-                    <button key={sig} type="button"
-                      onClick={() => { setSelectedSignature(sig); setShowSignatureDropdown(false); }}
-                      className="w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                      {sig}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button onClick={handleApprove}
+            <button onClick={() => setShowSignatureStep(true)}
               className="px-6 py-2 rounded-full text-sm font-semibold text-white transition-all hover:opacity-90"
               style={{ background: '#1B3A6B' }}>
               אשר
             </button>
           </div>
         </div>
+
+        {/* Signature confirmation overlay */}
+        {showSignatureStep && (
+          <div className="absolute inset-0 z-10 flex flex-col justify-end rounded-2xl overflow-hidden"
+            style={{ background: 'rgba(15,23,42,0.35)' }}>
+            <div dir="rtl" className="bg-white rounded-t-2xl px-6 py-5 flex flex-col gap-4 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-800">בחר חתימת מאשר</h3>
+                <button onClick={() => setShowSignatureStep(false)} className="p-1 rounded hover:bg-gray-100">
+                  <X className="w-4 h-4 text-gray-400" />
+                </button>
+              </div>
+              {MOCK_SIGNATURES.length === 1 ? (
+                <div className="flex flex-col items-center gap-3 py-2">
+                  <svg width="160" height="44" viewBox="0 0 160 44" fill="none">
+                    <path d="M12 32 Q30 10 48 26 Q66 42 84 20 Q102 2 120 24 Q138 42 152 18" stroke="#1B3A6B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.75"/>
+                    <path d="M24 38 Q60 28 96 36 Q128 42 152 32" stroke="#1B3A6B" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.3"/>
+                  </svg>
+                  <span className="text-xs text-gray-500">{MOCK_SIGNATURES[0]}</span>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {MOCK_SIGNATURES.map(sig => (
+                    <button key={sig} type="button"
+                      onClick={() => setSelectedSignature(sig)}
+                      className="w-full text-right px-4 py-2.5 rounded-xl text-sm transition-colors"
+                      style={selectedSignature === sig ? { background: '#EBF0FA', color: '#1B3A6B', fontWeight: 600 } : { color: '#374151' }}>
+                      {sig}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-3 justify-end">
+                <button onClick={() => setShowSignatureStep(false)}
+                  className="px-5 py-2 rounded-full text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors">
+                  ביטול
+                </button>
+                <button
+                  onClick={() => {
+                    const sig = MOCK_SIGNATURES.length === 1 ? MOCK_SIGNATURES[0] : selectedSignature;
+                    if (!sig) return;
+                    setSelectedSignature(sig);
+                    setShowSignatureStep(false);
+                    handleApprove();
+                  }}
+                  disabled={MOCK_SIGNATURES.length > 1 && !selectedSignature}
+                  className="px-6 py-2 rounded-full text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-40"
+                  style={{ background: '#1B3A6B' }}>
+                  אשר עם חתימה
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Reject reason overlay */}
         {showRejectForm && (
