@@ -14,7 +14,7 @@ import {
   FolderPlus, FileInput, Lightbulb, Check,
   Search, SlidersHorizontal, ArrowRight, ArrowUp, ArrowDown, ArrowLeft,
   TableCellsMerge, TableCellsSplit, SplitSquareVertical, SplitSquareHorizontal, Settings, Settings2,
-  Clock, CheckCircle2, AlertCircle, PenLine, Minus, GripHorizontal, Copy, MessageSquareOff, Loader2,
+  Clock, CheckCircle2, AlertCircle, PenLine, Minus, GripHorizontal, Copy, MessageSquareOff, Loader2, RefreshCw,
   CalendarDays,
 } from 'lucide-react';
 import type { EditDocInfo } from '../../App';
@@ -3295,6 +3295,7 @@ export function Edit({ navigate, doc }: EditProps) {
   const [hideDeleted, setHideDeleted] = useState(false);
   const [showHighlight, setShowHighlight] = useState(false);
   const comparisonTotal = 3;
+  const SECTIONS_WITH_SOURCE = new Set(['s1-1', 's2-1', 's3-1']);
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const toggleTopic = (id: string) => setExpandedTopics(prev => {
     const next = new Set(prev);
@@ -3931,6 +3932,14 @@ export function Edit({ navigate, doc }: EditProps) {
                         {!isReadOnly && <span style={{ fontSize: 9, color: '#b0b7c3', marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap' }}>
                           עודכן ב‏25-06-2026 11:18 ע״י s2345678
                         </span>}
+                        {!isReadOnly && (
+                          <button
+                            title="אין מקור חיצוני מחובר"
+                            disabled
+                            className="p-1 rounded transition-colors text-gray-200 cursor-not-allowed">
+                            <RefreshCw className="w-3 h-3" />
+                          </button>
+                        )}
                         <button title="העתק" className="p-1 rounded hover:bg-amber-100 transition-colors text-gray-400 hover:text-gray-600">
                           <Copy className="w-3 h-3" />
                         </button>
@@ -4020,6 +4029,14 @@ export function Edit({ navigate, doc }: EditProps) {
                           {!isReadOnly && <span style={{ fontSize: 9, color: '#b0b7c3', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
                             עודכן ב‏25-06-2026 11:18 ע״י s2345678
                           </span>}
+                          {!isReadOnly && (
+                            <button
+                              title={SECTIONS_WITH_SOURCE.has(section.id) ? 'רענן נתונים ממקור' : 'אין מקור חיצוני מחובר'}
+                              disabled={!SECTIONS_WITH_SOURCE.has(section.id)}
+                              className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(section.id) ? 'text-gray-400 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
+                              <RefreshCw className="w-3 h-3" />
+                            </button>
+                          )}
                           <button title="העתק" className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
                             <Copy className="w-3 h-3" />
                           </button>
@@ -4175,6 +4192,14 @@ export function Edit({ navigate, doc }: EditProps) {
                             {!isReadOnly && <span style={{ fontSize: 9, color: '#b0b7c3', marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap', letterSpacing: 0 }}>
                               עודכן ב‏25-06-2026 11:18 ע״י s2345678
                             </span>}
+                            {!isReadOnly && (
+                              <button
+                                title={SECTIONS_WITH_SOURCE.has(child.id) ? 'רענן נתונים ממקור' : 'אין מקור חיצוני מחובר'}
+                                disabled={!SECTIONS_WITH_SOURCE.has(child.id)}
+                                className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(child.id) ? 'text-gray-400 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
+                                <RefreshCw className="w-3 h-3" />
+                              </button>
+                            )}
                             <button title="העתק סעיף" className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
                               <Copy className="w-3 h-3" />
                             </button>
@@ -4366,6 +4391,14 @@ export function Edit({ navigate, doc }: EditProps) {
                                 {!isReadOnly && <span style={{ fontSize: 9, color: '#b0b7c3', marginLeft: 4, marginRight: 2, whiteSpace: 'nowrap' }}>
                                   עודכן ב‏25-06-2026 11:18 ע״י s2345678
                                 </span>}
+                                {!isReadOnly && (
+                                  <button
+                                    title={SECTIONS_WITH_SOURCE.has(sub.id) ? 'רענן נתונים ממקור' : 'אין מקור חיצוני מחובר'}
+                                    disabled={!SECTIONS_WITH_SOURCE.has(sub.id)}
+                                    className={`p-1 rounded transition-colors ${SECTIONS_WITH_SOURCE.has(sub.id) ? 'text-gray-400 hover:bg-gray-100 hover:text-[#1B3A6B] cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
+                                    <RefreshCw className="w-3 h-3" />
+                                  </button>
+                                )}
                                 <button title="העתק תת-סעיף" className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
                                   <Copy className="w-3 h-3" />
                                 </button>
