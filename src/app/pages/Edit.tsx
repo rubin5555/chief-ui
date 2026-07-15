@@ -2664,8 +2664,7 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
                   if (MOCK_SIGNATURES.length === 1) { setSelectedSignature(MOCK_SIGNATURES[0]); }
                   else { setShowSignatureDropdown(o => !o); }
                 }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                className="w-full flex items-center justify-center py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors">
                 בחירת חתימת מאשר
               </button>
               {showSignatureDropdown && (
