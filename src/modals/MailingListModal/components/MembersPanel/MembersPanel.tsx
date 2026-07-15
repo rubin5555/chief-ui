@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react';
+import { memo } from 'react';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { SubTable, SubTableRow } from '@/components/ui/SubTable';
 import type { Member, PersonMember } from '../../MailingListModal.constants';
@@ -31,7 +32,7 @@ interface MembersPanelProps {
   onRemove: (id: string) => void;
 }
 
-export const MembersPanel = ({
+const MembersPanelComponent = ({
   members,
   groupExpanded,
   onToggleGroup,
@@ -172,3 +173,5 @@ export const MembersPanel = ({
     </>
   );
 };
+
+export const MembersPanel = memo(MembersPanelComponent);

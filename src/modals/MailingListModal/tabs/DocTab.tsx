@@ -1,34 +1,21 @@
 import { Filter } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { DOCS_FALLBACK, useDocs } from '@/api/docs';
-import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
-import { SubTable, SubTableRow } from '@/components/ui/SubTable';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
-import { gray } from '@/styles/theme';
 import { ColHeader } from '../components/MembersPanel/MembersPanel.styles';
 import { ModalSearchInput } from '../components/ModalSearchInput';
-import { SelectionCheckbox } from '../components/SelectionCheckbox';
-import type { DocItem, Member, PersonMember } from '../MailingListModal.constants';
+import type { DocItem, Member } from '../MailingListModal.constants';
 import { DOC_GRID } from '../MailingListModal.constants';
 import { deduplicateMembers } from '../utils/deduplicateMembers';
 import { DocFilterPanel } from './DocFilterPanel';
-import { ColCenter, FilterBtnInline, SubCell, SubNameCell } from './DocTab.styles';
+import { DocRow } from './DocRow';
+import { FilterBtnInline } from './DocTab.styles';
 import { DOC_TAB_IDS } from './DocTab.testids';
 import { TabImportBar } from './TabImportBar';
-import {
-  CheckboxCell,
-  CountLabel,
-  EmptyState,
-  ExpandBtn,
-  ExpandChevron,
-  NameCell,
-  SubTabBar,
-  SubTabBtn,
-  SubTabIndicator,
-  TabRoot,
-} from './tabs.shared.styles';
+import { EmptyState, SubTabBar, SubTabBtn, SubTabIndicator, TabRoot } from './tabs.shared.styles';
 import { useDocFilters } from './useDocFilters';
 import { useTabSelection } from './useTabSelection';
 
@@ -150,60 +137,15 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
             const isExpanded = expanded === doc.id;
 
             return (
-              <GridTableRow
+              <DocRow
+                doc={doc}
                 isSelected={isSelected}
                 isAdded={isAdded}
-                onClick={handleRowClick(doc.id, isAdded)}
-                expansion={
-                  isExpanded ? (
-                    <SubTable
-                      columns={DOC_GRID}
-                      headers={[
-                        null,
-                        <ColHeader $align="right">שם מלא</ColHeader>,
-                        <ColHeader>תעודת זהות</ColHeader>,
-                        null,
-                        <ColHeader>ארגון</ColHeader>,
-                      ]}
-                      items={doc.distribution}
-                      getRowKey={(p: PersonMember, i: number) => p.idNumber || i}
-                      renderRow={(p: PersonMember) => (
-                        <SubTableRow>
-                          <span />
-                          <SubNameCell>{p.name}</SubNameCell>
-                          <SubCell $tabular>{p.idNumber}</SubCell>
-                          <span />
-                          <SubCell>{p.environment}</SubCell>
-                        </SubTableRow>
-                      )}
-                    />
-                  ) : null
-                }
-              >
-                <CheckboxCell
-                  data-testid={DOC_TAB_IDS.rowCheckbox(doc.id)}
-                  onClick={handleCheckClick(doc.id, isAdded)}
-                >
-                  <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
-                </CheckboxCell>
-                <NameCell>
-                  {doc.name}
-                  <CountLabel>({doc.distribution.length})</CountLabel>
-                </NameCell>
-                <ColCenter>{doc.cmdNum}</ColCenter>
-                <ColCenter>{doc.update}</ColCenter>
-                <ColCenter>{doc.docType}</ColCenter>
-                <ColCenter>{doc.environment}</ColCenter>
-                <ColCenter $color={gray[500]}>{doc.lastUpdate}</ColCenter>
-                <ColCenter $color={gray[400]}>{doc.refNum}</ColCenter>
-                <ExpandBtn
-                  type="button"
-                  data-testid={DOC_TAB_IDS.rowExpand(doc.id)}
-                  onClick={handleToggleExpand(doc.id)}
-                >
-                  <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
-                </ExpandBtn>
-              </GridTableRow>
+                isExpanded={isExpanded}
+                onRowClick={handleRowClick(doc.id, isAdded)}
+                onCheckClick={handleCheckClick(doc.id, isAdded)}
+                onToggleExpand={handleToggleExpand(doc.id)}
+              />
             );
           }}
         />

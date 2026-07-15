@@ -1,19 +1,13 @@
-import { ExternalLink, Lock, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
-import {
-  PanelBody,
-  PanelOption,
-  PanelOptionLabel,
-} from '@/components/layout/TopNavbar/TopNavPanel.styles';
-import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { IconButtonRoot } from '@/components/ui/IconButton/IconButton.styles';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import { ContactPermissionsModal } from '@/modals/ContactPermissionsModal';
-import { gray } from '@/styles/theme';
+import { SupportOptionsPanel } from './controls/SupportOptionsPanel';
+import { SupportTriggerButton } from './controls/SupportTriggerButton';
 import { useSupportMenuAnalytics } from './SupportMenu.analytics';
 import { PANEL_WIDTH } from './SupportMenu.constants';
-import { SUPPORT_MENU_IDS } from './SupportMenu.testids';
 
+// This component is the only place that owns analytics tracking for the menu — the
+// controls/ subcomponents are dumb and receive already-composed callbacks.
 export const SupportMenu = () => {
   const [showPermissions, setShowPermissions] = useState(false);
   const panel = useFloatingPanel();
@@ -31,52 +25,22 @@ export const SupportMenu = () => {
     trackPermissionsRequested();
   };
 
-  const onChatClick = () => {
-    trackSupportChatOpened();
-  };
+  const onChatClick = () => trackSupportChatOpened();
 
   const onPermissionsModalClose = () => setShowPermissions(false);
 
   return (
     <>
-      <IconButtonRoot
-        ref={panel.btnRef}
-        type="button"
-        $isActive={panel.open}
-        aria-label="תמיכה"
-        data-testid={SUPPORT_MENU_IDS.trigger}
-        onClick={onToggle}
-      >
-        <MessageCircle size={20} />
-      </IconButtonRoot>
+      <SupportTriggerButton ref={panel.btnRef} isOpen={panel.open} onClick={onToggle} />
 
       {panel.open && panel.pos && (
-        <FloatingPanel
-          ref={panel.panelRef}
-          data-testid={SUPPORT_MENU_IDS.panel}
-          $pos={panel.pos}
-          $width={PANEL_WIDTH}
-        >
-          <PanelBody>
-            <PanelOption
-              type="button"
-              data-testid={SUPPORT_MENU_IDS.permissionsOption}
-              onClick={onPermissionsClick}
-            >
-              <Lock size={16} color={gray[500]} />
-              <PanelOptionLabel>הרשאות</PanelOptionLabel>
-            </PanelOption>
-            <PanelOption
-              type="button"
-              data-testid={SUPPORT_MENU_IDS.chatOption}
-              onClick={onChatClick}
-            >
-              <MessageCircle size={16} color={gray[500]} />
-              <PanelOptionLabel>צ'אט תמיכה</PanelOptionLabel>
-              <ExternalLink size={14} color={gray[400]} />
-            </PanelOption>
-          </PanelBody>
-        </FloatingPanel>
+        <SupportOptionsPanel
+          panelRef={panel.panelRef}
+          pos={panel.pos}
+          width={PANEL_WIDTH}
+          onPermissionsClick={onPermissionsClick}
+          onChatClick={onChatClick}
+        />
       )}
 
       {showPermissions && <ContactPermissionsModal onClose={onPermissionsModalClose} />}

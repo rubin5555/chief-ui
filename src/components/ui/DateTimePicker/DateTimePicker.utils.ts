@@ -64,3 +64,27 @@ export const buildCalendarGrid = (viewMonth: Date): CalendarDay[] => {
     return { date, inMonth: date.getMonth() === month };
   });
 };
+
+export interface DropPos {
+  top?: number;
+  bottom?: number;
+  left: number;
+}
+
+const PANEL_WIDTH = 280;
+const PANEL_HEIGHT = 360;
+const EDGE_MARGIN = 8;
+const GAP = 4;
+
+export const computeDropPos = (rect: DOMRect): DropPos => {
+  const spaceBelow = window.innerHeight - rect.bottom - GAP - EDGE_MARGIN;
+  const spaceAbove = rect.top - GAP - EDGE_MARGIN;
+  const left = clamp(EDGE_MARGIN, window.innerWidth - PANEL_WIDTH - EDGE_MARGIN, rect.left);
+
+  // flip upward when there isn't enough room below but there's more room above — mirrors
+  // the same rule Select's dropdown uses so both floating panels behave consistently
+  if (spaceBelow < PANEL_HEIGHT && spaceAbove > spaceBelow) {
+    return { bottom: window.innerHeight - rect.top + GAP, left };
+  }
+  return { top: rect.bottom + GAP, left };
+};

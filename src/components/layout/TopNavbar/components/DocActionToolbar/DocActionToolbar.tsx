@@ -1,21 +1,14 @@
-import { Copy, FileEdit, Filter, Loader2, Search, UserCog } from 'lucide-react';
-import { type ChangeEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
-import { useDebounce } from '@/hooks/useDebounce';
+import { DuplicateButton } from './controls/DuplicateButton';
+import { EditDocButton } from './controls/EditDocButton';
+import type { ExportType } from './controls/ExportControls';
+import { ExportControls } from './controls/ExportControls';
+import { FilterButton } from './controls/FilterButton';
+import { PermissionsButton } from './controls/PermissionsButton';
+import { SearchControl } from './controls/SearchControl';
+import { ZoomControl } from './controls/ZoomControl';
 import { useDocActionToolbarAnalytics } from './DocActionToolbar.analytics';
-import {
-  EXPORT_SIMULATED_DELAY_MS,
-  SEARCH_DEBOUNCE_MS,
-  ZOOM_DEFAULT,
-  ZOOM_MAX,
-  ZOOM_MIN,
-} from './DocActionToolbar.constants';
-import { PdfIcon, WordIcon } from './DocActionToolbar.icons';
-import { Divider, IconAction, SpinningLoader, ToolbarRoot } from './DocActionToolbar.styles';
+import { Divider, ToolbarRoot } from './DocActionToolbar.styles';
 import { DOC_ACTION_TOOLBAR_IDS } from './DocActionToolbar.testids';
-import { DocSearchField } from './DocSearchField';
-import { ZoomControl } from './ZoomControl';
-
-type ExportType = 'word' | 'pdf';
 
 interface DocActionToolbarProps {
   onFilterClick?: () => void;
@@ -26,6 +19,11 @@ interface DocActionToolbarProps {
   onSearchChange?: (query: string) => void;
 }
 
+// This component is the only place that owns analytics tracking for the toolbar — the
+// controls/ subcomponents are dumb (own only ephemeral UI state) and receive already-composed
+// callbacks, per the "keep nested sub-component folders dumb" analytics rule. Each control still
+// owns its own local state (zoom value, search-open flag, export-loading flag), so interacting
+// with one control never re-renders the others.
 export const DocActionToolbar = ({
   onFilterClick,
   onEditDocClick,
@@ -34,12 +32,6 @@ export const DocActionToolbar = ({
   onZoomChange,
   onSearchChange,
 }: DocActionToolbarProps) => {
-  const [zoom, setZoom] = useState(ZOOM_DEFAULT);
-  const [loadingExport, setLoadingExport] = useState<ExportType | null>(null);
-  const [searchActive, setSearchActive] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS);
-  const exportTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const {
     trackFilterClicked,
     trackEditDocClicked,
@@ -49,16 +41,6 @@ export const DocActionToolbar = ({
     trackZoomChanged,
     trackSearchToggled,
   } = useDocActionToolbarAnalytics();
-
-  useEffect(() => {
-    onSearchChange?.(debouncedSearchQuery);
-  }, [debouncedSearchQuery, onSearchChange]);
-
-  useEffect(() => {
-    return () => {
-      if (exportTimeoutRef.current) clearTimeout(exportTimeoutRef.current);
-    };
-  }, []);
 
   const onFilterButtonClick = () => {
     trackFilterClicked();
@@ -80,130 +62,30 @@ export const DocActionToolbar = ({
     onPermissionsClick?.();
   };
 
-  const onZoomBy = (delta: number) => () => {
-    const nextZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoom + delta));
-    setZoom(nextZoom);
-    trackZoomChanged(nextZoom);
-    onZoomChange?.(nextZoom);
+  const onExportStart = (type: ExportType) => trackExportStarted(type);
+
+  const onZoomControlChange = (zoom: number) => {
+    trackZoomChanged(zoom);
+    onZoomChange?.(zoom);
   };
 
-  const onExportClick = (type: ExportType) => () => {
-    if (loadingExport) return;
-    trackExportStarted(type);
-    setLoadingExport(type);
-    if (exportTimeoutRef.current) clearTimeout(exportTimeoutRef.current);
-    exportTimeoutRef.current = setTimeout(() => {
-      setLoadingExport(null);
-      exportTimeoutRef.current = null;
-    }, EXPORT_SIMULATED_DELAY_MS);
-  };
-
-  const onSearchOpen = () => {
-    setSearchActive(true);
-    trackSearchToggled(true);
-  };
-
-  const onSearchClose = () => {
-    setSearchActive(false);
-    setSearchQuery('');
-    trackSearchToggled(false);
-    onSearchChange?.('');
-  };
-
-  const onSearchInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const onSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') onSearchClose();
-  };
+  const onSearchToggle = (isOpen: boolean) => trackSearchToggled(isOpen);
 
   return (
     <ToolbarRoot data-testid={DOC_ACTION_TOOLBAR_IDS.root}>
-      <IconAction
-        type="button"
-        title="סינון"
-        data-testid={DOC_ACTION_TOOLBAR_IDS.filter}
-        onClick={onFilterButtonClick}
-      >
-        <Filter size={16} />
-      </IconAction>
-      <IconAction
-        type="button"
-        title="עריכת פרטי מסמך"
-        data-testid={DOC_ACTION_TOOLBAR_IDS.editDoc}
-        onClick={onEditDocButtonClick}
-      >
-        <FileEdit size={16} />
-      </IconAction>
-      <IconAction
-        type="button"
-        title="שכפול"
-        data-testid={DOC_ACTION_TOOLBAR_IDS.duplicate}
-        onClick={onDuplicateButtonClick}
-      >
-        <Copy size={16} />
-      </IconAction>
-      <IconAction
-        type="button"
-        title="הרשאות"
-        data-testid={DOC_ACTION_TOOLBAR_IDS.permissions}
-        onClick={onPermissionsButtonClick}
-      >
-        <UserCog size={16} />
-      </IconAction>
-      <IconAction
-        type="button"
-        title="ייצוא ל-Word"
-        data-testid={DOC_ACTION_TOOLBAR_IDS.exportWord}
-        onClick={onExportClick('word')}
-      >
-        {loadingExport === 'word' ? (
-          <SpinningLoader>
-            <Loader2 size={16} />
-          </SpinningLoader>
-        ) : (
-          <WordIcon />
-        )}
-      </IconAction>
-      <IconAction
-        type="button"
-        title="ייצוא PDF"
-        data-testid={DOC_ACTION_TOOLBAR_IDS.exportPdf}
-        onClick={onExportClick('pdf')}
-      >
-        {loadingExport === 'pdf' ? (
-          <SpinningLoader>
-            <Loader2 size={16} />
-          </SpinningLoader>
-        ) : (
-          <PdfIcon />
-        )}
-      </IconAction>
+      <FilterButton onClick={onFilterButtonClick} />
+      <EditDocButton onClick={onEditDocButtonClick} />
+      <DuplicateButton onClick={onDuplicateButtonClick} />
+      <PermissionsButton onClick={onPermissionsButtonClick} />
+      <ExportControls onExportStart={onExportStart} />
 
       <Divider />
 
-      <ZoomControl zoom={zoom} onZoomBy={onZoomBy} />
+      <ZoomControl onChange={onZoomControlChange} />
 
       <Divider />
 
-      {searchActive ? (
-        <DocSearchField
-          value={searchQuery}
-          onChange={onSearchInputChange}
-          onKeyDown={onSearchKeyDown}
-          onClose={onSearchClose}
-        />
-      ) : (
-        <IconAction
-          type="button"
-          title="חיפוש במסמך"
-          data-testid={DOC_ACTION_TOOLBAR_IDS.searchToggle}
-          onClick={onSearchOpen}
-        >
-          <Search size={16} />
-        </IconAction>
-      )}
+      <SearchControl onToggle={onSearchToggle} onSearchChange={onSearchChange} />
     </ToolbarRoot>
   );
 };

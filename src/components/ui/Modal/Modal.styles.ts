@@ -13,13 +13,20 @@ export const Overlay = styled.div<{ $closing?: boolean }>`
   ${overlayMotion}
 `;
 
-export const ModalCard = styled.div<{ $closing?: boolean }>`
+export const ModalCard = styled.div<{
+  $closing?: boolean;
+  $width?: number;
+  $maxWidth?: string;
+  $height?: string;
+  $maxHeight?: string;
+}>`
   background-color: ${colors.surface};
   border-radius: 24px;
   box-shadow: ${shadows.xxl};
-  width: 540px;
-  max-width: 90vw;
-  max-height: 90vh;
+  width: ${({ $width }) => $width ?? 540}px;
+  max-width: ${({ $maxWidth }) => $maxWidth ?? '90vw'};
+  ${({ $height }) => ($height ? `height: ${$height};` : '')}
+  max-height: ${({ $height, $maxHeight }) => $height ?? $maxHeight ?? '90vh'};
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -70,8 +77,20 @@ export const CloseButton = styled.button`
   &:hover { color: ${gray[600]}; }
 `;
 
-export const ModalBody = styled.div`
+export const ModalBody = styled.div<{ $noPadding?: boolean }>`
   flex: 1;
-  overflow-y: auto;
-  padding: 24px 32px;
+  ${({ $noPadding }) =>
+    $noPadding
+      ? 'display: flex; flex-direction: column; overflow: hidden;'
+      : 'overflow-y: auto; padding: 24px 32px;'}
+`;
+
+export const ModalFooter = styled.div<{ $align?: 'end' | 'between' }>`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: ${({ $align }) => ($align === 'between' ? 'space-between' : 'flex-end')};
+  gap: 12px;
+  padding: 16px 32px;
+  border-top: 1px solid ${gray[100]};
 `;

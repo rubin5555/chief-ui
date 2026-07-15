@@ -1,64 +1,19 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { useRef, useState } from 'react';
 import { useClickOutside } from '@/hooks/useClickOutside';
-import {
-  ApplyBtn,
-  CalendarIcon,
-  ClearBtn,
-  DayBtn,
-  DayGrid,
-  Dropdown,
-  MonthLabel,
-  MonthNavBtn,
-  MonthNavRow,
-  NowBtn,
-  PanelFooter,
-  TimeColon,
-  TimeInput,
-  TimeRow,
-  Trigger,
-  TriggerText,
-  WeekdayLabel,
-  WeekdayRow,
-} from './DateTimePicker.styles';
+import { CalendarPanel } from './components/CalendarPanel';
+import { CalendarIcon, Trigger, TriggerText } from './DateTimePicker.styles';
 import { DATE_TIME_PICKER_IDS } from './DateTimePicker.testids';
+import type { DropPos } from './DateTimePicker.utils';
 import {
   buildCalendarGrid,
   clamp,
-  dayKey,
+  computeDropPos,
   formatDateTimeLocal,
   formatDisplayValue,
-  isSameDay,
-  MONTH_LABELS,
   pad,
   parseDateTimeLocal,
-  WEEKDAY_LABELS,
 } from './DateTimePicker.utils';
-
-interface DropPos {
-  top?: number;
-  bottom?: number;
-  left: number;
-}
-
-const PANEL_WIDTH = 280;
-const PANEL_HEIGHT = 360;
-const EDGE_MARGIN = 8;
-const GAP = 4;
-
-const computeDropPos = (rect: DOMRect): DropPos => {
-  const spaceBelow = window.innerHeight - rect.bottom - GAP - EDGE_MARGIN;
-  const spaceAbove = rect.top - GAP - EDGE_MARGIN;
-  const left = clamp(EDGE_MARGIN, window.innerWidth - PANEL_WIDTH - EDGE_MARGIN, rect.left);
-
-  // flip upward when there isn't enough room below but there's more room above — mirrors
-  // the same rule Select's dropdown uses so both floating panels behave consistently
-  if (spaceBelow < PANEL_HEIGHT && spaceAbove > spaceBelow) {
-    return { bottom: window.innerHeight - rect.top + GAP, left };
-  }
-  return { top: rect.bottom + GAP, left };
-};
 
 interface DateTimePickerProps {
   value: string;
@@ -159,7 +114,6 @@ export const DateTimePicker = ({
   };
 
   const days = buildCalendarGrid(viewMonth);
-  const today = new Date();
 
   return (
     <>
@@ -179,89 +133,26 @@ export const DateTimePicker = ({
       </Trigger>
 
       {isOpen && dropPos && (
-        <Dropdown ref={dropRef} data-testid={DATE_TIME_PICKER_IDS.dropdown} style={dropPos}>
-          <MonthNavRow>
-            <MonthNavBtn
-              type="button"
-              data-testid={DATE_TIME_PICKER_IDS.prevMonth}
-              aria-label="חודש קודם"
-              onClick={onPrevMonth}
-            >
-              <ChevronRight size={16} />
-            </MonthNavBtn>
-            <MonthLabel>
-              {MONTH_LABELS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
-            </MonthLabel>
-            <MonthNavBtn
-              type="button"
-              data-testid={DATE_TIME_PICKER_IDS.nextMonth}
-              aria-label="חודש הבא"
-              onClick={onNextMonth}
-            >
-              <ChevronLeft size={16} />
-            </MonthNavBtn>
-          </MonthNavRow>
-
-          <WeekdayRow>
-            {WEEKDAY_LABELS.map((label) => (
-              <WeekdayLabel key={label}>{label}</WeekdayLabel>
-            ))}
-          </WeekdayRow>
-
-          <DayGrid>
-            {days.map(({ date, inMonth }) => (
-              <DayBtn
-                key={dayKey(date)}
-                type="button"
-                data-testid={DATE_TIME_PICKER_IDS.day(dayKey(date))}
-                $inMonth={inMonth}
-                $isToday={isSameDay(date, today)}
-                $isSelected={!!selectedDate && isSameDay(date, selectedDate)}
-                onClick={onSelectDay(date)}
-              >
-                {date.getDate()}
-              </DayBtn>
-            ))}
-          </DayGrid>
-
-          <TimeRow>
-            <TimeInput
-              value={hourInput}
-              data-testid={DATE_TIME_PICKER_IDS.hourInput}
-              onChange={onHourChange}
-              onBlur={onHourBlur}
-              onKeyDown={onTimeInputKeyDown}
-              inputMode="numeric"
-              aria-label="שעה"
-            />
-            <TimeColon>:</TimeColon>
-            <TimeInput
-              value={minuteInput}
-              data-testid={DATE_TIME_PICKER_IDS.minuteInput}
-              onChange={onMinuteChange}
-              onBlur={onMinuteBlur}
-              onKeyDown={onTimeInputKeyDown}
-              inputMode="numeric"
-              aria-label="דקות"
-            />
-          </TimeRow>
-
-          <PanelFooter>
-            <ClearBtn type="button" data-testid={DATE_TIME_PICKER_IDS.clearBtn} onClick={onClear}>
-              נקה
-            </ClearBtn>
-            <NowBtn type="button" data-testid={DATE_TIME_PICKER_IDS.nowBtn} onClick={onNow}>
-              עכשיו
-            </NowBtn>
-            <ApplyBtn
-              type="button"
-              data-testid={DATE_TIME_PICKER_IDS.applyBtn}
-              onClick={closeDropdown}
-            >
-              אישור
-            </ApplyBtn>
-          </PanelFooter>
-        </Dropdown>
+        <CalendarPanel
+          dropRef={dropRef}
+          dropPos={dropPos}
+          viewMonth={viewMonth}
+          days={days}
+          selectedDate={selectedDate}
+          onPrevMonth={onPrevMonth}
+          onNextMonth={onNextMonth}
+          onSelectDay={onSelectDay}
+          hourInput={hourInput}
+          minuteInput={minuteInput}
+          onHourChange={onHourChange}
+          onHourBlur={onHourBlur}
+          onMinuteChange={onMinuteChange}
+          onMinuteBlur={onMinuteBlur}
+          onTimeInputKeyDown={onTimeInputKeyDown}
+          onClear={onClear}
+          onNow={onNow}
+          onApply={closeDropdown}
+        />
       )}
     </>
   );
