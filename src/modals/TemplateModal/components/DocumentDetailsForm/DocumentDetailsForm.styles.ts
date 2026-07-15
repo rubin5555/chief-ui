@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexBetween } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const DetailsGrid = styled.div`
@@ -51,9 +52,7 @@ export const WarnText = styled.p`
 `;
 
 export const ApprovalRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   gap: 8px;
   padding: 0 12px;
   height: 34px;

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexCenter } from '@/styles/mixins';
 import { colors, gray, transitions } from '@/styles/theme';
 
 export const PinButton = styled.button<{ $pinned: boolean }>`
@@ -8,9 +9,7 @@ export const PinButton = styled.button<{ $pinned: boolean }>`
   transition: background-color ${transitions.normal};
   cursor: pointer;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   &:hover { background-color: ${gray[200]}; }
   color: ${(p) => (p.$pinned ? colors.primary : gray[400])};
 `;

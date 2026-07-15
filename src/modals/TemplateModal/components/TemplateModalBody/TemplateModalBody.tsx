@@ -1,11 +1,11 @@
 import { Plus, X } from 'lucide-react';
 import { ContentEditorProvider } from '@/components/ui/ContentEditor';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
-import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
 import type { useAppendices } from '../../hooks/useAppendices';
 import type { useEmphasis } from '../../hooks/useEmphasis';
 import type { useFieldBank } from '../../hooks/useFieldBank';
 import type { usePermissionsTarget } from '../../hooks/usePermissionsTarget';
+import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
 import { AppendixList } from '../AppendixList';
 import { DocumentPreview } from '../DocumentPreview';
 import { FieldBankBar, FieldBankList } from '../FieldBank';

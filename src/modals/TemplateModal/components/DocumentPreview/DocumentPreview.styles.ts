@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexCenter } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
 export const PreviewPane = styled.div`
@@ -113,9 +114,7 @@ export const EmphasisTextarea = styled.textarea`
 `;
 
 export const PreviewEmpty = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   height: 100%;
   color: ${gray[400]};
   font-size: 14px;

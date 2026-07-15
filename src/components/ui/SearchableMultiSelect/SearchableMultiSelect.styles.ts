@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
+import { flexBetween, flexGap } from '@/styles/mixins';
 
 import { colors, gray, radii } from '@/styles/theme';
 
@@ -7,9 +8,7 @@ import { colors, gray, radii } from '@/styles/theme';
 // FilterChip, so the trigger is a div with an explicit combobox role/keyboard handler instead.
 export const Trigger = styled.div<{ $noBorder?: boolean }>`
 	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	${flexBetween}
 	gap: 8px;
 	min-height: 38px;
 	padding: 6px 12px;
@@ -63,9 +62,7 @@ export const Dropdown = styled(FloatingPanel)`
 `;
 
 export const SearchBox = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 8px;
+	${flexGap(8)}
 	margin: 8px;
 	padding: 6px 12px;
 	background: ${gray[50]};
@@ -95,9 +92,7 @@ export const OptionsList = styled.div`
 
 export const OptionBtn = styled.button<{ $selected?: boolean }>`
 	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	${flexBetween}
 	text-align: right;
 	padding: 10px 16px;
 	font-size: 14px;

@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components';
+import { ellipsis } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 import { NavRow } from '../columns.shared.styles';
 
@@ -44,9 +45,7 @@ export const OperationChevron = styled.span<{ $isRotated: boolean; $isActive: bo
 
 export const OperationName = styled.span<{ $isActive: boolean }>`
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  ${ellipsis}
   text-align: right;
   font-size: 12px;
   font-weight: 700;

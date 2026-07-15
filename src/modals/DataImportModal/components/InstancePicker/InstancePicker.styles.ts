@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { ellipsis, flexBetween, flexCenter } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 export const PickerCard = styled.div`
@@ -22,9 +23,7 @@ export const InstanceList = styled.div`
 
 export const InstanceRow = styled.button<{ $isChecked: boolean }>`
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 8px 12px;
   font-size: 11px;
   transition: background ${transitions.fast};
@@ -42,9 +41,7 @@ export const InstanceRow = styled.button<{ $isChecked: boolean }>`
   }
 
   span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    ${ellipsis}
     margin-left: 8px;
   }
 `;
@@ -56,9 +53,7 @@ export const CheckBox = styled.span<{ $isChecked: boolean }>`
   flex-shrink: 0;
   border: 1.5px solid ${({ $isChecked }) => ($isChecked ? colors.primary : gray[300])};
   background: ${({ $isChecked }) => ($isChecked ? colors.primary : colors.surface)};
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   transition:
     background ${transitions.fast},
     border-color ${transitions.fast};
@@ -66,9 +61,7 @@ export const CheckBox = styled.span<{ $isChecked: boolean }>`
 `;
 
 export const EmptyResults = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   padding: 16px 0;
 
   p {

@@ -1,25 +1,22 @@
 import styled from 'styled-components';
-import { colors, gray } from '@/styles/theme';
+import { flexCenter, flexGap } from '@/styles/mixins';
+import { colors, gray, radii } from '@/styles/theme';
 
 export const BannerRoot = styled.div`
   margin-top: auto;
   padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  ${flexGap(12)}
   background-color: transparent;
   border: 1px solid ${gray[200]};
-  border-radius: 16px;
+  border-radius: ${radii['2xl']};
 `;
 
 export const BannerIcon = styled.div`
   width: 32px;
   height: 32px;
-  border-radius: 12px;
+  border-radius: ${radii.xl};
   background-color: ${gray[50]};
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   flex-shrink: 0;
   color: ${colors.primary};
 `;

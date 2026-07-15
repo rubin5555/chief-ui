@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexBetween, flexCenter } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 export const Dropdown = styled.div`
@@ -14,16 +15,12 @@ export const Dropdown = styled.div`
 `;
 
 export const MonthNavRow = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	${flexBetween}
 	margin-bottom: 10px;
 `;
 
 export const MonthNavBtn = styled.button`
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 	width: 26px;
 	height: 26px;
 	border: none;
@@ -51,9 +48,7 @@ export const WeekdayRow = styled.div`
 `;
 
 export const WeekdayLabel = styled.span`
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 	height: 24px;
 	font-size: 11px;
 	font-weight: 500;
@@ -72,9 +67,7 @@ export const DayBtn = styled.button<{
   $isToday: boolean;
   $isSelected: boolean;
 }>`
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 	height: 28px;
 	border: none;
 	border-radius: ${radii.lg};
@@ -94,9 +87,7 @@ export const DayBtn = styled.button<{
 `;
 
 export const TimeRow = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 	gap: 6px;
 	padding: 8px 0;
 	border-top: 1px solid ${gray[100]};
@@ -128,9 +119,7 @@ export const TimeColon = styled.span`
 `;
 
 export const PanelFooter = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	${flexBetween}
 	gap: 4px;
 	padding-top: 8px;
 	border-top: 1px solid ${gray[100]};

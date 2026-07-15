@@ -1,10 +1,9 @@
 import styled from 'styled-components';
-import { colors, gray } from '@/styles/theme';
+import { flexBetween, flexCenter } from '@/styles/mixins';
+import { colors, gray, radii } from '@/styles/theme';
 
 export const PanelHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 14px 16px;
   border-bottom: 1px solid ${colors.border};
   flex-shrink: 0;
@@ -43,11 +42,9 @@ export const NotificationIconWrap = styled.span`
   flex-shrink: 0;
   width: 28px;
   height: 28px;
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   background: ${colors.primaryLight};
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
 `;
 
 export const NotificationBody = styled.div`

@@ -39,7 +39,7 @@ export const Tooltip = styled.div`
   background-color: ${gray[800]};
   color: ${colors.surface};
   font-size: 12px;
-  border-radius: 8px;
+  border-radius: ${radii.lg};
   padding: 6px 10px;
   white-space: nowrap;
   opacity: 0;

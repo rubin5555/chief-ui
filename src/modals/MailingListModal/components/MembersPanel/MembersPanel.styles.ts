@@ -1,15 +1,11 @@
 import { ChevronDown, Users } from 'lucide-react';
 import styled from 'styled-components';
-import { ellipsis } from '@/styles/mixins';
+import { ellipsis, flexBetween, flexCenter, resetButton } from '@/styles/mixins';
 import { colors, gray } from '@/styles/theme';
 
 export const ExpandBtn = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
+  ${flexCenter}
+  ${resetButton}
   padding: 0;
   color: ${gray[400]};
 `;
@@ -20,13 +16,9 @@ export const ExpandIcon = styled(ChevronDown)<{ $isExpanded: boolean }>`
 `;
 
 export const RemoveBtn = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   padding: 4px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
+  ${resetButton}
   border-radius: 4px;
   color: ${gray[400]};
 `;
@@ -73,9 +65,7 @@ export const SubMemberCell = styled.span<{ $tabular?: boolean }>`
 
 export const PanelHeader = styled.div`
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 12px 20px;
   border-bottom: 1px solid ${colors.border};
 `;

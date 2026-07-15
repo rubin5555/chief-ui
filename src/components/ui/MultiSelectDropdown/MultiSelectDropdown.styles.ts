@@ -1,13 +1,12 @@
 import styled from 'styled-components';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
+import { flexBetween, flexCenter, flexGap } from '@/styles/mixins';
 
 import { colors, gray, radii } from '@/styles/theme';
 
 export const Trigger = styled.button<{ $isPlaceholder?: boolean }>`
 	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	${flexBetween}
 	gap: 8px;
 	padding: 8px 12px;
 	border: 1px solid ${gray[300]};
@@ -46,9 +45,7 @@ export const Dropdown = styled(FloatingPanel)`
 
 export const OptionBtn = styled.button`
 	width: 100%;
-	display: flex;
-	align-items: center;
-	gap: 8px;
+	${flexGap(8)}
 	text-align: right;
 	padding: 10px 16px;
 	font-size: 14px;
@@ -75,8 +72,6 @@ export const Checkbox = styled.span<{ $checked?: boolean }>`
 	border-radius: 4px;
 	border: 2px solid ${({ $checked }) => ($checked ? colors.primary : gray[300])};
 	background: ${({ $checked }) => ($checked ? colors.primary : 'transparent')};
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 	color: ${colors.surface};
 `;

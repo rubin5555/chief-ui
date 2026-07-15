@@ -1,13 +1,12 @@
 import styled from 'styled-components';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
+import { flexBetween, flexGap } from '@/styles/mixins';
 
 import { colors, gray, radii } from '@/styles/theme';
 
 export const Trigger = styled.button<{ $isPlaceholder?: boolean; $noBorder?: boolean }>`
 	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	${flexBetween}
 	gap: 8px;
 	padding: 8px 12px;
 	border: ${({ $noBorder }) => ($noBorder ? 'none' : `1px solid ${gray[300]}`)};
@@ -43,9 +42,7 @@ export const Dropdown = styled(FloatingPanel)`
 `;
 
 export const SearchBox = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 8px;
+	${flexGap(8)}
 	margin: 8px;
 	padding: 6px 12px;
 	background: ${gray[50]};

@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexBetween, flexGap, resetButton } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
 export const ColHeader = styled.span<{ $align?: 'right' | 'center' }>`
@@ -9,9 +10,7 @@ export const ColHeader = styled.span<{ $align?: 'right' | 'center' }>`
 
 // Shared styles for floating popover panels (add member, create group, manual entry, etc.)
 export const PopoverHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 12px 16px 8px;
   flex-shrink: 0;
 `;
@@ -24,9 +23,7 @@ export const PopoverTitle = styled.h3`
 `;
 
 export const PopoverCloseBtn = styled.button`
-  background: transparent;
-  border: none;
-  cursor: pointer;
+  ${resetButton}
   padding: 4px;
   border-radius: ${radii.lg};
   display: flex;
@@ -58,7 +55,7 @@ export const PopoverInput = styled.input`
   padding: 6px 12px;
   font-size: 12px;
   border: 1px solid ${gray[200]};
-  border-radius: 8px;
+  border-radius: ${radii.lg};
   background: ${gray[50]};
   text-align: right;
   direction: rtl;
@@ -76,16 +73,14 @@ export const PopoverSaveBtn = styled.button`
   font-size: 12px;
   font-weight: 500;
   border: none;
-  border-radius: 8px;
+  border-radius: ${radii.lg};
   cursor: pointer;
   &:hover { background: color-mix(in srgb, ${colors.primary} 80%, black); }
   &:disabled { background: ${gray[200]}; color: ${gray[400]}; cursor: not-allowed; }
 `;
 
 export const PopoverPickedRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
   padding: 6px 12px;
   border-bottom: 1px solid ${gray[50]};
   direction: ltr;
@@ -115,9 +110,7 @@ export const PickedMemberName = styled.span`
 `;
 
 export const PickedRemoveBtn = styled.button`
-  background: transparent;
-  border: none;
-  cursor: pointer;
+  ${resetButton}
   padding: 2px;
   flex-shrink: 0;
   display: flex;

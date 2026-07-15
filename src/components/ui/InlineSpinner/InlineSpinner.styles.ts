@@ -1,4 +1,5 @@
 import styled, { keyframes } from 'styled-components';
+import { flexCenter } from '@/styles/mixins';
 import { gray } from '@/styles/theme';
 
 const spin = keyframes`
@@ -7,9 +8,7 @@ const spin = keyframes`
 `;
 
 export const SpinnerRoot = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   flex: 1;
   min-height: 120px;
   color: ${gray[400]};

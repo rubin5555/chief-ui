@@ -1,5 +1,6 @@
 import styled from 'styled-components';
-import { colors } from '@/styles/theme';
+import { flexCenter } from '@/styles/mixins';
+import { colors, radii } from '@/styles/theme';
 
 const sizeMap = {
   sm: '32px',
@@ -10,11 +11,9 @@ const sizeMap = {
 export const AvatarRoot = styled.div<{ $size: 'sm' | 'md' | 'lg' }>`
   width: ${(p) => sizeMap[p.$size]};
   height: ${(p) => sizeMap[p.$size]};
-  border-radius: 9999px;
+  border-radius: ${radii.full};
   background-color: ${colors.primary};
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   color: ${colors.surface};
   flex-shrink: 0;
 `;

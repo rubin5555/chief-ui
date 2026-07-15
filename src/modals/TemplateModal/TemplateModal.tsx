@@ -10,15 +10,15 @@ import { useDocumentTree } from '@/hooks/useDocumentTree';
 import { DocumentDetailsForm } from './components/DocumentDetailsForm';
 import { PermissionsPopover } from './components/PermissionsPopover';
 import { TemplateModalBody } from './components/TemplateModalBody';
+import { useAppendices } from './hooks/useAppendices';
+import { useEmphasis } from './hooks/useEmphasis';
+import { useFieldBank } from './hooks/useFieldBank';
+import { usePermissionsTarget } from './hooks/usePermissionsTarget';
 import { useTemplateModalAnalytics } from './TemplateModal.analytics';
 import type { TemplateDraft, TemplateModalMode } from './TemplateModal.constants';
 import { emptyTemplateFormValues, MODAL_TITLES, SAVE_LABELS } from './TemplateModal.constants';
 import { DetailsSection } from './TemplateModal.styles';
 import { TEMPLATE_MODAL_IDS } from './TemplateModal.testids';
-import { useAppendices } from './hooks/useAppendices';
-import { useEmphasis } from './hooks/useEmphasis';
-import { useFieldBank } from './hooks/useFieldBank';
-import { usePermissionsTarget } from './hooks/usePermissionsTarget';
 
 const DataImportModal = lazy(() =>
   import('@/modals/DataImportModal').then((m) => ({ default: m.DataImportModal })),

@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components';
+import { ellipsis, flexBetween, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const Bar = styled.div<{ $edge: 'top' | 'bottom' }>`
@@ -12,15 +13,11 @@ export const Bar = styled.div<{ $edge: 'top' | 'bottom' }>`
 
 export const BarRow = styled.div`
   padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
 `;
 
 export const BarTitleWrap = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  ${flexGap(6)}
   color: ${colors.primary};
 `;
 
@@ -31,9 +28,7 @@ export const BarTitle = styled.span`
 `;
 
 export const BarActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  ${flexGap(4)}
 `;
 
 export const BarActionBtn = styled.button`
@@ -69,9 +64,7 @@ export const DragHint = styled.p`
 `;
 
 export const ChipRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
   padding: 8px 10px;
   background: ${colors.primaryLight};
   border: 1px solid color-mix(in srgb, ${colors.primary} 15%, transparent);
@@ -112,17 +105,13 @@ export const ChipName = styled.div`
   font-size: 11px;
   font-weight: 600;
   color: ${colors.primary};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  ${ellipsis}
 `;
 
 export const ChipMeta = styled.div`
   font-size: 9px;
   color: color-mix(in srgb, ${colors.primary} 50%, transparent);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  ${ellipsis}
   line-height: 1.3;
 `;
 
@@ -147,9 +136,7 @@ export const ChipRemoveBtn = styled.button`
 `;
 
 export const AddMoreBtn = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  ${flexGap(6)}
   width: 100%;
   padding: 6px 12px;
   margin-top: 4px;

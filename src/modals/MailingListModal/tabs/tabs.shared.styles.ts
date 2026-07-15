@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 import styled from 'styled-components';
-import { ellipsis } from '@/styles/mixins';
-import { colors, gray } from '@/styles/theme';
+import { ellipsis, flexBetween, flexCenter, resetButton } from '@/styles/mixins';
+import { colors, gray, radii } from '@/styles/theme';
 
 export const ExpandChevron = styled(ChevronDown)<{ $isExpanded: boolean }>`
 	transition: transform 0.15s;
@@ -35,7 +35,7 @@ export const SubTabIndicator = styled.span`
 	right: 16px;
 	left: 16px;
 	height: 2px;
-	border-radius: 9999px;
+	border-radius: ${radii.full};
 	background: ${gray[900]};
 `;
 
@@ -50,9 +50,7 @@ export const ImportBar = styled.div`
 	padding: 12px 16px;
 	border-top: 1px solid ${colors.border};
 	background: ${colors.surface};
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+	${flexBetween}
 `;
 
 export const ImportBarLabel = styled.span`
@@ -68,14 +66,10 @@ export const EmptyState = styled.div`
 `;
 
 export const ExpandBtn = styled.button`
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 	width: 20px;
 	height: 20px;
-	background: transparent;
-	border: none;
-	cursor: pointer;
+	${resetButton}
 	padding: 0;
 `;
 
@@ -84,9 +78,7 @@ export const ClearBtn = styled.button`
 	left: 10px;
 	top: 50%;
 	transform: translateY(-50%);
-	background: transparent;
-	border: none;
-	cursor: pointer;
+	${resetButton}
 	color: ${gray[300]};
 	display: flex;
 	align-items: center;
@@ -97,9 +89,7 @@ export const ClearBtn = styled.button`
 `;
 
 export const CheckboxCell = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	${flexCenter}
 `;
 
 export const NameCell = styled.span`

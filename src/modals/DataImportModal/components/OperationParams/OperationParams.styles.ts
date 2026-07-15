@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { ellipsis, flexBetween, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 export const ParamsBody = styled.div`
@@ -54,9 +55,7 @@ export const NameOption = styled.button<{ $isSelected: boolean }>`
   }
 
   span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    ${ellipsis}
   }
 `;
 
@@ -69,9 +68,7 @@ export const NoResults = styled.div`
 
 export const SelectedName = styled.div`
   margin-top: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 6px 10px;
   background: ${colors.primaryLight};
   border-radius: ${radii.lg};
@@ -80,9 +77,7 @@ export const SelectedName = styled.div`
     font-size: 11px;
     font-weight: 600;
     color: ${colors.primary};
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    ${ellipsis}
   }
 `;
 
@@ -106,9 +101,7 @@ export const ParamLabel = styled.p`
 `;
 
 export const QuantityRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  ${flexGap(8)}
 
   ${ParamLabel} {
     margin-bottom: 0;
@@ -138,9 +131,7 @@ export const QuantityInput = styled.input`
 `;
 
 export const ToggleRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 2px 0;
 
   ${ParamLabel} {

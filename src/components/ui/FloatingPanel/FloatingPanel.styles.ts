@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import type { Pos } from '@/hooks/useFloatingPanel';
-import { colors, shadows } from '@/styles/theme';
+import { colors, radii, shadows } from '@/styles/theme';
 import { FLOATING_PANEL_IDS } from './FloatingPanel.testids';
 
 interface FloatingPanelProps {
@@ -17,7 +17,7 @@ export const FloatingPanel = styled.div.attrs<FloatingPanelProps>((props) => ({
 }))<FloatingPanelProps>`
   position: fixed;
   background: ${colors.surface};
-  border-radius: 16px;
+  border-radius: ${radii['2xl']};
   box-shadow: ${shadows.xl};
   border: 1px solid ${colors.border};
   z-index: 99999;

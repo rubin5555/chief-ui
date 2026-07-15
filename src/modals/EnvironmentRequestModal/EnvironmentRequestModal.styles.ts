@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const FormEl = styled.form`
@@ -62,9 +63,7 @@ export const RanksList = styled.div`
 `;
 
 export const RankRow = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 12px;
+	${flexGap(12)}
 	padding: 8px 12px;
 	background: ${colors.surface};
 	& + & {

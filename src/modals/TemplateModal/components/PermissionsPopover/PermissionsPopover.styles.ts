@@ -1,12 +1,11 @@
 import styled from 'styled-components';
+import { flexBetween, flexCenter } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
 export const PermCardOverlay = styled.div`
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   z-index: 10;
   pointer-events: none;
 `;
@@ -22,9 +21,7 @@ export const PermCardWrap = styled.div`
 `;
 
 export const PermCardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  ${flexBetween}
   padding: 14px 20px;
   background: ${colors.primaryLight};
   border-bottom: 1px solid ${gray[100]};
@@ -38,9 +35,7 @@ export const PermCardTitle = styled.span`
 `;
 
 export const PermCardCloseBtn = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  ${flexCenter}
   padding: 6px;
   border: none;
   border-radius: ${radii.lg};
