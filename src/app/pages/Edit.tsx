@@ -4792,8 +4792,6 @@ export function Edit({ navigate, doc }: EditProps) {
                         <span className="text-xs font-semibold text-gray-800">{s.name}</span>
                         <span className="text-[11px] text-gray-500">{s.field}</span>
                       </div>
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-                        style={{ background: '#DCFCE7', color: '#166534' }}>מחובר</span>
                     </div>
                   ))}
                 </div>
