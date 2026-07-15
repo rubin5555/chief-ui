@@ -2636,8 +2636,8 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
               placeholder={`הערות ${carouselLabel}...`} dir="rtl" rows={3}
               className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 resize-none outline-none focus:border-gray-300 transition-colors placeholder-gray-300" />
 
-            {/* Section comment — inside card */}
-            <button onClick={onClose} className="flex items-center gap-1.5 text-sm font-semibold text-[#1B3A6B] hover:underline self-end">
+            {/* Section comment — inside card, right aligned */}
+            <button onClick={onClose} className="flex items-center gap-1.5 text-sm font-semibold text-[#1B3A6B] hover:underline self-start">
               <Plus className="w-4 h-4" /> הוספת הערה לתיקון סעיף
             </button>
           </div>
@@ -2659,10 +2659,14 @@ function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribut
             </div>
           ) : (
             <div ref={signatureRef} className="relative">
-              <button onClick={() => setShowSignatureDropdown(o => !o)}
+              <button
+                onClick={() => {
+                  if (MOCK_SIGNATURES.length === 1) { setSelectedSignature(MOCK_SIGNATURES[0]); }
+                  else { setShowSignatureDropdown(o => !o); }
+                }}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                הוסף חתימת מאשר
+                בחירת חתימת מאשר
               </button>
               {showSignatureDropdown && (
                 <div className="absolute top-full mt-1 right-0 left-0 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10">
