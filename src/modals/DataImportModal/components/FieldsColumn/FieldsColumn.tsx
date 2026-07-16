@@ -1,7 +1,9 @@
-import { Check, ChevronDown, Plus, X } from 'lucide-react';
+import { Check, ChevronDown, List, Plus, Table, Type, X } from 'lucide-react';
 import { FIELD_CHILDREN_FALLBACK, useFieldChildren } from '@/api/fieldChildren';
+import type { FieldShape } from '../../DataImportModal.constants';
 import { DATA_IMPORT_IDS } from '../../DataImportModal.testids';
 import type { DataImportPicker } from '../../hooks/useDataImportPicker';
+import { inferFieldShape } from '../../utils/inferFieldShape';
 import { ColumnEmptyState, ColumnHeading, ColumnPane } from '../columns.shared.styles';
 import {
   FieldChevron,
@@ -10,6 +12,7 @@ import {
   GhostIcon,
   HideOnHover,
   OptionalHint,
+  ShapeIcon,
   ShowOnHover,
   SubFieldContent,
   SubFieldGlyph,
@@ -17,6 +20,23 @@ import {
   SubFieldRow,
   SubFieldsBlock,
 } from './FieldsColumn.styles';
+
+const SHAPE_LABELS: Record<FieldShape, string> = {
+  table: 'טבלה',
+  list: 'רשימה',
+  text: 'טקסט',
+};
+
+const SHAPE_ICONS: Record<FieldShape, typeof Table> = {
+  table: Table,
+  list: List,
+  text: Type,
+};
+
+const ShapeGlyph = ({ shape }: { shape: FieldShape }) => {
+  const Icon = SHAPE_ICONS[shape];
+  return <Icon size={11} />;
+};
 
 interface FieldsColumnProps {
   picker: DataImportPicker;
@@ -65,7 +85,9 @@ export const FieldsColumn = ({ picker, onFieldToggled }: FieldsColumnProps) => {
     <ColumnPane data-testid={DATA_IMPORT_IDS.fieldsColumn}>
       <ColumnHeading>שדה מידע</ColumnHeading>
       {hasSelection && picker.selectedOperation ? (
-        picker.selectedOperation.fields.map((fieldName) => {
+        picker.selectedOperation.fields.map((field) => {
+          const fieldName = field.name;
+          const shape = inferFieldShape(field.value);
           const isLinked = picker.isFieldLinked(fieldName);
           const subFields = fieldChildren[fieldName];
           const isExpanded = picker.expandedField === fieldName;
@@ -80,6 +102,11 @@ export const FieldsColumn = ({ picker, onFieldToggled }: FieldsColumnProps) => {
                 <FieldLabel $weight={isExpanded ? 600 : isLinked ? 500 : 400}>
                   {fieldName}
                 </FieldLabel>
+                {!subFields && (
+                  <ShapeIcon title={SHAPE_LABELS[shape]}>
+                    <ShapeGlyph shape={shape} />
+                  </ShapeIcon>
+                )}
                 {subFields ? (
                   <FieldChevron $isExpanded={isExpanded}>
                     <ChevronDown size={12} />

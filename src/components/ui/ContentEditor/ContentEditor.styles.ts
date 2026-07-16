@@ -46,6 +46,40 @@ const richTextContent = css`
 			font-weight: 600;
 		}
 	}
+
+	/* json-table's own semantic classes (see src/lib/json-table) — the base table/td/th
+	   rules above already cover layout, these just tune the fine-grained cell kinds. */
+	caption.jt-caption {
+		caption-side: top;
+		text-align: right;
+		font-weight: 600;
+		padding: 0 0 6px;
+		color: ${gray[700]};
+	}
+	.jt-num {
+		text-align: left;
+		font-variant-numeric: tabular-nums;
+	}
+	.jt-null {
+		opacity: 0.4;
+	}
+	.jt-true,
+	.jt-false {
+		font-weight: 600;
+	}
+	.jt-true {
+		color: ${colors.accent};
+	}
+	tfoot .jt-num,
+	tfoot td {
+		background: ${gray[50]};
+		font-weight: 600;
+	}
+	.jt-ul.jt-empty {
+		opacity: 0.5;
+		list-style: none;
+		padding-right: 0;
+	}
 `;
 
 export const EditorWrapper = styled.div`

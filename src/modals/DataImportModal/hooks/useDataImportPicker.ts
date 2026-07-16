@@ -6,6 +6,7 @@ import type {
   SourceSystem,
 } from '../DataImportModal.constants';
 import { EMPTY_OPERATION_PARAMS } from '../DataImportModal.constants';
+import { inferFieldShape } from '../utils/inferFieldShape';
 
 interface UseDataImportPickerArgs {
   existingFields: DynamicField[];
@@ -92,6 +93,9 @@ export const useDataImportPicker = ({
     if (!selectedSystem || !selectedOperation || selectedInstances.length === 0) {
       return { added: 0, removed: 0 };
     }
+    const sourceField = selectedOperation.fields.find((f) => f.name === fieldName);
+    const value = sourceField?.value ?? '';
+    const shape = inferFieldShape(value);
     const toAdd: DynamicField[] = [];
     let removed = 0;
     for (const instance of selectedInstances) {
@@ -114,6 +118,9 @@ export const useDataImportPicker = ({
         operationName: selectedOperation.name,
         instanceName: instance,
         fieldName,
+        shape,
+        value,
+        ordered: shape === 'list' ? false : undefined,
       });
     }
     if (toAdd.length > 0) onAdd(toAdd);
