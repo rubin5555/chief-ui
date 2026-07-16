@@ -21,6 +21,12 @@ export const GhostIcon = styled.span`
   transition: color ${transitions.fast};
 `;
 
+export const ShapeIcon = styled.span`
+  display: inline-flex;
+  flex-shrink: 0;
+  color: color-mix(in srgb, ${colors.primary} 35%, transparent);
+`;
+
 const fieldRowBase = css`
   ${flexBetween}
   gap: 6px;

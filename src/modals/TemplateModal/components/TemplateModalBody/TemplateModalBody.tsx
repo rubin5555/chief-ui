@@ -60,6 +60,8 @@ export const TemplateModalBody = ({
               <FieldBankList
                 fields={fieldBank.importedFields}
                 onRemoveField={fieldBank.removeImportedField}
+                onToggleOrdered={fieldBank.toggleFieldOrdered}
+                onSaveTableDesign={fieldBank.updateFieldTableDesign}
                 onOpenPicker={fieldBank.openImportPicker}
                 onFieldDragStart={onFieldDragged}
               />

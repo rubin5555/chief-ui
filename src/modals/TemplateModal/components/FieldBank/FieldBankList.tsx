@@ -1,26 +1,36 @@
-import { GripVertical, Plus, X } from 'lucide-react';
+import { GripVertical, List, ListOrdered, Plus, Settings2, X } from 'lucide-react';
 import type { DragEvent, MouseEvent } from 'react';
+import { useState } from 'react';
 import { CONTENT_CHIP_HTML_MIME, CONTENT_CHIP_MIME } from '@/components/ui/ContentEditor';
-import type { DynamicField } from '@/modals/DataImportModal/DataImportModal.constants';
+import {
+  type DynamicField,
+  ENABLE_TABLE_DESIGN,
+  type TableDesignOptions,
+} from '@/modals/DataImportModal/DataImportModal.constants';
 // Deep import keeps the DataImportModal component itself out of this chunk — the modal
 // is lazy-loaded by TemplateModal, and pulling its barrel here would defeat that split.
-import { buildFieldChipHtml } from '@/modals/DataImportModal/utils/fieldChipHtml';
+import { buildFieldContentHtml } from '@/modals/DataImportModal/utils/fieldChipHtml';
 import {
   AddMoreBtn,
   BankList,
+  ChipDesignBtn,
   ChipGrip,
   ChipInfo,
   ChipMeta,
   ChipName,
+  ChipOrderToggleBtn,
   ChipRemoveBtn,
   ChipRow,
   DragHint,
 } from './FieldBank.styles';
 import { FIELD_BANK_IDS } from './FieldBank.testids';
+import { TableDesignModal } from './TableDesignModal';
 
 interface FieldBankListProps {
   fields: DynamicField[];
   onRemoveField: (id: string) => void;
+  onToggleOrdered: (id: string) => void;
+  onSaveTableDesign: (id: string, design: TableDesignOptions, renderAsTable: boolean) => void;
   onOpenPicker: () => void;
   onFieldDragStart: (fieldName: string) => void;
 }
@@ -28,17 +38,27 @@ interface FieldBankListProps {
 export const FieldBankList = ({
   fields,
   onRemoveField,
+  onToggleOrdered,
+  onSaveTableDesign,
   onOpenPicker,
   onFieldDragStart,
 }: FieldBankListProps) => {
+  const [designFieldId, setDesignFieldId] = useState<string | null>(null);
+  const designField = fields.find((f) => f.id === designFieldId) ?? null;
+
   const handleDragStart = (field: DynamicField) => (e: DragEvent<HTMLDivElement>) => {
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData(CONTENT_CHIP_MIME, field.id);
-    e.dataTransfer.setData(CONTENT_CHIP_HTML_MIME, buildFieldChipHtml(field));
+    e.dataTransfer.setData(CONTENT_CHIP_HTML_MIME, buildFieldContentHtml(field));
     onFieldDragStart(field.fieldName);
   };
   const handleRemoveMouseDown = (e: MouseEvent) => e.stopPropagation();
   const handleRemove = (id: string) => () => onRemoveField(id);
+  const handleToggleOrderedMouseDown = (e: MouseEvent) => e.stopPropagation();
+  const handleToggleOrdered = (id: string) => () => onToggleOrdered(id);
+  const handleDesignMouseDown = (e: MouseEvent) => e.stopPropagation();
+  const handleOpenDesign = (id: string) => () => setDesignFieldId(id);
+  const handleCloseDesign = () => setDesignFieldId(null);
 
   return (
     <BankList data-testid={FIELD_BANK_IDS.list}>
@@ -60,6 +80,31 @@ export const FieldBankList = ({
               {field.instanceName ? ` · ${field.instanceName}` : ''} · {field.systemName}
             </ChipMeta>
           </ChipInfo>
+          {field.shape === 'list' && (
+            <ChipOrderToggleBtn
+              type="button"
+              $active={Boolean(field.ordered)}
+              onMouseDown={handleToggleOrderedMouseDown}
+              onClick={handleToggleOrdered(field.id)}
+              aria-label={field.ordered ? 'הפיכה לרשימה לא ממוספרת' : 'הפיכה לרשימה ממוספרת'}
+              title={field.ordered ? 'רשימה ממוספרת' : 'רשימה לא ממוספרת'}
+              data-testid={FIELD_BANK_IDS.chipOrderToggleBtn(field.id)}
+            >
+              {field.ordered ? <ListOrdered size={12} /> : <List size={12} />}
+            </ChipOrderToggleBtn>
+          )}
+          {ENABLE_TABLE_DESIGN && (field.shape === 'table' || field.shape === 'list') && (
+            <ChipDesignBtn
+              type="button"
+              onMouseDown={handleDesignMouseDown}
+              onClick={handleOpenDesign(field.id)}
+              aria-label={`עיצוב תצוגת ${field.fieldName}`}
+              title="עיצוב תצוגה"
+              data-testid={FIELD_BANK_IDS.chipDesignBtn(field.id)}
+            >
+              <Settings2 size={12} />
+            </ChipDesignBtn>
+          )}
           <ChipRemoveBtn
             type="button"
             onMouseDown={handleRemoveMouseDown}
@@ -75,6 +120,13 @@ export const FieldBankList = ({
         <Plus size={14} />
         הוסף שדות נוספים
       </AddMoreBtn>
+      {ENABLE_TABLE_DESIGN && designField && (
+        <TableDesignModal
+          field={designField}
+          onSave={onSaveTableDesign}
+          onClose={handleCloseDesign}
+        />
+      )}
     </BankList>
   );
 };

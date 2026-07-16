@@ -12,7 +12,10 @@ export const GET_SOURCE_SYSTEMS_QUERY = gql`
         id
         name
         instances
-        fields
+        fields {
+          name
+          value
+        }
       }
     }
   }
@@ -55,7 +58,13 @@ export const SOURCE_SYSTEMS_FALLBACK: GetSourceSystemsResult = {
             'יחידה דרום ב׳',
             'יחידה מרכז',
           ],
-          fields: ['שם היחידה', 'מספר יחידה', 'מפקד היחידה', 'כתובת היחידה', 'סוג היחידה'],
+          fields: [
+            { name: 'שם היחידה', value: 'יחידה 101' },
+            { name: 'מספר יחידה', value: '101' },
+            { name: 'מפקד היחידה', value: 'אל"מ דוד כהן' },
+            { name: 'כתובת היחידה', value: 'בסיס צפון, אזור תעשייה 5' },
+            { name: 'סוג היחידה', value: 'יחידה קרבית' },
+          ],
         },
         {
           id: 'op2',
@@ -72,7 +81,12 @@ export const SOURCE_SYSTEMS_FALLBACK: GetSourceSystemsResult = {
             'יחידה 900',
             'יחידה 1001',
           ],
-          fields: ['מספר חיילים', 'מספר קצינים', 'שם קצין הכוננות', 'כוח זמין'],
+          fields: [
+            { name: 'מספר חיילים', value: '120' },
+            { name: 'מספר קצינים', value: '8' },
+            { name: 'שם קצין הכוננות', value: 'סרן יוסי לוי' },
+            { name: 'כוח זמין', value: [45, 30, 25] },
+          ],
         },
       ],
     },
@@ -97,7 +111,13 @@ export const SOURCE_SYSTEMS_FALLBACK: GetSourceSystemsResult = {
             'מבצע אש',
             'מבצע ענן',
           ],
-          fields: ['שם הפעולה', 'תאריך הפעולה', 'איזור הפעולה', 'מטרת הפעולה', 'שעת כניסה'],
+          fields: [
+            { name: 'שם הפעולה', value: 'מבצע שחר' },
+            { name: 'תאריך הפעולה', value: '16.07.2026' },
+            { name: 'איזור הפעולה', value: 'גזרה צפונית' },
+            { name: 'מטרת הפעולה', value: 'אבטחת ציר תנועה' },
+            { name: 'שעת כניסה', value: '04:30' },
+          ],
         },
         {
           id: 'op4',
@@ -112,7 +132,11 @@ export const SOURCE_SYSTEMS_FALLBACK: GetSourceSystemsResult = {
             'איום מזרח 1',
             'איום מערב 1',
           ],
-          fields: ['סוג האיום', 'מיקום האיום', 'עוצמת כוח'],
+          fields: [
+            { name: 'סוג האיום', value: 'חדירה' },
+            { name: 'מיקום האיום', value: 'גבול צפון' },
+            { name: 'עוצמת כוח', value: 'בינונית' },
+          ],
         },
       ],
     },
@@ -135,7 +159,19 @@ export const SOURCE_SYSTEMS_FALLBACK: GetSourceSystemsResult = {
             'מחסן חירום צפון',
             'מחסן חירום דרום',
           ],
-          fields: ['כמות כלי רכב', 'כמות נשק', 'מלאי תחמושת', 'ציוד רפואי'],
+          fields: [
+            {
+              name: 'כמות כלי רכב',
+              value: [
+                { סוג: "ג'יפ", כמות: 5 },
+                { סוג: 'משאית', כמות: 3 },
+                { סוג: 'נגמ"ש', כמות: 2 },
+              ],
+            },
+            { name: 'כמות נשק', value: '230' },
+            { name: 'מלאי תחמושת', value: [4000, 1200, 300] },
+            { name: 'ציוד רפואי', value: 'ציוד עזרה ראשונה מלא' },
+          ],
         },
         {
           id: 'op6',
@@ -149,7 +185,11 @@ export const SOURCE_SYSTEMS_FALLBACK: GetSourceSystemsResult = {
             'מחסן מובייל א׳',
             'מחסן חירום',
           ],
-          fields: ['מיקום מחסן', 'שם אחראי', 'תאריך עדכון אחסון'],
+          fields: [
+            { name: 'מיקום מחסן', value: 'מחסן ראשי א׳' },
+            { name: 'שם אחראי', value: 'רס"ן איתי שגיא' },
+            { name: 'תאריך עדכון אחסון', value: '10.07.2026' },
+          ],
         },
       ],
     },

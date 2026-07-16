@@ -45,7 +45,8 @@ export const useTinyMceSetup = (
   };
 
   // Chips are contenteditable="false" islands TinyMCE treats as atomic: dropping one
-  // inserts it at the caret nearest the pointer, and clicking its × button removes it.
+  // inserts it at the caret nearest the pointer, clicking its × button removes it, and
+  // (for list-shaped chips only) its ↕ button flips the <ul>/<ol> between un/ordered.
   const handleChipSetup = (editor: TinyMceEditor) => {
     editor.on('dragover', (e: EditorDragEvent) => {
       if (e.dataTransfer?.types.includes(CONTENT_CHIP_MIME)) e.preventDefault();
@@ -61,13 +62,30 @@ export const useTinyMceSetup = (
 
     editor.on('click', (e: EditorClickEvent) => {
       const target = e.target instanceof Element ? e.target : null;
+
       const removeBtn = target?.closest('[data-chip-remove]');
-      if (!removeBtn) return;
-      removeBtn.closest('[data-chip-id]')?.remove();
-      // Manual DOM surgery bypasses TinyMCE's change events, so both the undo level
-      // and the controlled value have to be pushed by hand.
-      editor.undoManager.add();
-      onChangeRef.current(editor.getContent());
+      if (removeBtn) {
+        removeBtn.closest('[data-chip-id]')?.remove();
+        // Manual DOM surgery bypasses TinyMCE's change events, so both the undo level
+        // and the controlled value have to be pushed by hand.
+        editor.undoManager.add();
+        onChangeRef.current(editor.getContent());
+        return;
+      }
+
+      const listToggleBtn = target?.closest('[data-chip-list-toggle]');
+      if (listToggleBtn) {
+        const container = listToggleBtn.closest('[data-chip-shape="list"]');
+        const listEl = container?.querySelector('ul, ol');
+        if (!container || !listEl) return;
+        const nextOrdered = listEl.tagName === 'UL';
+        const replacement = document.createElement(nextOrdered ? 'ol' : 'ul');
+        replacement.append(...Array.from(listEl.childNodes));
+        listEl.replaceWith(replacement);
+        container.setAttribute('data-chip-ordered', String(nextOrdered));
+        editor.undoManager.add();
+        onChangeRef.current(editor.getContent());
+      }
     });
   };
 

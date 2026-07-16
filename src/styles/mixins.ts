@@ -1,5 +1,5 @@
 import { css } from 'styled-components';
-import { colors } from '@/styles/theme';
+import { colors, radii, transitions } from '@/styles/theme';
 
 export const ellipsis = css`
   overflow: hidden;
@@ -22,6 +22,12 @@ export const flexBetween = css`
 export const flexGap = (gap: number) => css`
   display: flex;
   align-items: center;
+  gap: ${gap}px;
+`;
+
+export const flexColumn = (gap: number) => css`
+  display: flex;
+  flex-direction: column;
   gap: ${gap}px;
 `;
 
@@ -52,5 +58,21 @@ export const focusPrimaryBorder = css`
   &:focus {
     outline: none;
     border-color: ${colors.primary};
+  }
+`;
+
+export const dashedActionButton = css`
+  ${flexGap(6)}
+  color: color-mix(in srgb, ${colors.primary} 50%, transparent);
+  border: 1px dashed color-mix(in srgb, ${colors.primary} 20%, transparent);
+  border-radius: ${radii.xl};
+  font-size: 12px;
+  transition:
+    color ${transitions.fast},
+    border-color ${transitions.fast};
+
+  &:hover {
+    color: ${colors.primary};
+    border-color: color-mix(in srgb, ${colors.primary} 40%, transparent);
   }
 `;

@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { ellipsis, flexBetween, flexFill, flexGap } from '@/styles/mixins';
+import { dashedActionButton, ellipsis, flexBetween, flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const Bar = styled.div<{ $edge: 'top' | 'bottom' }>`
@@ -114,16 +114,17 @@ export const ChipMeta = styled.div`
   line-height: 1.3;
 `;
 
-export const ChipRemoveBtn = styled.button`
-  opacity: 0;
+// Shared by every icon-only action button hosted in a ChipRow (remove/design/reorder):
+// hidden until the row is hovered, opacity+color both transition, hover always resolves
+// to primary regardless of the button's semantic (matches the existing chip convention).
+const chipIconButton = css`
   padding: 2px;
   border-radius: 4px;
-  color: ${gray[300]};
+  flex-shrink: 0;
+  display: inline-flex;
   transition:
     opacity ${transitions.fast},
     color ${transitions.fast};
-  flex-shrink: 0;
-  display: inline-flex;
 
   ${ChipRow}:hover & {
     opacity: 1;
@@ -134,21 +135,27 @@ export const ChipRemoveBtn = styled.button`
   }
 `;
 
+export const ChipOrderToggleBtn = styled.button<{ $active: boolean }>`
+  ${chipIconButton}
+  opacity: ${({ $active }) => ($active ? 1 : 0)};
+  color: ${({ $active }) => ($active ? colors.primary : gray[300])};
+`;
+
+export const ChipDesignBtn = styled.button`
+  ${chipIconButton}
+  opacity: 0;
+  color: ${gray[300]};
+`;
+
+export const ChipRemoveBtn = styled.button`
+  ${chipIconButton}
+  opacity: 0;
+  color: ${gray[300]};
+`;
+
 export const AddMoreBtn = styled.button`
-  ${flexGap(6)}
+  ${dashedActionButton}
   width: 100%;
   padding: 6px 12px;
   margin-top: 4px;
-  color: color-mix(in srgb, ${colors.primary} 50%, transparent);
-  border: 1px dashed color-mix(in srgb, ${colors.primary} 20%, transparent);
-  border-radius: ${radii.xl};
-  font-size: 12px;
-  transition:
-    color ${transitions.fast},
-    border-color ${transitions.fast};
-
-  &:hover {
-    color: ${colors.primary};
-    border-color: color-mix(in srgb, ${colors.primary} 40%, transparent);
-  }
 `;
