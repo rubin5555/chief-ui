@@ -69,7 +69,12 @@ function App() {
     return <Edit navigate={navigate} doc={editDocInfo} />;
   }
 
-  return <DesignPage navigate={navigate} onSelectDept={navigateToCatalog} />;
+  return <DesignPage
+    navigate={navigate}
+    onSelectDept={navigateToCatalog}
+    onOpenCommandPage={org => navigateToEdit({ id: org, name: org, status: 'מבצעית', orderNum: '001' })}
+    onOpenDoc={doc => navigateToEdit({ id: doc.name, name: doc.name, status: 'מבצעית', orderNum: '001' })}
+  />;
 }
 
 export default function AppWithBoundary() {

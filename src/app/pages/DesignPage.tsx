@@ -1,13 +1,18 @@
+import { useState } from 'react';
 import { MainContent } from '../components/MainContent';
 import { TopNavbar } from '../components/TopNavbar';
 import { RightSidebar } from '../components/RightSidebar';
+import { NewDocModal } from './Catalog';
 
 interface DesignPageProps {
   navigate: (path: string) => void;
   onSelectDept: (dept: string) => void;
+  onOpenCommandPage?: (org: string) => void;
+  onOpenDoc?: (doc: { name: string; organization: string }) => void;
 }
 
-export function DesignPage({ navigate, onSelectDept }: DesignPageProps) {
+export function DesignPage({ navigate, onSelectDept, onOpenCommandPage, onOpenDoc }: DesignPageProps) {
+  const [showNewDoc, setShowNewDoc] = useState(false);
   return (
     <div style={{
       width: '100%',
@@ -19,9 +24,10 @@ export function DesignPage({ navigate, onSelectDept }: DesignPageProps) {
     }} dir="rtl">
       <TopNavbar showBackArrow={false} isPersonalAreaActive={false} navigate={navigate} />
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <RightSidebar onSelectDepartment={onSelectDept} />
-        <MainContent />
+        <RightSidebar onSelectDepartment={onSelectDept} onOpenCommandPage={onOpenCommandPage} />
+        <MainContent onOpenDoc={onOpenDoc} onNewDoc={() => setShowNewDoc(true)} />
       </div>
+      {showNewDoc && <NewDocModal onClose={() => setShowNewDoc(false)} />}
     </div>
   );
 }

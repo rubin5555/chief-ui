@@ -208,7 +208,7 @@ const PERM_PERSONAL_LISTS = [
 // ─── DocPermissionsModal ──────────────────────────────────────────────────────
 type PermUser = { id: string; name: string; idNumber: string; environment: string; subLabel?: string };
 
-function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = false }: { onClose: () => void; initialTab?: number; isDistributed?: boolean }) {
+export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = false }: { onClose: () => void; initialTab?: number; isDistributed?: boolean }) {
   const PERMISSIONS = [
     {
       label: 'צפייה לאחר הפצה', Icon: Eye, color: '#111827',

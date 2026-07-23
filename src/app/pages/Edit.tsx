@@ -18,6 +18,7 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import type { EditDocInfo } from '../../App';
+import { DateTimePicker } from '../components/DateTimePicker';
 
 const CLASSIFIED_POOL = [
   { id: 'u1', name: 'אלון כהן',       idNumber: '123456789', env: 'סודי' },
@@ -1621,42 +1622,49 @@ function DocToolbar() {
           <>
             <div className="fixed inset-0 z-[99998]" onClick={() => setCalendarOpen(false)} />
             <div className="fixed z-[99999] bg-white rounded-2xl shadow-2xl border border-gray-100"
-              style={{ top: calendarPos!.top, left: calendarPos!.left, width: 260 }}
+              style={{ top: calendarPos!.top, left: calendarPos!.left, width: 280 }}
               dir="rtl"
               onClick={e => e.stopPropagation()}>
               {/* Header */}
-              <div className="flex items-center justify-between px-3 pt-3 pb-1">
-                <button type="button" onClick={nextMonth} className="p-1 rounded-full hover:bg-gray-100 transition-colors">
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
+              <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                <button type="button" onClick={nextMonth} className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                  <ChevronRight className="w-4 h-4 text-gray-500" />
                 </button>
-                <span className="text-xs font-semibold text-gray-800 select-none">{HE_MONTHS_CAL[calViewMonth]} {calViewYear}</span>
-                <button type="button" onClick={prevMonth} className="p-1 rounded-full hover:bg-gray-100 transition-colors">
-                  <ChevronLeft className="w-3.5 h-3.5 text-gray-500" />
+                <span className="text-sm font-bold text-gray-900 select-none">{HE_MONTHS_CAL[calViewMonth]} {calViewYear}</span>
+                <button type="button" onClick={prevMonth} className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+                  <ChevronLeft className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
               {/* Day headers */}
               <div className="grid grid-cols-7 px-3 mb-1">
-                {HE_DAYS_CAL.map(d => <span key={d} className="text-center text-[10px] text-gray-400 py-0.5 select-none">{d}</span>)}
+                {HE_DAYS_CAL.map(d => <span key={d} className="text-center text-xs text-gray-400 py-1 select-none">{d}</span>)}
               </div>
               {/* Day cells */}
-              <div className="grid grid-cols-7 gap-0.5 px-3 pb-2">
+              <div className="grid grid-cols-7 px-3 pb-2 gap-y-0.5">
                 {cells.map((day, i) => day === null ? <span key={`e-${i}`} /> : (
                   <button key={day} type="button" onClick={() => selectDay(day)}
-                    className={['aspect-square flex items-center justify-center text-[11px] rounded-full transition-colors',
-                      isSelected(day) ? 'border-2 border-[#1B3A6B] text-[#1B3A6B] font-semibold bg-white'
-                      : isToday(day)  ? 'border border-dashed border-[#1B3A6B]/40 text-[#1B3A6B] font-medium hover:bg-blue-50'
-                      : 'text-gray-700 hover:bg-blue-50',
+                    className={['mx-auto w-9 h-9 flex items-center justify-center text-sm rounded-full transition-colors',
+                      isSelected(day) ? 'border-2 border-[#1B3A6B] text-[#1B3A6B] font-bold'
+                      : isToday(day)  ? 'border-2 border-[#1B3A6B] text-[#1B3A6B] font-semibold hover:bg-blue-50'
+                      : 'text-gray-800 hover:bg-gray-100',
                     ].join(' ')}>{day}</button>
                 ))}
               </div>
-              {/* Time */}
+              {/* Time — no arrows */}
               <div className="border-t border-gray-100 mx-3" />
-              <div className="px-3 py-2.5 flex items-center gap-2">
-                <span className="text-[11px] text-gray-500 flex-shrink-0">שעה</span>
-                <input type="text" inputMode="numeric" value={calTime}
-                  onChange={e => setCalTime(e.target.value.replace(/[^\d:]/g,'').slice(0,5))}
-                  dir="ltr"
-                  className="flex-1 text-center text-sm font-medium text-gray-700 px-2 py-1 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#1B3A6B] focus:ring-1 focus:ring-[#1B3A6B]/20 transition-colors" />
+              <div className="px-4 py-3 flex flex-col items-center gap-2">
+                <span className="text-xs text-gray-400">שעה</span>
+                <div className="flex items-center gap-2 justify-center" dir="ltr">
+                  <input type="text" inputMode="numeric" maxLength={2}
+                    value={calTime.split(':')[0] ?? '00'}
+                    onChange={e => { const hh = e.target.value.replace(/\D/g,'').slice(0,2); setCalTime(`${hh}:${calTime.split(':')[1] ?? '00'}`); }}
+                    className="w-9 h-9 text-center text-sm font-semibold text-gray-800 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-[#1B3A6B] focus:ring-1 focus:ring-[#1B3A6B]/20 transition-colors" />
+                  <span className="text-gray-400 text-lg font-light">:</span>
+                  <input type="text" inputMode="numeric" maxLength={2}
+                    value={calTime.split(':')[1] ?? '00'}
+                    onChange={e => { const mm = e.target.value.replace(/\D/g,'').slice(0,2); setCalTime(`${calTime.split(':')[0] ?? '00'}:${mm}`); }}
+                    className="w-9 h-9 text-center text-sm font-semibold text-gray-800 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-[#1B3A6B] focus:ring-1 focus:ring-[#1B3A6B]/20 transition-colors" />
+                </div>
               </div>
               {/* Footer */}
               {displayVal && (
@@ -1668,15 +1676,6 @@ function DocToolbar() {
                       className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white transition-colors hover:opacity-90"
                       style={{ background: '#1B3A6B' }}>אישור</button>
                   </div>
-                </>
-              )}
-              {calSelDay !== null && (
-                <>
-                  <div className="border-t border-gray-100 mx-3" />
-                  <button type="button" onClick={() => { setCalSelYear(null); setCalSelMonth(null); setCalSelDay(null); }}
-                    className="w-full text-[10px] text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-b-2xl py-2 transition-colors">
-                    נקה
-                  </button>
                 </>
               )}
             </div>
@@ -2218,11 +2217,12 @@ function AmazonSelector({ entityType, entityName, onChangeType, onChangeName }: 
   );
 }
 
-function EditDocDetailsModal({ doc, onClose, mode = 'edit', readOnly = false, onContinue, onConfirmIssue }: { doc?: { name?: string; orderNum?: string; status?: string } | null; onClose: () => void; mode?: 'edit' | 'duplicate' | 'approval' | 'issue-update' | 'issue-new'; readOnly?: boolean; onContinue?: (dirty: boolean) => void; onConfirmIssue?: () => void }) {
+export function EditDocDetailsModal({ doc, onClose, mode = 'edit', readOnly = false, docStatus, onContinue, onConfirmIssue }: { doc?: { name?: string; orderNum?: string; status?: string } | null; onClose: () => void; mode?: 'edit' | 'duplicate' | 'approval' | 'issue-update' | 'issue-new'; readOnly?: boolean; docStatus?: string; onContinue?: (dirty: boolean) => void; onConfirmIssue?: () => void }) {
   const isDuplicate = mode === 'duplicate';
   const isApproval = mode === 'approval';
   const isIssueUpdate = mode === 'issue-update';
   const isIssueNew = mode === 'issue-new';
+  const isLimitedEdit = !readOnly && ['מבצעית', 'נצורה', 'הסתיימה', 'התבטלה'].includes(docStatus ?? '');
   const [name,      setName]      = useState(isDuplicate ? (doc?.name ?? 'שם הפקודה') : (doc?.name ?? 'שם הפקודה'));
   const [nameTouched, setNameTouched] = useState(false);
   const [dept,      setDept]      = useState('משאבי אנוש');
@@ -2230,7 +2230,7 @@ function EditDocDetailsModal({ doc, onClose, mode = 'edit', readOnly = false, on
   const [folder,    setFolder]    = useState('תיקיית מבצעים 2026');
   const [amazonType, setAmazonType] = useState('פרויקט');
   const [amazonName, setAmazonName] = useState('פרויקט הגנה 2026');
-  const [entryDate, setEntryDate] = useState('2026-06-01');
+  const [entryDate, setEntryDate] = useState(() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}T${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; });
   const [exitDate,  setExitDate]  = useState('');
   const [pdfAccess, setPdfAccess] = useState<'authorized' | 'all'>('authorized');
   const [cancelApproval, setCancelApproval] = useState(false);
@@ -2266,28 +2266,15 @@ function EditDocDetailsModal({ doc, onClose, mode = 'edit', readOnly = false, on
             </div>
           </div>
 
-          {/* Editable / read-only fields */}
-          {readOnly ? (
-            <div className="flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-3">
-                <ReadOnlyField label="שם המסמך"                value={name} />
-                <ReadOnlyField label="מחלקה"                   value={dept} />
-                <ReadOnlyField label="סוג מסמך"               value={docType} />
-                <ReadOnlyField label="שיוך לתיקייה מבצעית"   value={folder} />
-                <ReadOnlyField label="ישות"                    value={`${amazonType} — ${amazonName}`} />
-                <ReadOnlyField label="כניסה לתוקף"            value={entryDate} />
-                <ReadOnlyField label="יציאה מתוקף"            value={exitDate || '—'} />
-                <ReadOnlyField label="ייצוא לPDF"              value={pdfAccess === 'authorized' ? 'למורשים בלבד' : 'לאפשר לכולם'} />
-                <ReadOnlyField label="ביטול סבב האישורים"      value={cancelApproval ? 'כן' : 'לא'} />
-                <ReadOnlyField label="סימן מים"               value={watermark ? 'כן' : 'לא'} />
-                <ReadOnlyField label="פקודה נצורה"             value={distributeNatzura ? 'כן' : 'לא'} />
-              </div>
-            </div>
-          ) : (
+          {/* Editable / read-only fields — unified layout, same positions always */}
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-4">
+
+              {/* שם המסמך */}
               <div className="col-span-2">
-                {isDuplicate ? (
+                {(readOnly || isLimitedEdit) ? (
+                  <ReadOnlyField label="שם המסמך" value={name} />
+                ) : isDuplicate ? (
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-semibold flex items-center gap-1.5" style={{ color: '#374151' }}>
                       שם המסמך
@@ -2311,30 +2298,75 @@ function EditDocDetailsModal({ doc, onClose, mode = 'edit', readOnly = false, on
                   <EditableField label="שם המסמך" value={name} onChange={v => { setName(v); dirty(); }} />
                 )}
               </div>
-              <SelectField label="מחלקה" value={dept} onChange={v => { setDept(v); dirty(); }}
-                options={['משאבי אנוש', 'מבצעים', 'לוגיסטיקה', 'כספים', 'טכנולוגיה']} />
-              <SelectField label="סוג מסמך" value={docType} onChange={v => { setDocType(v); dirty(); }}
-                options={['פקודה', 'נוהל', 'הוראה', 'הנחיה', 'נספח']} />
+
+              {/* מחלקה */}
+              {(readOnly || isLimitedEdit) ? (
+                <ReadOnlyField label="מחלקה" value={dept} />
+              ) : (
+                <SelectField label="מחלקה" value={dept} onChange={v => { setDept(v); dirty(); }}
+                  options={['משאבי אנוש', 'מבצעים', 'לוגיסטיקה', 'כספים', 'טכנולוגיה']} />
+              )}
+
+              {/* סוג מסמך */}
+              {(readOnly || isLimitedEdit) ? (
+                <ReadOnlyField label="סוג מסמך" value={docType} />
+              ) : (
+                <SelectField label="סוג מסמך" value={docType} onChange={v => { setDocType(v); dirty(); }}
+                  options={['פקודה', 'נוהל', 'הוראה', 'הנחיה', 'נספח']} />
+              )}
+
+              {/* שיוך לתיקייה מבצעית */}
               <div className="col-span-2">
-                <SelectField label="שיוך לתיקייה מבצעית" value={folder} onChange={v => { setFolder(v); dirty(); }}
-                  options={['תיקיית מבצעים 2026', 'תיקיית נהלים', 'תיקיית הוראות', 'תיקיית לוגיסטיקה', 'תיקיית משאבי אנוש']} />
+                {(readOnly || isLimitedEdit) ? (
+                  <ReadOnlyField label="שיוך לתיקייה מבצעית" value={folder} />
+                ) : (
+                  <SelectField label="שיוך לתיקייה מבצעית" value={folder} onChange={v => { setFolder(v); dirty(); }}
+                    options={['תיקיית מבצעים 2026', 'תיקיית נהלים', 'תיקיית הוראות', 'תיקיית לוגיסטיקה', 'תיקיית משאבי אנוש']} />
+                )}
               </div>
+
+              {/* ישות */}
               <div className="col-span-2">
-                <AmazonSelector entityType={amazonType} entityName={amazonName}
-                  onChangeType={v => { setAmazonType(v); setAmazonName(''); dirty(); }}
-                  onChangeName={v => { setAmazonName(v); dirty(); }} />
+                {(readOnly || isLimitedEdit) ? (
+                  <ReadOnlyField label="ישות" value={`${amazonType} — ${amazonName}`} />
+                ) : (
+                  <AmazonSelector entityType={amazonType} entityName={amazonName}
+                    onChangeType={v => { setAmazonType(v); setAmazonName(''); dirty(); }}
+                    onChangeName={v => { setAmazonName(v); dirty(); }} />
+                )}
               </div>
-              <EditableField label="כניסה לתוקף" value={entryDate} onChange={v => { setEntryDate(v); dirty(); }} type="date" />
-              <EditableField label="יציאה מתוקף" value={exitDate} onChange={v => { setExitDate(v); dirty(); }} type="date" />
+
+              {/* כניסה לתוקף */}
+              {(readOnly || isLimitedEdit) ? (
+                <ReadOnlyField label="כניסה לתוקף" value={entryDate} />
+              ) : (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-500 font-medium">כניסה לתוקף</span>
+                  <DateTimePicker value={entryDate} onChange={v => { setEntryDate(v); dirty(); }} placeholder="בחר תאריך ושעה" />
+                </div>
+              )}
+
+              {/* יציאה מתוקף — editable in all non-readOnly modes */}
+              {readOnly ? (
+                <ReadOnlyField label="יציאה מתוקף" value={exitDate || '—'} />
+              ) : (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs text-gray-500 font-medium">יציאה מתוקף</span>
+                  <DateTimePicker value={exitDate} onChange={v => { setExitDate(v); dirty(); }} placeholder="בחר תאריך ושעה" />
+                </div>
+              )}
+
             </div>
 
             {/* Toggles & controls */}
             <div className="flex flex-col gap-0 rounded-xl overflow-hidden border border-gray-100">
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <span className="text-sm text-gray-700">ייצוא לPDF</span>
-                <div className="flex rounded-lg overflow-hidden border border-gray-200" style={{ fontSize: 12 }}>
+
+              {/* ייצוא לPDF — editable in all non-readOnly modes */}
+              <div className={`flex items-center justify-between px-4 py-3 bg-white ${readOnly ? 'opacity-60' : ''}`}>
+                <span className={`text-sm ${readOnly ? 'text-gray-400' : 'text-gray-700'}`}>ייצוא לPDF</span>
+                <div className="flex rounded-lg overflow-hidden border border-gray-200" style={{ fontSize: 12, pointerEvents: readOnly ? 'none' : undefined }}>
                   {(['authorized', 'all'] as const).map((opt, i) => (
-                    <button key={opt} onClick={() => { setPdfAccess(opt); dirty(); }}
+                    <button key={opt} onClick={() => { if (!readOnly) { setPdfAccess(opt); dirty(); } }}
                       className="px-3 py-1.5 transition-colors text-xs font-medium"
                       style={{
                         background: pdfAccess === opt ? '#1B3A6B' : '#fff',
@@ -2346,24 +2378,36 @@ function EditDocDetailsModal({ doc, onClose, mode = 'edit', readOnly = false, on
                   ))}
                 </div>
               </div>
-              <div className="flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+
+              {/* ביטול סבב האישורים */}
+              <div className={`flex items-center justify-between px-4 py-3 bg-white transition-colors ${!(readOnly || isLimitedEdit) ? 'hover:bg-gray-50' : 'opacity-50'}`}
                 style={{ borderTop: '1px solid #f3f4f6' }}>
-                <span className="text-sm text-gray-700">ביטול סבב האישורים</span>
-                <Toggle checked={cancelApproval} onChange={() => { setCancelApproval(p => !p); dirty(); }} />
+                <span className={`text-sm ${(readOnly || isLimitedEdit) ? 'text-gray-400' : 'text-gray-700'}`}>ביטול סבב האישורים</span>
+                <div style={{ pointerEvents: (readOnly || isLimitedEdit) ? 'none' : undefined }}>
+                  <Toggle checked={cancelApproval} onChange={() => { setCancelApproval(p => !p); dirty(); }} />
+                </div>
               </div>
-              <div className="flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+
+              {/* הצגת סימן מים */}
+              <div className={`flex items-center justify-between px-4 py-3 bg-white transition-colors ${!(readOnly || isLimitedEdit) ? 'hover:bg-gray-50' : 'opacity-50'}`}
                 style={{ borderTop: '1px solid #f3f4f6' }}>
-                <span className="text-sm text-gray-700">הצגת סימן מים</span>
-                <Toggle checked={watermark} onChange={() => { setWatermark(p => !p); dirty(); }} />
+                <span className={`text-sm ${(readOnly || isLimitedEdit) ? 'text-gray-400' : 'text-gray-700'}`}>הצגת סימן מים</span>
+                <div style={{ pointerEvents: (readOnly || isLimitedEdit) ? 'none' : undefined }}>
+                  <Toggle checked={watermark} onChange={() => { setWatermark(p => !p); dirty(); }} />
+                </div>
               </div>
-              <div className="flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+
+              {/* פקודה נצורה */}
+              <div className={`flex items-center justify-between px-4 py-3 bg-white transition-colors ${!(readOnly || isLimitedEdit) ? 'hover:bg-gray-50' : 'opacity-50'}`}
                 style={{ borderTop: '1px solid #f3f4f6' }}>
-                <span className="text-sm text-gray-700">האם תרצה להפיץ את הפקודה כפקודה נצורה?</span>
-                <Toggle checked={distributeNatzura} onChange={() => { setDistributeNatzura(p => !p); dirty(); }} />
+                <span className={`text-sm ${(readOnly || isLimitedEdit) ? 'text-gray-400' : 'text-gray-700'}`}>האם תרצה להפיץ את הפקודה כפקודה נצורה?</span>
+                <div style={{ pointerEvents: (readOnly || isLimitedEdit) ? 'none' : undefined }}>
+                  <Toggle checked={distributeNatzura} onChange={() => { setDistributeNatzura(p => !p); dirty(); }} />
+                </div>
               </div>
+
             </div>
           </div>
-          )}
         </div>
 
         {/* Footer */}
@@ -2499,7 +2543,85 @@ const MOCK_DOC_SECTIONS = ['מטרה ורקע', 'הגדרות ומונחים', '
 
 type ApproverSig = { rank: string; name: string; signatureData: string | null };
 
-function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribute }: {
+function ViduyKabalahModal({ onClose, onSend }: { onClose: () => void; onSend: (data: { approvedBy: string; date: string; notes: string }) => void }) {
+  const [approvedBy, setApprovedBy] = useState('');
+  const [date, setDate] = useState('');
+  const [notes, setNotes] = useState('');
+
+  return (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center"
+      style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }}
+      onClick={onClose}>
+      <div dir="rtl" className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        style={{ width: 440 }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <span className="text-sm font-semibold text-gray-900">וידוא קבלה — חמ״ל</span>
+          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Warning */}
+        <div className="px-5 pt-4 pb-0">
+          <p className="text-xs leading-relaxed" style={{ color: '#9B1C1C' }}>
+            <strong className="font-semibold">שימו לב:</strong> מידע זה יועבר למפיץ המסמך וישוקף במסך ״וידוא קבלה״. נדרש למלא את הפרטים טרם הצפייה במסך.
+          </p>
+        </div>
+
+        {/* Fields */}
+        <div className="px-5 py-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-500">אושר ע״י</label>
+            <input
+              type="text"
+              value={approvedBy}
+              onChange={e => setApprovedBy(e.target.value)}
+              placeholder="שם המאשר"
+              dir="rtl"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-800 focus:outline-none focus:border-[#1B3A6B] focus:ring-1 focus:ring-[#1B3A6B]/20 transition-colors text-right placeholder-gray-300"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-500">תאריך אישור</label>
+            <DateTimePicker value={date} onChange={setDate} placeholder="בחר תאריך ושעה" />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-500">הערות</label>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="הוסף הערות..."
+              dir="rtl"
+              rows={4}
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-800 focus:outline-none focus:border-[#1B3A6B] focus:ring-1 focus:ring-[#1B3A6B]/20 transition-colors resize-none text-right placeholder-gray-300"
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 pb-5">
+          <button type="button" onClick={onClose}
+            className="px-4 py-2 text-sm text-gray-500 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+            ביטול
+          </button>
+          <button type="button"
+            onClick={() => { onSend({ approvedBy, date, notes }); onClose(); }}
+            className="px-6 py-2 text-sm font-semibold text-white rounded-lg transition-colors hover:opacity-90"
+            style={{ background: '#1B3A6B' }}>
+            שלח
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ApprovalRoundModal({ onClose, onApprove, onReject, docName, onDistribute }: {
   onClose: () => void;
   onApprove: (sig: ApproverSig) => void;
   onReject: () => void;
@@ -2957,7 +3079,7 @@ function ApprovalDetailsModal({ onClose, onSubmit }: { onClose: () => void; onSu
   );
 }
 
-function ShareDocModal({ docName, onClose, onSend }: { docName: string; onClose: () => void; onSend: () => void }) {
+export function ShareDocModal({ docName, onClose, onSend, title }: { docName: string; onClose: () => void; onSend: () => void; title?: string }) {
   const emailBody = `מכותבים שלום,\nמצ״ב פקודה ״${docName}״ :\nלחצו כאן למעבר לפקודה\nעיונכם.\nבברכה,`;
   const [body, setBody] = useState(emailBody);
 
@@ -2968,7 +3090,7 @@ function ShareDocModal({ docName, onClose, onSend }: { docName: string; onClose:
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
-          <h2 className="text-sm font-bold text-gray-800">שיתוף המסמך ב-OUTLOOK ובצאט</h2>
+          <h2 className="text-sm font-bold text-gray-800">{title ?? 'שיתוף המסמך ב-OUTLOOK ובצאט'}</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400">
             <X className="w-4 h-4" />
           </button>
@@ -3001,7 +3123,7 @@ function ShareDocModal({ docName, onClose, onSend }: { docName: string; onClose:
             className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-50 transition-colors">
             סגור
           </button>
-          <button onClick={() => { onSend(); onClose(); }}
+          <button onClick={() => { onSend(); }}
             className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-colors hover:opacity-90"
             style={{ background: '#1B3A6B' }}>
             שלח
@@ -3372,6 +3494,7 @@ export function Edit({ navigate, doc }: EditProps) {
   const [showApprovalChangedWarning, setShowApprovalChangedWarning] = useState(false);
   const [showApprovalDetails, setShowApprovalDetails] = useState(false);
   const [showApprovalRound, setShowApprovalRound] = useState(false);
+  const [showViduyKabalah, setShowViduyKabalah] = useState(false);
   const [approverSigs, setApproverSigs] = useState<ApproverSig[]>([]);
   const [sigSectionRequired, setSigSectionRequired] = useState(false);
   const sigSectionRef = useRef<HTMLDivElement>(null);
@@ -3754,6 +3877,7 @@ export function Edit({ navigate, doc }: EditProps) {
               </>
             )}
           </div>
+
 
           <div className="h-px bg-gray-200 mb-4" />
 
@@ -4786,7 +4910,7 @@ export function Edit({ navigate, doc }: EditProps) {
         </div>
       )}
       {showEditDocModal && (
-        <EditDocDetailsModal doc={doc} onClose={() => setShowEditDocModal(false)} readOnly={isDistributedDoc} />
+        <EditDocDetailsModal doc={doc} onClose={() => setShowEditDocModal(false)} readOnly={false} docStatus={docStatus} />
       )}
       {showDuplicateModal && (
         <EditDocDetailsModal doc={doc} onClose={() => setShowDuplicateModal(false)} mode="duplicate" />
@@ -4818,6 +4942,12 @@ export function Edit({ navigate, doc }: EditProps) {
           onReject={() => { setShowApprovalRound(false); setDocStatus('בהכנה'); }}
           onDistribute={() => { setShowApprovalRound(false); setDocStatus('מבצעית'); setShowShareModal(true); }}
           docName={name}
+        />
+      )}
+      {showViduyKabalah && (
+        <ViduyKabalahModal
+          onClose={() => setShowViduyKabalah(false)}
+          onSend={(_data) => { setShowViduyKabalah(false); }}
         />
       )}
       {showDistributeModal && (
@@ -4911,7 +5041,7 @@ export function Edit({ navigate, doc }: EditProps) {
         <ShareDocModal
           docName={name}
           onClose={() => setShowShareModal(false)}
-          onSend={() => { setDistributeProgress(0); setDistributeComplete(false); setShowDistributeProgress(true); }}
+          onSend={() => { setShowShareModal(false); setDistributeProgress(0); setDistributeComplete(false); setShowDistributeProgress(true); }}
         />
       )}
       {showDistributeProgress && (

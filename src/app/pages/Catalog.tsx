@@ -1,12 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
-import { TopNavbar } from '../components/TopNavbar';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { TopNavbar, DocPermissionsModal } from '../components/TopNavbar';
+import { ApprovalRoundModal, ShareDocModal, EditDocDetailsModal } from './Edit';
 import { RightSidebar } from '../components/RightSidebar';
 import { DatePicker } from '../components/DatePicker';
+import { DateTimePicker as SharedDateTimePicker, nowDateTimeIso } from '../components/DateTimePicker';
 import {
   Search, Clock, MoreHorizontal, ChevronLeft, ChevronRight,
   Eye, Send, Copy, Trash2, Archive, X, Download, RotateCcw, ChevronDown, Filter, Plus, FileText,
   FileEdit, RefreshCw, Hash, XCircle, Shield, FolderPlus, Bookmark, GitBranch,
   Link, Link2, Monitor, Share2, Calendar, ChevronUp,
+  Loader2, Check, Users, UserPlus, AlertTriangle,
 } from 'lucide-react';
 
 const TEMPLATES = ['פקודה', 'הוראה', 'מסמך', 'נספח'];
@@ -23,7 +26,7 @@ type Tab = 'drafts' | 'distribution' | 'distributed' | 'archive';
 interface Doc {
   id: string; name: string; type: string;
   orderNum: string; updateNum: string; effectiveDate: string; refNum: string; status: string;
-  env?: string; dept?: string;
+  env?: string; dept?: string; folder?: string;
   children?: Doc[];
 }
 
@@ -83,7 +86,7 @@ const ROW_ACTIONS: Record<Tab, RowAction[]> = {
     { label: 'הרשאות ובקרה',           Icon: Shield },
     { sep: true },
     { label: 'שייך לתיקייה',           Icon: FolderPlus },
-    { label: 'הגדרה כמסמך ראשי',      Icon: Bookmark },
+    { label: 'יצירת היררכית מסמכים',   Icon: Bookmark },
     { sep: true },
     { label: 'צפייה בסבב אישורים',     Icon: GitBranch },
     { label: 'העתקת קישור',            Icon: Link },
@@ -115,7 +118,7 @@ const DOCS: Record<Tab, Doc[]> = {
     { id: 'd8', name: 'הוראת ניהול ציוד',            type: 'הוראה', orderNum: '2024-008', updateNum: '1', effectiveDate: '20/04/2024', refNum: 'סימ-1241', status: 'נדרסה',          env: 'ארגון א׳',       dept: 'כספים' },
   ],
   distribution: [
-    { id: 'p1', name: 'פקודת מבצע קיץ',             type: 'פקודה',  orderNum: '2024-101', updateNum: '5', effectiveDate: '01/05/2024', refNum: 'סימ-2001', status: 'ממתין להפצה',  env: 'הסביבה שלי',    dept: 'משאבי אנוש' },
+    { id: 'p1', name: 'פקודת מבצע קיץ',             type: 'פקודה',  orderNum: '2024-101', updateNum: '5', effectiveDate: '01/05/2024', refNum: 'סימ-2001', status: 'ממתין להפצה',  env: 'הסביבה שלי',    dept: 'משאבי אנוש', folder: 'מבצע קיץ 2024' },
     { id: 'p2', name: 'הוראת בטיחות שגרתית',        type: 'הוראה', orderNum: '2024-102', updateNum: '3', effectiveDate: '05/05/2024', refNum: 'סימ-2002', status: 'בסבב אישורים', env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
     { id: 'p3', name: 'מסמך תכנון שנתי',             type: 'מסמך',  orderNum: '2024-103', updateNum: '2', effectiveDate: '10/05/2024', refNum: 'סימ-2003', status: 'נדחתה',          env: 'משרד הבריאות',  dept: 'כספים' },
     { id: 'p4', name: 'פקודת סיום פעילות מבצע א׳',  type: 'פקודה',  orderNum: '2024-104', updateNum: '1', effectiveDate: '15/05/2024', refNum: 'סימ-2004', status: 'ממתין להפצה',  env: 'משרד הביטחון', dept: 'משאבי אנוש' },
@@ -125,7 +128,7 @@ const DOCS: Record<Tab, Doc[]> = {
     { id: 'p8', name: 'הוראת תפעול מיוחד',          type: 'הוראה', orderNum: '2024-108', updateNum: '1', effectiveDate: '05/06/2024', refNum: 'סימ-2008', status: 'בסבב אישורים', env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
   ],
   distributed: [
-    { id: 'r1',  name: 'פקודת בטיחות מרחב א׳',       type: 'פקודה',  orderNum: '2024-201', updateNum: '7', effectiveDate: '10/01/2024', refNum: 'סימ-3001', status: 'מבצעית', env: 'הסביבה שלי',    dept: 'משאבי אנוש',
+    { id: 'r1',  name: 'פקודת בטיחות מרחב א׳',       type: 'פקודה',  orderNum: '2024-201', updateNum: '7', effectiveDate: '10/01/2024', refNum: 'סימ-3001', status: 'מבצעית', env: 'הסביבה שלי',    dept: 'משאבי אנוש', folder: 'נהלי בטיחות',
       children: [
         { id: 'r1-a', name: 'נספח א׳ — נהלי בטיחות שוטפים', type: 'נספח', orderNum: '2024-201/א', updateNum: '3', effectiveDate: '10/01/2024', refNum: 'סימ-3001/א', status: 'מבצעית', env: 'הסביבה שלי', dept: 'משאבי אנוש' },
         { id: 'r1-b', name: 'נספח ב׳ — טפסי דיווח אירועים', type: 'נספח', orderNum: '2024-201/ב', updateNum: '2', effectiveDate: '10/01/2024', refNum: 'סימ-3001/ב', status: 'מבצעית', env: 'הסביבה שלי', dept: 'משאבי אנוש' },
@@ -140,13 +143,13 @@ const DOCS: Record<Tab, Doc[]> = {
       ]},
     { id: 'r5',  name: 'הוראת תדרוך שבועי',          type: 'הוראה', orderNum: '2024-205', updateNum: '4', effectiveDate: '30/01/2024', refNum: 'סימ-3005', status: 'מבצעית', env: 'הסביבה שלי',    dept: 'כספים' },
     { id: 'r6',  name: 'מסמך הנחיות כלליות',          type: 'מסמך',  orderNum: '2024-206', updateNum: '2', effectiveDate: '05/02/2024', refNum: 'סימ-3006', status: 'נצורה',   env: 'משרד החינוך',   dept: 'טכנולוגיה' },
-    { id: 'r7',  name: 'פקודת ניהול כוח אדם',        type: 'פקודה',  orderNum: '2024-207', updateNum: '8', effectiveDate: '10/02/2024', refNum: 'סימ-3007', status: 'מבצעית', env: 'הסביבה שלי',    dept: 'משאבי אנוש' },
+    { id: 'r7',  name: 'פקודת ניהול כוח אדם',        type: 'פקודה',  orderNum: '2024-207', updateNum: '8', effectiveDate: '10/02/2024', refNum: 'סימ-3007', status: 'מבצעית', env: 'הסביבה שלי',    dept: 'משאבי אנוש', folder: 'גיוס עובדים' },
     { id: 'r8',  name: 'הוראת נוהל גיוס',            type: 'הוראה', orderNum: '2024-208', updateNum: '3', effectiveDate: '15/02/2024', refNum: 'סימ-3008', status: 'מבצעית', env: 'ארגון א׳',       dept: 'כספים' },
     { id: 'r9',  name: 'מסמך מדיניות תקשורת',        type: 'מסמך',  orderNum: '2024-209', updateNum: '1', effectiveDate: '20/02/2024', refNum: 'סימ-3009', status: 'נצורה',   env: 'משרד הבריאות',  dept: 'טכנולוגיה' },
     { id: 'r10', name: 'פקודת עדכון כללי',           type: 'פקודה',  orderNum: '2024-210', updateNum: '5', effectiveDate: '25/02/2024', refNum: 'סימ-3010', status: 'מבצעית', env: 'הסביבה שלי',    dept: 'משאבי אנוש' },
   ],
   archive: [
-    { id: 'a1', name: 'פקודת מבצע חורף 2023',        type: 'פקודה',  orderNum: '2023-501', updateNum: '9', effectiveDate: '01/12/2023', refNum: 'סימ-4001', status: 'הסתיימה',  env: 'הסביבה שלי',    dept: 'משאבי אנוש' },
+    { id: 'a1', name: 'פקודת מבצע חורף 2023',        type: 'פקודה',  orderNum: '2023-501', updateNum: '9', effectiveDate: '01/12/2023', refNum: 'סימ-4001', status: 'הסתיימה',  env: 'הסביבה שלי',    dept: 'משאבי אנוש', folder: 'מבצע חורף 2024' },
     { id: 'a2', name: 'הוראת נהלי 2022',             type: 'הוראה', orderNum: '2022-502', updateNum: '6', effectiveDate: '15/12/2022', refNum: 'סימ-4002', status: 'התבטלה',   env: 'משרד הבריאות',  dept: 'כספים' },
     { id: 'a3', name: 'מסמך תכנון 2021',             type: 'מסמך',  orderNum: '2021-503', updateNum: '4', effectiveDate: '20/11/2021', refNum: 'סימ-4003', status: 'הסתיימה',  env: 'הסביבה שלי',    dept: 'טכנולוגיה' },
     { id: 'a4', name: 'פקודת סיום שנה',              type: 'פקודה',  orderNum: '2023-504', updateNum: '3', effectiveDate: '31/12/2023', refNum: 'סימ-4004', status: 'הסתיימה',  env: 'משרד הביטחון', dept: 'משאבי אנוש' },
@@ -264,7 +267,9 @@ function SimpleCheckboxSection({ title, options, selected, onChange }: {
 }
 
 /* ── Row context menu ── */
-function RowMenu({ tab, onClose }: { tab: Tab; onClose: () => void }) {
+const INLINE_PHASE_ACTIONS = new Set(['העתקת קישור', 'יצירת לינק מתעדכן', 'הקרנה כפקודה ראשית']);
+
+function RowMenu({ tab, onAction, onClose, actionPhase }: { tab: Tab; onAction: (label: string) => void; onClose: () => void; actionPhase?: { label: string; phase: 'loading' | 'done' } | null }) {
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 min-w-[210px]"
       dir="rtl" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
@@ -273,11 +278,15 @@ function RowMenu({ tab, onClose }: { tab: Tab; onClose: () => void }) {
           return <div key={`sep-${i}`} className="my-1 border-t border-gray-100" />;
         }
         const { label, Icon, danger } = action;
+        const isInlinePhase = INLINE_PHASE_ACTIONS.has(label);
+        const phase = (isInlinePhase && actionPhase?.label === label) ? actionPhase.phase : null;
         return (
-          <button key={label} onClick={onClose}
+          <button key={label} onClick={() => { onAction(label); if (!isInlinePhase) onClose(); }}
             className={`w-full flex items-center gap-3 px-4 py-2 text-sm text-right transition-colors hover:bg-gray-50 ${danger ? 'text-red-500' : 'text-gray-700'}`}>
             <Icon className={`w-4 h-4 flex-shrink-0 ${danger ? 'text-red-400' : 'text-gray-400'}`} />
-            {label}
+            <span className="flex-1">{label}</span>
+            {phase === 'loading' && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1B3A6B] flex-shrink-0" />}
+            {phase === 'done' && <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />}
           </button>
         );
       })}
@@ -285,9 +294,565 @@ function RowMenu({ tab, onClose }: { tab: Tab; onClose: () => void }) {
   );
 }
 
+/* ── Catalog doc modal helpers ── */
+function CROField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs text-gray-400 font-medium">{label}</span>
+      <div className="text-sm text-gray-400 rounded-lg px-3 py-1.5 border border-gray-100 bg-gray-50 select-none cursor-default text-right">{value}</div>
+    </div>
+  );
+}
+
+function CSelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [open]);
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs text-gray-500 font-medium">{label}</span>
+      <div ref={ref} className="relative">
+        <button type="button" onClick={() => setOpen(o => !o)}
+          className="w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white hover:border-gray-300 focus:outline-none transition-colors"
+          style={{ color: value ? '#374151' : '#9ca3af' }}>
+          <span>{value || 'בחר'}</span>
+          <ChevronLeft className="w-4 h-4 text-gray-400 flex-shrink-0" style={{ transform: open ? 'rotate(-90deg)' : 'rotate(90deg)', transition: 'transform 0.15s' }} />
+        </button>
+        {open && (
+          <div className="absolute top-full mt-1 right-0 left-0 bg-white rounded-xl shadow-lg border border-gray-100 z-[9999] py-1 max-h-48 overflow-y-auto">
+            {options.map(opt => (
+              <button key={opt} type="button"
+                onClick={() => { onChange(opt); setOpen(false); }}
+                className="w-full text-right px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
+                style={{ color: value === opt ? '#1B3A6B' : '#374151', fontWeight: value === opt ? 600 : 400 }}>
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CToggleRow({ label, checked, onChange, disabled }: { label: string; checked: boolean; onChange: () => void; disabled?: boolean }) {
+  return (
+    <div className={`flex items-center justify-between px-4 py-3 bg-white transition-colors ${disabled ? 'opacity-50' : 'hover:bg-gray-50'}`}
+      style={{ borderTop: '1px solid #f3f4f6' }}>
+      <span className={`text-sm ${disabled ? 'text-gray-400' : 'text-gray-700'}`}>{label}</span>
+      <button onClick={disabled ? undefined : onChange}
+        className="relative flex-shrink-0 transition-colors duration-200 rounded-full"
+        style={{ width: 36, height: 20, background: checked ? '#1B3A6B' : '#d1d5db', pointerEvents: disabled ? 'none' : undefined }}>
+        <span className="absolute top-0.5 transition-all duration-200 rounded-full bg-white"
+          style={{ width: 16, height: 16, right: checked ? 2 : 18 }} />
+      </button>
+    </div>
+  );
+}
+
+/* ── Catalog: Edit / Duplicate doc modal ── */
+function CatalogDocModal({ doc, mode, onClose }: { doc: Doc; mode: 'edit' | 'duplicate'; onClose: () => void }) {
+  const isDuplicate = mode === 'duplicate';
+  const [name, setName] = useState(doc.name);
+  const [nameTouched, setNameTouched] = useState(!isDuplicate);
+  const [dept, setDept] = useState(doc.dept ?? 'משאבי אנוש');
+  const [docType, setDocType] = useState(doc.type ?? 'פקודה');
+  const [entryDate, setEntryDate] = useState(nowDateTimeIso());
+  const [exitDate, setExitDate] = useState('');
+  const [pdfAccess, setPdfAccess] = useState<'authorized' | 'all'>('authorized');
+  const [cancelApproval, setCancelApproval] = useState(false);
+  const [watermark, setWatermark] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  return (
+    <div className="fixed inset-0 z-[99998] flex items-center justify-center"
+      style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }}>
+      <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" dir="rtl"
+        style={{ width: 620, maxHeight: '88vh' }}>
+
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+          <h2 className="text-base font-semibold text-gray-800">{isDuplicate ? 'שכפול מסמך' : 'פרטי המסמך'}</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-6">
+          {/* Always read-only */}
+          <div className="grid grid-cols-3 gap-3">
+            <CROField label="סיווג" value="בלמ״ס" />
+            <CROField label="תבנית" value={doc.type} />
+            <CROField label="ארגון" value={doc.env ?? 'ארגון א׳'} />
+            <CROField label="מס׳ פקודה" value={doc.orderNum} />
+            <CROField label="מס׳ עדכון" value={doc.updateNum} />
+          </div>
+
+          {/* Editable fields */}
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4">
+
+              <div className="col-span-2">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold flex items-center gap-1.5" style={{ color: '#374151' }}>
+                    שם המסמך
+                    {isDuplicate && !nameTouched && <span className="text-[10px] font-normal" style={{ color: '#dc2626' }}>חובה לשנות שם</span>}
+                  </label>
+                  <input value={name}
+                    onChange={e => { setName(e.target.value); setNameTouched(true); setDirty(true); }}
+                    dir="rtl"
+                    style={{
+                      width: '100%', fontSize: 13, color: '#374151', background: 'white',
+                      border: `1.5px solid ${isDuplicate && !nameTouched ? '#fca5a5' : '#e5e7eb'}`,
+                      borderRadius: 8, outline: 'none', padding: '8px 12px', transition: 'all 0.15s',
+                    }}
+                    className="focus:border-[#1B3A6B]"
+                  />
+                </div>
+              </div>
+
+              <CSelectField label="מחלקה" value={dept} onChange={v => { setDept(v); setDirty(true); }}
+                options={DEPARTMENTS} />
+              <CSelectField label="סוג מסמך" value={docType} onChange={v => { setDocType(v); setDirty(true); }}
+                options={['פקודה', 'נוהל', 'הוראה', 'הנחיה', 'נספח']} />
+
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-gray-500 font-medium">כניסה לתוקף</span>
+                <SharedDateTimePicker value={entryDate} onChange={v => { setEntryDate(v); setDirty(true); }} placeholder="בחר תאריך ושעה" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-gray-500 font-medium">יציאה מתוקף</span>
+                <SharedDateTimePicker value={exitDate} onChange={v => { setExitDate(v); setDirty(true); }} placeholder="בחר תאריך ושעה" />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-0 rounded-xl overflow-hidden border border-gray-100">
+              <div className="flex items-center justify-between px-4 py-3 bg-white">
+                <span className="text-sm text-gray-700">ייצוא לPDF</span>
+                <div className="flex rounded-lg overflow-hidden border border-gray-200" style={{ fontSize: 12 }}>
+                  {(['authorized', 'all'] as const).map((opt, i) => (
+                    <button key={opt} onClick={() => { setPdfAccess(opt); setDirty(true); }}
+                      className="px-3 py-1.5 transition-colors text-xs font-medium"
+                      style={{
+                        background: pdfAccess === opt ? '#1B3A6B' : '#fff',
+                        color: pdfAccess === opt ? '#fff' : '#6b7280',
+                        borderRight: i === 0 ? '1px solid #e5e7eb' : undefined,
+                      }}>
+                      {opt === 'authorized' ? 'למורשים בלבד' : 'לאפשר לכולם'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <CToggleRow label="ביטול סבב האישורים" checked={cancelApproval} onChange={() => { setCancelApproval(p => !p); setDirty(true); }} />
+              <CToggleRow label="הצגת סימן מים" checked={watermark} onChange={() => { setWatermark(p => !p); setDirty(true); }} />
+              <CToggleRow label="האם תרצה להפיץ את הפקודה כפקודה נצורה?" checked={false} onChange={() => setDirty(true)} />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 flex-shrink-0">
+          <button onClick={onClose}
+            className="px-5 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">
+            ביטול
+          </button>
+          {(() => {
+            const isDisabled = isDuplicate ? !nameTouched : !dirty;
+            return (
+              <button onClick={onClose} disabled={isDisabled}
+                className="px-5 py-2 rounded-full text-sm font-semibold transition-all"
+                style={{ background: isDisabled ? '#e5e7eb' : '#1B3A6B', color: isDisabled ? '#9ca3af' : '#fff' }}>
+                {isDuplicate ? 'שכפל' : 'שמור שינויים'}
+              </button>
+            );
+          })()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Catalog: Permissions modal ── */
+
+/* ── Catalog: Delete confirm modal ── */
+function CatalogDeleteModal({ doc, onClose }: { doc: Doc; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[99998] flex items-center justify-center"
+      style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }}>
+      <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" dir="rtl"
+        style={{ width: 340, padding: '28px 24px 20px' }}>
+
+        <p className="text-base font-bold text-gray-900 text-center mb-6">
+          האם בטוח שתרצה למחוק "{doc.name}"?
+        </p>
+
+        <div className="flex gap-3">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 rounded-full text-sm font-medium text-gray-700 border border-gray-200 bg-white hover:bg-gray-50 transition-colors">
+            ביטול
+          </button>
+          <button onClick={onClose}
+            className="flex-1 py-2.5 rounded-full text-sm font-bold text-white transition-all hover:opacity-90"
+            style={{ background: '#1B3A6B' }}>
+            מחיקה
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Catalog: Cancel doc modal ── */
+/* ── Doc Hierarchy Modal ── */
+const ALL_DOCS_POOL = [
+  ...Object.values(DOCS).flat().filter(d => !('daysLeft' in d)),
+];
+
+function DocHierarchyModal({ doc, onClose }: { doc: Doc; onClose: () => void }) {
+  const [mode, setMode] = useState<'main' | 'companion'>('main');
+  const [search, setSearch] = useState('');
+  const [companions, setCompanions] = useState<Doc[]>([]);
+  const [mainDoc, setMainDoc] = useState<Doc | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowResults(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
+
+  const switchMode = (m: 'main' | 'companion') => {
+    setMode(m); setSearch(''); setCompanions([]); setMainDoc(null); setShowResults(false);
+  };
+
+  const pool = ALL_DOCS_POOL.filter(d => d.id !== doc.id);
+
+  const results = search.trim()
+    ? pool.filter(d =>
+        (mode === 'main' ? !companions.find(c => c.id === d.id) : true) &&
+        (d.name.includes(search) || d.orderNum.includes(search))
+      ).slice(0, 6)
+    : [];
+
+  const addCompanion = (d: Doc) => { setCompanions(p => [...p, d]); setSearch(''); setShowResults(false); };
+  const removeCompanion = (id: string) => setCompanions(p => p.filter(c => c.id !== id));
+  const pickMain = (d: Doc) => { setMainDoc(d); setSearch(''); setShowResults(false); };
+
+  /* ── shared sub-components ── */
+  const DocCard = ({ d, badge, onRemove }: { d: Doc; badge: string; badgeColor?: string; onRemove?: () => void }) => (
+    <div className="flex items-center gap-3 px-4 py-3 rounded-xl border-2"
+      style={{ borderColor: '#1B3A6B', background: '#f0f4ff' }}>
+      <FileText className="w-5 h-5 flex-shrink-0" style={{ color: '#1B3A6B' }} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-gray-800 truncate">{d.name}</p>
+        <p className="text-xs text-gray-500">{d.orderNum}</p>
+      </div>
+      <span className="text-[11px] font-medium px-2 py-0.5 rounded-full flex-shrink-0"
+        style={{ background: '#1B3A6B', color: '#fff' }}>{badge}</span>
+      {onRemove && (
+        <button onClick={onRemove} className="p-1 rounded-lg hover:bg-blue-100 text-gray-400 transition-colors flex-shrink-0">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
+    </div>
+  );
+
+  const SearchBox = ({ placeholder }: { placeholder: string }) => (
+    <div ref={searchRef} className="relative">
+      <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 bg-white focus-within:border-[#1B3A6B] transition-colors">
+        <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        <input value={search} onChange={e => { setSearch(e.target.value); setShowResults(true); }}
+          onFocus={() => setShowResults(true)}
+          placeholder={placeholder}
+          className="flex-1 text-sm outline-none bg-transparent text-right" dir="rtl" />
+      </div>
+      {showResults && results.length > 0 && (
+        <div className="absolute right-0 left-0 top-full mt-1 bg-white rounded-xl border border-gray-100 shadow-lg z-10 overflow-hidden">
+          {results.map(r => (
+            <button key={r.id}
+              onClick={() => mode === 'main' ? addCompanion(r) : pickMain(r)}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-right hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
+              <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-800 truncate">{r.name}</p>
+                <p className="text-xs text-gray-400">{r.orderNum}</p>
+              </div>
+              <Plus className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 z-[99998] flex items-center justify-center"
+      style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }}>
+      <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" dir="rtl"
+        style={{ width: 600, maxHeight: '88vh' }}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+          <h2 className="text-base font-semibold text-gray-800">יצירת היררכית מסמכים</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
+
+          {/* Current doc card with inline mode toggle */}
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border-2"
+            style={{ borderColor: '#1B3A6B', background: '#f0f4ff' }}>
+            <FileText className="w-5 h-5 flex-shrink-0" style={{ color: '#1B3A6B' }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-800 truncate">{doc.name}</p>
+              <p className="text-xs text-gray-500">{doc.orderNum}</p>
+            </div>
+            {/* Inline tab toggle */}
+            <div className="flex rounded-lg overflow-hidden border flex-shrink-0" style={{ borderColor: '#1B3A6B' }}>
+              {([['main', 'ראשי'], ['companion', 'נלווה']] as const).map(([m, label]) => (
+                <button key={m} onClick={() => switchMode(m)}
+                  className="px-3 py-1 text-[11px] font-semibold transition-colors"
+                  style={{
+                    background: mode === m ? '#1B3A6B' : 'transparent',
+                    color: mode === m ? '#fff' : '#1B3A6B',
+                    borderRight: m === 'companion' ? '1px solid #1B3A6B' : undefined,
+                  }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {mode === 'main' ? (
+            /* Add companions */
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-semibold text-gray-500">מסמכים נלווים</span>
+              <SearchBox placeholder="חיפוש לפי שם מסמך או מס׳ פקודה..." />
+              {companions.length > 0 && (
+                <div className="flex flex-col gap-1.5 mt-1">
+                  {companions.map(c => (
+                    <div key={c.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50">
+                      <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-700 truncate">{c.name}</p>
+                        <p className="text-xs text-gray-400">{c.orderNum}</p>
+                      </div>
+                      <button onClick={() => removeCompanion(c.id)}
+                        className="p-1 rounded-lg hover:bg-gray-200 text-gray-400 transition-colors flex-shrink-0">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {companions.length === 0 && (
+                <p className="text-xs text-gray-400 text-center py-3">חפש וסמן מסמכים נלווים שיצורפו להיררכיה</p>
+              )}
+            </div>
+          ) : (
+            /* Pick main doc */
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-semibold text-gray-500">מסמך ראשי לחיבור</span>
+              {mainDoc ? (
+                <DocCard d={mainDoc} badge="ראשי" onRemove={() => setMainDoc(null)} />
+              ) : (
+                <>
+                  <SearchBox placeholder="חיפוש מסמך ראשי לפי שם או מס׳ פקודה..." />
+                  <p className="text-xs text-gray-400 text-center py-3">חפש ובחר את המסמך הראשי שאליו יחובר המסמך הנוכחי</p>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-100 flex-shrink-0">
+          <button onClick={onClose}
+            className="px-5 py-2.5 rounded-full text-sm font-medium text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 transition-colors">
+            ביטול
+          </button>
+          <button onClick={onClose}
+            disabled={mode === 'companion' && !mainDoc}
+            className="px-6 py-2.5 rounded-full text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
+            style={{ background: '#1B3A6B' }}>
+            שמור
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CancelProgressToast({ onClose }: { onClose: () => void }) {
+  const [progress, setProgress] = useState(0);
+  const [complete, setComplete] = useState(false);
+
+  useEffect(() => {
+    if (complete) return;
+    const timer = setInterval(() => {
+      setProgress(p => {
+        if (p >= 100) { clearInterval(timer); setComplete(true); return 100; }
+        return p + 2;
+      });
+    }, 60);
+    return () => clearInterval(timer);
+  }, [complete]);
+
+  return (
+    <div className="fixed bottom-5 left-5 z-[99998] bg-white rounded-2xl shadow-xl border border-gray-100 flex flex-col gap-3 overflow-hidden"
+      dir="rtl" style={{ width: 300 }}>
+      <div className="flex items-center justify-between px-4 pt-4">
+        <span className="text-xs font-bold text-gray-800">
+          {complete ? 'המסמך בוטל בהצלחה' : 'ביטול המסמך מתבצע'}
+        </span>
+        {complete && (
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
+            <X className="w-3 h-3" />
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-2 px-4">
+        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#e5e7eb' }}>
+          <div className="h-full rounded-full transition-all duration-75"
+            style={{ width: `${progress}%`, background: complete ? '#16a34a' : '#1B3A6B' }} />
+        </div>
+        <span className="text-[11px] font-semibold tabular-nums"
+          style={{ color: complete ? '#16a34a' : '#1B3A6B', minWidth: 36, textAlign: 'left' }}>
+          {progress}%
+        </span>
+      </div>
+      {complete && (
+        <div className="px-4 pb-4">
+          <span className="text-xs text-gray-500">אגרת ביטול נשלחה למכותבים</span>
+        </div>
+      )}
+      {!complete && <div className="pb-1" />}
+    </div>
+  );
+}
+
+function CatalogCancelModal({ doc, onClose, onSendCancel }: { doc: Doc; onClose: () => void; onSendCancel: () => void }) {
+  const [phase, setPhase] = useState<'confirm' | 'share'>('confirm');
+
+  if (phase === 'share') {
+    return (
+      <ShareDocModal
+        docName={doc.name}
+        title="שליחת אגרת ביטול באאוטלוק ובצאט"
+        onClose={() => setPhase('confirm')}
+        onSend={onSendCancel}
+      />
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[99998] flex items-center justify-center"
+      style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }}>
+      <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" dir="rtl"
+        style={{ width: 420, padding: '28px 24px 20px' }}>
+
+        <p className="text-base font-bold text-gray-900 text-center mb-2">
+          האם להעביר את המסמך לסטטוס ׳מבוטל׳?
+        </p>
+        <p className="text-sm text-gray-500 text-center mb-7 leading-relaxed">
+          פעולה זו אינה הפיכה ותסיים את תוקף הפקודה לאלתר
+        </p>
+
+        <div className="flex gap-3">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 rounded-full text-sm font-medium text-gray-700 border border-gray-200 bg-white hover:bg-gray-50 transition-colors">
+            ביטול
+          </button>
+          <button onClick={() => setPhase('share')}
+            className="flex-1 py-2.5 rounded-full text-sm font-bold text-white transition-all hover:opacity-90"
+            style={{ background: '#1B3A6B' }}>
+            אישור
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Receipt confirm modal ── */
+const MOCK_HMLS: Record<string, { name: string; seen: boolean; date?: string; time?: string; note?: string }[]> = {
+  default: [
+    { name: 'חמ״ל רפואה',     seen: true,  date: '10/03/2024', time: '08:32', note: 'התקבל ואושר' },
+    { name: 'חמ״ל לוגיסטיקה', seen: true,  date: '10/03/2024', time: '09:15' },
+    { name: 'חמ״ל תקשוב',     seen: false },
+    { name: 'חמ״ל הנדסה',     seen: false },
+    { name: 'חמ״ל מודיעין',   seen: true,  date: '11/03/2024', time: '14:47', note: 'מאושר לביצוע' },
+    { name: 'חמ״ל תפעול',     seen: false },
+  ],
+};
+
+function ReceiptConfirmModal({ doc, receipt, onClose }: { doc: Doc; receipt: string; onClose: () => void }) {
+  const hmls = MOCK_HMLS.default;
+  const seen = hmls.filter(h => h.seen).length;
+  return (
+    <div className="fixed inset-0 z-[99998] flex items-center justify-center"
+      style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)' }}
+      onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden" dir="rtl"
+        style={{ width: 480, maxHeight: '80vh' }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+          <div>
+            <h3 className="text-base font-bold text-gray-900">וידוא קבלה — חמ״לים מכותבים</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{doc.name}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold" style={{ color: '#1B3A6B' }}>{seen}/{hmls.length}</span>
+            <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* List */}
+        <div className="overflow-y-auto flex-1 px-4 py-3 flex flex-col gap-1">
+          {[...hmls].sort((a, b) => Number(a.seen) - Number(b.seen)).map((h, i) => (
+            <div key={i} className="flex items-start gap-3 px-3 py-3 rounded-xl"
+              style={{ background: h.seen ? '#f0fdf4' : '#f9fafb' }}>
+              {/* Icon */}
+              <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5"
+                style={{ background: h.seen ? '#dcfce7' : '#e5e7eb' }}>
+                {h.seen
+                  ? <Check className="w-3.5 h-3.5" style={{ color: '#16a34a' }} />
+                  : <span className="w-2 h-2 rounded-full bg-gray-400" />}
+              </div>
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium" style={{ color: h.seen ? '#111827' : '#9ca3af' }}>
+                  {h.name}
+                </span>
+                {h.seen && (
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span className="text-xs text-gray-400">{h.date}</span>
+                    <span className="text-xs text-gray-400">{h.time}</span>
+                    {h.note && <><span className="text-xs text-gray-300">|</span><span className="text-xs text-gray-500">{h.note}</span></>}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── History modal ── */
 function HistoryModal({ doc, onClose }: { doc: Doc; onClose: () => void }) {
-  const gridCols = '1fr 1fr 1fr 1fr 1fr 1fr 2.5rem';
+  const gridCols = '1.5fr 0.8fr 1.2fr 1.2fr 1fr 1fr 5rem';
   const allStatuses = Array.from(new Set(HISTORY.map(v => v.status)));
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -369,8 +934,8 @@ function HistoryModal({ doc, onClose }: { doc: Doc; onClose: () => void }) {
             <span className="text-right">מס׳ פקודה</span>
             <span className="text-center">מס׳ עדכון</span>
             <span className="text-center">סטטוס</span>
-            <span className="text-center">תאריך עדכון</span>
-            <span className="text-center">מס׳ סימוכין</span>
+            <span className="text-center">עודכן ב</span>
+            <span className="text-center">סימוכין</span>
             <span className="text-center">אושר ע״י</span>
             <span />
           </div>
@@ -379,7 +944,7 @@ function HistoryModal({ doc, onClose }: { doc: Doc; onClose: () => void }) {
           <div className="overflow-y-auto flex-1 px-2">
             {rows.length === 0 ? (
               <div className="flex items-center justify-center py-10 text-sm text-gray-400">לא נמצאו גרסאות</div>
-            ) : rows.map((v, i) => {
+            ) : rows.map((v) => {
               const statusColor = STATUS_STYLE[v.status]?.color ?? '#6b7280';
               const statusBg    = STATUS_STYLE[v.status]?.bg    ?? '#f3f4f6';
               return (
@@ -389,19 +954,18 @@ function HistoryModal({ doc, onClose }: { doc: Doc; onClose: () => void }) {
                   <span className="text-right text-sm font-medium text-gray-800">{v.orderNum}</span>
                   <span className="text-center text-sm text-gray-600">{v.updateNum}</span>
                   <span className="flex justify-center">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-xs font-medium whitespace-nowrap"
-                      style={{ backgroundColor: statusBg, color: statusColor }}>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap">
                       <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: statusColor }} />
-                      {v.status}
+                      <span className="text-gray-800">{v.status}</span>
                     </span>
                   </span>
                   <span className="text-center text-sm text-gray-500">{v.date}</span>
                   <span className="text-center text-xs text-gray-400">{v.refNum}</span>
                   <span className="text-center text-sm text-gray-600">{v.approvedBy}</span>
                   <div className="flex items-center justify-center">
-                    <button className="p-1.5 rounded-lg text-gray-300 hover:text-[#1B3A6B] hover:bg-blue-50 transition-colors opacity-0 group-hover:opacity-100"
-                      title="פתח גרסה">
-                      <Eye className="w-4 h-4" />
+                    <button className="px-3 py-1 rounded-lg text-xs font-medium transition-colors opacity-0 group-hover:opacity-100"
+                      style={{ color: '#1B3A6B', background: '#EEF4FF' }}>
+                      לצפייה
                     </button>
                   </div>
                 </div>
@@ -572,7 +1136,7 @@ const EMPTY_FORM: NewDocFormData = {
   name: '', org: '', displayName: '',
   orderNum: '1', updateNum: '',
   operativeFolder: '', amazonEntityType: '', amazonRef: '', summary: '',
-  effectiveFrom: '', effectiveTo: '',
+  effectiveFrom: nowIsoStr(), effectiveTo: '',
   pdfExportScope: 'all', skipApproval: false, watermark: false, distributeNatzura: false,
 };
 
@@ -591,7 +1155,12 @@ function FInput({ value, onChange, placeholder, type = 'text', dir = 'rtl' }: {
 }
 /* ── Date + time picker ── */
 const MONTH_NAMES_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-const DAY_INITIALS   = ['א','ב','ג','ד','ה','ו','ש']; // Sun→Sat
+const DAY_INITIALS   = ['א','ב','ג','ד','ה','ו','ש'];
+
+function nowIsoStr(): string {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}T${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+}
 
 function DateTimePicker({ value, onChange, placeholder = 'בחר תאריך ושעה' }: {
   value: string; onChange: (v: string) => void; placeholder?: string;
@@ -599,12 +1168,12 @@ function DateTimePicker({ value, onChange, placeholder = 'בחר תאריך וש
   const split = (v: string) => {
     const [d, t] = v.includes('T') ? v.split('T') : [v, ''];
     const [h, m] = (t || '').split(':');
-    return { d: d ?? '', h: (h ?? '08').padStart(2,'0'), m: (m ?? '00').padStart(2,'0') };
+    return { d: d ?? '', hh: (h ?? String(new Date().getHours())).padStart(2,'0'), mm: (m ?? String(new Date().getMinutes())).padStart(2,'0') };
   };
-  const { d: initD, h: initH, m: initM } = split(value);
+  const { d: initD, hh: initH, mm: initM } = split(value);
 
   const [open, setOpen]       = useState(false);
-  const [pos,  setPos]        = useState<{ top?: number; bottom?: number; left: number } | null>(null);
+  const [pos,  setPos]        = useState<{ top?: number; bottom?: number; left: number; width: number } | null>(null);
   const [selDate, setSelDate] = useState(initD);
   const [hours,   setHours]   = useState(initH);
   const [mins,    setMins]    = useState(initM);
@@ -624,15 +1193,14 @@ function DateTimePicker({ value, onChange, placeholder = 'בחר תאריך וש
     return () => document.removeEventListener('mousedown', h);
   }, [open]);
 
-  const POPUP_H = 440;
   const openPicker = () => {
     if (!trigRef.current) return;
     const r = trigRef.current.getBoundingClientRect();
     const left = Math.max(8, Math.min(r.left, window.innerWidth - 280));
-    const fitsBelow = r.bottom + POPUP_H + 8 <= window.innerHeight;
+    const fitsBelow = r.bottom + 380 + 8 <= window.innerHeight;
     setPos(fitsBelow
-      ? { top: r.bottom + 4, left }
-      : { bottom: window.innerHeight - r.top + 4, left });
+      ? { top: r.bottom + 4, left, width: Math.max(r.width, 280) }
+      : { bottom: window.innerHeight - r.top + 4, left, width: Math.max(r.width, 280) });
     setOpen(true);
   };
 
@@ -645,20 +1213,25 @@ function DateTimePicker({ value, onChange, placeholder = 'בחר תאריך וש
   };
 
   const changeHours = (v: string) => {
-    const hh = Math.min(23, Math.max(0, +v || 0)).toString().padStart(2,'0');
-    setHours(hh); emit(selDate, hh, mins);
+    const cleaned = v.replace(/\D/g,'').slice(0,2);
+    setHours(cleaned); emit(selDate, cleaned, mins);
+  };
+  const blurHours = () => {
+    const v = Math.min(23, Math.max(0, parseInt(hours,10)||0)).toString().padStart(2,'0');
+    setHours(v); emit(selDate, v, mins);
   };
   const changeMins = (v: string) => {
-    const mm = Math.min(59, Math.max(0, +v || 0)).toString().padStart(2,'0');
-    setMins(mm); emit(selDate, hours, mm);
+    const cleaned = v.replace(/\D/g,'').slice(0,2);
+    setMins(cleaned); emit(selDate, hours, cleaned);
   };
-  const adjustHours = (delta: number) => changeHours(String((+hours + delta + 24) % 24));
-  const adjustMins  = (delta: number) => changeMins(String((+mins + delta + 60) % 60));
+  const blurMins = () => {
+    const v = Math.min(59, Math.max(0, parseInt(mins,10)||0)).toString().padStart(2,'0');
+    setMins(v); emit(selDate, hours, v);
+  };
 
   const prevMonth = () => viewM === 0  ? (setViewM(11), setViewY(y => y - 1)) : setViewM(m => m - 1);
   const nextMonth = () => viewM === 11 ? (setViewM(0),  setViewY(y => y + 1)) : setViewM(m => m + 1);
 
-  // Build calendar grid (Sunday = 0)
   const firstDow   = new Date(viewY, viewM, 1).getDay();
   const daysInMon  = new Date(viewY, viewM + 1, 0).getDate();
   const today      = new Date();
@@ -667,16 +1240,16 @@ function DateTimePicker({ value, onChange, placeholder = 'בחר תאריך וש
     ...Array(firstDow).fill(null),
     ...Array.from({ length: daysInMon }, (_, i) => i + 1),
   ];
-  while (cells.length % 7) cells.push(null);
 
   const displayVal = selDate
-    ? `${selDate.split('-').reverse().join('/')}  ${hours}:${mins}`
+    ? `${selDate.split('-').reverse().join('.')}  ${hours}:${mins}`
     : '';
 
   return (
     <>
       <button ref={trigRef} type="button" onClick={openPicker}
-        className="w-full flex items-center justify-between px-4 py-2 border border-gray-300 rounded-xl bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/50 transition-colors">
+        className={['w-full flex items-center justify-between px-4 py-2 border rounded-xl bg-white hover:border-gray-400 focus:outline-none transition-colors',
+          open ? 'border-[#1B3A6B] ring-1 ring-[#1B3A6B]/20' : 'border-gray-300'].join(' ')}>
         <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
         <span className={`text-sm flex-1 text-right mr-2 ${!displayVal ? 'text-gray-400' : 'text-gray-800'}`} dir="ltr">
           {displayVal || placeholder}
@@ -685,34 +1258,34 @@ function DateTimePicker({ value, onChange, placeholder = 'בחר תאריך וש
 
       {open && pos && (
         <div ref={popRef}
-          className="fixed bg-white rounded-2xl shadow-xl border border-gray-100 p-4"
-          style={{ top: pos.top, bottom: pos.bottom, left: pos.left, width: 272, zIndex: 999999 }}
-          dir="ltr">
+          className="fixed bg-white rounded-2xl shadow-xl border border-gray-100"
+          style={{ top: pos.top, bottom: pos.bottom, left: pos.left, width: pos.width, zIndex: 999999 }}
+          dir="rtl">
 
           {/* Month navigation */}
-          <div className="flex items-center justify-between mb-3">
-            <button type="button" onClick={prevMonth}
-              className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
-              <ChevronLeft className="w-4 h-4" />
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <button type="button" onClick={nextMonth}
+              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+              <ChevronRight className="w-4 h-4" />
             </button>
-            <span className="text-sm font-semibold text-gray-800" dir="rtl">
+            <span className="text-sm font-bold text-gray-900">
               {MONTH_NAMES_HE[viewM]} {viewY}
             </span>
-            <button type="button" onClick={nextMonth}
-              className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors">
-              <ChevronRight className="w-4 h-4" />
+            <button type="button" onClick={prevMonth}
+              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+              <ChevronLeft className="w-4 h-4" />
             </button>
           </div>
 
           {/* Day-of-week headers */}
-          <div className="grid grid-cols-7 mb-1">
+          <div className="grid grid-cols-7 px-3 mb-1">
             {DAY_INITIALS.map(d => (
-              <div key={d} className="text-center text-xs font-medium text-gray-400 py-1">{d}</div>
+              <div key={d} className="text-center text-xs text-gray-400 py-1">{d}</div>
             ))}
           </div>
 
           {/* Day cells */}
-          <div className="grid grid-cols-7 gap-y-0.5">
+          <div className="grid grid-cols-7 px-3 gap-y-0.5">
             {cells.map((day, i) => {
               if (!day) return <div key={i} />;
               const ds = `${viewY}-${String(viewM+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
@@ -720,51 +1293,30 @@ function DateTimePicker({ value, onChange, placeholder = 'בחר תאריך וש
               const isToday = ds === todayStr;
               return (
                 <button key={i} type="button" onClick={() => selectDay(day)}
-                  className={`mx-auto w-8 h-8 flex items-center justify-center text-sm rounded-full transition-colors
-                    ${isSel   ? 'bg-[#1B3A6B] text-white font-semibold' :
-                      isToday ? 'ring-1 ring-[#1B3A6B] text-[#1B3A6B] font-medium' :
-                                'hover:bg-gray-100 text-gray-700'}`}>
+                  className={[
+                    'mx-auto w-9 h-9 flex items-center justify-center text-sm rounded-full transition-colors',
+                    isSel   ? 'border-2 border-[#1B3A6B] text-[#1B3A6B] font-bold' :
+                    isToday ? 'border-2 border-[#1B3A6B] text-[#1B3A6B] font-semibold hover:bg-blue-50' :
+                              'text-gray-800 hover:bg-gray-100',
+                  ].join(' ')}>
                   {day}
                 </button>
               );
             })}
           </div>
 
-          {/* Time picker */}
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="text-xs text-gray-400 text-center mb-2">שעה</p>
-            <div className="flex items-center justify-center gap-3">
-              {/* Hours */}
-              <div className="flex flex-col items-center gap-0.5">
-                <button type="button" onClick={() => adjustHours(1)}
-                  className="p-0.5 hover:bg-gray-100 rounded text-gray-400 transition-colors">
-                  <ChevronUp className="w-3.5 h-3.5" />
-                </button>
-                <input value={hours} onChange={e => changeHours(e.target.value)}
-                  className="w-12 text-center text-sm font-semibold py-1 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/50 text-gray-800"
-                  maxLength={2} />
-                <button type="button" onClick={() => adjustHours(-1)}
-                  className="p-0.5 hover:bg-gray-100 rounded text-gray-400 transition-colors">
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <span className="text-gray-300 text-lg font-light">:</span>
-
-              {/* Minutes */}
-              <div className="flex flex-col items-center gap-0.5">
-                <button type="button" onClick={() => adjustMins(1)}
-                  className="p-0.5 hover:bg-gray-100 rounded text-gray-400 transition-colors">
-                  <ChevronUp className="w-3.5 h-3.5" />
-                </button>
-                <input value={mins} onChange={e => changeMins(e.target.value)}
-                  className="w-12 text-center text-sm font-semibold py-1 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]/50 text-gray-800"
-                  maxLength={2} />
-                <button type="button" onClick={() => adjustMins(-1)}
-                  className="p-0.5 hover:bg-gray-100 rounded text-gray-400 transition-colors">
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-              </div>
+          {/* Time — no arrows, just inputs */}
+          <div className="border-t border-gray-100 mx-3 mt-3" />
+          <div className="px-4 py-3 flex flex-col items-center gap-2">
+            <span className="text-xs text-gray-400">שעה</span>
+            <div className="flex items-center gap-2 justify-center" dir="ltr">
+              <input value={hours} onChange={e => changeHours(e.target.value)} onBlur={blurHours}
+                className="w-9 h-9 text-center text-sm font-semibold text-gray-800 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-[#1B3A6B] focus:ring-1 focus:ring-[#1B3A6B]/20 transition-colors"
+                maxLength={2} inputMode="numeric" />
+              <span className="text-gray-400 text-lg font-light">:</span>
+              <input value={mins} onChange={e => changeMins(e.target.value)} onBlur={blurMins}
+                className="w-9 h-9 text-center text-sm font-semibold text-gray-800 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-[#1B3A6B] focus:ring-1 focus:ring-[#1B3A6B]/20 transition-colors"
+                maxLength={2} inputMode="numeric" />
             </div>
           </div>
 
@@ -885,7 +1437,7 @@ function DuplicateSearchModal({ onSelect, onClose }: { onSelect: (doc: Doc) => v
 }
 
 /* ── New document form modal — single scrollable page ── */
-function NewDocModal({ onClose, onSuccess, initialData, title = 'פתיחת מסמך חדש' }: {
+export function NewDocModal({ onClose, onSuccess, initialData, title = 'פתיחת מסמך חדש' }: {
   onClose: () => void; onSuccess?: () => void; initialData?: Partial<NewDocFormData>; title?: string;
 }) {
   const [form, setForm] = useState<NewDocFormData>({ ...EMPTY_FORM, ...initialData });
@@ -1247,7 +1799,7 @@ function TrashCatalog({ onBack }: { onBack: () => void }) {
 }
 
 /* ── Main catalog view ── */
-function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { department: string; tab: Tab; setTab: (t: Tab) => void; onEditDoc?: (doc: { id: string; name: string; status: string; orderNum: string }) => void; onOpenTrash?: () => void }) {
+function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash, folderFilter, subFilter, envFolderFilter, envDeptFilter }: { department: string; tab: Tab; setTab: (t: Tab) => void; onEditDoc?: (doc: { id: string; name: string; status: string; orderNum: string }) => void; onOpenTrash?: () => void; folderFilter?: string | null; subFilter?: string | null; envFolderFilter?: string | null; envDeptFilter?: string | null }) {
   const [search, setSearch] = useState('');
   const [templateFilter, setTemplateFilter] = useState<string[]>([]);
   const [statusFilter,   setStatusFilter]   = useState<string[]>([]);
@@ -1258,7 +1810,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
   const [page, setPage] = useState(1);
   const [distSubFilter, setDistSubFilter] = useState<string>('כל המסמכים');
   const [historyDoc, setHistoryDoc] = useState<Doc | null>(null);
-  const [menuRow, setMenuRow] = useState<{ id: string; x: number; y: number; flipped: boolean } | null>(null);
+  const [menuRow, setMenuRow] = useState<{ doc: Doc; x: number; y: number; flipped: boolean } | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -1267,6 +1819,15 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
   const [showDuplicate, setShowDuplicate] = useState(false);
   const [newDocInit, setNewDocInit] = useState<Partial<NewDocFormData>>({});
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+
+  // Row action modals
+  const [catalogModal, setCatalogModal] = useState<{ type: 'edit' | 'duplicate' | 'permissions' | 'delete' | 'approval-round' | 'cancel-doc'; doc: Doc } | null>(null);
+  const [receiptModal, setReceiptModal] = useState<{ doc: Doc; receipt: string } | null>(null);
+  const [shareModal, setShareModal] = useState<Doc | null>(null);
+  const [docDetailsModal, setDocDetailsModal] = useState<{ doc: Doc; mode: 'edit' | 'duplicate' | 'issue-update' | 'issue-new' } | null>(null);
+  const [menuActionPhase, setMenuActionPhase] = useState<{ id: string; label: string; phase: 'loading' | 'done' } | null>(null);
+  const [showCancelToast, setShowCancelToast] = useState(false);
+  const [hierarchyModal, setHierarchyModal] = useState<Doc | null>(null);
 
   const toggleExpand = (id: string) => {
     setExpandedRows(prev => {
@@ -1296,8 +1857,10 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
   const orgOptions    = Array.from(new Set(allDocs.flatMap(d => d.env ? [d.env] : [])));
 
   const isAllDocs = department === 'כל המסמכים';
-  const extraCols = (isAllDocs ? 2 : 0) + (tab === 'distribution' ? 1 : 0);
-  const gridCols = `1.5rem 3fr ${Array(5 + extraCols).fill('1fr').join(' ')} 2.5rem`;
+  const extraCols = (isAllDocs ? 2 : 0) + (tab === 'distribution' ? 3 : 0);
+  const nameFr = tab === 'distribution' ? '2fr' : '3fr';
+  const colGap = tab === 'distribution' ? '0.6rem' : '1rem';
+  const gridCols = `1.5rem ${nameFr} ${Array(5 + extraCols).fill('1fr').join(' ')} 2.5rem`;
   const col4Label = tab === 'drafts' ? 'תאריך עדכון' : tab === 'distribution' ? 'תאריך הפצה' : 'כניסה לתוקף';
 
   const DIST_SUB_STATUS: Record<string, string> = {
@@ -1314,6 +1877,16 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
     if (statusFilter.length   > 0 && !statusFilter.includes(d.status)) return false;
     if (deptFilter.length     > 0 && (!d.dept || !deptFilter.includes(d.dept))) return false;
     if (isAllDocs && orgFilter.length > 0 && (!d.env || !orgFilter.includes(d.env))) return false;
+    if (isAllDocs) {
+      if (envFolderFilter && d.env !== envFolderFilter) return false;
+      if (envDeptFilter) {
+        const stripped = envDeptFilter.replace(/^מחלקת /, '');
+        if (d.dept !== stripped) return false;
+      }
+    } else {
+      const activeFolder = subFilter ?? folderFilter;
+      if (activeFolder && d.folder !== activeFolder) return false;
+    }
     if (dateFrom || dateTo) {
       const [dd, mm, yy] = d.effectiveDate.split('/');
       const iso = `${yy}-${mm}-${dd}`;
@@ -1330,12 +1903,48 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const openMenu = (e: React.MouseEvent, id: string) => {
+  const openMenu = (e: React.MouseEvent, doc: Doc) => {
     e.stopPropagation();
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const flipped = rect.bottom > window.innerHeight * 0.55;
-    setMenuRow({ id, x: rect.left, y: flipped ? window.innerHeight - rect.top + 6 : rect.bottom + 6, flipped });
+    setMenuRow({ doc, x: rect.left, y: flipped ? window.innerHeight - rect.top + 6 : rect.bottom + 6, flipped });
   };
+
+  const handleMenuAction = useCallback((label: string) => {
+    if (!menuRow) return;
+    const doc = menuRow.doc;
+    if (label === 'שכפול') {
+      if (tab === 'distributed' || tab === 'archive') {
+        setDocDetailsModal({ doc, mode: 'duplicate' });
+      } else {
+        setCatalogModal({ type: 'duplicate', doc });
+      }
+    } else if (label === 'הוצאת עדכון למסמך') {
+      setDocDetailsModal({ doc, mode: 'issue-update' });
+    } else if (label === 'שינוי מס׳ פקודה') {
+      setDocDetailsModal({ doc, mode: 'issue-new' });
+    } else if (label === 'עריכת פרטי מסמך' || label === 'עריכת פרטי המסמך') {
+      if (tab === 'distributed' || tab === 'archive') {
+        setDocDetailsModal({ doc, mode: 'edit' });
+      } else {
+        setCatalogModal({ type: 'edit', doc });
+      }
+    } else if (label === 'צפייה בסבב אישורים') {
+      setCatalogModal({ type: 'approval-round', doc });
+    } else if (label === 'הרשאות' || label === 'הרשאות צפייה' || label === 'הרשאות ובקרה') {
+      setCatalogModal({ type: 'permissions', doc });
+    } else if (INLINE_PHASE_ACTIONS.has(label)) {
+      setMenuActionPhase({ id: doc.id, label, phase: 'loading' });
+      setTimeout(() => setMenuActionPhase({ id: doc.id, label, phase: 'done' }), 900);
+      setTimeout(() => { setMenuActionPhase(null); setMenuRow(null); }, 1900);
+    } else if (label === 'יצירת היררכית מסמכים') {
+      setHierarchyModal(doc);
+    } else if (label === 'מחיקת המסמך') {
+      setCatalogModal({ type: 'delete', doc });
+    } else if (label === 'ביטול מסמך') {
+      setCatalogModal({ type: 'cancel-doc', doc });
+    }
+  }, [menuRow]);
 
   const pageWindow = (): number[] => {
     let start = Math.max(1, page - 2);
@@ -1470,7 +2079,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
 
         {/* Table header strip — edge-to-edge, rounded by card overflow-hidden */}
         <div className="flex-shrink-0 grid items-center px-8 py-3 text-sm font-semibold"
-          style={{ background: '#EBEBEB', color: '#6b7280', gridTemplateColumns: gridCols, columnGap: '1rem' }}>
+          style={{ background: '#EBEBEB', color: '#6b7280', gridTemplateColumns: gridCols, columnGap: colGap }}>
           <span />
           <span className="text-right">שם המסמך</span>
           {isAllDocs && <span className="text-center">סביבה</span>}
@@ -1481,6 +2090,8 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
           <span className="text-center">מס׳ סימוכין</span>
           {tab === 'distribution' && <span className="text-center">אושר ע״י</span>}
           <span className="text-center">סטטוס</span>
+          {tab === 'distribution' && <span className="text-center">וידוא קבלה</span>}
+          {tab === 'distribution' && <span className="text-center"></span>}
           <span />
         </div>
 
@@ -1496,7 +2107,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
               <div key={doc.id}>
                 {/* Main row */}
                 <div className="group grid items-center px-4 py-3 rounded-xl transition-colors hover:bg-gray-50 cursor-pointer"
-                  style={{ borderBottom: isExpanded ? 'none' : '1px solid #f5f5f5', gridTemplateColumns: gridCols, columnGap: '1rem' }}
+                  style={{ borderBottom: isExpanded ? 'none' : '1px solid #f5f5f5', gridTemplateColumns: gridCols, columnGap: colGap }}
                   onClick={() => onEditDoc?.({ id: doc.id, name: doc.name, status: doc.status, orderNum: doc.orderNum })}>
                   {/* Expand arrow — far right, always visible for parent docs */}
                   <div className="flex items-center justify-center">
@@ -1504,7 +2115,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
                       <button onClick={e => { e.stopPropagation(); toggleExpand(doc.id); }}
                         className="p-0.5 rounded text-gray-400 hover:text-gray-600 transition-colors"
                         title="הצג מסמכים תחת מסמך זה">
-                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(90deg)' }} />
                       </button>
                     ) : <span />}
                   </div>
@@ -1518,15 +2129,43 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
                   {tab === 'distribution' && <span className="text-center text-sm text-gray-500">s1234567</span>}
                   <span className="inline-flex items-center justify-start gap-1.5 w-full">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: statusColor }} />
-                    <span className="text-sm text-gray-800">{doc.status}</span>
+                    <span className="text-sm text-gray-800 whitespace-nowrap">{doc.status}</span>
                   </span>
+                  {tab === 'distribution' && (() => {
+                    const receipts = ['1/2','2/3','0/1','—','1/4','—','3/3','2/2'];
+                    const idx = DOCS.distribution.findIndex(d => d.id === doc.id);
+                    const val = receipts[idx % receipts.length] ?? '—';
+                    const clickable = val !== '—';
+                    return (
+                      <span className={`text-center text-sm flex justify-center ${clickable ? 'cursor-pointer font-semibold hover:underline' : 'text-gray-400'}`}
+                        style={clickable ? { color: '#1B3A6B' } : {}}
+                        onClick={clickable ? e => { e.stopPropagation(); setReceiptModal({ doc, receipt: val }); } : undefined}>
+                        {val}
+                      </span>
+                    );
+                  })()}
+                  {tab === 'distribution' && (() => {
+                    const hasNew = [true, false, true, false, true, false, false, true];
+                    const idx = DOCS.distribution.findIndex(d => d.id === doc.id);
+                    return hasNew[idx % hasNew.length]
+                      ? (
+                        <div className="group/nu flex justify-center items-center" onClick={e => e.stopPropagation()}>
+                          <span className="group-hover/nu:hidden text-xs font-medium text-red-500 whitespace-nowrap">נוספו משתמשים</span>
+                          <button className="hidden group-hover/nu:flex px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap"
+                            style={{ background: '#EEF4FF', color: '#1B3A6B' }}
+                            onClick={e => { e.stopPropagation(); setShareModal(doc); }}>
+                            שיתוף מחדש
+                          </button>
+                        </div>
+                      ) : <span />;
+                  })()}
                   <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => setHistoryDoc(doc)}
+                    <button onClick={e => { e.stopPropagation(); setHistoryDoc(doc); }}
                       className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                       title="היסטוריית גרסאות">
                       <Clock className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={e => openMenu(e, doc.id)}
+                    <button onClick={e => openMenu(e, doc)}
                       className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                       title="פעולות">
                       <MoreHorizontal className="w-3.5 h-3.5" />
@@ -1545,7 +2184,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
                           className="grid items-center px-4 py-2.5"
                           style={{
                             gridTemplateColumns: gridCols,
-                            columnGap: '1rem',
+                            columnGap: colGap,
                             borderBottom: idx < doc.children!.length - 1 ? '1px solid #e2e8f0' : 'none',
                           }}>
                           <span />
@@ -1561,6 +2200,8 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
                             <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: childStatusColor }} />
                             <span className="text-xs text-gray-800">{child.status}</span>
                           </span>
+                          {tab === 'distribution' && <span />}
+                          {tab === 'distribution' && <span />}
                           <span />
                         </div>
                       );
@@ -1609,12 +2250,55 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
           style={menuRow.flipped
             ? { bottom: menuRow.y, left: menuRow.x }
             : { top: menuRow.y,    left: menuRow.x }}>
-          <RowMenu tab={tab} onClose={() => setMenuRow(null)} />
+          <RowMenu tab={tab} onAction={handleMenuAction} onClose={() => setMenuRow(null)} actionPhase={menuActionPhase?.id === menuRow?.doc.id ? { label: menuActionPhase.label, phase: menuActionPhase.phase } : null} />
         </div>
       )}
 
       {/* History modal */}
       {historyDoc && <HistoryModal doc={historyDoc} onClose={() => setHistoryDoc(null)} />}
+
+      {/* Row action modals */}
+      {catalogModal?.type === 'edit' && <CatalogDocModal doc={catalogModal.doc} mode="edit" onClose={() => setCatalogModal(null)} />}
+      {catalogModal?.type === 'duplicate' && <CatalogDocModal doc={catalogModal.doc} mode="duplicate" onClose={() => setCatalogModal(null)} />}
+      {catalogModal?.type === 'permissions' && <DocPermissionsModal onClose={() => setCatalogModal(null)} />}
+      {catalogModal?.type === 'delete' && <CatalogDeleteModal doc={catalogModal.doc} onClose={() => setCatalogModal(null)} />}
+      {catalogModal?.type === 'cancel-doc' && <CatalogCancelModal key={catalogModal.doc.id} doc={catalogModal.doc} onClose={() => setCatalogModal(null)} onSendCancel={() => { setCatalogModal(null); setShowCancelToast(true); }} />}
+      {showCancelToast && <CancelProgressToast onClose={() => setShowCancelToast(false)} />}
+      {catalogModal?.type === 'approval-round' && (
+        <ApprovalRoundModal
+          docName={catalogModal.doc.name}
+          onClose={() => setCatalogModal(null)}
+          onApprove={() => setCatalogModal(null)}
+          onReject={() => setCatalogModal(null)}
+          onDistribute={() => setCatalogModal(null)}
+        />
+      )}
+
+      {/* Receipt confirm modal */}
+      {receiptModal && (
+        <ReceiptConfirmModal doc={receiptModal.doc} receipt={receiptModal.receipt} onClose={() => setReceiptModal(null)} />
+      )}
+
+      {/* Doc details modal (distributed/archive tabs) */}
+      {docDetailsModal && (
+        <EditDocDetailsModal
+          doc={{ name: docDetailsModal.doc.name, orderNum: docDetailsModal.doc.orderNum, status: docDetailsModal.doc.status }}
+          mode={docDetailsModal.mode}
+          onClose={() => setDocDetailsModal(null)}
+        />
+      )}
+
+      {/* Hierarchy modal */}
+      {hierarchyModal && <DocHierarchyModal doc={hierarchyModal} onClose={() => setHierarchyModal(null)} />}
+
+      {/* Share modal (re-share) */}
+      {shareModal && (
+        <ShareDocModal
+          docName={shareModal.name}
+          onClose={() => setShareModal(null)}
+          onSend={() => setShareModal(null)}
+        />
+      )}
 
       {/* Duplicate search → prefills new doc form */}
       {showDuplicate && (
@@ -1666,9 +2350,13 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash }: { 
 
 /* ── Page shell ── */
 export function Catalog({ navigate, initialDept, onEditDoc }: CatalogProps) {
-  const [selectedDept, setSelectedDept] = useState<string | null>(initialDept ?? null);
-  const [activeTab, setActiveTab] = useState<Tab>('distributed');
-  const [showTrash, setShowTrash] = useState(false);
+  const [selectedDept,      setSelectedDept]      = useState<string | null>(initialDept ?? null);
+  const [activeTab,         setActiveTab]         = useState<Tab>('distributed');
+  const [showTrash,         setShowTrash]         = useState(false);
+  const [selectedFolder,    setSelectedFolder]    = useState<string | null>(null);
+  const [selectedFolderSub, setSelectedFolderSub] = useState<string | null>(null);
+  const [selectedEnvFolder,  setSelectedEnvFolder]  = useState<string | null>(null);
+  const [selectedEnvDept,    setSelectedEnvDept]    = useState<string | null>(null);
 
   return (
     <div className="w-full h-screen flex flex-col" dir="rtl"
@@ -1679,13 +2367,18 @@ export function Catalog({ navigate, initialDept, onEditDoc }: CatalogProps) {
       <TopNavbar showBackArrow={true} isPersonalAreaActive={false} navigate={navigate} />
       <div className="flex flex-1 overflow-hidden">
         <RightSidebar
-          onSelectDepartment={dept => { setSelectedDept(dept); setActiveTab('distributed'); setShowTrash(false); }}
+          onSelectDepartment={dept => { setSelectedDept(dept); setSelectedFolder(null); setSelectedFolderSub(null); setSelectedEnvFolder(null); setSelectedEnvDept(null); setActiveTab('distributed'); setShowTrash(false); }}
           selectedDepartment={selectedDept}
+          onSelectFolder={(dept, folder, sub) => {
+            if (dept === 'כל המסמכים') { setSelectedEnvFolder(folder); setSelectedEnvDept(sub ?? null); }
+            else { setSelectedFolder(folder); setSelectedFolderSub(sub ?? null); }
+          }}
+          onOpenCommandPage={org => onEditDoc?.({ id: org, name: org, status: 'מבצעית', orderNum: '001' })}
         />
         {showTrash ? (
           <TrashCatalog onBack={() => setShowTrash(false)} />
         ) : selectedDept ? (
-          <DocumentCatalog department={selectedDept} tab={activeTab} setTab={setActiveTab} onEditDoc={onEditDoc} onOpenTrash={() => setShowTrash(true)} />
+          <DocumentCatalog department={selectedDept} tab={activeTab} setTab={setActiveTab} onEditDoc={onEditDoc} onOpenTrash={() => setShowTrash(true)} folderFilter={selectedFolder} subFilter={selectedFolderSub} envFolderFilter={selectedEnvFolder} envDeptFilter={selectedEnvDept} />
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
