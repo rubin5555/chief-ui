@@ -1,6 +1,8 @@
 import { getRouteApi } from '@tanstack/react-router';
 import { useState } from 'react';
+import { PROFILE_FALLBACK, useProfile } from '@/api/profile';
 import { ContentEditorProvider, ContentEditorToolbar } from '@/components/ui/ContentEditor';
+import { CollabProvider } from '@/context/CollabContext';
 import { useDocumentTree } from '@/hooks/useDocumentTree';
 import type { DocumentDto, NodePermissions, Section } from '../../types';
 import { DEFAULT_CLASSIFICATION_LEVEL } from '../../types';
@@ -40,6 +42,15 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
   const { status, setStatus, header, onHeaderChange, getMeta, patchMeta, mergedSectionMeta } =
     useDocumentOverrides(data);
   const { statuses } = routeApi.useSearch();
+
+  // Phase 8: real-time collab needs a real signed-in user id, which dev has
+  // no auth/session concept for yet — reuses the same useProfile()/
+  // PROFILE_FALLBACK identity ProfilePage already passes as
+  // TemplatesPanel's currentUserId, rather than inventing a separate
+  // placeholder. ContentEditorProvider (below) degrades to local-only
+  // activation with no lock gating/remote cursors if this were ever absent.
+  const { data: profileData } = useProfile();
+  const profile = profileData ?? PROFILE_FALLBACK;
   const activeStatusFilter = statuses ? statuses.split(',') : [];
 
   const [trash, setTrash] = useState<DeletedSectionEntry[]>([]);
@@ -142,7 +153,7 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
   const matchesStatusFilter = (id: string) =>
     activeStatusFilter.length === 0 || activeStatusFilter.includes(getMeta(id).status);
 
-  return (
+  const canvasBody = (
     <ContentEditorProvider>
       <PageInner>
         <SidebarColumn>
@@ -259,5 +270,11 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
         />
       )}
     </ContentEditorProvider>
+  );
+
+  return profile.id ? (
+    <CollabProvider userId={profile.id}>{canvasBody}</CollabProvider>
+  ) : (
+    canvasBody
   );
 };
