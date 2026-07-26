@@ -3,6 +3,7 @@ import { DOC_HEADER_CARD_IDS } from '../../../src/pages/document/components/DocH
 import { DOCUMENT_CANVAS_IDS } from '../../../src/pages/document/components/DocumentCanvas/DocumentCanvas.testids';
 import { DOCUMENT_OUTLINE_TREE_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/DocumentOutlineTree.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
+import { SECTION_CHAT_IDS } from '../../../src/pages/document/components/SectionChat/SectionChat.testids';
 import { DOCUMENT_PAGE_IDS } from '../../../src/pages/document/DocumentPage/DocumentPage.testids';
 
 test('renders the seeded document with its header and outline tree', async ({ page }) => {
@@ -71,4 +72,22 @@ test('inserting a table via the TinyMCE toolbar produces real table HTML, undoab
 
   await page.keyboard.press('Control+z');
   await expect(editable.locator('table')).toHaveCount(0);
+});
+
+test('posting a section comment renders it in the chat panel', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  await page.getByTestId(SECTION_CHAT_IDS.trigger('s1-1')).click();
+  await expect(page.getByTestId(SECTION_CHAT_IDS.panel('s1-1'))).toBeVisible();
+
+  await page.getByTestId(SECTION_CHAT_IDS.input).fill('הודעת בדיקה');
+  await page.getByTestId(SECTION_CHAT_IDS.sendBtn).click();
+
+  // The stub mutation carries the same simulated network latency as every
+  // other src/api/*.ts resource (STUB_DELAY_MS in stubLink.ts) — assertions
+  // auto-retry rather than using a fixed wait.
+  const message = page.locator('[data-testid^="section-chat-message-"]');
+  await expect(message).toHaveCount(1);
+  await expect(message).toContainText('הודעת בדיקה');
+  await expect(page.getByTestId(SECTION_CHAT_IDS.input)).toHaveValue('');
 });

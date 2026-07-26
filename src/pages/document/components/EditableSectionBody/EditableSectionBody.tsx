@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ContentEditor } from '@/components/ui/ContentEditor';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { SectionMeta } from '../../types';
+import { SectionChat } from '../SectionChat';
 import {
   AttachmentChip,
   AttachmentChips,
@@ -77,6 +78,7 @@ export const EditableSectionBody = ({
             data-testid={EDITABLE_SECTION_BODY_IDS.statusBadge(id)}
           />
         )}
+        <SectionChat sectionId={id} title={title || 'סעיף ללא שם'} />
       </HeadingRow>
 
       {isClassified ? (
