@@ -46,3 +46,29 @@ test('activating a section mounts a real, focusable TinyMCE editor', async ({ pa
   await editable.click();
   await expect(editable).toBeFocused();
 });
+
+test('inserting a table via the TinyMCE toolbar produces real table HTML, undoable with Ctrl+Z', async ({
+  page,
+}) => {
+  // Phase 3: in-document tables ride entirely on ContentEditor's already-registered
+  // TinyMCE table plugin/toolbar button — no SectionTableView-style custom state to
+  // wire up. Table-menu clicks (unlike raw typing) trigger TinyMCE's non-typing
+  // AddUndo path immediately, so no debounce/flush-timing wait is needed here.
+  await page.goto('/document/d1');
+
+  const sectionContent = page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'));
+  await sectionContent.click();
+
+  const editable = sectionContent.locator('[contenteditable="true"]');
+  await expect(editable).toBeVisible();
+
+  await page.getByRole('button', { name: 'Table' }).click();
+  await page.getByRole('menuitem', { name: 'Table', exact: true }).click();
+  await page.locator('[aria-label="2 columns, 2 rows"]').click();
+
+  await expect(editable.locator('table')).toBeVisible();
+  await expect(editable.locator('td')).toHaveCount(4);
+
+  await page.keyboard.press('Control+z');
+  await expect(editable.locator('table')).toHaveCount(0);
+});
