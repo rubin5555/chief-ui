@@ -14,7 +14,9 @@ export const SUBMIT_LABELS: Record<EditDocDetailsMode, string> = {
   'issue-new': 'הנפק מסמך',
 };
 
-export const CLASSIFICATION_OPTIONS = ['בלמ"ס', 'סודי', 'סודי ביותר'];
+// Re-exported from types.ts, the single source of truth (DEFAULT_CLASSIFICATION_LEVEL
+// there is derived from this same list) — not redefined independently.
+export { CLASSIFICATION_OPTIONS } from '../../types';
 
 export const ORGANIZATION_OPTIONS = ['ארגון א׳', 'ארגון ב׳', 'ארגון ג׳', 'ארגון ד׳'];
 

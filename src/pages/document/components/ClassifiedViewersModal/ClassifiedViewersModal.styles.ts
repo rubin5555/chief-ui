@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, gray, radii } from '@/styles/theme';
+import { gray } from '@/styles/theme';
 
 export const Body = styled.div`
 	display: flex;
@@ -28,15 +28,4 @@ export const EmptyState = styled.div`
 	text-align: center;
 	color: ${gray[400]};
 	font-size: 13px;
-`;
-
-export const FooterBtn = styled.button`
-	padding: 8px 20px;
-	border: none;
-	border-radius: ${radii.xl};
-	font-size: 13px;
-	font-weight: 600;
-	cursor: pointer;
-	background-color: ${colors.primary};
-	color: ${colors.surface};
 `;

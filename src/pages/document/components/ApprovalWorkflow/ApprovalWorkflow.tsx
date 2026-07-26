@@ -1,12 +1,22 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { HML_GROUPS_FALLBACK, useHmlGroups } from '@/api/approvals';
-import { AcceptenceVerification } from '../AcceptenceVerification';
+import { Button } from '@/components/ui/Button';
 import type { ApprovalRoundConfig } from '../ApprovalDetailsModal';
-import { ApprovalDetailsModal } from '../ApprovalDetailsModal';
-import { ApprovalRotation } from '../ApprovalRotation';
-import { DistributeDoc } from '../DistributeDoc';
-import { ActionsRow, PrimaryBtn, SecondaryBtn, StatusChip } from './ApprovalWorkflow.styles';
+import { ActionsRow, StatusChip } from './ApprovalWorkflow.styles';
 import { APPROVAL_WORKFLOW_IDS } from './ApprovalWorkflow.testids';
+
+const AcceptenceVerification = lazy(() =>
+  import('../AcceptenceVerification').then((m) => ({ default: m.AcceptenceVerification })),
+);
+const ApprovalDetailsModal = lazy(() =>
+  import('../ApprovalDetailsModal').then((m) => ({ default: m.ApprovalDetailsModal })),
+);
+const ApprovalRotation = lazy(() =>
+  import('../ApprovalRotation').then((m) => ({ default: m.ApprovalRotation })),
+);
+const DistributeDoc = lazy(() =>
+  import('../DistributeDoc').then((m) => ({ default: m.DistributeDoc })),
+);
 
 type FlowStep = 'idle' | 'details' | 'rotation' | 'distribute' | 'acceptance';
 
@@ -70,44 +80,47 @@ export const ApprovalWorkflow = ({ docName, status, onStatusChange }: ApprovalWo
     <>
       <ActionsRow data-testid={APPROVAL_WORKFLOW_IDS.root}>
         <StatusChip data-testid={APPROVAL_WORKFLOW_IDS.statusChip}>{status}</StatusChip>
-        <PrimaryBtn
+        <Button
           type="button"
           onClick={handlePrimaryAction}
           data-testid={APPROVAL_WORKFLOW_IDS.primaryBtn}
         >
           {primaryLabel}
-        </PrimaryBtn>
-        <SecondaryBtn
+        </Button>
+        <Button
           type="button"
+          variant="outline"
           onClick={handleOpenAcceptance}
           data-testid={APPROVAL_WORKFLOW_IDS.acceptanceBtn}
         >
           אישור קבלה (חמ״ל)
-        </SecondaryBtn>
+        </Button>
       </ActionsRow>
 
-      {step === 'details' && (
-        <ApprovalDetailsModal onClose={handleClose} onSubmit={handleDetailsSubmit} />
-      )}
+      <Suspense fallback={null}>
+        {step === 'details' && (
+          <ApprovalDetailsModal onClose={handleClose} onSubmit={handleDetailsSubmit} />
+        )}
 
-      {step === 'rotation' && roundConfig && (
-        <ApprovalRotation
-          docName={docName}
-          config={roundConfig}
-          hmlGroups={hmlGroups}
-          onClose={handleClose}
-          onReject={handleReject}
-          onDistribute={handleDistributeFromRotation}
-        />
-      )}
+        {step === 'rotation' && roundConfig && (
+          <ApprovalRotation
+            docName={docName}
+            config={roundConfig}
+            hmlGroups={hmlGroups}
+            onClose={handleClose}
+            onReject={handleReject}
+            onDistribute={handleDistributeFromRotation}
+          />
+        )}
 
-      {step === 'distribute' && (
-        <DistributeDoc docName={docName} onClose={handleClose} onSend={handleClose} />
-      )}
+        {step === 'distribute' && (
+          <DistributeDoc docName={docName} onClose={handleClose} onSend={handleClose} />
+        )}
 
-      {step === 'acceptance' && (
-        <AcceptenceVerification onClose={handleClose} onSend={handleClose} />
-      )}
+        {step === 'acceptance' && (
+          <AcceptenceVerification onClose={handleClose} onSend={handleClose} />
+        )}
+      </Suspense>
     </>
   );
 };

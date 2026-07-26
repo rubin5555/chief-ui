@@ -18,7 +18,11 @@ export interface SectionClassification {
   viewerIds: string[];
 }
 
-export const DEFAULT_CLASSIFICATION_LEVEL = 'בלמ"ס';
+// Single source of truth for classification levels — EditDocDetailsModal's
+// picker options are derived from this list (see EditDocDetailsModal.constants.ts)
+// rather than keeping a second, independently-typed literal that could drift.
+export const CLASSIFICATION_OPTIONS = ['בלמ"ס', 'סודי', 'סודי ביותר'];
+export const DEFAULT_CLASSIFICATION_LEVEL = CLASSIFICATION_OPTIONS[0];
 
 // Extra per-node data main's Edit.tsx keeps that useDocumentTree's generic
 // Section/SubSection doesn't carry (status, hidden, classification,

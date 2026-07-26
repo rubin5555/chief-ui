@@ -8,7 +8,7 @@ import {
   UserCheck,
   Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { IconButtonRoot } from '@/components/ui/IconButton/IconButton.styles';
@@ -17,7 +17,6 @@ import type { UnderlineTab } from '@/components/ui/UnderlineTabs';
 import { UnderlineTabs } from '@/components/ui/UnderlineTabs';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import type { NodePermissions } from '../../types';
-import { ClassifiedViewersModal } from '../ClassifiedViewersModal';
 import {
   ActionBtn,
   ActionList,
@@ -28,6 +27,10 @@ import {
   Separator,
 } from './SectionMenu.styles';
 import { SECTION_MENU_IDS } from './SectionMenu.testids';
+
+const ClassifiedViewersModal = lazy(() =>
+  import('../ClassifiedViewersModal').then((m) => ({ default: m.ClassifiedViewersModal })),
+);
 
 const PANEL_WIDTH = 220;
 
@@ -201,11 +204,13 @@ export const SectionMenu = ({
       )}
 
       {showClassifiedViewers && (
-        <ClassifiedViewersModal
-          selectedIds={classificationViewerIds}
-          onChange={onChangeClassificationViewers}
-          onClose={handleCloseClassifiedViewers}
-        />
+        <Suspense fallback={null}>
+          <ClassifiedViewersModal
+            selectedIds={classificationViewerIds}
+            onChange={onChangeClassificationViewers}
+            onClose={handleCloseClassifiedViewers}
+          />
+        </Suspense>
       )}
     </>
   );

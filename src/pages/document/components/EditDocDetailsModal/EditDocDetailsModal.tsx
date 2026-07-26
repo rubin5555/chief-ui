@@ -1,5 +1,6 @@
 import { useForm } from '@tanstack/react-form';
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
+import { Button } from '@/components/ui/Button';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
@@ -14,13 +15,11 @@ import {
 } from './EditDocDetailsModal.constants';
 import {
   Body,
-  CancelBtn,
   DirtyWarning,
   Field,
   FieldLabel,
   FieldRow,
   NameInput,
-  SubmitBtn,
 } from './EditDocDetailsModal.styles';
 import { EDIT_DOC_DETAILS_MODAL_IDS } from './EditDocDetailsModal.testids';
 
@@ -30,6 +29,8 @@ export interface EditDocDetailsModalProps {
   onClose: () => void;
   onSave: (header: DocumentHeader) => void;
 }
+
+const FORM_ID = 'edit-doc-details-form';
 
 // Multi-mode per the phased plan (edit/duplicate/issue-update/issue-new),
 // pattern-matched on TemplateModal.tsx's `useForm` + mode-prop shape. Only
@@ -56,7 +57,10 @@ export const EditDocDetailsModal = ({
     onSubmit: ({ value }) => onSave({ ...header, ...value }),
   });
 
-  const handleSubmit = () => form.handleSubmit();
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    form.handleSubmit();
+  };
 
   return (
     <Modal
@@ -66,20 +70,16 @@ export const EditDocDetailsModal = ({
       data-testid={EDIT_DOC_DETAILS_MODAL_IDS.root}
       footer={
         <>
-          <CancelBtn type="button" onClick={onClose}>
+          <Button type="button" variant="secondary" onClick={onClose}>
             ביטול
-          </CancelBtn>
-          <SubmitBtn
-            type="button"
-            onClick={handleSubmit}
-            data-testid={EDIT_DOC_DETAILS_MODAL_IDS.submitBtn}
-          >
+          </Button>
+          <Button type="submit" form={FORM_ID} data-testid={EDIT_DOC_DETAILS_MODAL_IDS.submitBtn}>
             {SUBMIT_LABELS[mode]}
-          </SubmitBtn>
+          </Button>
         </>
       }
     >
-      <Body>
+      <Body id={FORM_ID} onSubmit={onSubmit}>
         {mode === 'edit' && (
           <form.Subscribe selector={(state) => state.isDirty}>
             {(isDirty) =>

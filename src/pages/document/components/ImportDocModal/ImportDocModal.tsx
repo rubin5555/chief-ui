@@ -1,16 +1,17 @@
+import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { IMPORT_DOCS_FALLBACK, useImportDocSections, useImportDocs } from '@/api/docs';
+import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import type { UnderlineTab } from '@/components/ui/UnderlineTabs';
 import { UnderlineTabs } from '@/components/ui/UnderlineTabs';
 import {
-  CancelBtn,
+  Body,
   DocListColumn,
   DocMeta,
   DocName,
   DocRow,
   EmptyState,
-  ImportBtn,
   Layout,
   PreviewColumn,
   SectionRow,
@@ -23,6 +24,8 @@ const TABS: UnderlineTab[] = [
   { id: 'drafts', label: 'טיוטות' },
   { id: 'distributed', label: 'מסמכים שהופצו' },
 ];
+
+const FORM_ID = 'import-doc-modal-form';
 
 export interface ImportDocModalProps {
   onClose: () => void;
@@ -40,7 +43,11 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
 
   const [activeTab, setActiveTab] = useState<DocTab>('drafts');
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
-  const [checkedSections, setCheckedSections] = useState<string[]>([]);
+  // Tracked by index into `sections`, not by title string — two sections
+  // sharing a title (plausible once this reads real backend data instead of
+  // today's dedup'd mock) would otherwise toggle together and be
+  // indistinguishable in `onImport`'s output.
+  const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
 
   const { data: sectionsData } = useImportDocSections(selectedDocId ?? '');
   const sections = selectedDocId ? (sectionsData ?? []) : [];
@@ -48,20 +55,23 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
   const handleTabChange = (id: string) => {
     setActiveTab(id as DocTab);
     setSelectedDocId(null);
-    setCheckedSections([]);
+    setCheckedIndexes([]);
   };
 
   const handleSelectDoc = (docId: string) => () => {
     setSelectedDocId(docId);
-    setCheckedSections([]);
+    setCheckedIndexes([]);
   };
 
-  const handleToggleSection = (title: string) => () =>
-    setCheckedSections((prev) =>
-      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
+  const handleToggleSection = (index: number) => () =>
+    setCheckedIndexes((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
     );
 
-  const handleImport = () => onImport(checkedSections);
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onImport(checkedIndexes.map((index) => sections[index]));
+  };
 
   return (
     <Modal
@@ -71,58 +81,60 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
       data-testid={IMPORT_DOC_MODAL_IDS.root}
       footer={
         <>
-          <CancelBtn type="button" onClick={onClose}>
+          <Button type="button" variant="secondary" onClick={onClose}>
             ביטול
-          </CancelBtn>
-          <ImportBtn
-            type="button"
-            onClick={handleImport}
-            disabled={checkedSections.length === 0}
+          </Button>
+          <Button
+            type="submit"
+            form={FORM_ID}
+            disabled={checkedIndexes.length === 0}
             data-testid={IMPORT_DOC_MODAL_IDS.importBtn}
           >
-            ייבוא ({checkedSections.length})
-          </ImportBtn>
+            ייבוא ({checkedIndexes.length})
+          </Button>
         </>
       }
     >
-      <UnderlineTabs tabs={TABS} activeId={activeTab} onChange={handleTabChange} />
+      <Body id={FORM_ID} onSubmit={onSubmit}>
+        <UnderlineTabs tabs={TABS} activeId={activeTab} onChange={handleTabChange} />
 
-      <Layout>
-        <DocListColumn>
-          {docsByTab[activeTab].map((doc) => (
-            <DocRow
-              key={doc.id}
-              type="button"
-              $active={doc.id === selectedDocId}
-              onClick={handleSelectDoc(doc.id)}
-              data-testid={IMPORT_DOC_MODAL_IDS.docRow(doc.id)}
-            >
-              <DocName>{doc.name}</DocName>
-              <DocMeta>
-                {doc.org} · {doc.date}
-              </DocMeta>
-            </DocRow>
-          ))}
-        </DocListColumn>
+        <Layout>
+          <DocListColumn>
+            {docsByTab[activeTab].map((doc) => (
+              <DocRow
+                key={doc.id}
+                type="button"
+                $active={doc.id === selectedDocId}
+                onClick={handleSelectDoc(doc.id)}
+                data-testid={IMPORT_DOC_MODAL_IDS.docRow(doc.id)}
+              >
+                <DocName>{doc.name}</DocName>
+                <DocMeta>
+                  {doc.org} · {doc.date}
+                </DocMeta>
+              </DocRow>
+            ))}
+          </DocListColumn>
 
-        <PreviewColumn>
-          {selectedDocId ? (
-            sections.map((title) => (
-              <SectionRow key={title}>
-                <input
-                  type="checkbox"
-                  checked={checkedSections.includes(title)}
-                  onChange={handleToggleSection(title)}
-                  data-testid={IMPORT_DOC_MODAL_IDS.sectionCheckbox(title)}
-                />
-                {title}
-              </SectionRow>
-            ))
-          ) : (
-            <EmptyState>בחר מסמך לתצוגה מקדימה</EmptyState>
-          )}
-        </PreviewColumn>
-      </Layout>
+          <PreviewColumn>
+            {selectedDocId ? (
+              sections.map((title, index) => (
+                <SectionRow key={`${index}-${title}`}>
+                  <input
+                    type="checkbox"
+                    checked={checkedIndexes.includes(index)}
+                    onChange={handleToggleSection(index)}
+                    data-testid={IMPORT_DOC_MODAL_IDS.sectionCheckbox(title)}
+                  />
+                  {title}
+                </SectionRow>
+              ))
+            ) : (
+              <EmptyState>בחר מסמך לתצוגה מקדימה</EmptyState>
+            )}
+          </PreviewColumn>
+        </Layout>
+      </Body>
     </Modal>
   );
 };

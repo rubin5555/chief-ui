@@ -21,16 +21,26 @@ export const useDocumentOverrides = (data: DocumentDto) => {
     ...metaOverrides[id],
   });
 
+  // Derives the merged patch from the updater's own `prev`, not the
+  // outer-scope `metaOverrides` `getMeta` closes over — two `patchMeta`
+  // calls batched into the same render would otherwise have the second
+  // call's spread see stale pre-update state and silently drop the first
+  // call's patch.
   const patchMeta = (id: string, patch: Partial<SectionMeta>) =>
-    setMetaOverrides((prev) => ({ ...prev, [id]: { ...getMeta(id), ...patch } }));
+    setMetaOverrides((prev) => ({
+      ...prev,
+      [id]: { ...emptySectionMeta(), ...data.sectionMeta[id], ...prev[id], ...patch },
+    }));
 
   const handleHeaderChange = (next: DocumentHeader) => setHeader(next);
 
   // Reflects metaOverrides too (not just the query's initial snapshot) so
   // consumers like the outline tree don't go stale once status/hidden/
-  // classification start being edited locally.
-  const mergedSectionMeta: SectionMetaMap = { ...data.sectionMeta };
-  for (const id of Object.keys(metaOverrides)) mergedSectionMeta[id] = getMeta(id);
+  // classification start being edited locally. metaOverrides[id] is already
+  // the fully-merged SectionMeta (patchMeta stores the whole merged object,
+  // not just the patched keys), so this reuses it directly instead of
+  // re-running getMeta's spread a second time for the same id.
+  const mergedSectionMeta: SectionMetaMap = { ...data.sectionMeta, ...metaOverrides };
 
   return {
     status,

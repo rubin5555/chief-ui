@@ -218,6 +218,14 @@ export const useUpdateDocument = () =>
     (result) => result.updateDocument,
   );
 
+// Keyed by both subject id (s1..s6 — read by DocumentOutlineTree's subject
+// rows) and a representative sample of actual section ids (s1-1, s3-1, ... —
+// read by EditableSectionBody's status badge and by FilterPanel's status
+// filter). Seeding subject ids alone left every real section/subSection
+// falling through to emptySectionMeta()'s 'idle' default, which made the
+// status filter feature look non-functional against this seed data (every
+// status except 'idle' matched nothing) even though the feature itself
+// works correctly once a section actually carries a status.
 const DOCUMENT_SECTION_META: SectionMetaMap = {
   s1: { ...emptySectionMeta(), status: 'approved' },
   s2: { ...emptySectionMeta(), status: 'approved' },
@@ -225,6 +233,11 @@ const DOCUMENT_SECTION_META: SectionMetaMap = {
   s4: { ...emptySectionMeta(), status: 'pending' },
   s5: { ...emptySectionMeta(), status: 'editing' },
   s6: { ...emptySectionMeta(), status: 'editing' },
+  's1-1': { ...emptySectionMeta(), status: 'approved' },
+  's1-2': { ...emptySectionMeta(), status: 'approved' },
+  's3-1': { ...emptySectionMeta(), status: 'fix' },
+  's3-2': { ...emptySectionMeta(), status: 'fix' },
+  's4-1': { ...emptySectionMeta(), status: 'pending' },
 };
 
 const emptyPermissions = () => ({ approvers: [], editors: [] });
@@ -348,33 +361,47 @@ export const DOCUMENT_FALLBACK: DocumentDto = {
   sectionMeta: DOCUMENT_SECTION_META,
 };
 
+// Keyed per document id rather than mutating the single shared
+// DOCUMENT_FALLBACK object directly — every id currently renders identical
+// seed content (there's only one mock tree), but without this, editing
+// document A and then loading document B in the same session would leak
+// A's edited subjects/sectionMeta into B once UpdateDocument is wired up.
+const documentStore: Record<string, DocumentDto> = {};
+
+const getOrCreateDocument = (id: string): DocumentDto => {
+  const existing = documentStore[id];
+  if (existing) return existing;
+
+  const matchingDoc = DOCS_FALLBACK.docs.find((doc) => doc.id === id);
+  const created: DocumentDto = matchingDoc
+    ? {
+        ...DOCUMENT_FALLBACK,
+        id: matchingDoc.id,
+        status: matchingDoc.status,
+        header: {
+          ...DOCUMENT_FALLBACK.header,
+          name: matchingDoc.name,
+          organization: matchingDoc.environment,
+          template: matchingDoc.docType,
+          orderNum: matchingDoc.cmdNum,
+          referenceNum: matchingDoc.refNum,
+          effectiveDate: matchingDoc.lastUpdate,
+        },
+      }
+    : { ...DOCUMENT_FALLBACK };
+  documentStore[id] = created;
+  return created;
+};
+
 registerStub('GetDocument', (variables): GetDocumentResult => {
   const { id } = variables as unknown as GetDocumentVariables;
-  const matchingDoc = DOCS_FALLBACK.docs.find((doc) => doc.id === id);
-  if (!matchingDoc) return { document: DOCUMENT_FALLBACK };
-
-  return {
-    document: {
-      ...DOCUMENT_FALLBACK,
-      id: matchingDoc.id,
-      status: matchingDoc.status,
-      header: {
-        ...DOCUMENT_FALLBACK.header,
-        name: matchingDoc.name,
-        organization: matchingDoc.environment,
-        template: matchingDoc.docType,
-        orderNum: matchingDoc.cmdNum,
-        referenceNum: matchingDoc.refNum,
-        effectiveDate: matchingDoc.lastUpdate,
-      },
-    },
-  };
+  return { document: getOrCreateDocument(id) };
 });
 
 registerStub('UpdateDocument', (variables): UpdateDocumentResult => {
-  const { input } = variables as unknown as UpdateDocumentVariables;
-  Object.assign(DOCUMENT_FALLBACK, input);
-  return { updateDocument: DOCUMENT_FALLBACK };
+  const { id, input } = variables as unknown as UpdateDocumentVariables;
+  const document = Object.assign(getOrCreateDocument(id), input);
+  return { updateDocument: document };
 });
 
 // --- Import (Phase 7): pick sections from another document to copy in ---
@@ -465,6 +492,7 @@ export const useImportDocSections = (docId: string) =>
     GET_IMPORT_DOC_SECTIONS_QUERY,
     (result) => result.importDocSections,
     { docId },
+    !docId,
   );
 
 const IMPORT_DOC_SECTIONS_FALLBACK: Record<string, string[]> = {

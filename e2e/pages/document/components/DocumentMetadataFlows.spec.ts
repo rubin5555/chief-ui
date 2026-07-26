@@ -59,20 +59,19 @@ test('deleting a section trashes it, and restoring brings it back', async ({ pag
 test('status filter hides sections that do not match the selected status', async ({ page }) => {
   await page.goto('/document/d1');
 
-  // s1-1/s1-2 are 'idle' (no explicit status); s3 is seeded 'fix' but that's
-  // a subject-level status with no filterable section under it in the seed
-  // data, so filtering to 'approved' (nothing in the seed carries it at the
-  // section level) should hide every section without clearing the filter.
+  // s1-1 is seeded 'approved' (DOCUMENT_SECTION_META in src/api/docs.ts), so
+  // filtering to 'pending' — a status no section under s1 carries — should
+  // hide it without clearing the filter.
   await page.getByTestId(FILTER_PANEL_IDS.trigger).click();
   await expect(page.getByTestId(FILTER_PANEL_IDS.panel)).toBeVisible();
 
-  await page.getByTestId(FILTER_PANEL_IDS.option('approved')).click();
-  await expect(page).toHaveURL(/statuses=approved/);
+  await page.getByTestId(FILTER_PANEL_IDS.option('pending')).click();
+  await expect(page).toHaveURL(/statuses=pending/);
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-1'))).toHaveCount(0);
 
   // The panel stays open after checking an option (it's a multi-select, not
   // a single-pick dropdown), so the clear button is already visible here.
   await page.getByTestId(FILTER_PANEL_IDS.clearBtn).click();
-  await expect(page).not.toHaveURL(/statuses=approved/);
+  await expect(page).not.toHaveURL(/statuses=pending/);
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-1'))).toBeVisible();
 });

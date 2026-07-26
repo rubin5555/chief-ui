@@ -1,7 +1,6 @@
 import { Pencil } from 'lucide-react';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import type { DocumentHeader } from '../../types';
-import { EditDocDetailsModal } from '../EditDocDetailsModal';
 import {
   Card,
   Chip,
@@ -13,6 +12,10 @@ import {
   TitleRow,
 } from './DocHeaderCard.styles';
 import { DOC_HEADER_CARD_IDS } from './DocHeaderCard.testids';
+
+const EditDocDetailsModal = lazy(() =>
+  import('../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
+);
 
 export interface DocHeaderCardProps {
   header: DocumentHeader;
@@ -64,12 +67,14 @@ export const DocHeaderCard = ({ header, status, onHeaderChange }: DocHeaderCardP
       </ChipRow>
 
       {showEditModal && (
-        <EditDocDetailsModal
-          mode="edit"
-          header={header}
-          onClose={handleCloseEdit}
-          onSave={handleSave}
-        />
+        <Suspense fallback={null}>
+          <EditDocDetailsModal
+            mode="edit"
+            header={header}
+            onClose={handleCloseEdit}
+            onSave={handleSave}
+          />
+        </Suspense>
       )}
     </Card>
   );

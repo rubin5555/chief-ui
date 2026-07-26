@@ -1,8 +1,9 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { Fragment, useState } from 'react';
 import type { HmlGroupDto } from '@/api/approvals';
 import { SIGNATURES_FALLBACK, useSignatures } from '@/api/signatures';
+import { Button } from '@/components/ui/Button';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { Modal } from '@/components/ui/Modal';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
@@ -19,16 +20,13 @@ import {
   HmlChip,
   HmlList,
   Notes,
-  OutlineBtn,
   RejectBox,
   SignatureActionBtn,
   SignatureActions,
   SignatureBox,
   SignatureLabel,
   SignatureSection,
-  SolidBtn,
   StageLabel,
-  TextBtn,
   TimelineConnector,
   TimelineDot,
   TimelineItem,
@@ -50,6 +48,7 @@ export interface ApprovalRotationProps {
 }
 
 const SIGNATURE_PANEL_WIDTH = 160;
+const REJECT_FORM_ID = 'approval-rotation-reject-form';
 
 // Re-derived from scratch against main's dual-index (selectedStageIdx shared
 // across a rank/user axis and a separate HML axis) carousel — that shape was
@@ -116,7 +115,12 @@ export const ApprovalRotation = ({
 
   const handleOpenReject = () => setView('reject');
   const handleCancelReject = () => setView('carousel');
-  const handleConfirmReject = () => onReject(rejectReason);
+  const handleRejectSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onReject(rejectReason);
+  };
+  const handleRejectReasonChange = (e: ChangeEvent<HTMLTextAreaElement>) =>
+    setRejectReason(e.target.value);
 
   const handleSkipDistribute = onClose;
   const handleDistributeNow = () => {
@@ -134,23 +138,24 @@ export const ApprovalRotation = ({
       footer={
         view === 'carousel' ? (
           <FooterActions>
-            <TextBtn type="button" onClick={onClose}>
+            <Button type="button" variant="ghost" onClick={onClose}>
               ביטול
-            </TextBtn>
-            <OutlineBtn
+            </Button>
+            <Button
               type="button"
+              variant="outline"
               onClick={handleOpenReject}
               data-testid={APPROVAL_ROTATION_IDS.rejectBtn}
             >
               דחה
-            </OutlineBtn>
-            <SolidBtn
+            </Button>
+            <Button
               type="button"
               onClick={handleApprove}
               data-testid={APPROVAL_ROTATION_IDS.approveBtn}
             >
               אשר
-            </SolidBtn>
+            </Button>
           </FooterActions>
         ) : undefined
       }
@@ -263,27 +268,26 @@ export const ApprovalRotation = ({
       )}
 
       {view === 'reject' && (
-        <RejectBox>
+        <RejectBox id={REJECT_FORM_ID} onSubmit={handleRejectSubmit}>
           <Notes
             value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
+            onChange={handleRejectReasonChange}
             placeholder="פרט את סיבת הדחייה..."
             dir="rtl"
             autoFocus
             data-testid={APPROVAL_ROTATION_IDS.rejectReason}
           />
           <FooterActions>
-            <TextBtn type="button" onClick={handleCancelReject}>
+            <Button type="button" variant="ghost" onClick={handleCancelReject}>
               ביטול
-            </TextBtn>
-            <SolidBtn
-              type="button"
-              $danger
-              onClick={handleConfirmReject}
+            </Button>
+            <Button
+              type="submit"
+              form={REJECT_FORM_ID}
               data-testid={APPROVAL_ROTATION_IDS.confirmRejectBtn}
             >
               דחייה
-            </SolidBtn>
+            </Button>
           </FooterActions>
         </RejectBox>
       )}
@@ -295,20 +299,21 @@ export const ApprovalRotation = ({
             כל השלבים אושרו — האם ברצונך להפיץ את המסמך &quot;{docName}&quot;?
           </DistributePromptBody>
           <FooterActions>
-            <OutlineBtn
+            <Button
               type="button"
+              variant="outline"
               onClick={handleSkipDistribute}
               data-testid={APPROVAL_ROTATION_IDS.distributeLaterBtn}
             >
               לא כרגע
-            </OutlineBtn>
-            <SolidBtn
+            </Button>
+            <Button
               type="button"
               onClick={handleDistributeNow}
               data-testid={APPROVAL_ROTATION_IDS.distributeNowBtn}
             >
               הפצת המסמך
-            </SolidBtn>
+            </Button>
           </FooterActions>
         </DistributePromptBox>
       )}

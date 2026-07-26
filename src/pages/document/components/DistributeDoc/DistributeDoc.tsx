@@ -1,9 +1,10 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useState } from 'react';
 import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
+import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
-import { Body, BodyTextarea, CancelBtn, Field, FieldLabel, SendBtn } from './DistributeDoc.styles';
+import { Body, BodyTextarea, Field, FieldLabel } from './DistributeDoc.styles';
 import { DISTRIBUTE_DOC_IDS } from './DistributeDoc.testids';
 
 export interface DistributeDocProps {
@@ -11,6 +12,8 @@ export interface DistributeDocProps {
   onClose: () => void;
   onSend: (recipients: string[], body: string) => void;
 }
+
+const FORM_ID = 'distribute-doc-form';
 
 const buildDefaultBody = (docName: string) =>
   `מכותבים שלום,\nמצ״ב פקודה "${docName}":\nלחצו כאן למעבר לפקודה\nעיונכם.\nבברכה,`;
@@ -29,7 +32,10 @@ export const DistributeDoc = ({ docName, onClose, onSend }: DistributeDocProps) 
   const [body, setBody] = useState(buildDefaultBody(docName));
 
   const handleBodyChange = (e: ChangeEvent<HTMLTextAreaElement>) => setBody(e.target.value);
-  const handleSend = () => onSend(recipients, body);
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSend(recipients, body);
+  };
 
   return (
     <Modal
@@ -39,21 +45,21 @@ export const DistributeDoc = ({ docName, onClose, onSend }: DistributeDocProps) 
       data-testid={DISTRIBUTE_DOC_IDS.root}
       footer={
         <>
-          <CancelBtn type="button" onClick={onClose}>
+          <Button type="button" variant="secondary" onClick={onClose}>
             סגור
-          </CancelBtn>
-          <SendBtn
-            type="button"
-            onClick={handleSend}
+          </Button>
+          <Button
+            type="submit"
+            form={FORM_ID}
             disabled={recipients.length === 0}
             data-testid={DISTRIBUTE_DOC_IDS.sendBtn}
           >
             שלח
-          </SendBtn>
+          </Button>
         </>
       }
     >
-      <Body>
+      <Body id={FORM_ID} onSubmit={onSubmit}>
         <Field>
           <FieldLabel>נמענים</FieldLabel>
           <SearchableMultiSelect

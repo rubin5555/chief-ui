@@ -1,18 +1,19 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { Modal } from '@/components/ui/Modal';
 import {
   Body,
-  CancelBtn,
   Field,
   FieldLabel,
   Notes,
-  SendBtn,
   TextInput,
   Warning,
 } from './AcceptenceVerification.styles';
 import { ACCEPTENCE_VERIFICATION_IDS } from './AcceptenceVerification.testids';
+
+const FORM_ID = 'acceptence-verification-form';
 
 export interface AcceptenceVerificationData {
   approvedBy: string;
@@ -39,7 +40,10 @@ export const AcceptenceVerification = ({ onClose, onSend }: AcceptenceVerificati
   const handleApprovedByChange = (e: ChangeEvent<HTMLInputElement>) =>
     setApprovedBy(e.target.value);
   const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value);
-  const handleSend = () => onSend({ approvedBy, date, notes });
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSend({ approvedBy, date, notes });
+  };
 
   return (
     <Modal
@@ -49,20 +53,16 @@ export const AcceptenceVerification = ({ onClose, onSend }: AcceptenceVerificati
       data-testid={ACCEPTENCE_VERIFICATION_IDS.root}
       footer={
         <>
-          <CancelBtn type="button" onClick={onClose}>
+          <Button type="button" variant="secondary" onClick={onClose}>
             ביטול
-          </CancelBtn>
-          <SendBtn
-            type="button"
-            onClick={handleSend}
-            data-testid={ACCEPTENCE_VERIFICATION_IDS.sendBtn}
-          >
+          </Button>
+          <Button type="submit" form={FORM_ID} data-testid={ACCEPTENCE_VERIFICATION_IDS.sendBtn}>
             שלח
-          </SendBtn>
+          </Button>
         </>
       }
     >
-      <Body>
+      <Body id={FORM_ID} onSubmit={onSubmit}>
         <Warning>
           <strong>שימו לב:</strong> מידע זה ישוקף במסך ״וידוא קבלה״ של מפיץ המסמך.
         </Warning>

@@ -1,10 +1,10 @@
 import { getRouteApi } from '@tanstack/react-router';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { PROFILE_FALLBACK, useProfile } from '@/api/profile';
 import { ContentEditorProvider, ContentEditorToolbar } from '@/components/ui/ContentEditor';
 import { CollabProvider } from '@/context/CollabContext';
 import { useDocumentTree } from '@/hooks/useDocumentTree';
-import type { DocumentDto, NodePermissions, Section } from '../../types';
+import type { DocumentDto, NodePermissions, Section, SectionStatus } from '../../types';
 import { DEFAULT_CLASSIFICATION_LEVEL } from '../../types';
 import { ApprovalWorkflow } from '../ApprovalWorkflow';
 import { ComparisonBar } from '../ComparisonBar';
@@ -12,9 +12,7 @@ import { DocHeaderCard } from '../DocHeaderCard';
 import { DocumentOutlineTree } from '../DocumentOutlineTree';
 import { EditableSectionBody } from '../EditableSectionBody';
 import { FilterPanel } from '../FilterPanel';
-import { ImportDocModal } from '../ImportDocModal';
 import type { DeletedSectionEntry } from '../RestoreModal';
-import { RestoreModal } from '../RestoreModal';
 import {
   CanvasColumn,
   PageInner,
@@ -27,6 +25,13 @@ import {
 } from './DocumentCanvas.styles';
 import { DOCUMENT_CANVAS_IDS } from './DocumentCanvas.testids';
 import { useDocumentOverrides } from './useDocumentOverrides';
+
+const ImportDocModal = lazy(() =>
+  import('../ImportDocModal').then((m) => ({ default: m.ImportDocModal })),
+);
+const RestoreModal = lazy(() =>
+  import('../RestoreModal').then((m) => ({ default: m.RestoreModal })),
+);
 
 const routeApi = getRouteApi('/document/$id');
 
@@ -150,8 +155,8 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
     setShowRestoreModal(false);
   };
 
-  const matchesStatusFilter = (id: string) =>
-    activeStatusFilter.length === 0 || activeStatusFilter.includes(getMeta(id).status);
+  const matchesStatusFilter = (status: SectionStatus) =>
+    activeStatusFilter.length === 0 || activeStatusFilter.includes(status);
 
   const canvasBody = (
     <ContentEditorProvider>
@@ -185,90 +190,90 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
               <SubjectHeading>{subject.title || 'נושא ללא שם'}</SubjectHeading>
 
               {subject.sections
-                .filter((section) => matchesStatusFilter(section.id))
-                .map((section) => {
-                  const sectionIndex = subject.sections.indexOf(section);
-                  return (
-                    <div key={section.id}>
-                      <EditableSectionBody
-                        id={section.id}
-                        depth="section"
-                        index={`${subjectIndex + 1}.${sectionIndex + 1}`}
-                        title={section.title}
-                        content={section.content}
-                        meta={getMeta(section.id)}
-                        permissions={section.permissions}
-                        onContentChange={handleSectionContentChange(subject.id, section.id)}
-                        onChangePermissions={handleSectionPermissionsChange(
-                          subject.id,
-                          section.id,
-                          section.permissions,
-                        )}
-                        onToggleHidden={handleToggleHidden(section.id)}
-                        onToggleClassified={handleToggleClassified(section.id)}
-                        onChangeClassificationViewers={handleChangeClassificationViewers(
-                          section.id,
-                        )}
-                        onDelete={handleRemoveSection(subject.id, section)}
-                      />
+                .map((section, sectionIndex) => ({
+                  section,
+                  sectionIndex,
+                  meta: getMeta(section.id),
+                }))
+                .filter(({ meta }) => matchesStatusFilter(meta.status))
+                .map(({ section, sectionIndex, meta }) => (
+                  <div key={section.id}>
+                    <EditableSectionBody
+                      id={section.id}
+                      depth="section"
+                      index={`${subjectIndex + 1}.${sectionIndex + 1}`}
+                      title={section.title}
+                      content={section.content}
+                      meta={meta}
+                      permissions={section.permissions}
+                      onContentChange={handleSectionContentChange(subject.id, section.id)}
+                      onChangePermissions={handleSectionPermissionsChange(
+                        subject.id,
+                        section.id,
+                        section.permissions,
+                      )}
+                      onToggleHidden={handleToggleHidden(section.id)}
+                      onToggleClassified={handleToggleClassified(section.id)}
+                      onChangeClassificationViewers={handleChangeClassificationViewers(section.id)}
+                      onDelete={handleRemoveSection(subject.id, section)}
+                    />
 
-                      {section.subSections
-                        .filter((subSection) => matchesStatusFilter(subSection.id))
-                        .map((subSection) => {
-                          const subSectionIndex = section.subSections.indexOf(subSection);
-                          return (
-                            <EditableSectionBody
-                              key={subSection.id}
-                              id={subSection.id}
-                              depth="subSection"
-                              index={`${subjectIndex + 1}.${sectionIndex + 1}.${subSectionIndex + 1}`}
-                              title={subSection.title}
-                              content={subSection.content}
-                              meta={getMeta(subSection.id)}
-                              permissions={subSection.permissions}
-                              onContentChange={handleSubSectionContentChange(
-                                subject.id,
-                                section.id,
-                                subSection.id,
-                              )}
-                              onChangePermissions={handleSubSectionPermissionsChange(
-                                subject.id,
-                                section.id,
-                                subSection.id,
-                                subSection.permissions,
-                              )}
-                              onToggleHidden={handleToggleHidden(subSection.id)}
-                              onToggleClassified={handleToggleClassified(subSection.id)}
-                              onChangeClassificationViewers={handleChangeClassificationViewers(
-                                subSection.id,
-                              )}
-                              onDelete={handleRemoveSubSection(
-                                subject.id,
-                                section.id,
-                                subSection.id,
-                              )}
-                            />
-                          );
-                        })}
-                    </div>
-                  );
-                })}
+                    {section.subSections
+                      .map((subSection, subSectionIndex) => ({
+                        subSection,
+                        subSectionIndex,
+                        meta: getMeta(subSection.id),
+                      }))
+                      .filter(({ meta: subMeta }) => matchesStatusFilter(subMeta.status))
+                      .map(({ subSection, subSectionIndex, meta: subMeta }) => (
+                        <EditableSectionBody
+                          key={subSection.id}
+                          id={subSection.id}
+                          depth="subSection"
+                          index={`${subjectIndex + 1}.${sectionIndex + 1}.${subSectionIndex + 1}`}
+                          title={subSection.title}
+                          content={subSection.content}
+                          meta={subMeta}
+                          permissions={subSection.permissions}
+                          onContentChange={handleSubSectionContentChange(
+                            subject.id,
+                            section.id,
+                            subSection.id,
+                          )}
+                          onChangePermissions={handleSubSectionPermissionsChange(
+                            subject.id,
+                            section.id,
+                            subSection.id,
+                            subSection.permissions,
+                          )}
+                          onToggleHidden={handleToggleHidden(subSection.id)}
+                          onToggleClassified={handleToggleClassified(subSection.id)}
+                          onChangeClassificationViewers={handleChangeClassificationViewers(
+                            subSection.id,
+                          )}
+                          onDelete={handleRemoveSubSection(subject.id, section.id, subSection.id)}
+                        />
+                      ))}
+                  </div>
+                ))}
             </SubjectSection>
           ))}
         </CanvasColumn>
       </PageInner>
 
-      {showImportModal && (
-        <ImportDocModal onClose={handleCloseImport} onImport={handleImportSections} />
-      )}
+      <Suspense fallback={null}>
+        {showImportModal && (
+          <ImportDocModal onClose={handleCloseImport} onImport={handleImportSections} />
+        )}
 
-      {showRestoreModal && (
-        <RestoreModal
-          deletedSections={trash}
-          onClose={handleCloseRestore}
-          onRestore={handleRestoreSections}
-        />
-      )}
+        {showRestoreModal && (
+          <RestoreModal
+            deletedSections={trash}
+            onClose={handleCloseRestore}
+            onRestore={handleRestoreSections}
+          />
+        )}
+      </Suspense>
     </ContentEditorProvider>
   );
 

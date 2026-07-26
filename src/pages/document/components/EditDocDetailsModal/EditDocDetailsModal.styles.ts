@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { colors, gray, radii } from '@/styles/theme';
 
-export const Body = styled.div`
+export const Body = styled.form`
 	display: flex;
 	flex-direction: column;
 	gap: 14px;
@@ -51,26 +51,4 @@ export const DirtyWarning = styled.p`
 	color: ${colors.warning};
 	font-size: 12px;
 	line-height: 1.6;
-`;
-
-export const SubmitBtn = styled.button`
-	padding: 8px 20px;
-	border: none;
-	border-radius: ${radii.xl};
-	font-size: 13px;
-	font-weight: 600;
-	cursor: pointer;
-	background-color: ${colors.primary};
-	color: ${colors.surface};
-`;
-
-export const CancelBtn = styled.button`
-	padding: 8px 20px;
-	border: none;
-	border-radius: ${radii.xl};
-	font-size: 13px;
-	font-weight: 500;
-	cursor: pointer;
-	background-color: transparent;
-	color: ${gray[500]};
 `;

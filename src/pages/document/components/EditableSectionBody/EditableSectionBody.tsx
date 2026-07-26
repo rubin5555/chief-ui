@@ -1,5 +1,5 @@
 import { EyeOff, Lock, Paperclip } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ContentEditor } from '@/components/ui/ContentEditor';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { NodePermissions, SectionMeta } from '../../types';
@@ -79,6 +79,26 @@ export const EditableSectionBody = ({
   useEffect(() => {
     if (debouncedDraft !== content) onContentChange(debouncedDraft);
   }, [debouncedDraft]);
+
+  // If this section gets filtered out of the tree (a status-filter change,
+  // e.g. via FilterPanel) before the 300ms debounce above fires, the pending
+  // commit would otherwise be silently dropped when this component unmounts.
+  // Flush any unflushed draft on unmount as a safety net, independent of the
+  // debounce timer. Refs avoid a stale closure — this only needs the values
+  // as of the actual unmount, not whatever render scheduled the effect.
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  const contentRef = useRef(content);
+  contentRef.current = content;
+  const onContentChangeRef = useRef(onContentChange);
+  onContentChangeRef.current = onContentChange;
+
+  useEffect(
+    () => () => {
+      if (draftRef.current !== contentRef.current) onContentChangeRef.current(draftRef.current);
+    },
+    [],
+  );
 
   return (
     <SectionBlock $depth={depth} data-testid={EDITABLE_SECTION_BODY_IDS.root(id)}>

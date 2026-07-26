@@ -166,7 +166,7 @@ export const SignatureActionBtn = styled.button`
 	}
 `;
 
-export const RejectBox = styled.div`
+export const RejectBox = styled.form`
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
@@ -197,36 +197,4 @@ export const DistributePromptBody = styled.p`
 export const FooterActions = styled.div`
 	display: flex;
 	gap: 10px;
-`;
-
-export const OutlineBtn = styled.button`
-	padding: 8px 18px;
-	border-radius: ${radii.full};
-	border: 1px solid ${colors.border};
-	background: none;
-	font-size: 13px;
-	font-weight: 600;
-	color: ${gray[700]};
-	cursor: pointer;
-`;
-
-export const SolidBtn = styled.button<{ $danger?: boolean }>`
-	padding: 8px 20px;
-	border-radius: ${radii.full};
-	border: none;
-	font-size: 13px;
-	font-weight: 600;
-	color: ${colors.surface};
-	background-color: ${(props) => (props.$danger ? colors.danger : colors.primary)};
-	cursor: pointer;
-`;
-
-export const TextBtn = styled.button`
-	padding: 8px 18px;
-	border: none;
-	background: none;
-	font-size: 13px;
-	font-weight: 500;
-	color: ${gray[500]};
-	cursor: pointer;
 `;

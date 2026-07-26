@@ -1,4 +1,4 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useState } from 'react';
 import {
   APPROVAL_RANKS_FALLBACK,
@@ -8,19 +8,20 @@ import {
   useApproverUsers,
   useHmlGroups,
 } from '@/api/approvals';
+import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
 import {
   Body,
-  CancelBtn,
   Field,
   FieldLabel,
   Notes,
   RankBlock,
   RankBlockTitle,
-  SubmitBtn,
 } from './ApprovalDetailsModal.styles';
 import { APPROVAL_DETAILS_MODAL_IDS } from './ApprovalDetailsModal.testids';
+
+const FORM_ID = 'approval-details-form';
 
 export interface ApprovalRoundStageConfig {
   rank: string;
@@ -44,7 +45,10 @@ export interface ApprovalDetailsModalProps {
 // inline-search-popover UI to a plain multi-select per concern (reusing
 // SearchableMultiSelect throughout) — same configuration surface, less
 // bespoke chrome.
-export const ApprovalDetailsModal = ({ onClose, onSubmit }: ApprovalDetailsModalProps) => {
+export const ApprovalDetailsModal = ({
+  onClose,
+  onSubmit: onSubmitConfig,
+}: ApprovalDetailsModalProps) => {
   const { data: ranksData } = useApprovalRanks();
   const { data: usersData } = useApproverUsers();
   const { data: hmlData } = useHmlGroups();
@@ -63,12 +67,13 @@ export const ApprovalDetailsModal = ({ onClose, onSubmit }: ApprovalDetailsModal
 
   const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value);
 
-  const handleSubmit = () => {
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
     const hmlGroupIds = hmlGroups
       .filter((group) => selectedHmlNames.includes(group.name))
       .map((group) => group.id);
 
-    onSubmit({
+    onSubmitConfig({
       stages: selectedRanks.map((rank) => ({ rank, users: stageUsers[rank] ?? [] })),
       hmlGroupIds,
       notes,
@@ -83,21 +88,21 @@ export const ApprovalDetailsModal = ({ onClose, onSubmit }: ApprovalDetailsModal
       data-testid={APPROVAL_DETAILS_MODAL_IDS.root}
       footer={
         <>
-          <CancelBtn type="button" onClick={onClose}>
+          <Button type="button" variant="secondary" onClick={onClose}>
             ביטול
-          </CancelBtn>
-          <SubmitBtn
-            type="button"
-            onClick={handleSubmit}
+          </Button>
+          <Button
+            type="submit"
+            form={FORM_ID}
             disabled={selectedRanks.length === 0}
             data-testid={APPROVAL_DETAILS_MODAL_IDS.submitBtn}
           >
             שליחה לאישור
-          </SubmitBtn>
+          </Button>
         </>
       }
     >
-      <Body>
+      <Body id={FORM_ID} onSubmit={onSubmit}>
         <Field>
           <FieldLabel>גורמים מאשרים</FieldLabel>
           <SearchableMultiSelect

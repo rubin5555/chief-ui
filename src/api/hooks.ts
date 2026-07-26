@@ -20,6 +20,10 @@ export interface ApiQueryResult<TData> {
 // when the envelope itself is the useful shape (multi-collection results).
 // `variables` is optional since most resources today fetch a fixed collection
 // with no arguments — pass it for anything parameterized (e.g. fetch-by-id).
+// `skip` avoids firing the query at all while a required variable (e.g. a
+// not-yet-selected id) isn't available — the hook must still be called
+// unconditionally per the rules of hooks, so this is the mechanism for that
+// rather than an `if` around the call site.
 export const useApiQuery = <
   TResult,
   TData = TResult,
@@ -28,11 +32,12 @@ export const useApiQuery = <
   query: DocumentNode,
   select?: (result: TResult) => TData,
   variables?: TVariables,
+  skip?: boolean,
 ): ApiQueryResult<TData> => {
-  const { data, loading, error } = useQuery<TResult, TVariables>(
-    query,
-    variables ? { variables } : undefined,
-  );
+  const { data, loading, error } = useQuery<TResult, TVariables>(query, {
+    ...(variables ? { variables } : {}),
+    skip,
+  });
   const selected =
     data === undefined ? undefined : select ? select(data) : (data as unknown as TData);
   return { data: selected, loading, error };

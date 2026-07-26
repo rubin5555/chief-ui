@@ -45,34 +45,7 @@ export const Notes = styled.textarea`
 	}
 `;
 
-export const SubmitBtn = styled.button`
-	padding: 8px 20px;
-	border: none;
-	border-radius: ${radii.xl};
-	font-size: 13px;
-	font-weight: 600;
-	cursor: pointer;
-	background-color: ${colors.primary};
-	color: ${colors.surface};
-
-	&:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-`;
-
-export const CancelBtn = styled.button`
-	padding: 8px 20px;
-	border: none;
-	border-radius: ${radii.xl};
-	font-size: 13px;
-	font-weight: 500;
-	cursor: pointer;
-	background-color: transparent;
-	color: ${gray[500]};
-`;
-
-export const Body = styled.div`
+export const Body = styled.form`
 	display: flex;
 	flex-direction: column;
 	gap: 16px;

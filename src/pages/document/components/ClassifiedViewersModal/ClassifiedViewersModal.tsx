@@ -1,17 +1,11 @@
 import { useState } from 'react';
 import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
+import { Button } from '@/components/ui/Button';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { Modal } from '@/components/ui/Modal';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { useDebounce } from '@/hooks/useDebounce';
-import {
-  Body,
-  EmptyState,
-  FooterBtn,
-  MutedCell,
-  NameCell,
-  TableWrap,
-} from './ClassifiedViewersModal.styles';
+import { Body, EmptyState, MutedCell, NameCell, TableWrap } from './ClassifiedViewersModal.styles';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from './ClassifiedViewersModal.testids';
 
 const GRID_COLUMNS = '28px 1fr 120px 140px';
@@ -57,13 +51,9 @@ export const ClassifiedViewersModal = ({
       height="70vh"
       data-testid={CLASSIFIED_VIEWERS_MODAL_IDS.root}
       footer={
-        <FooterBtn
-          type="button"
-          onClick={onClose}
-          data-testid={CLASSIFIED_VIEWERS_MODAL_IDS.closeBtn}
-        >
+        <Button type="button" onClick={onClose} data-testid={CLASSIFIED_VIEWERS_MODAL_IDS.closeBtn}>
           סגירה
-        </FooterBtn>
+        </Button>
       }
     >
       <Body>

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, gray, radii } from '@/styles/theme';
+import { gray, radii } from '@/styles/theme';
 
 export const List = styled.div`
 	display: flex;
@@ -34,29 +34,6 @@ export const EmptyState = styled.div`
 	font-size: 13px;
 `;
 
-export const RestoreBtn = styled.button`
-	padding: 8px 20px;
-	border: none;
-	border-radius: ${radii.xl};
-	font-size: 13px;
-	font-weight: 600;
-	cursor: pointer;
-	background-color: ${colors.primary};
-	color: ${colors.surface};
-
-	&:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-`;
-
-export const CancelBtn = styled.button`
-	padding: 8px 20px;
-	border: none;
-	border-radius: ${radii.xl};
-	font-size: 13px;
-	font-weight: 500;
-	cursor: pointer;
-	background-color: transparent;
-	color: ${gray[500]};
+export const Body = styled.form`
+	display: contents;
 `;

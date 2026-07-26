@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, gray, radii } from '@/styles/theme';
+import { gray, radii } from '@/styles/theme';
 
 export const ActionsRow = styled.div`
 	display: flex;
@@ -14,26 +14,4 @@ export const StatusChip = styled.span`
 	color: ${gray[700]};
 	font-size: 12px;
 	font-weight: 600;
-`;
-
-export const PrimaryBtn = styled.button`
-	padding: 8px 16px;
-	border: none;
-	border-radius: ${radii.xl};
-	font-size: 12px;
-	font-weight: 600;
-	cursor: pointer;
-	background-color: ${colors.primary};
-	color: ${colors.surface};
-`;
-
-export const SecondaryBtn = styled.button`
-	padding: 8px 16px;
-	border: 1px solid ${colors.border};
-	border-radius: ${radii.xl};
-	font-size: 12px;
-	font-weight: 500;
-	cursor: pointer;
-	background: none;
-	color: ${gray[600]};
 `;
