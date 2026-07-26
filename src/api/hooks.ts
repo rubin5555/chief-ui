@@ -18,11 +18,21 @@ export interface ApiQueryResult<TData> {
 // `select` unwraps the transport envelope (e.g. { profile: {...} } → profile)
 // so components see resource data, not the GraphQL response shape. Omit it
 // when the envelope itself is the useful shape (multi-collection results).
-export const useApiQuery = <TResult, TData = TResult>(
+// `variables` is optional since most resources today fetch a fixed collection
+// with no arguments — pass it for anything parameterized (e.g. fetch-by-id).
+export const useApiQuery = <
+  TResult,
+  TData = TResult,
+  TVariables extends OperationVariables = OperationVariables,
+>(
   query: DocumentNode,
   select?: (result: TResult) => TData,
+  variables?: TVariables,
 ): ApiQueryResult<TData> => {
-  const { data, loading, error } = useQuery<TResult>(query);
+  const { data, loading, error } = useQuery<TResult, TVariables>(
+    query,
+    variables ? { variables } : undefined,
+  );
   const selected =
     data === undefined ? undefined : select ? select(data) : (data as unknown as TData);
   return { data: selected, loading, error };

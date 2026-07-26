@@ -15,6 +15,7 @@ export default defineConfig({
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[contenthash:8].js',
+    publicPath: '/',
     clean: true,
   },
   resolve: {
