@@ -47,6 +47,18 @@ export const StatusBadge = styled.span<{ $status: SectionStatus }>`
 	background-color: ${(props) => STATUS_COLOR[props.$status]};
 `;
 
+export const HiddenNotice = styled.div`
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	border-radius: ${radii.lg};
+	background-color: ${gray[50]};
+	color: ${gray[400]};
+	font-size: 13px;
+	font-style: italic;
+`;
+
 export const ClassifiedBox = styled.div`
 	display: flex;
 	align-items: center;

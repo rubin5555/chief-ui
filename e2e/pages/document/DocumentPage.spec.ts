@@ -1,9 +1,12 @@
 import { expect, test } from '@playwright/test';
+import { SEARCHABLE_MULTI_SELECT_IDS } from '../../../src/components/ui/SearchableMultiSelect/SearchableMultiSelect.testids';
+import { CLASSIFIED_VIEWERS_MODAL_IDS } from '../../../src/pages/document/components/ClassifiedViewersModal/ClassifiedViewersModal.testids';
 import { DOC_HEADER_CARD_IDS } from '../../../src/pages/document/components/DocHeaderCard/DocHeaderCard.testids';
 import { DOCUMENT_CANVAS_IDS } from '../../../src/pages/document/components/DocumentCanvas/DocumentCanvas.testids';
 import { DOCUMENT_OUTLINE_TREE_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/DocumentOutlineTree.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
 import { SECTION_CHAT_IDS } from '../../../src/pages/document/components/SectionChat/SectionChat.testids';
+import { SECTION_MENU_IDS } from '../../../src/pages/document/components/SectionMenu/SectionMenu.testids';
 import { DOCUMENT_PAGE_IDS } from '../../../src/pages/document/DocumentPage/DocumentPage.testids';
 
 test('renders the seeded document with its header and outline tree', async ({ page }) => {
@@ -90,4 +93,71 @@ test('posting a section comment renders it in the chat panel', async ({ page }) 
   await expect(message).toHaveCount(1);
   await expect(message).toContainText('הודעת בדיקה');
   await expect(page.getByTestId(SECTION_CHAT_IDS.input)).toHaveValue('');
+});
+
+test('hiding a section via the section menu replaces its body with a hidden notice', async ({
+  page,
+}) => {
+  await page.goto('/document/d1');
+
+  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')).click();
+  await page.getByTestId(SECTION_MENU_IDS.toggleHiddenAction).click();
+
+  const sectionBody = page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-1'));
+  await expect(sectionBody).toContainText('סעיף מוסתר');
+  await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'))).toHaveCount(0);
+
+  // Toggling back from the menu (still labeled for "show" now) restores it.
+  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')).click();
+  await page.getByTestId(SECTION_MENU_IDS.toggleHiddenAction).click();
+  await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'))).toBeVisible();
+});
+
+test('classifying a section opens the viewers picker and gates its content', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-2')).click();
+  await page.getByTestId(SECTION_MENU_IDS.toggleClassifiedAction).click();
+
+  // Turning classification on immediately opens the viewers picker.
+  const viewersModal = page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.root);
+  await expect(viewersModal).toBeVisible();
+
+  const firstCheckbox = page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.checkbox('p1'));
+  await firstCheckbox.click();
+  await expect(firstCheckbox).toBeChecked();
+
+  await page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.closeBtn).click();
+  await expect(viewersModal).not.toBeVisible();
+
+  // The section body is now gated behind a classification notice, not the editor.
+  const sectionBody = page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-2'));
+  await expect(sectionBody).toContainText('תוכן ממודר');
+  await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-2'))).toHaveCount(0);
+});
+
+test('editing section approvers through the permissions view', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')).click();
+  await page.getByTestId(SECTION_MENU_IDS.approversAction).click();
+
+  const select = page.getByTestId(SECTION_MENU_IDS.permissionsSelect);
+  await expect(select).toBeVisible();
+  await select.click();
+  await page.getByTestId(SEARCHABLE_MULTI_SELECT_IDS.option('אבי כהן')).click();
+
+  await expect(select).toContainText('אבי כהן');
+});
+
+test('deleting a section from the section menu removes it from the tree', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  const sectionBody = page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-1'));
+  await expect(sectionBody).toBeVisible();
+
+  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')).click();
+  await page.getByTestId(SECTION_MENU_IDS.deleteAction).click();
+
+  await expect(sectionBody).toHaveCount(0);
 });

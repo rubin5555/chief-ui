@@ -1,9 +1,10 @@
-import { Lock, Paperclip } from 'lucide-react';
+import { EyeOff, Lock, Paperclip } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ContentEditor } from '@/components/ui/ContentEditor';
 import { useDebounce } from '@/hooks/useDebounce';
-import type { SectionMeta } from '../../types';
+import type { NodePermissions, SectionMeta } from '../../types';
 import { SectionChat } from '../SectionChat';
+import { SectionMenu } from '../SectionMenu';
 import {
   AttachmentChip,
   AttachmentChips,
@@ -12,6 +13,7 @@ import {
   HeadingIndex,
   HeadingRow,
   HeadingTitle,
+  HiddenNotice,
   SectionBlock,
   StatusBadge,
 } from './EditableSectionBody.styles';
@@ -23,8 +25,14 @@ export interface EditableSectionBodyProps {
   index: string;
   title: string;
   content: string;
-  meta?: SectionMeta;
+  meta: SectionMeta;
+  permissions: NodePermissions;
   onContentChange: (content: string) => void;
+  onChangePermissions: (role: 'approvers' | 'editors', value: string[]) => void;
+  onToggleHidden: () => void;
+  onToggleClassified: () => void;
+  onChangeClassificationViewers: (ids: string[]) => void;
+  onDelete: () => void;
 }
 
 const PLACEHOLDER: Record<EditableSectionBodyProps['depth'], string> = {
@@ -39,8 +47,7 @@ const MIN_HEIGHT: Record<EditableSectionBodyProps['depth'], number> = {
 
 // One component covering what main's Edit.tsx duplicated 3x (topic/section/
 // sub-section content blocks; subjects are headings only in dev's tree
-// model, so this covers section/subSection). Classified content stays a
-// static notice for now — real access-gated editing lands in Phase 5.
+// model, so this covers section/subSection).
 export const EditableSectionBody = ({
   id,
   depth,
@@ -48,10 +55,16 @@ export const EditableSectionBody = ({
   title,
   content,
   meta,
+  permissions,
   onContentChange,
+  onChangePermissions,
+  onToggleHidden,
+  onToggleClassified,
+  onChangeClassificationViewers,
+  onDelete,
 }: EditableSectionBodyProps) => {
   const isMuted = depth === 'subSection';
-  const isClassified = Boolean(meta?.classification.level);
+  const isClassified = meta.classification.level !== null;
 
   // ContentEditor stays fully responsive on every keystroke; only the
   // outward tree mutation (which re-renders the whole canvas) is debounced,
@@ -72,19 +85,34 @@ export const EditableSectionBody = ({
       <HeadingRow>
         <HeadingIndex $muted={isMuted}>{index}</HeadingIndex>
         <HeadingTitle $muted={isMuted}>{title}</HeadingTitle>
-        {meta && (
-          <StatusBadge
-            $status={meta.status}
-            data-testid={EDITABLE_SECTION_BODY_IDS.statusBadge(id)}
-          />
-        )}
+        <StatusBadge
+          $status={meta.status}
+          data-testid={EDITABLE_SECTION_BODY_IDS.statusBadge(id)}
+        />
         <SectionChat sectionId={id} title={title || 'סעיף ללא שם'} />
+        <SectionMenu
+          sectionId={id}
+          permissions={permissions}
+          isHidden={meta.hidden}
+          classificationLevel={meta.classification.level}
+          classificationViewerIds={meta.classification.viewerIds}
+          onChangePermissions={onChangePermissions}
+          onToggleHidden={onToggleHidden}
+          onToggleClassified={onToggleClassified}
+          onChangeClassificationViewers={onChangeClassificationViewers}
+          onDelete={onDelete}
+        />
       </HeadingRow>
 
-      {isClassified ? (
+      {meta.hidden ? (
+        <HiddenNotice>
+          <EyeOff size={14} />
+          סעיף מוסתר
+        </HiddenNotice>
+      ) : isClassified ? (
         <ClassifiedBox>
           <Lock size={14} />
-          תוכן ממודר — {meta?.classification.level}
+          תוכן ממודר — {meta.classification.level}
         </ClassifiedBox>
       ) : (
         <div data-testid={EDITABLE_SECTION_BODY_IDS.content(id)}>
@@ -98,7 +126,7 @@ export const EditableSectionBody = ({
         </div>
       )}
 
-      {meta && meta.footnotes.length > 0 && (
+      {meta.footnotes.length > 0 && (
         <FootnoteList>
           {meta.footnotes.map((footnote, footnoteIndex) => (
             <li key={footnoteIndex}>{footnote}</li>
@@ -106,7 +134,7 @@ export const EditableSectionBody = ({
         </FootnoteList>
       )}
 
-      {meta && meta.attachments.length > 0 && (
+      {meta.attachments.length > 0 && (
         <AttachmentChips>
           {meta.attachments.map((attachment) => (
             <AttachmentChip key={attachment.id}>

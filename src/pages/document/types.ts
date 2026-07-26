@@ -13,30 +13,24 @@ export interface AttachmentFile {
   size: number;
 }
 
-export interface SectionComment {
-  id: string;
-  authorId: string;
-  authorName: string;
-  text: string;
-  createdAt: string;
-}
-
 export interface SectionClassification {
   level: string | null;
   viewerIds: string[];
 }
 
 // Extra per-node data main's Edit.tsx keeps that useDocumentTree's generic
-// Section/SubSection doesn't carry (status, classification, attachments,
-// footnotes, comments, source-system origin). Kept as a parallel map keyed by
-// node id rather than widening Subject/Section/SubSection themselves, since
-// TemplateModal also depends on that hook's shape staying generic.
+// Section/SubSection doesn't carry (status, hidden, classification,
+// attachments, footnotes, source-system origin). Kept as a parallel map keyed
+// by node id rather than widening Subject/Section/SubSection themselves,
+// since TemplateModal also depends on that hook's shape staying generic.
+// Comments are handled separately via src/api/comments.ts (SectionChat), not
+// through this map.
 export interface SectionMeta {
   status: SectionStatus;
+  hidden: boolean;
   classification: SectionClassification;
   attachments: AttachmentFile[];
   footnotes: string[];
-  comments: SectionComment[];
   sourceSystem?: string;
 }
 
@@ -44,10 +38,10 @@ export type SectionMetaMap = Record<string, SectionMeta>;
 
 export const emptySectionMeta = (): SectionMeta => ({
   status: 'idle',
+  hidden: false,
   classification: { level: null, viewerIds: [] },
   attachments: [],
   footnotes: [],
-  comments: [],
 });
 
 export interface DocumentHeader {

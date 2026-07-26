@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 import type { DocItem } from '@/modals/MailingListModal';
-import type { DocumentDto, SectionMetaMap } from '@/pages/document/types';
+import { type DocumentDto, emptySectionMeta, type SectionMetaMap } from '@/pages/document/types';
 import { useApiMutation, useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
@@ -219,48 +219,12 @@ export const useUpdateDocument = () =>
   );
 
 const DOCUMENT_SECTION_META: SectionMetaMap = {
-  s1: {
-    status: 'approved',
-    classification: { level: null, viewerIds: [] },
-    attachments: [],
-    footnotes: [],
-    comments: [],
-  },
-  s2: {
-    status: 'approved',
-    classification: { level: null, viewerIds: [] },
-    attachments: [],
-    footnotes: [],
-    comments: [],
-  },
-  s3: {
-    status: 'fix',
-    classification: { level: null, viewerIds: [] },
-    attachments: [],
-    footnotes: [],
-    comments: [],
-  },
-  s4: {
-    status: 'pending',
-    classification: { level: null, viewerIds: [] },
-    attachments: [],
-    footnotes: [],
-    comments: [],
-  },
-  s5: {
-    status: 'editing',
-    classification: { level: null, viewerIds: [] },
-    attachments: [],
-    footnotes: [],
-    comments: [],
-  },
-  s6: {
-    status: 'editing',
-    classification: { level: null, viewerIds: [] },
-    attachments: [],
-    footnotes: [],
-    comments: [],
-  },
+  s1: { ...emptySectionMeta(), status: 'approved' },
+  s2: { ...emptySectionMeta(), status: 'approved' },
+  s3: { ...emptySectionMeta(), status: 'fix' },
+  s4: { ...emptySectionMeta(), status: 'pending' },
+  s5: { ...emptySectionMeta(), status: 'editing' },
+  s6: { ...emptySectionMeta(), status: 'editing' },
 };
 
 const emptyPermissions = () => ({ approvers: [], editors: [] });
