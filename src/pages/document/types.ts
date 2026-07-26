@@ -18,6 +18,8 @@ export interface SectionClassification {
   viewerIds: string[];
 }
 
+export const DEFAULT_CLASSIFICATION_LEVEL = 'בלמ"ס';
+
 // Extra per-node data main's Edit.tsx keeps that useDocumentTree's generic
 // Section/SubSection doesn't carry (status, hidden, classification,
 // attachments, footnotes, source-system origin). Kept as a parallel map keyed

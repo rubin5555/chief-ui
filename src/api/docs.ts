@@ -376,3 +376,106 @@ registerStub('UpdateDocument', (variables): UpdateDocumentResult => {
   Object.assign(DOCUMENT_FALLBACK, input);
   return { updateDocument: DOCUMENT_FALLBACK };
 });
+
+// --- Import (Phase 7): pick sections from another document to copy in ---
+
+export interface ImportDocItem {
+  id: string;
+  name: string;
+  org: string;
+  date: string;
+  status: string;
+}
+
+export const GET_IMPORT_DOCS_QUERY = gql`
+  query GetImportDocs {
+    importDocs {
+      drafts {
+        id
+        name
+        org
+        date
+        status
+      }
+      distributed {
+        id
+        name
+        org
+        date
+        status
+      }
+    }
+  }
+`;
+
+export interface GetImportDocsResult {
+  importDocs: { drafts: ImportDocItem[]; distributed: ImportDocItem[] };
+}
+
+export const useImportDocs = () =>
+  useApiQuery(GET_IMPORT_DOCS_QUERY, (result: GetImportDocsResult) => result.importDocs);
+
+// ponytail: no backend/resolver yet — registered on stubLink, seeded from the
+// same IMPORT_DOCS mock main's Edit.tsx ImportDocModal used. Delete this
+// registration once GetImportDocs has a real resolver; call sites don't change.
+export const IMPORT_DOCS_FALLBACK: GetImportDocsResult = {
+  importDocs: {
+    drafts: [
+      { id: 'id1', name: 'נוהל בטיחות 2026', org: 'ארגון א׳', date: '10/05/2026', status: 'טיוטה' },
+      { id: 'id2', name: 'נוהל גיוס עובדים', org: 'ארגון ב׳', date: '08/05/2026', status: 'בהכנה' },
+      { id: 'id3', name: 'תקנון משמעת', org: 'ארגון א׳', date: '05/05/2026', status: 'טיוטה' },
+    ],
+    distributed: [
+      {
+        id: 'pd1',
+        name: 'פקודה 42/2025 – נהלי בטיחות',
+        org: 'ארגון א׳',
+        date: '01/03/2026',
+        status: 'הופץ',
+      },
+      {
+        id: 'pd2',
+        name: 'פקודה 38/2025 – גיוס ושיבוץ',
+        org: 'ארגון ב׳',
+        date: '15/02/2026',
+        status: 'הופץ',
+      },
+    ],
+  },
+};
+
+registerStub('GetImportDocs', (): GetImportDocsResult => IMPORT_DOCS_FALLBACK);
+
+export const GET_IMPORT_DOC_SECTIONS_QUERY = gql`
+  query GetImportDocSections($docId: ID!) {
+    importDocSections(docId: $docId)
+  }
+`;
+
+export interface GetImportDocSectionsResult {
+  importDocSections: string[];
+}
+
+export interface GetImportDocSectionsVariables {
+  docId: string;
+}
+
+export const useImportDocSections = (docId: string) =>
+  useApiQuery<GetImportDocSectionsResult, string[], GetImportDocSectionsVariables>(
+    GET_IMPORT_DOC_SECTIONS_QUERY,
+    (result) => result.importDocSections,
+    { docId },
+  );
+
+const IMPORT_DOC_SECTIONS_FALLBACK: Record<string, string[]> = {
+  id1: ['מטרת הנוהל', 'תחולה', 'אחריות ותפקידים'],
+  id2: ['שלבי הגיוס', 'ראיונות', 'קליטה'],
+  id3: ['הפרות משמעת', 'הליך בירור', 'סנקציות'],
+  pd1: ['רקע', 'הוראות בטיחות כלליות', 'ציוד מגן'],
+  pd2: ['מכסות גיוס', 'שיבוץ ליחידות'],
+};
+
+registerStub('GetImportDocSections', (variables): GetImportDocSectionsResult => {
+  const { docId } = variables as unknown as GetImportDocSectionsVariables;
+  return { importDocSections: IMPORT_DOC_SECTIONS_FALLBACK[docId] ?? [] };
+});

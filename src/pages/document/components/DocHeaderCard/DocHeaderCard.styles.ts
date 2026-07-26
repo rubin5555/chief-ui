@@ -20,6 +20,7 @@ export const TitleRow = styled.div`
 `;
 
 export const Title = styled.h1`
+	flex: 1;
 	margin: 0;
 	font-size: 18px;
 	font-weight: 700;
@@ -34,6 +35,22 @@ export const ClassificationChip = styled.span`
 	color: ${colors.danger};
 	font-size: 12px;
 	font-weight: 700;
+`;
+
+export const EditBtn = styled.button`
+	display: flex;
+	flex-shrink: 0;
+	padding: 6px;
+	border: none;
+	border-radius: ${radii.lg};
+	background: none;
+	color: ${gray[400]};
+	cursor: pointer;
+
+	&:hover {
+		background-color: ${gray[50]};
+		color: ${gray[600]};
+	}
 `;
 
 export const ChipRow = styled.div`
