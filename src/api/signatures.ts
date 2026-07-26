@@ -49,7 +49,11 @@ export const SIGNATURES_FALLBACK: GetSignaturesResult = {
       { id: 's2', name: 'חתימה קצרה להפצה', department: 'מחלקה ב׳' },
     ],
     personal: [{ id: 's3', name: 'חתימה אישית — ישראל ישראלי', department: 'מחלקה ג׳' }],
-    approver: [],
+    approver: [
+      { id: 's4', name: 'חתימה ראשית' },
+      { id: 's5', name: 'חתימה רשמית' },
+      { id: 's6', name: 'חתימת שדה' },
+    ],
   },
 };
 

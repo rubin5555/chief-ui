@@ -3,6 +3,7 @@ import { ContentEditorProvider, ContentEditorToolbar } from '@/components/ui/Con
 import { useDocumentTree } from '@/hooks/useDocumentTree';
 import type { DocumentDto, NodePermissions, SectionMeta, SectionMetaMap } from '../../types';
 import { emptySectionMeta } from '../../types';
+import { ApprovalWorkflow } from '../ApprovalWorkflow';
 import { DocHeaderCard } from '../DocHeaderCard';
 import { DocumentOutlineTree } from '../DocumentOutlineTree';
 import { EditableSectionBody } from '../EditableSectionBody';
@@ -26,6 +27,11 @@ const DEFAULT_CLASSIFICATION_LEVEL = 'בלמ"ס';
 // array from a render that ran before the document had loaded.
 export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
   const tree = useDocumentTree(data.subjects);
+
+  // Doc-level workflow status also isn't part of useDocumentTree — same
+  // local-override pattern as metaOverrides below, layered over the
+  // query's initial data.status.
+  const [status, setStatus] = useState(data.status);
 
   // status/hidden/classification/attachments/footnotes aren't part of
   // useDocumentTree's tree state (see src/pages/document/types.ts), so
@@ -103,7 +109,9 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
         <CanvasColumn data-testid={DOCUMENT_CANVAS_IDS.root}>
           <ContentEditorToolbar />
 
-          <DocHeaderCard header={data.header} status={data.status} />
+          <DocHeaderCard header={data.header} status={status} />
+
+          <ApprovalWorkflow docName={data.header.name} status={status} onStatusChange={setStatus} />
 
           {tree.subjects.map((subject, subjectIndex) => (
             <SubjectSection key={subject.id} data-testid={DOCUMENT_CANVAS_IDS.subject(subject.id)}>
