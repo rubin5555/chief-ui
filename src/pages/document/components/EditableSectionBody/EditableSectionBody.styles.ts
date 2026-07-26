@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, gray, radii, transitions } from '@/styles/theme';
+import { colors, gray, radii } from '@/styles/theme';
 import type { SectionStatus } from '../../types';
 
 export const SectionBlock = styled.div<{ $depth: 'section' | 'subSection' }>`
@@ -45,20 +45,6 @@ export const StatusBadge = styled.span<{ $status: SectionStatus }>`
 	height: 8px;
 	border-radius: ${radii.full};
 	background-color: ${(props) => STATUS_COLOR[props.$status]};
-`;
-
-export const ContentPreview = styled.div<{ $isEmpty?: boolean }>`
-	min-height: 24px;
-	padding: 6px 8px;
-	border-radius: ${radii.lg};
-	font-size: 14px;
-	line-height: 1.6;
-	color: ${(props) => (props.$isEmpty ? gray[400] : gray[800])};
-	transition: background-color ${transitions.fast};
-
-	&:hover {
-		background-color: ${gray[50]};
-	}
 `;
 
 export const ClassifiedBox = styled.div`

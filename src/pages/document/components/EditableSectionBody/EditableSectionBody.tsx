@@ -1,10 +1,12 @@
 import { Lock, Paperclip } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ContentEditor } from '@/components/ui/ContentEditor';
+import { useDebounce } from '@/hooks/useDebounce';
 import type { SectionMeta } from '../../types';
 import {
   AttachmentChip,
   AttachmentChips,
   ClassifiedBox,
-  ContentPreview,
   FootnoteList,
   HeadingIndex,
   HeadingRow,
@@ -21,13 +23,23 @@ export interface EditableSectionBodyProps {
   title: string;
   content: string;
   meta?: SectionMeta;
+  onContentChange: (content: string) => void;
 }
 
-// Read-only render for Phase 1 — one component covering what main's Edit.tsx
-// duplicated 3x (topic/section/sub-section content blocks; subjects are
-// headings only in dev's tree model, so this covers section/subSection).
-// Phase 2 swaps ContentPreview's dangerouslySetInnerHTML for a mounted
-// <ContentEditor>.
+const PLACEHOLDER: Record<EditableSectionBodyProps['depth'], string> = {
+  section: 'תוכן הסעיף...',
+  subSection: 'תוכן תת הסעיף...',
+};
+
+const MIN_HEIGHT: Record<EditableSectionBodyProps['depth'], number> = {
+  section: 60,
+  subSection: 50,
+};
+
+// One component covering what main's Edit.tsx duplicated 3x (topic/section/
+// sub-section content blocks; subjects are headings only in dev's tree
+// model, so this covers section/subSection). Classified content stays a
+// static notice for now — real access-gated editing lands in Phase 5.
 export const EditableSectionBody = ({
   id,
   depth,
@@ -35,9 +47,24 @@ export const EditableSectionBody = ({
   title,
   content,
   meta,
+  onContentChange,
 }: EditableSectionBodyProps) => {
   const isMuted = depth === 'subSection';
   const isClassified = Boolean(meta?.classification.level);
+
+  // ContentEditor stays fully responsive on every keystroke; only the
+  // outward tree mutation (which re-renders the whole canvas) is debounced,
+  // per .claude/skills/react-engineering.md's "Input-Driven Action
+  // Debouncing" recipe.
+  const [draft, setDraft] = useState(content);
+  const debouncedDraft = useDebounce(draft, 300);
+
+  // Only re-fire when the debounced draft itself changes; content/
+  // onContentChange are read, not depended on.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment above
+  useEffect(() => {
+    if (debouncedDraft !== content) onContentChange(debouncedDraft);
+  }, [debouncedDraft]);
 
   return (
     <SectionBlock $depth={depth} data-testid={EDITABLE_SECTION_BODY_IDS.root(id)}>
@@ -58,11 +85,15 @@ export const EditableSectionBody = ({
           תוכן ממודר — {meta?.classification.level}
         </ClassifiedBox>
       ) : (
-        <ContentPreview
-          $isEmpty={!content}
-          data-testid={EDITABLE_SECTION_BODY_IDS.content(id)}
-          dangerouslySetInnerHTML={{ __html: content || 'ללא תוכן' }}
-        />
+        <div data-testid={EDITABLE_SECTION_BODY_IDS.content(id)}>
+          <ContentEditor
+            id={id}
+            value={draft}
+            onChange={setDraft}
+            placeholder={PLACEHOLDER[depth]}
+            minHeight={MIN_HEIGHT[depth]}
+          />
+        </div>
       )}
 
       {meta && meta.footnotes.length > 0 && (
