@@ -9,7 +9,7 @@ import {
   Eye, Send, Copy, Trash2, Archive, X, Download, RotateCcw, ChevronDown, Filter, Plus, FileText,
   FileEdit, RefreshCw, Hash, XCircle, Shield, FolderPlus, Bookmark, GitBranch,
   Link, Link2, Monitor, Share2, Calendar, ChevronUp,
-  Loader2, Check, Users, UserPlus, AlertTriangle,
+  Loader2, Check, Users, UserPlus, AlertTriangle, SlidersHorizontal, Info,
 } from 'lucide-react';
 
 const TEMPLATES = ['פקודה', 'הוראה', 'מסמך', 'נספח'];
@@ -1390,47 +1390,117 @@ function FSectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 /* ── Duplicate search modal ── */
+const EXPIRED_TEMPLATE_IDS = new Set(['d3', 'd6', 'd8']);
+
 function DuplicateSearchModal({ onSelect, onClose }: { onSelect: (doc: Doc) => void; onClose: () => void }) {
   const [q, setQ] = useState('');
-  const pool = [...DOCS.distributed, ...DOCS.archive];
+  const [tab, setTab] = useState<'drafts' | 'distributed'>('drafts');
+
+  const pool = tab === 'drafts' ? DOCS.drafts : DOCS.distributed;
   const visible = q.trim()
     ? pool.filter(d => d.name.includes(q.trim()) || d.orderNum.includes(q.trim()))
-    : pool.slice(0, 10);
+    : pool;
+
+  const tabLabels = [
+    { key: 'drafts' as const,      label: 'טיוטות' },
+    { key: 'distributed' as const, label: 'פקודות שהופצו' },
+  ];
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center"
-      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={onClose}>
-      <div className="bg-white rounded-3xl shadow-2xl w-[560px] max-w-[95vw] max-h-[80vh] flex flex-col"
+      style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(2px)' }} onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        style={{ width: '72vw', maxWidth: 900, height: '75vh' }}
         onClick={e => e.stopPropagation()} dir="rtl">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-xl text-gray-400 transition-colors">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+          <h2 className="text-base font-semibold text-gray-800">בחר מסמך לשכפול</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-400">
             <X className="w-4 h-4" />
           </button>
-          <h2 className="text-base font-bold text-gray-900">בחר מסמך לשכפול</h2>
         </div>
-        <div className="px-6 py-3 border-b border-gray-100">
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-            <input value={q} onChange={e => setQ(e.target.value)} autoFocus
-              placeholder="חיפוש לפי שם מסמך, מספר פקודה..."
-              className="w-full pr-10 pl-3 py-2.5 text-sm rounded-xl border border-gray-200 focus:outline-none focus:border-[#1B3A6B]/40 text-right" />
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto px-4 py-2">
-          {visible.map(doc => (
-            <button key={doc.id} onClick={() => onSelect(doc)}
-              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 transition-colors text-right">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{doc.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{doc.orderNum} · {doc.dept} · {doc.env}</p>
-              </div>
-              <StatusBadge status={doc.status} />
+
+        {/* Tabs */}
+        <div className="flex-shrink-0 flex items-center gap-1 px-6 pt-2 border-b border-gray-100">
+          {tabLabels.map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className="relative px-4 py-2 text-sm transition-colors focus:outline-none"
+              style={{ color: tab === t.key ? '#111827' : '#9ca3af', fontWeight: tab === t.key ? 600 : 400 }}>
+              {t.label}
+              {tab === t.key && (
+                <span className="absolute bottom-0 right-4 left-4 h-[2px] rounded-full" style={{ background: '#111827' }} />
+              )}
             </button>
           ))}
-          {visible.length === 0 && (
-            <div className="py-10 text-center text-sm text-gray-400">לא נמצאו מסמכים</div>
-          )}
         </div>
+
+        {/* Search + filter */}
+        <div className="flex-shrink-0 px-6 py-3 border-b border-gray-100">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-full"
+            style={{ background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)' }}>
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <input value={q} onChange={e => setQ(e.target.value)} autoFocus
+                placeholder="חיפוש לפי שם, מספר פקודה..."
+                className="w-full pr-9 pl-3 py-1 text-sm text-right focus:outline-none bg-transparent" dir="rtl" />
+            </div>
+            <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
+            <button className="flex items-center p-1 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
+              <Filter className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="flex-1 flex flex-col overflow-hidden px-6 py-4">
+          <div className="flex-1 flex flex-col rounded-2xl overflow-hidden bg-white"
+            style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)' }}>
+            <div className="flex-shrink-0 grid items-center px-6 py-3 text-xs font-semibold"
+              style={{ background: '#EBEBEB', color: '#6b7280', gridTemplateColumns: '3fr 1fr 1fr 1fr', columnGap: '1rem' }}>
+              <span className="text-right">שם המסמך</span>
+              <span className="text-center">ארגון</span>
+              <span className="text-center">תאריך</span>
+              <span className="text-right">סטטוס</span>
+            </div>
+            <div className="flex-1 overflow-y-auto px-2">
+              {visible.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-32 text-gray-400">
+                  <Search className="w-6 h-6 mb-2 opacity-40" />
+                  <p className="text-sm">לא נמצאו מסמכים</p>
+                </div>
+              ) : visible.map(doc => {
+                const s = STATUS_STYLE[doc.status] ?? { color: '#94a3b8' };
+                const isExpired = EXPIRED_TEMPLATE_IDS.has(doc.id);
+                return (
+                  <div key={doc.id} onClick={() => onSelect(doc)}
+                    className="grid items-center px-4 py-3 rounded-xl cursor-pointer transition-colors hover:bg-gray-50"
+                    style={{ borderBottom: '1px solid #f5f5f5', gridTemplateColumns: '3fr 1fr 1fr 1fr', columnGap: '1rem' }}>
+                    <span className="flex items-center gap-2 min-w-0 text-sm font-medium text-gray-800">
+                      <span className="truncate flex-1 text-right">{doc.name}</span>
+                      {isExpired && (
+                        <span className="relative group/warn flex-shrink-0">
+                          <AlertTriangle className="w-4 h-4" style={{ color: '#C2762A' }} />
+                          <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-xl px-3 py-2 text-xs text-white opacity-0 group-hover/warn:opacity-100 transition-opacity z-50 text-center leading-relaxed"
+                            style={{ background: 'rgba(30,30,30,0.92)', backdropFilter: 'blur(6px)' }}>
+                            תבנית של מסמך זה לא בתוקף, צור חדש באיזור אישי
+                          </span>
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-center text-xs text-gray-500">{doc.env}</span>
+                    <span className="text-center text-xs text-gray-500">{doc.effectiveDate}</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
+                      <span className="text-sm text-gray-700">{doc.status}</span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
@@ -1668,6 +1738,97 @@ function NewDocDropdown({ onNew, onDuplicate }: { onNew: () => void; onDuplicate
   );
 }
 
+/* ── Distribution Info Modal ── */
+const MOCK_DIST_USERS = [
+  { id: '123456789', name: 'כהן דוד', env: 'אמ״ן' },
+  { id: '987654321', name: 'לוי יוסף', env: 'חיל השריון' },
+  { id: '456789123', name: 'גולן אריאל', env: 'חיל הרגלים' },
+  { id: '321654987', name: 'מזרחי נועם', env: 'חיל האוויר' },
+  { id: '654321987', name: 'ברוך מיכל', env: 'אמ״ן' },
+];
+
+function DistInfoModal({ doc, onClose }: { doc: Doc; onClose: () => void }) {
+  const statusColor = STATUS_STYLE[doc.status]?.color ?? '#6b7280';
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center"
+      style={{ background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(3px)' }}
+      onClick={onClose}>
+      <div dir="rtl" className="flex flex-col overflow-hidden"
+        style={{
+          width: 460, maxHeight: '82vh',
+          background: 'rgba(255,255,255,0.96)',
+          backdropFilter: 'blur(20px) saturate(1.4)',
+          borderRadius: 20,
+          boxShadow: '0 24px 64px rgba(15,23,42,0.22)',
+        }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 flex-shrink-0">
+          <div className="flex flex-col gap-1 min-w-0">
+            <span className="text-base font-bold" style={{ color: '#1B3A6B' }}>פרטי הפצה</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-gray-800 truncate max-w-[200px]">{doc.name}</span>
+              <span className="text-gray-300 text-xs">|</span>
+              <span className="inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: statusColor }} />
+                <span className="text-xs font-medium text-gray-800">{doc.status}</span>
+              </span>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100 transition-colors text-gray-400 flex-shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Distribution summary cards */}
+        <div className="px-5 pb-4 flex-shrink-0">
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: 'הופץ ע״י', value: 'דוד כהן', sub: 's1234567' },
+              { label: 'הופץ ב', value: '25/06/2026', sub: '11:18' },
+              { label: 'סה״כ נמענים', value: `${MOCK_DIST_USERS.length}`, sub: 'משתמשים' },
+            ].map(item => (
+              <div key={item.label} className="flex flex-col gap-0.5 rounded-2xl px-4 py-3"
+                style={{ background: '#F4F6FB' }}>
+                <span className="text-[10px] text-gray-800 font-medium">{item.label}</span>
+                <span className="text-sm font-bold" style={{ color: '#1B3A6B' }}>{item.value}</span>
+                <span className="text-[11px] text-gray-800">{item.sub}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: '#f0f0f0', marginInline: 20, flexShrink: 0 }} />
+
+        {/* User list */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          <span className="text-xs font-semibold text-gray-800 mb-3 block">רשימת משתמשים</span>
+          {/* Table header */}
+          <div className="grid px-3 py-2 text-xs font-semibold text-gray-800"
+            style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr', borderBottom: '1.5px solid #d1d5db' }}>
+            <span className="text-right">שם מלא</span>
+            <span className="text-center">תעודת זהות</span>
+            <span className="text-center">סביבה</span>
+          </div>
+          <div className="flex flex-col">
+            {MOCK_DIST_USERS.map((u, i) => (
+              <div key={u.id}
+                className="grid items-center px-3 py-3 transition-colors hover:bg-gray-50"
+                style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr', borderBottom: i < MOCK_DIST_USERS.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
+                <span className="text-sm font-semibold text-gray-800 text-right">{u.name}</span>
+                <span className="text-sm text-gray-800 text-center tabular-nums">{u.id}</span>
+                <span className="text-sm text-gray-800 text-center">{u.env}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Trash catalog ── */
 function TrashCatalog({ onBack }: { onBack: () => void }) {
   const [search, setSearch] = useState('');
@@ -1810,6 +1971,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash, fold
   const [page, setPage] = useState(1);
   const [distSubFilter, setDistSubFilter] = useState<string>('כל המסמכים');
   const [historyDoc, setHistoryDoc] = useState<Doc | null>(null);
+  const [distInfoDoc, setDistInfoDoc] = useState<Doc | null>(null);
   const [menuRow, setMenuRow] = useState<{ doc: Doc; x: number; y: number; flipped: boolean } | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const menuRef = useRef<HTMLDivElement>(null);
@@ -2160,6 +2322,11 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash, fold
                       ) : <span />;
                   })()}
                   <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={e => { e.stopPropagation(); setDistInfoDoc(doc); }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                      title="פרטי הפצה">
+                      <Info className="w-3.5 h-3.5" />
+                    </button>
                     <button onClick={e => { e.stopPropagation(); setHistoryDoc(doc); }}
                       className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                       title="היסטוריית גרסאות">
@@ -2256,6 +2423,9 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash, fold
 
       {/* History modal */}
       {historyDoc && <HistoryModal doc={historyDoc} onClose={() => setHistoryDoc(null)} />}
+
+      {/* Distribution info modal */}
+      {distInfoDoc && <DistInfoModal doc={distInfoDoc} onClose={() => setDistInfoDoc(null)} />}
 
       {/* Row action modals */}
       {catalogModal?.type === 'edit' && <CatalogDocModal doc={catalogModal.doc} mode="edit" onClose={() => setCatalogModal(null)} />}

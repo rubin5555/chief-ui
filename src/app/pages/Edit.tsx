@@ -14,7 +14,7 @@ import {
   FolderPlus, FileInput, Lightbulb, Check,
   Search, SlidersHorizontal, ArrowRight, ArrowUp, ArrowDown, ArrowLeft,
   TableCellsMerge, TableCellsSplit, SplitSquareVertical, SplitSquareHorizontal, Settings, Settings2,
-  Clock, CheckCircle2, AlertCircle, PenLine, Minus, GripHorizontal, Copy, MessageSquareOff, Loader2, RefreshCw,
+  Clock, CheckCircle2, AlertCircle, AlertTriangle, PenLine, Minus, GripHorizontal, Copy, MessageSquareOff, Loader2, RefreshCw,
   CalendarDays,
 } from 'lucide-react';
 import type { EditDocInfo } from '../../App';
@@ -3199,6 +3199,9 @@ export function Edit({ navigate, doc }: EditProps) {
   const [addMenu, setAddMenu] = useState<{ x: number; y: number } | null>(null);
   const [restoreOpen, setRestoreOpen] = useState(false);
   const [sections, setSections] = useState<Section[]>(MOCK_SECTIONS);
+  const [changedSections, setChangedSections] = useState<Set<string>>(new Set());
+  const [revertedSections, setRevertedSections] = useState<Set<string>>(new Set());
+  const [confirmSaveId, setConfirmSaveId] = useState<string | null>(null);
   const [signatures, setSignatures] = useState<string[]>(['']);
   const [showSignatureTemplates, setShowSignatureTemplates] = useState(false);
   const [docZoom, setDocZoom] = useState(100);
@@ -3326,12 +3329,14 @@ export function Edit({ navigate, doc }: EditProps) {
   const updateSectionContent = (topicId: string, childId: string, content: string) => {
     setSections(prev => prev.map(s => s.id === topicId ? { ...s, children: s.children!.map(c => c.id === childId ? { ...c, content } : c) } : s));
     pushToHistory(childId, content);
+    setChangedSections(prev => new Set(prev).add(childId));
   };
   const updateSubTitle = (topicId: string, childId: string, subId: string, title: string) =>
     setSections(prev => prev.map(s => s.id === topicId ? { ...s, children: s.children!.map(c => c.id === childId ? { ...c, children: c.children!.map(sb => sb.id === subId ? { ...sb, title } : sb) } : c) } : s));
   const updateSubContent = (topicId: string, childId: string, subId: string, content: string) => {
     setSections(prev => prev.map(s => s.id === topicId ? { ...s, children: s.children!.map(c => c.id === childId ? { ...c, children: c.children!.map(sb => sb.id === subId ? { ...sb, content } : sb) } : c) } : s));
     pushToHistory(subId, content);
+    setChangedSections(prev => new Set(prev).add(subId));
   };
 
   const pushToHistory = (id: string, content: string) => {
@@ -3683,6 +3688,42 @@ export function Edit({ navigate, doc }: EditProps) {
         onIssueNew={() => setShowIssueNewModal(true)}
         onStartComparison={(v) => { setComparisonVersionLabel(v.label); setComparisonNavIndex(1); setComparisonMode(true); }} />
       {showFilterPanel && <FilterPanel onClose={closeFilterPanel} appliedFilters={activeFilters} onApply={setActiveFilters} />}
+
+      {/* Confirm save-as-latest modal */}
+      {confirmSaveId !== null && (
+        <div
+          className="fixed inset-0 flex items-center justify-center"
+          style={{ zIndex: 99999, background: 'rgba(15,23,42,0.35)', backdropFilter: 'blur(3px)' }}
+          onClick={() => setConfirmSaveId(null)}>
+          <div
+            dir="rtl"
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              borderRadius: 24,
+              boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+              padding: '36px 32px 28px',
+              width: 380,
+              textAlign: 'center',
+            }}>
+            <p style={{ fontSize: 18, fontWeight: 700, color: '#111827', lineHeight: 1.5, marginBottom: 10 }}>
+              בטוח שתרצה להפוך גרסה זו לעדכנית?
+            </p>
+            <div className="flex items-center gap-3" style={{ direction: 'rtl', marginTop: 28 }}>
+              <button
+                onClick={() => setConfirmSaveId(null)}
+                style={{ flex: 1, fontSize: 15, fontWeight: 500, padding: '13px 0', borderRadius: 50, background: '#fff', color: '#374151', border: '1.5px solid #e5e7eb', cursor: 'pointer' }}>
+                ביטול
+              </button>
+              <button
+                onClick={() => { const id = confirmSaveId; setConfirmSaveId(null); setRevertedSections(prev => { const n = new Set(prev); n.delete(id); return n; }); setChangedSections(prev => { const n = new Set(prev); n.delete(id); return n; }); }}
+                style={{ flex: 1, fontSize: 15, fontWeight: 600, padding: '13px 0', borderRadius: 50, background: '#1B3A6B', color: '#fff', border: 'none', cursor: 'pointer' }}>
+                אישור
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Doc metadata pill — 1cm wider than A4 on each side */}
       <div style={{ width: '100%', flexShrink: 0, zIndex: 21, paddingBottom: 6, paddingTop: 6, paddingRight: 256, display: 'flex', justifyContent: 'center' }}>
@@ -4455,9 +4496,44 @@ export function Edit({ navigate, doc }: EditProps) {
                             </span>
                           )}
                           <div className="flex items-center gap-0.5" style={{ flexShrink: 0 }}>
-                            {!isReadOnly && <span style={{ fontSize: 9, color: '#6b7280', marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap', letterSpacing: 0 }}>
-                              עודכן ב‏25-06-2026 11:18 ע״י s2345678
-                            </span>}
+                            {!isReadOnly && revertedSections.has(child.id) && (
+                              <button
+                                title="שמור גרסה זו כעדכנית"
+                                style={{ flexShrink: 0 }}
+                                onClick={e => { e.stopPropagation(); setConfirmSaveId(prev => prev === child.id ? null : child.id); }}
+                                className="p-1 rounded transition-colors text-[#1B3A6B] hover:bg-blue-50 cursor-pointer">
+                                <Save className="w-3 h-3" />
+                              </button>
+                            )}
+                            {!isReadOnly && (
+                              <span style={{ fontSize: 9, marginLeft: 6, marginRight: 2, whiteSpace: 'nowrap', letterSpacing: 0,
+                                color: revertedSections.has(child.id) ? '#92400e' : '#6b7280',
+                                fontWeight: revertedSections.has(child.id) ? 600 : 400,
+                              }}>
+                                {revertedSections.has(child.id)
+                                  ? <><strong style={{ fontWeight: 700 }}>שימו לב:</strong> יש גרסת עבר מעודכנת שעודכנה ב‏14-07-2026 11:55 ע״י s1234567</>
+                                  : 'עודכן ב‏25-06-2026 11:18 ע״י s2345678'
+                                }
+                              </span>
+                            )}
+                            {!isReadOnly && (
+                              <button
+                                title="קדמה לגרסה עדכנית"
+                                disabled={!revertedSections.has(child.id)}
+                                onClick={e => { e.stopPropagation(); handleRedo(child.id); setRevertedSections(prev => { const n = new Set(prev); n.delete(child.id); return n; }); setChangedSections(prev => new Set(prev).add(child.id)); }}
+                                className={`p-1 rounded transition-colors ${revertedSections.has(child.id) ? 'text-[#1B3A6B] hover:bg-blue-50 cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
+                                <Redo2 className="w-3 h-3" />
+                              </button>
+                            )}
+                            {!isReadOnly && (
+                              <button
+                                title="חזור לגרסה קודמת"
+                                disabled={!changedSections.has(child.id)}
+                                onClick={e => { e.stopPropagation(); handleUndo(child.id); setRevertedSections(prev => new Set(prev).add(child.id)); setChangedSections(prev => { const n = new Set(prev); n.delete(child.id); return n; }); }}
+                                className={`p-1 rounded transition-colors ${changedSections.has(child.id) ? 'text-[#1B3A6B] hover:bg-blue-50 cursor-pointer' : 'text-gray-200 cursor-not-allowed'}`}>
+                                <Undo2 className="w-3 h-3" />
+                              </button>
+                            )}
                             {!isReadOnly && (
                               <button
                                 title={SECTIONS_WITH_SOURCE.has(child.id) ? 'רענן נתונים ממערכת מקור' : 'אין מקור חיצוני מחובר'}
