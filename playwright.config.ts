@@ -34,7 +34,11 @@ export default defineConfig({
   // a green run against the wrong source.
   webServer: {
     command: 'pnpm dev',
-    env: { PORT: String(PORT) },
+    // E2E drops the router devtools from the page. Its floating toggle is pinned
+    // to a viewport corner, so it silently intercepts clicks on anything a
+    // popover puts there — which is a test failing on a widget that isn't part
+    // of the app under test.
+    env: { PORT: String(PORT), E2E: '1' },
     url: BASE_URL,
     reuseExistingServer: false,
     timeout: 120_000,

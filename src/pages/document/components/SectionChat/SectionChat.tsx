@@ -3,8 +3,8 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { type SectionCommentDto, useAddSectionComment, useSectionComments } from '@/api/comments';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { IconButtonBadge, IconButtonRoot } from '@/components/ui/IconButton';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
+import { ACTION_ICON_SIZE, ActionBtn, type ActionTone } from '../NodeActionRow';
 import {
   CloseBtn,
   EmptyState,
@@ -27,12 +27,25 @@ const PANEL_WIDTH = 260;
 export interface SectionChatProps {
   sectionId: string;
   title: string;
+  tone?: ActionTone;
+  /**
+   * Fired after a comment is posted. SectionBlock uses it to complete main's
+   * "send it back for changes" flow: the section flips to `fix` on the first
+   * message written after the request, so the reason and the status change are
+   * one act rather than two.
+   */
+  onMessageSent?: () => void;
 }
 
 // Owns its own trigger + popover (per .claude/skills/modal-placement.md's
 // "state and render must not be split" rule) and its own comment thread —
 // no page-level state for chat exists anywhere else.
-export const SectionChat = ({ sectionId, title }: SectionChatProps) => {
+export const SectionChat = ({
+  sectionId,
+  title,
+  tone = 'default',
+  onMessageSent,
+}: SectionChatProps) => {
   const panel = useFloatingPanel<HTMLButtonElement>();
   const { data } = useSectionComments(sectionId);
   const { mutate: addComment } = useAddSectionComment();
@@ -81,21 +94,26 @@ export const SectionChat = ({ sectionId, title }: SectionChatProps) => {
     if (sent) setSentComments((prev) => [...prev, sent]);
     setMessage('');
     setQuote('');
+    onMessageSent?.();
   };
 
   return (
     <>
-      <IconButtonRoot
+      {/* The row's own button, not IconButton: this sits inside NodeActionRow
+          between the paperclip and the 3-dots, and a different size or hover
+          would break the row apart visually. */}
+      <ActionBtn
         ref={panel.btnRef}
         type="button"
-        $isActive={panel.open}
+        $tone={tone}
+        $active={panel.open || comments.length > 0}
+        title="צאט"
         aria-label={`תגובות לסעיף ${title}`}
         data-testid={SECTION_CHAT_IDS.trigger(sectionId)}
         onClick={handleToggle}
       >
-        <MessageSquare size={14} />
-        {comments.length > 0 && <IconButtonBadge />}
-      </IconButtonRoot>
+        <MessageSquare size={ACTION_ICON_SIZE} aria-hidden="true" />
+      </ActionBtn>
 
       {panel.open && panel.pos && (
         <FloatingPanel

@@ -199,6 +199,17 @@ you'd rather they weren't:
 - **The emphasis card has no chat button.** main draws one there with no
   `onClick` behind it (`Edit.tsx:4187`); the card isn't a section, so there is no
   thread for it to open. Its attach button is live.
+- **`לתיקון` doesn't open the chat by itself.** main's button both arms the
+  section and opens its thread (`Edit.tsx:4611`), because chat state there is a
+  single page-level object. Here each thread owns its own open state — which is
+  what keeps it anchored to its own trigger — so opening one from a sibling would
+  mean a controlled-open API on the shared floating-panel hook, for one caller.
+  The coupling that matters is intact: the first message posted after `לתיקון`
+  is what moves the section to `דרוש תיקון`.
+- **Footnotes are added from the section menu.** main dispatches a global
+  `insert-footnote` event from its Word-style ribbon, which lives in `parity/`
+  and isn't wired to anything. The rendered footnotes are main's exactly; only
+  the way you ask for one differs.
 - **A leaf topic has no content box.** main gives a topic with no sections a body
   of its own (`Edit.tsx:4302`), which the tree model here can't hold — `Subject`
   has no `content` field, and adding one touches the hook `TemplateModal` shares.

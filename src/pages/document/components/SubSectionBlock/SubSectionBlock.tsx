@@ -5,6 +5,7 @@ import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import {
   type AttachmentFile,
   DEFAULT_CLASSIFICATION_LEVEL,
+  type Footnote,
   type NodePermissions,
   type SubSection,
 } from '../../types';
@@ -80,6 +81,17 @@ export const SubSectionBlock = ({
 
   const handleOpenAttachments = () => setAttachmentsOpen(true);
 
+  const handleFootnotesChange = (footnotes: Footnote[]) =>
+    overrides.patchMeta(subSection.id, { footnotes });
+
+  const handleAddFootnote = () =>
+    overrides.patchMeta(subSection.id, {
+      footnotes: [...meta.footnotes, { id: `footnote-${self.crypto.randomUUID()}`, text: '' }],
+    });
+
+  const handleInstructionsChange = (instructions: string) =>
+    overrides.patchMeta(subSection.id, { instructions });
+
   const marker = HE_ALPHA[index] ?? String(index + 1);
 
   return (
@@ -120,6 +132,8 @@ export const SubSectionBlock = ({
           options={
             <SectionMenu
               sectionId={subSection.id}
+              sectionTitle={subSection.title}
+              instructions={meta.instructions ?? ''}
               permissions={subSection.permissions}
               isHidden={meta.hidden}
               classificationLevel={meta.classification.level}
@@ -128,6 +142,8 @@ export const SubSectionBlock = ({
               onToggleHidden={handleToggleHidden}
               onToggleClassified={handleToggleClassified}
               onChangeClassificationViewers={handleChangeClassificationViewers}
+              onChangeInstructions={handleInstructionsChange}
+              onAddFootnote={handleAddFootnote}
               onDelete={handleDelete}
             />
           }
@@ -141,6 +157,8 @@ export const SubSectionBlock = ({
         meta={meta}
         onContentChange={handleContentChange}
         onOpenAttachments={handleOpenAttachments}
+        readOnly={readOnly}
+        onFootnotesChange={handleFootnotesChange}
       />
     </SubSectionRoot>
   );

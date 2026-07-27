@@ -95,6 +95,7 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
           overrides={overrides}
           trash={trash}
           readOnly={readOnly}
+          isDistributed={isDistributed}
           showEmphasis={showEmphasis}
         />
       </BodyRow>

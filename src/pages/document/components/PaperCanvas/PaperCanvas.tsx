@@ -18,6 +18,7 @@ export interface PaperCanvasProps {
   overrides: ReturnType<typeof useDocumentOverrides>;
   trash: ReturnType<typeof useDocumentTrash>;
   readOnly: boolean;
+  isDistributed: boolean;
   showEmphasis: boolean;
 }
 
@@ -33,6 +34,7 @@ export const PaperCanvas = ({
   overrides,
   trash,
   readOnly,
+  isDistributed,
   showEmphasis,
 }: PaperCanvasProps) => {
   const { zoom, statuses, q } = routeApi.useSearch();
@@ -72,6 +74,7 @@ export const PaperCanvas = ({
                 overrides={overrides}
                 trash={trash}
                 readOnly={readOnly}
+                isDistributed={isDistributed}
               />
             ))}
           </PaperInner>

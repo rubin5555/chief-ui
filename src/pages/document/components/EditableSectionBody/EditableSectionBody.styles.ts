@@ -36,13 +36,10 @@ export const ClassifiedBox = styled.div`
 	font-weight: 500;
 `;
 
-export const FootnoteList = styled.ol`
-	margin: 4px 0 0;
-	padding-inline-start: 18px;
-	font-size: 12px;
-	color: ${gray[600]};
-`;
-
+// Footnotes moved to components/FootnoteList, which renders them as main does:
+// editable rows under a short rule, marked with superscripts rather than as an
+// ordered list's own numbering.
+//
 // The attachment chips moved to AttachmentPicker/components/AttachmentChipList,
 // where they sit next to the dialog they open. They were grey pills here; main's
 // are navy text links, one per line (Edit.tsx:4586).

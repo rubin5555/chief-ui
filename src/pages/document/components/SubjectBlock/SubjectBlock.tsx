@@ -23,6 +23,7 @@ export interface SubjectBlockProps {
   overrides: ReturnType<typeof useDocumentOverrides>;
   trash: ReturnType<typeof useDocumentTrash>;
   readOnly: boolean;
+  isDistributed: boolean;
 }
 
 // One topic in the paper: its editable heading, then its sections.
@@ -41,6 +42,7 @@ export const SubjectBlock = ({
   overrides,
   trash,
   readOnly,
+  isDistributed,
 }: SubjectBlockProps) => {
   const handleTitleChange = (title: string) => tree.updateSubjectTitle(subject.id, title);
 
@@ -74,6 +76,7 @@ export const SubjectBlock = ({
             overrides={overrides}
             trash={trash}
             readOnly={readOnly}
+            isDistributed={isDistributed}
           />
         ),
       )}

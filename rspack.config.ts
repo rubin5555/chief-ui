@@ -58,6 +58,11 @@ export default defineConfig({
     ],
   },
   plugins: [
+    // Inlined so the client can tell it is under test. Only the router devtools
+    // read it — see src/routes/__root.tsx.
+    new rspack.DefinePlugin({
+      'process.env.E2E': JSON.stringify(process.env.E2E ?? ''),
+    }),
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     new rspack.HtmlRspackPlugin({ template: './public/index.html' }),
     ...(isDev ? [new ReactRefreshRspackPlugin(), new rspack.HotModuleReplacementPlugin()] : []),

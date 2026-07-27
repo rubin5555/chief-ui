@@ -5,6 +5,8 @@ export const SECTION_MENU_IDS = {
   editorsAction: 'section-menu-editors',
   toggleHiddenAction: 'section-menu-toggle-hidden',
   toggleClassifiedAction: 'section-menu-toggle-classified',
+  instructionsAction: 'section-menu-instructions',
+  addFootnoteAction: 'section-menu-add-footnote',
   deleteAction: 'section-menu-delete',
   backBtn: 'section-menu-back',
   permissionsSelect: 'section-menu-permissions-select',

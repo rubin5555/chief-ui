@@ -1,7 +1,9 @@
 import {
+  AlertCircle,
   ChevronRight,
   Eye,
   EyeOff,
+  FileText,
   Lock,
   MoreVertical,
   Trash2,
@@ -11,12 +13,12 @@ import {
 import { lazy, Suspense, useState } from 'react';
 import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { IconButtonRoot } from '@/components/ui/IconButton';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
 import type { UnderlineTab } from '@/components/ui/UnderlineTabs';
 import { UnderlineTabs } from '@/components/ui/UnderlineTabs';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import type { NodePermissions } from '../../types';
+import { ACTION_ICON_SIZE, type ActionTone, ActionBtn as RowActionBtn } from '../NodeActionRow';
 import {
   ActionBtn,
   ActionList,
@@ -31,6 +33,11 @@ import { SECTION_MENU_IDS } from './SectionMenu.testids';
 const ClassifiedViewersModal = lazy(() =>
   import('../ClassifiedViewersModal').then((m) => ({ default: m.ClassifiedViewersModal })),
 );
+const SectionInstructionsModal = lazy(() =>
+  import('./components/SectionInstructionsModal').then((m) => ({
+    default: m.SectionInstructionsModal,
+  })),
+);
 
 const PANEL_WIDTH = 220;
 
@@ -43,6 +50,9 @@ const ROLE_TABS: UnderlineTab[] = [
 
 export interface SectionMenuProps {
   sectionId: string;
+  sectionTitle: string;
+  instructions: string;
+  tone?: ActionTone;
   permissions: NodePermissions;
   isHidden: boolean;
   classificationLevel: string | null;
@@ -51,6 +61,8 @@ export interface SectionMenuProps {
   onToggleHidden: () => void;
   onToggleClassified: () => void;
   onChangeClassificationViewers: (ids: string[]) => void;
+  onChangeInstructions: (instructions: string) => void;
+  onAddFootnote: () => void;
   onDelete: () => void;
 }
 
@@ -60,6 +72,9 @@ export interface SectionMenuProps {
 // export capability yet to back them with.
 export const SectionMenu = ({
   sectionId,
+  sectionTitle,
+  instructions,
+  tone = 'default',
   permissions,
   isHidden,
   classificationLevel,
@@ -68,12 +83,15 @@ export const SectionMenu = ({
   onToggleHidden,
   onToggleClassified,
   onChangeClassificationViewers,
+  onChangeInstructions,
+  onAddFootnote,
   onDelete,
 }: SectionMenuProps) => {
   const panel = useFloatingPanel<HTMLButtonElement>();
   const [view, setView] = useState<'actions' | 'permissions'>('actions');
   const [activeRole, setActiveRole] = useState<PermissionRole>('approvers');
   const [showClassifiedViewers, setShowClassifiedViewers] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   const { data } = useNetworkPeople();
   const peopleNames = (data ?? NETWORK_PEOPLE_FALLBACK.networkPeople).map((person) => person.name);
 
@@ -105,6 +123,18 @@ export const SectionMenu = ({
     if (turningOn) setShowClassifiedViewers(true);
   };
 
+  const handleOpenInstructions = () => {
+    panel.close();
+    setShowInstructions(true);
+  };
+
+  const handleCloseInstructions = () => setShowInstructions(false);
+
+  const handleAddFootnote = () => {
+    onAddFootnote();
+    panel.close();
+  };
+
   const handleDelete = () => {
     onDelete();
     panel.close();
@@ -114,16 +144,20 @@ export const SectionMenu = ({
 
   return (
     <>
-      <IconButtonRoot
+      {/* NodeActionRow's own button — this is the last control on that row, and
+          has to match the ones before it. */}
+      <RowActionBtn
         ref={panel.btnRef}
         type="button"
-        $isActive={panel.open}
+        $tone={tone}
+        $active={panel.open}
+        title="אפשרויות"
         aria-label="אפשרויות סעיף"
         data-testid={SECTION_MENU_IDS.trigger(sectionId)}
         onClick={handleToggle}
       >
-        <MoreVertical size={14} />
-      </IconButtonRoot>
+        <MoreVertical size={ACTION_ICON_SIZE} aria-hidden="true" />
+      </RowActionBtn>
 
       {panel.open && panel.pos && (
         <FloatingPanel
@@ -170,6 +204,23 @@ export const SectionMenu = ({
               <Separator />
               <ActionBtn
                 type="button"
+                onClick={handleOpenInstructions}
+                data-testid={SECTION_MENU_IDS.instructionsAction}
+              >
+                <AlertCircle size={14} />
+                הנחיות לסעיף
+              </ActionBtn>
+              <ActionBtn
+                type="button"
+                onClick={handleAddFootnote}
+                data-testid={SECTION_MENU_IDS.addFootnoteAction}
+              >
+                <FileText size={14} />
+                הוספת הערת שוליים
+              </ActionBtn>
+              <Separator />
+              <ActionBtn
+                type="button"
                 $danger
                 onClick={handleDelete}
                 data-testid={SECTION_MENU_IDS.deleteAction}
@@ -203,15 +254,24 @@ export const SectionMenu = ({
         </FloatingPanel>
       )}
 
-      {showClassifiedViewers && (
-        <Suspense fallback={null}>
+      <Suspense fallback={null}>
+        {showClassifiedViewers && (
           <ClassifiedViewersModal
             selectedIds={classificationViewerIds}
             onChange={onChangeClassificationViewers}
             onClose={handleCloseClassifiedViewers}
           />
-        </Suspense>
-      )}
+        )}
+
+        {showInstructions && (
+          <SectionInstructionsModal
+            sectionTitle={sectionTitle}
+            instructions={instructions}
+            onSave={onChangeInstructions}
+            onClose={handleCloseInstructions}
+          />
+        )}
+      </Suspense>
     </>
   );
 };

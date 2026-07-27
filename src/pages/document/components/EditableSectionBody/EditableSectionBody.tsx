@@ -2,9 +2,10 @@ import { EyeOff, Lock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { ContentEditor } from '@/components/ui/ContentEditor';
 import { useDebounce } from '@/hooks/useDebounce';
-import type { SectionMeta } from '../../types';
+import type { Footnote, SectionMeta } from '../../types';
 import { AttachmentChipList } from '../AttachmentPicker';
-import { BodyRoot, ClassifiedBox, FootnoteList, HiddenNotice } from './EditableSectionBody.styles';
+import { FootnoteList } from './components/FootnoteList';
+import { BodyRoot, ClassifiedBox, HiddenNotice } from './EditableSectionBody.styles';
 import { EDITABLE_SECTION_BODY_IDS } from './EditableSectionBody.testids';
 
 export interface EditableSectionBodyProps {
@@ -15,6 +16,8 @@ export interface EditableSectionBodyProps {
   onContentChange: (content: string) => void;
   /** Opens the same dialog the node's paperclip does — the chips are a way in, not a second list. */
   onOpenAttachments: () => void;
+  readOnly: boolean;
+  onFootnotesChange: (footnotes: Footnote[]) => void;
 }
 
 const PLACEHOLDER: Record<EditableSectionBodyProps['depth'], string> = {
@@ -38,6 +41,8 @@ export const EditableSectionBody = ({
   meta,
   onContentChange,
   onOpenAttachments,
+  readOnly,
+  onFootnotesChange,
 }: EditableSectionBodyProps) => {
   const isClassified = meta.classification.level !== null;
 
@@ -98,13 +103,12 @@ export const EditableSectionBody = ({
         </div>
       )}
 
-      {meta.footnotes.length > 0 && (
-        <FootnoteList>
-          {meta.footnotes.map((footnote) => (
-            <li key={footnote.id}>{footnote.text}</li>
-          ))}
-        </FootnoteList>
-      )}
+      <FootnoteList
+        nodeId={id}
+        footnotes={meta.footnotes}
+        readOnly={readOnly}
+        onChange={onFootnotesChange}
+      />
 
       <AttachmentChipList nodeId={id} attachments={meta.attachments} onOpen={onOpenAttachments} />
     </BodyRoot>
