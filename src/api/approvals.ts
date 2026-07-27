@@ -90,3 +90,57 @@ export const HML_GROUPS_FALLBACK: GetHmlGroupsResult = {
 };
 
 registerStub('GetHmlGroups', (): GetHmlGroupsResult => HML_GROUPS_FALLBACK);
+
+// --- Approval round stages (the carousel's seed) ---
+
+export interface ApprovalStageDto {
+  rank: string;
+  users: string[];
+  status: 'pending' | 'waiting' | 'approved';
+  type: 'approver' | 'hml';
+}
+
+export const GET_APPROVAL_ROUND_STAGES_QUERY = gql`
+  query GetApprovalRoundStages($docId: ID!) {
+    approvalRoundStages(docId: $docId) {
+      rank
+      users
+      status
+      type
+    }
+  }
+`;
+
+export interface GetApprovalRoundStagesResult {
+  approvalRoundStages: ApprovalStageDto[];
+}
+
+export interface GetApprovalRoundStagesVariables {
+  docId: string;
+}
+
+export const useApprovalRoundStages = (docId: string) =>
+  useApiQuery<GetApprovalRoundStagesResult, ApprovalStageDto[], GetApprovalRoundStagesVariables>(
+    GET_APPROVAL_ROUND_STAGES_QUERY,
+    (result) => result.approvalRoundStages,
+    { docId },
+    !docId,
+  );
+
+// main's MOCK_ROUND_STAGES (Edit.tsx:2535-2540), verbatim — two approver ranks
+// followed by two חמ״ל stages, so the carousel opens on a populated round
+// rather than an empty one. A round the user configures through
+// ApprovalDetailsModal replaces this.
+export const APPROVAL_ROUND_STAGES_FALLBACK: GetApprovalRoundStagesResult = {
+  approvalRoundStages: [
+    { rank: 'סא״ל', users: ['כהן א.', 'לוי מ.'], status: 'pending', type: 'approver' },
+    { rank: 'אל״ם', users: ['גולן ד.'], status: 'waiting', type: 'approver' },
+    { rank: 'חמ״ל צפון', users: ['רנ"ג כהן א.', 'סמ"ר לוי מ.'], status: 'waiting', type: 'hml' },
+    { rank: 'חמ״ל דרום', users: ['סמ"ר גולן ד.', 'רנ"ג פרץ י.'], status: 'waiting', type: 'hml' },
+  ],
+};
+
+registerStub(
+  'GetApprovalRoundStages',
+  (): GetApprovalRoundStagesResult => APPROVAL_ROUND_STAGES_FALLBACK,
+);

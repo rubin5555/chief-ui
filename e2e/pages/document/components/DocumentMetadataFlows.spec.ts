@@ -6,6 +6,7 @@ import { FILTER_PANEL_IDS } from '../../../../src/pages/document/components/Filt
 import { IMPORT_DOC_MODAL_IDS } from '../../../../src/pages/document/components/ImportDocModal/ImportDocModal.testids';
 import { RESTORE_MODAL_IDS } from '../../../../src/pages/document/components/RestoreModal/RestoreModal.testids';
 import { SECTION_MENU_IDS } from '../../../../src/pages/document/components/SectionMenu/SectionMenu.testids';
+import { clickCentred } from '../../../support/interactions';
 
 test('editing document details updates the header, with a dirty warning', async ({ page }) => {
   await page.goto('/document/d1');
@@ -28,11 +29,16 @@ test('importing sections from another document adds them to the tree', async ({ 
   await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.root)).toBeVisible();
 
   await page.getByTestId(IMPORT_DOC_MODAL_IDS.docRow('id1')).click();
-  await page.getByTestId(IMPORT_DOC_MODAL_IDS.sectionCheckbox('מטרת הנוהל')).click();
+  // Checkboxes are keyed by section id, and the offered sections are main's
+  // IMPORT_DOC_SECTIONS (is1..is5) — so `is1` is "מטרה ורקע".
+  await page.getByTestId(IMPORT_DOC_MODAL_IDS.sectionCheckbox('is1')).click();
   await page.getByTestId(IMPORT_DOC_MODAL_IDS.importBtn).click();
 
   await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.root)).not.toBeVisible();
-  await expect(page.getByRole('heading', { name: 'מטרת הנוהל' })).toBeVisible();
+  // Imported as a new section under the first subject, which already has a
+  // subject heading of the same name — so scope the assertion to the level-3
+  // heading a section renders at.
+  await expect(page.getByRole('heading', { level: 3, name: 'מטרה ורקע' })).toBeVisible();
 });
 
 test('deleting a section trashes it, and restoring brings it back', async ({ page }) => {
@@ -41,7 +47,7 @@ test('deleting a section trashes it, and restoring brings it back', async ({ pag
   const sectionBody = page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-1'));
   await expect(sectionBody).toBeVisible();
 
-  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')).click();
+  await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
   await page.getByTestId(SECTION_MENU_IDS.deleteAction).click();
   await expect(sectionBody).toHaveCount(0);
 

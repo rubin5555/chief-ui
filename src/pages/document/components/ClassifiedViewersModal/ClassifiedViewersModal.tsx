@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
+import { CLASSIFIED_VIEWER_POOL_FALLBACK, useClassifiedViewerPool } from '@/api/classifiedViewers';
 import { Button } from '@/components/ui/Button';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { Modal } from '@/components/ui/Modal';
@@ -16,9 +16,10 @@ export interface ClassifiedViewersModalProps {
   onClose: () => void;
 }
 
-// Reuses the same personnel roster as the network people picker elsewhere
-// (src/api/networkPeople.ts) rather than a separate classification-specific
-// resource — same shape main's CLASSIFIED_POOL mock used (name/idNumber/env).
+// Backed by src/api/classifiedViewers.ts, which carries main's CLASSIFIED_POOL
+// verbatim. Deliberately not src/api/networkPeople.ts: that roster has four
+// MailingListModal consumers, so repointing it at this data to gain fidelity
+// here would have quietly changed all of them.
 export const ClassifiedViewersModal = ({
   selectedIds,
   onChange,
@@ -26,14 +27,14 @@ export const ClassifiedViewersModal = ({
 }: ClassifiedViewersModalProps) => {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
-  const { data } = useNetworkPeople();
-  const people = data ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
+  const { data } = useClassifiedViewerPool();
+  const people = data ?? CLASSIFIED_VIEWER_POOL_FALLBACK.classifiedViewerPool;
 
   const filtered = people.filter(
     (person) =>
       person.name.includes(debouncedSearch) ||
       person.idNumber.includes(debouncedSearch) ||
-      person.networkLabel.includes(debouncedSearch),
+      person.env.includes(debouncedSearch),
   );
 
   const handleToggle = (id: string) => () =>
@@ -77,7 +78,7 @@ export const ClassifiedViewersModal = ({
                   />
                   <NameCell>{person.name}</NameCell>
                   <MutedCell>{person.idNumber}</MutedCell>
-                  <MutedCell>{person.networkLabel}</MutedCell>
+                  <MutedCell>{person.env}</MutedCell>
                 </GridTableRow>
               );
             }}

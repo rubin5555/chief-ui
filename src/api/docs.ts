@@ -1,6 +1,14 @@
 import { gql } from '@apollo/client';
 import type { DocItem } from '@/modals/MailingListModal';
-import { type DocumentDto, emptySectionMeta, type SectionMetaMap } from '@/pages/document/types';
+import {
+  type DocumentDto,
+  emptySectionMeta,
+  type NodeStamp,
+  type SectionMeta,
+  type SectionMetaMap,
+  type SectionStatus,
+  type SourceOrigin,
+} from '@/pages/document/types';
 import { useApiMutation, useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
@@ -218,6 +226,33 @@ export const useUpdateDocument = () =>
     (result) => result.updateDocument,
   );
 
+// main's SOURCE_MAP (Edit.tsx:4989-4998), split into its document-level list
+// and its three per-section entries. Verbatim — these strings are what the
+// source-systems modal renders.
+export const DOCUMENT_SOURCE_SYSTEMS: SourceOrigin[] = [
+  { name: 'מערכת כוח אדם', field: 'נתוני כוח אדם ותפקידים' },
+  { name: 'מערכת ניהול תחמושת', field: 'מלאי ציוד' },
+  { name: 'מערכת לוגיסטיקה', field: 'תהליכי שילוח ואספקה' },
+];
+
+// main's SECTIONS_WITH_SOURCE (Edit.tsx:3513) is the key set of this map: only
+// these three nodes get an enabled refresh-from-source button.
+const SECTION_SOURCE_ORIGIN: Record<string, SourceOrigin[]> = {
+  's1-1': [{ name: 'מערכת כוח אדם', field: 'נתוני כוח אדם ותפקידים' }],
+  's2-1': [{ name: 'מערכת ניהול תחמושת', field: 'מלאי ציוד ותחמושת' }],
+  's3-1': [{ name: 'מערכת לוגיסטיקה', field: 'תהליכי שילוח ואספקה' }],
+};
+
+// main stamps every node header with the same hardcoded value (Edit.tsx:4265).
+const SEED_STAMP: NodeStamp = { at: '25-06-2026 11:18', by: 's2345678' };
+
+const seedMeta = (status: SectionStatus, id?: string): SectionMeta => ({
+  ...emptySectionMeta(),
+  status,
+  lastModified: SEED_STAMP,
+  ...(id && SECTION_SOURCE_ORIGIN[id] ? { sourceOrigin: SECTION_SOURCE_ORIGIN[id] } : {}),
+});
+
 // Keyed by both subject id (s1..s6 — read by DocumentOutlineTree's subject
 // rows) and a representative sample of actual section ids (s1-1, s3-1, ... —
 // read by EditableSectionBody's status badge and by FilterPanel's status
@@ -227,17 +262,18 @@ export const useUpdateDocument = () =>
 // status except 'idle' matched nothing) even though the feature itself
 // works correctly once a section actually carries a status.
 const DOCUMENT_SECTION_META: SectionMetaMap = {
-  s1: { ...emptySectionMeta(), status: 'approved' },
-  s2: { ...emptySectionMeta(), status: 'approved' },
-  s3: { ...emptySectionMeta(), status: 'fix' },
-  s4: { ...emptySectionMeta(), status: 'pending' },
-  s5: { ...emptySectionMeta(), status: 'editing' },
-  s6: { ...emptySectionMeta(), status: 'editing' },
-  's1-1': { ...emptySectionMeta(), status: 'approved' },
-  's1-2': { ...emptySectionMeta(), status: 'approved' },
-  's3-1': { ...emptySectionMeta(), status: 'fix' },
-  's3-2': { ...emptySectionMeta(), status: 'fix' },
-  's4-1': { ...emptySectionMeta(), status: 'pending' },
+  s1: seedMeta('approved'),
+  s2: seedMeta('approved'),
+  s3: seedMeta('fix'),
+  s4: seedMeta('pending'),
+  s5: seedMeta('editing'),
+  s6: seedMeta('editing'),
+  's1-1': seedMeta('approved', 's1-1'),
+  's1-2': seedMeta('approved'),
+  's2-1': seedMeta('approved', 's2-1'),
+  's3-1': seedMeta('fix', 's3-1'),
+  's3-2': seedMeta('fix'),
+  's4-1': seedMeta('pending'),
 };
 
 const emptyPermissions = () => ({ approvers: [], editors: [] });
@@ -250,15 +286,19 @@ const emptyPermissions = () => ({ approvers: [], editors: [] });
 export const DOCUMENT_FALLBACK: DocumentDto = {
   id: 'd1',
   status: 'טיוטה',
+  // Verbatim from main's metadata pill (Edit.tsx:3692-3700). main hardcodes
+  // every field here except name and orderNum, which it reads off the doc —
+  // getOrCreateDocument below overrides exactly those two (plus organization,
+  // which is 'ארגון א׳' for the seed document either way).
   header: {
     name: 'נוהל בטיחות 2026',
     organization: 'ארגון א׳',
-    template: 'נוהל',
+    template: 'מסמך בטיחות',
     orderNum: '001',
-    department: 'אגף מבצעים',
-    effectiveDate: '10/05/2026',
+    department: 'משאבי אנוש',
+    effectiveDate: '01/06/2026',
     classification: 'בלמ"ס',
-    referenceNum: '1001',
+    referenceNum: 'פ.מ. 12/2025',
   },
   subjects: [
     {
@@ -359,6 +399,7 @@ export const DOCUMENT_FALLBACK: DocumentDto = {
     { id: 's6', title: 'חתימות', sections: [] },
   ],
   sectionMeta: DOCUMENT_SECTION_META,
+  sourceSystems: DOCUMENT_SOURCE_SYSTEMS,
 };
 
 // Keyed per document id rather than mutating the single shared
@@ -378,14 +419,15 @@ const getOrCreateDocument = (id: string): DocumentDto => {
         ...DOCUMENT_FALLBACK,
         id: matchingDoc.id,
         status: matchingDoc.status,
+        // Only the fields main actually reads off the document. template /
+        // effectiveDate / referenceNum / department stay on the hardcoded
+        // header above, because that is what main's pill renders — pulling
+        // them from DOCS_FALLBACK instead would silently change the pill.
         header: {
           ...DOCUMENT_FALLBACK.header,
           name: matchingDoc.name,
           organization: matchingDoc.environment,
-          template: matchingDoc.docType,
           orderNum: matchingDoc.cmdNum,
-          referenceNum: matchingDoc.refNum,
-          effectiveDate: matchingDoc.lastUpdate,
         },
       }
     : { ...DOCUMENT_FALLBACK };
@@ -431,12 +473,22 @@ export const GET_IMPORT_DOCS_QUERY = gql`
         date
         status
       }
+      recent {
+        id
+        name
+        org
+        date
+        status
+      }
     }
   }
 `;
 
 export interface GetImportDocsResult {
-  importDocs: { drafts: ImportDocItem[]; distributed: ImportDocItem[] };
+  // `recent` exists in main's IMPORT_DOCS but its ImportDocModal only ever
+  // renders drafts/distributed, so the data is restored here for fidelity
+  // while the modal keeps main's two visible tabs.
+  importDocs: { drafts: ImportDocItem[]; distributed: ImportDocItem[]; recent: ImportDocItem[] };
 }
 
 export const useImportDocs = () =>
@@ -451,6 +503,7 @@ export const IMPORT_DOCS_FALLBACK: GetImportDocsResult = {
       { id: 'id1', name: 'נוהל בטיחות 2026', org: 'ארגון א׳', date: '10/05/2026', status: 'טיוטה' },
       { id: 'id2', name: 'נוהל גיוס עובדים', org: 'ארגון ב׳', date: '08/05/2026', status: 'בהכנה' },
       { id: 'id3', name: 'תקנון משמעת', org: 'ארגון א׳', date: '05/05/2026', status: 'טיוטה' },
+      { id: 'id4', name: 'נוהל רכש ואספקה', org: 'ארגון ג׳', date: '03/05/2026', status: 'טיוטה' },
     ],
     distributed: [
       {
@@ -467,6 +520,19 @@ export const IMPORT_DOCS_FALLBACK: GetImportDocsResult = {
         date: '15/02/2026',
         status: 'הופץ',
       },
+      {
+        id: 'pd3',
+        name: 'פקודה 31/2025 – תקנון',
+        org: 'ארגון א׳',
+        date: '10/01/2026',
+        status: 'הופץ',
+      },
+    ],
+    recent: [
+      { id: 'rd1', name: 'נהלי עבודה', org: 'ארגון א׳', date: '09/05/2026', status: 'בהכנה' },
+      { id: 'rd2', name: 'דוחות שנתיים', org: 'ארגון ב׳', date: '07/05/2026', status: 'הופץ' },
+      { id: 'rd3', name: 'מסמכי תקציב 2026', org: 'ארגון א׳', date: '06/05/2026', status: 'טיוטה' },
+      { id: 'rd4', name: 'נהלי בטיחות', org: 'ארגון ג׳', date: '04/05/2026', status: 'הופץ' },
     ],
   },
 };
@@ -475,12 +541,26 @@ registerStub('GetImportDocs', (): GetImportDocsResult => IMPORT_DOCS_FALLBACK);
 
 export const GET_IMPORT_DOC_SECTIONS_QUERY = gql`
   query GetImportDocSections($docId: ID!) {
-    importDocSections(docId: $docId)
+    importDocSections(docId: $docId) {
+      id
+      label
+      title
+      body
+    }
   }
 `;
 
+// A section offered for import carries its label and body paragraphs, not just
+// a title — main's ImportDocModal renders the body in its split-view preview.
+export interface ImportDocSectionDto {
+  id: string;
+  label: string;
+  title: string;
+  body: string[];
+}
+
 export interface GetImportDocSectionsResult {
-  importDocSections: string[];
+  importDocSections: ImportDocSectionDto[];
 }
 
 export interface GetImportDocSectionsVariables {
@@ -488,22 +568,193 @@ export interface GetImportDocSectionsVariables {
 }
 
 export const useImportDocSections = (docId: string) =>
-  useApiQuery<GetImportDocSectionsResult, string[], GetImportDocSectionsVariables>(
+  useApiQuery<GetImportDocSectionsResult, ImportDocSectionDto[], GetImportDocSectionsVariables>(
     GET_IMPORT_DOC_SECTIONS_QUERY,
     (result) => result.importDocSections,
     { docId },
     !docId,
   );
 
-const IMPORT_DOC_SECTIONS_FALLBACK: Record<string, string[]> = {
-  id1: ['מטרת הנוהל', 'תחולה', 'אחריות ותפקידים'],
-  id2: ['שלבי הגיוס', 'ראיונות', 'קליטה'],
-  id3: ['הפרות משמעת', 'הליך בירור', 'סנקציות'],
-  pd1: ['רקע', 'הוראות בטיחות כלליות', 'ציוד מגן'],
-  pd2: ['מכסות גיוס', 'שיבוץ ליחידות'],
-};
+// main's IMPORT_DOC_SECTIONS (Edit.tsx:1802-1808), verbatim. main keeps one
+// flat list and shows it for whichever document is selected, so the resolver
+// below returns this same array for every docId rather than inventing
+// per-document titles. The query stays parameterised because a real resolver
+// genuinely will vary by document.
+export const IMPORT_DOC_SECTIONS_FALLBACK: ImportDocSectionDto[] = [
+  {
+    id: 'is1',
+    label: '1',
+    title: 'מטרה ורקע',
+    body: [
+      'נוהל זה מגדיר את נהלי הבטיחות בארגון ומוודא שכל העובדים פועלים בהתאם לתקנות הרלוונטיות.',
+    ],
+  },
+  {
+    id: 'is2',
+    label: '2',
+    title: 'הגדרות ומונחים',
+    body: [
+      'בטיחות – מכלול הפעולות לשמירה על שלמות גוף העובד ורכוש הארגון.',
+      'ציוד מגן אישי – ציוד הנדרש לשמירה על בריאות ובטיחות העובדים.',
+    ],
+  },
+  {
+    id: 'is3',
+    label: '3',
+    title: 'נהלים ותהליכים',
+    body: ['כל עובד יעבור הדרכת בטיחות לפני תחילת עבודתו. תדירות ההדרכות – אחת לשנה לפחות.'],
+  },
+  {
+    id: 'is4',
+    label: '4',
+    title: 'הוראות ביצוע',
+    body: [
+      'א. עובד חדש יקבל הדרכת בטיחות ביום הראשון לעבודתו.',
+      'ב. כל תקלה בטיחותית תדווח למנהל הישיר תוך שעה מגילויה.',
+    ],
+  },
+  {
+    id: 'is5',
+    label: '5',
+    title: 'נספחים',
+    body: ['נספח א׳ – טופס דיווח תאונת עבודה.'],
+  },
+];
 
-registerStub('GetImportDocSections', (variables): GetImportDocSectionsResult => {
-  const { docId } = variables as unknown as GetImportDocSectionsVariables;
-  return { importDocSections: IMPORT_DOC_SECTIONS_FALLBACK[docId] ?? [] };
-});
+registerStub(
+  'GetImportDocSections',
+  (): GetImportDocSectionsResult => ({ importDocSections: IMPORT_DOC_SECTIONS_FALLBACK }),
+);
+
+// --- Deleted sections (restore panel) ---
+
+export interface DeletedSectionDto {
+  id: string;
+  label: string;
+  title: string;
+  children?: { id: string; label: string; title: string }[];
+}
+
+export const GET_DELETED_SECTIONS_QUERY = gql`
+  query GetDeletedSections($docId: ID!) {
+    deletedSections(docId: $docId) {
+      id
+      label
+      title
+      children {
+        id
+        label
+        title
+      }
+    }
+  }
+`;
+
+export interface GetDeletedSectionsResult {
+  deletedSections: DeletedSectionDto[];
+}
+
+export interface GetDeletedSectionsVariables {
+  docId: string;
+}
+
+export const useDeletedSections = (docId: string) =>
+  useApiQuery<GetDeletedSectionsResult, DeletedSectionDto[], GetDeletedSectionsVariables>(
+    GET_DELETED_SECTIONS_QUERY,
+    (result) => result.deletedSections,
+    { docId },
+    !docId,
+  );
+
+// main's DELETED_SECTIONS (Edit.tsx:157-169), verbatim — the restore panel's
+// seed. RestoreModal also tracks sections deleted in the current session; this
+// is the server-side trash that predates the session.
+export const DELETED_SECTIONS_FALLBACK: DeletedSectionDto[] = [
+  {
+    id: 'p1',
+    label: '3',
+    title: 'נהלים ותהליכים',
+    children: [
+      { id: 'p1-1', label: '3.1', title: 'תהליך קבלת החלטות' },
+      { id: 'p1-2', label: '3.2', title: 'אחריות ותפקידים' },
+      { id: 'p1-3', label: '3.3', title: 'לוחות זמנים' },
+    ],
+  },
+  { id: 'd1', label: '2.3', title: 'הגדרות נוספות' },
+  { id: 'd3', label: '4.4', title: 'שלב ד׳ – סיום' },
+  { id: 'd4', label: '1.3', title: 'הקשר היסטורי' },
+];
+
+registerStub(
+  'GetDeletedSections',
+  (): GetDeletedSectionsResult => ({ deletedSections: DELETED_SECTIONS_FALLBACK }),
+);
+
+// --- Document versions (version picker → comparison mode) ---
+
+export interface DocVersionDto {
+  label: string;
+  datetime: string;
+  ref: string;
+  approvedBy: string;
+  /** 'נוכחית' on the live version, empty otherwise. */
+  tag: string;
+}
+
+export const GET_DOC_VERSIONS_QUERY = gql`
+  query GetDocVersions($docId: ID!) {
+    docVersions(docId: $docId) {
+      label
+      datetime
+      ref
+      approvedBy
+      tag
+    }
+  }
+`;
+
+export interface GetDocVersionsResult {
+  docVersions: DocVersionDto[];
+}
+
+export interface GetDocVersionsVariables {
+  docId: string;
+}
+
+export const useDocVersions = (docId: string) =>
+  useApiQuery<GetDocVersionsResult, DocVersionDto[], GetDocVersionsVariables>(
+    GET_DOC_VERSIONS_QUERY,
+    (result) => result.docVersions,
+    { docId },
+    !docId,
+  );
+
+// Verbatim from main's version-compare picker (TopNavbar.tsx:1682-1685).
+export const DOC_VERSIONS_FALLBACK: DocVersionDto[] = [
+  {
+    label: 'עדכון מס׳ 2',
+    datetime: '14.07.2026, 09:32',
+    ref: 'א׳-2026-147',
+    approvedBy: 'אל״מ דוד כהן',
+    tag: 'נוכחית',
+  },
+  {
+    label: 'עדכון מס׳ 1',
+    datetime: '01.06.2026, 14:15',
+    ref: 'א׳-2026-088',
+    approvedBy: 'אל״מ דוד כהן',
+    tag: '',
+  },
+  {
+    label: 'פקודה מס׳ 001',
+    datetime: '15.03.2026, 11:00',
+    ref: 'א׳-2026-031',
+    approvedBy: 'תא״ל רונן לוי',
+    tag: '',
+  },
+];
+
+registerStub(
+  'GetDocVersions',
+  (): GetDocVersionsResult => ({ docVersions: DOC_VERSIONS_FALLBACK }),
+);

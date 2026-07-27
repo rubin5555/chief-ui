@@ -11,6 +11,32 @@ export interface AttachmentFile {
   id: string;
   name: string;
   size: number;
+  // Object URL minted at pick time so the attachments modal can offer a
+  // download without the raw File ever entering the DTO. Absent on
+  // server-seeded attachments, which have no local blob behind them.
+  objectUrl?: string;
+}
+
+// A footnote carries its own id rather than being addressed by array index:
+// main renders these in a list with per-row delete, and index keys remount
+// every following row when one is removed mid-list.
+export interface Footnote {
+  id: string;
+  text: string;
+}
+
+// Provenance for a node whose content came from an external system, shown by
+// the source-systems notice and the per-node refresh button. Distinct from
+// src/api/sourceSystems.ts, which models DataImportModal's import *catalog*.
+export interface SourceOrigin {
+  name: string;
+  field: string;
+}
+
+// main's "עודכן ב-25-06-2026 11:18 ע״י s2345678" stamp on every node header.
+export interface NodeStamp {
+  at: string;
+  by: string;
 }
 
 export interface SectionClassification {
@@ -36,8 +62,12 @@ export interface SectionMeta {
   hidden: boolean;
   classification: SectionClassification;
   attachments: AttachmentFile[];
-  footnotes: string[];
-  sourceSystem?: string;
+  footnotes: Footnote[];
+  // Undefined rather than [] when a node has no external origin, so
+  // `meta.sourceOrigin?.length` alone answers "can this node be refreshed?".
+  sourceOrigin?: SourceOrigin[];
+  instructions?: string;
+  lastModified?: NodeStamp;
 }
 
 export type SectionMetaMap = Record<string, SectionMeta>;
@@ -67,4 +97,7 @@ export interface DocumentDto {
   header: DocumentHeader;
   subjects: Subject[];
   sectionMeta: SectionMetaMap;
+  // Document-level provenance, driving the amber "מסמך זה נוצר ממערכת מקור"
+  // notice above the paper and the doc tab of the source-systems modal.
+  sourceSystems: SourceOrigin[];
 }

@@ -14,7 +14,9 @@ import {
   EmptyState,
   Layout,
   PreviewColumn,
+  SectionLabel,
   SectionRow,
+  SectionTitle,
 } from './ImportDocModal.styles';
 import { IMPORT_DOC_MODAL_IDS } from './ImportDocModal.testids';
 
@@ -43,11 +45,10 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
 
   const [activeTab, setActiveTab] = useState<DocTab>('drafts');
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
-  // Tracked by index into `sections`, not by title string — two sections
-  // sharing a title (plausible once this reads real backend data instead of
-  // today's dedup'd mock) would otherwise toggle together and be
-  // indistinguishable in `onImport`'s output.
-  const [checkedIndexes, setCheckedIndexes] = useState<number[]>([]);
+  // Keyed by section id, as main does — ids are stable and unique, so this
+  // survives reordering and gives each checkbox an unambiguous testid, which
+  // neither a title nor a list index manages.
+  const [checkedIds, setCheckedIds] = useState<string[]>([]);
 
   const { data: sectionsData } = useImportDocSections(selectedDocId ?? '');
   const sections = selectedDocId ? (sectionsData ?? []) : [];
@@ -55,22 +56,27 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
   const handleTabChange = (id: string) => {
     setActiveTab(id as DocTab);
     setSelectedDocId(null);
-    setCheckedIndexes([]);
+    setCheckedIds([]);
   };
 
   const handleSelectDoc = (docId: string) => () => {
     setSelectedDocId(docId);
-    setCheckedIndexes([]);
+    setCheckedIds([]);
   };
 
-  const handleToggleSection = (index: number) => () =>
-    setCheckedIndexes((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+  const handleToggleSection = (sectionId: string) => () =>
+    setCheckedIds((prev) =>
+      prev.includes(sectionId) ? prev.filter((id) => id !== sectionId) : [...prev, sectionId],
     );
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onImport(checkedIndexes.map((index) => sections[index]));
+    // Maps ids back to titles rather than passing ids through: the tree builds
+    // brand-new sections with fresh uuids, so the source id has no meaning
+    // downstream — only the title survives the copy.
+    onImport(
+      sections.filter((section) => checkedIds.includes(section.id)).map((section) => section.title),
+    );
   };
 
   return (
@@ -87,10 +93,10 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
           <Button
             type="submit"
             form={FORM_ID}
-            disabled={checkedIndexes.length === 0}
+            disabled={checkedIds.length === 0}
             data-testid={IMPORT_DOC_MODAL_IDS.importBtn}
           >
-            ייבוא ({checkedIndexes.length})
+            ייבוא ({checkedIds.length})
           </Button>
         </>
       }
@@ -118,15 +124,16 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
 
           <PreviewColumn>
             {selectedDocId ? (
-              sections.map((title, index) => (
-                <SectionRow key={`${index}-${title}`}>
+              sections.map((section) => (
+                <SectionRow key={section.id}>
                   <input
                     type="checkbox"
-                    checked={checkedIndexes.includes(index)}
-                    onChange={handleToggleSection(index)}
-                    data-testid={IMPORT_DOC_MODAL_IDS.sectionCheckbox(title)}
+                    checked={checkedIds.includes(section.id)}
+                    onChange={handleToggleSection(section.id)}
+                    data-testid={IMPORT_DOC_MODAL_IDS.sectionCheckbox(section.id)}
                   />
-                  {title}
+                  <SectionLabel>{section.label}</SectionLabel>
+                  <SectionTitle>{section.title}</SectionTitle>
                 </SectionRow>
               ))
             ) : (

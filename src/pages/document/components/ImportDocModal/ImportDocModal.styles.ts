@@ -67,6 +67,18 @@ export const SectionRow = styled.label`
 	}
 `;
 
+export const SectionLabel = styled.span`
+	font-size: 11px;
+	font-weight: 700;
+	color: ${gray[400]};
+	flex-shrink: 0;
+`;
+
+export const SectionTitle = styled.span`
+	flex: 1;
+	min-width: 0;
+`;
+
 export const EmptyState = styled.div`
 	display: flex;
 	align-items: center;

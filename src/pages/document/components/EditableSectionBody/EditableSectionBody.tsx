@@ -148,8 +148,8 @@ export const EditableSectionBody = ({
 
       {meta.footnotes.length > 0 && (
         <FootnoteList>
-          {meta.footnotes.map((footnote, footnoteIndex) => (
-            <li key={footnoteIndex}>{footnote}</li>
+          {meta.footnotes.map((footnote) => (
+            <li key={footnote.id}>{footnote.text}</li>
           ))}
         </FootnoteList>
       )}

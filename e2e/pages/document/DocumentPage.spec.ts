@@ -9,6 +9,8 @@ import { SECTION_CHAT_IDS } from '../../../src/pages/document/components/Section
 import { SECTION_MENU_IDS } from '../../../src/pages/document/components/SectionMenu/SectionMenu.testids';
 import { DOCUMENT_PAGE_IDS } from '../../../src/pages/document/DocumentPage/DocumentPage.testids';
 
+import { clickCentred } from '../../support/interactions';
+
 test('renders the seeded document with its header and outline tree', async ({ page }) => {
   await page.goto('/document/d1');
 
@@ -80,7 +82,7 @@ test('inserting a table via the TinyMCE toolbar produces real table HTML, undoab
 test('posting a section comment renders it in the chat panel', async ({ page }) => {
   await page.goto('/document/d1');
 
-  await page.getByTestId(SECTION_CHAT_IDS.trigger('s1-1')).click();
+  await clickCentred(page.getByTestId(SECTION_CHAT_IDS.trigger('s1-1')));
   await expect(page.getByTestId(SECTION_CHAT_IDS.panel('s1-1'))).toBeVisible();
 
   await page.getByTestId(SECTION_CHAT_IDS.input).fill('הודעת בדיקה');
@@ -89,9 +91,14 @@ test('posting a section comment renders it in the chat panel', async ({ page }) 
   // The stub mutation carries the same simulated network latency as every
   // other src/api/*.ts resource (STUB_DELAY_MS in stubLink.ts) — assertions
   // auto-retry rather than using a fixed wait.
-  const message = page.locator('[data-testid^="section-chat-message-"]');
-  await expect(message).toHaveCount(1);
-  await expect(message).toContainText('הודעת בדיקה');
+  //
+  // Two messages, not one: a thread nobody has posted to still opens with the
+  // other side's prompt (main's CHAT_INIT, seeded in src/api/comments.ts), and
+  // the posted message is appended after it.
+  const messages = page.locator('[data-testid^="section-chat-message-"]');
+  await expect(messages).toHaveCount(2);
+  await expect(messages.first()).toContainText('איך אפשר לעזור בסעיף זה?');
+  await expect(messages.last()).toContainText('הודעת בדיקה');
   await expect(page.getByTestId(SECTION_CHAT_IDS.input)).toHaveValue('');
 });
 
@@ -100,7 +107,7 @@ test('hiding a section via the section menu replaces its body with a hidden noti
 }) => {
   await page.goto('/document/d1');
 
-  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')).click();
+  await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
   await page.getByTestId(SECTION_MENU_IDS.toggleHiddenAction).click();
 
   const sectionBody = page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-1'));
@@ -108,7 +115,7 @@ test('hiding a section via the section menu replaces its body with a hidden noti
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'))).toHaveCount(0);
 
   // Toggling back from the menu (still labeled for "show" now) restores it.
-  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')).click();
+  await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
   await page.getByTestId(SECTION_MENU_IDS.toggleHiddenAction).click();
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'))).toBeVisible();
 });
@@ -116,14 +123,16 @@ test('hiding a section via the section menu replaces its body with a hidden noti
 test('classifying a section opens the viewers picker and gates its content', async ({ page }) => {
   await page.goto('/document/d1');
 
-  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-2')).click();
+  await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-2')));
   await page.getByTestId(SECTION_MENU_IDS.toggleClassifiedAction).click();
 
   // Turning classification on immediately opens the viewers picker.
   const viewersModal = page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.root);
   await expect(viewersModal).toBeVisible();
 
-  const firstCheckbox = page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.checkbox('p1'));
+  // u1 = the first entry in src/api/classifiedViewers.ts's pool (main's
+  // CLASSIFIED_POOL), which this picker reads instead of the network roster.
+  const firstCheckbox = page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.checkbox('u1'));
   await firstCheckbox.click();
   await expect(firstCheckbox).toBeChecked();
 
@@ -139,7 +148,7 @@ test('classifying a section opens the viewers picker and gates its content', asy
 test('editing section approvers through the permissions view', async ({ page }) => {
   await page.goto('/document/d1');
 
-  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')).click();
+  await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
   await page.getByTestId(SECTION_MENU_IDS.approversAction).click();
 
   const select = page.getByTestId(SECTION_MENU_IDS.permissionsSelect);
@@ -156,7 +165,7 @@ test('deleting a section from the section menu removes it from the tree', async 
   const sectionBody = page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-1'));
   await expect(sectionBody).toBeVisible();
 
-  await page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')).click();
+  await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
   await page.getByTestId(SECTION_MENU_IDS.deleteAction).click();
 
   await expect(sectionBody).toHaveCount(0);

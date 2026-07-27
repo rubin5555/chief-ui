@@ -77,15 +77,35 @@ export const useAddSectionComment = () =>
 
 const makeCommentId = () => `comment-${self.crypto.randomUUID()}`;
 
-// ponytail: no backend/resolver yet — registered on stubLink, keyed by section id
-// in a mutable map (there's no seed data; every section starts with an empty
-// thread). Delete this registration once GetSectionComments/AddSectionComment
-// have real resolvers; call sites don't change.
+// ponytail: no backend/resolver yet — registered on stubLink, keyed by section
+// id in a mutable map. Delete this registration once GetSectionComments/
+// AddSectionComment have real resolvers; call sites don't change.
 const SECTION_COMMENTS_FALLBACK: Record<string, SectionCommentDto[]> = {};
+
+// main's CHAT_INIT (Edit.tsx:3159): an untouched thread isn't empty, it opens
+// with a prompt from the other side. Built per call rather than shared, so the
+// id is unique per thread and two open chats can't collide on a React key.
+const seedThread = (sectionId: string): SectionCommentDto[] => [
+  {
+    id: `comment-seed-${sectionId}`,
+    sectionId,
+    from: 'other',
+    authorName: 'שרי',
+    text: 'איך אפשר לעזור בסעיף זה?',
+    // `quote` must be an own property even when there is no quote. The query
+    // selects it, and InMemoryCache treats a selected-but-absent key as an
+    // incomplete write — the read-back then yields `data: undefined` for the
+    // whole thread, so the seeded message silently never appears. Note the
+    // AddSectionComment stub below gets this right by accident, via
+    // `quote: input.quote`.
+    quote: undefined,
+    createdAt: new Date(0).toISOString(),
+  },
+];
 
 registerStub('GetSectionComments', (variables): GetSectionCommentsResult => {
   const { sectionId } = variables as unknown as GetSectionCommentsVariables;
-  return { sectionComments: SECTION_COMMENTS_FALLBACK[sectionId] ?? [] };
+  return { sectionComments: SECTION_COMMENTS_FALLBACK[sectionId] ?? seedThread(sectionId) };
 });
 
 registerStub('AddSectionComment', (variables): AddSectionCommentResult => {
@@ -99,6 +119,12 @@ registerStub('AddSectionComment', (variables): AddSectionCommentResult => {
     quote: input.quote,
     createdAt: new Date().toISOString(),
   };
-  SECTION_COMMENTS_FALLBACK[sectionId] = [...(SECTION_COMMENTS_FALLBACK[sectionId] ?? []), comment];
+  // Falls back to seedThread, not [], for the same reason the query does: this
+  // is the first write to an untouched thread, and starting from an empty array
+  // here would silently swallow the opening message the user was replying to.
+  SECTION_COMMENTS_FALLBACK[sectionId] = [
+    ...(SECTION_COMMENTS_FALLBACK[sectionId] ?? seedThread(sectionId)),
+    comment,
+  ];
   return { addSectionComment: comment };
 });
