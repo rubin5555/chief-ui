@@ -29,17 +29,17 @@ export interface Subject {
 
 const makeId = (prefix: string) => `${prefix}-${self.crypto.randomUUID()}`;
 
-const emptySection = (): Section => ({
+const emptySection = (title: string): Section => ({
   id: makeId('section'),
-  title: '',
+  title,
   content: '',
   permissions: { approvers: [], editors: [] },
   subSections: [],
 });
 
-const emptySubSection = (): SubSection => ({
+const emptySubSection = (title: string): SubSection => ({
   id: makeId('subsection'),
-  title: '',
+  title,
   content: '',
   permissions: { approvers: [], editors: [] },
 });
@@ -74,8 +74,18 @@ export const useDocumentTree = (initialSubjects: Subject[] = []) => {
       ),
     }));
 
-  const addSubject = () =>
-    setSubjects((prev) => [...prev, { id: makeId('subject'), title: '', sections: [] }]);
+  // The three `add*` functions take the new node's title and hand back its id.
+  //
+  // Both exist for the sidebar outline. main's "+ הוספת סעיף" link creates a node
+  // that already reads `סעיף 3` (Edit.tsx:4059) rather than an empty row, and its
+  // "יצירת נושא חדש" action creates an empty one and immediately focuses a rename
+  // input on it (3575) — which needs the id the caller just created. Returning it
+  // beats making callers guess at "the last node with an empty title".
+  const addSubject = (title = '') => {
+    const subject: Subject = { id: makeId('subject'), title, sections: [] };
+    setSubjects((prev) => [...prev, subject]);
+    return subject.id;
+  };
 
   const removeSubject = (subjectId: string) =>
     setSubjects((prev) => prev.filter((subject) => subject.id !== subjectId));
@@ -88,14 +98,17 @@ export const useDocumentTree = (initialSubjects: Subject[] = []) => {
       prev.map((subject) => (subject.id !== subjectId ? subject : { ...subject, title })),
     );
 
-  const addSection = (subjectId: string) =>
+  const addSection = (subjectId: string, title = '') => {
+    const section = emptySection(title);
     setSubjects((prev) =>
       prev.map((subject) =>
         subject.id !== subjectId
           ? subject
-          : { ...subject, sections: [...subject.sections, emptySection()] },
+          : { ...subject, sections: [...subject.sections, section] },
       ),
     );
+    return section.id;
+  };
 
   const removeSection = (subjectId: string, sectionId: string) =>
     setSubjects((prev) =>
@@ -136,11 +149,14 @@ export const useDocumentTree = (initialSubjects: Subject[] = []) => {
     permissions: NodePermissions,
   ) => mapSection(subjectId, sectionId, (section) => ({ ...section, permissions }));
 
-  const addSubSection = (subjectId: string, sectionId: string) =>
+  const addSubSection = (subjectId: string, sectionId: string, title = '') => {
+    const subSection = emptySubSection(title);
     mapSection(subjectId, sectionId, (section) => ({
       ...section,
-      subSections: [...section.subSections, emptySubSection()],
+      subSections: [...section.subSections, subSection],
     }));
+    return subSection.id;
+  };
 
   const removeSubSection = (subjectId: string, sectionId: string, subSectionId: string) =>
     mapSection(subjectId, sectionId, (section) => ({

@@ -1,4 +1,4 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 /**
  * Click a control after centring it in the viewport and letting the scroll settle.
@@ -46,4 +46,49 @@ export const clickCentred = async (locator: Locator) => {
   );
 
   await locator.click();
+};
+
+/**
+ * Drag one element onto another via native HTML5 drag-and-drop.
+ *
+ * Playwright's `dragTo` drives the mouse, which doesn't produce the
+ * `dragstart`/`dragover`/`drop` sequence a `draggable` element listens for, so
+ * the events are dispatched directly — the same approach DataImportModal.spec.ts
+ * uses for its field chips.
+ *
+ * Split across two `page.evaluate` calls, unlike that one, because useDragReorder
+ * records the dragged id in React state: its `onDragOver` reads that id from the
+ * render that registered the handler, so dispatching every event in one tick would
+ * have the drop handler still seeing `null`. Returning to Playwright between the
+ * two lets React re-render first. Each call mints its own DataTransfer, which is
+ * fine here — the hook carries the id in state rather than in the transfer.
+ */
+export const dragOnto = async (page: Page, sourceTestId: string, targetTestId: string) => {
+  await page.evaluate((source) => {
+    const from = document.querySelector(`[data-testid="${source}"]`);
+    if (!from) throw new Error(`drag source missing: ${source}`);
+    from.dispatchEvent(
+      new DragEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: new DataTransfer(),
+      }),
+    );
+  }, sourceTestId);
+
+  await page.evaluate((target) => {
+    const to = document.querySelector(`[data-testid="${target}"]`);
+    if (!to) throw new Error(`drop target missing: ${target}`);
+
+    const rect = to.getBoundingClientRect();
+    const options = {
+      bubbles: true,
+      cancelable: true,
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+      dataTransfer: new DataTransfer(),
+    };
+    to.dispatchEvent(new DragEvent('dragover', options));
+    to.dispatchEvent(new DragEvent('drop', options));
+  }, targetTestId);
 };

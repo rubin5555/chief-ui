@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
+import { ADD_MENU_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/components/AddMenu/AddMenu.testids';
+import { SIDEBAR_FAB_ROW_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/SidebarFabRow.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
 import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/EditDocDetailsModal/EditDocDetailsModal.testids';
 import { FILTER_PANEL_IDS } from '../../../../src/pages/document/components/FilterPanel/FilterPanel.testids';
@@ -32,7 +34,10 @@ test('editing document details updates the header, with a dirty warning', async 
 test('importing sections from another document adds them to the tree', async ({ page }) => {
   await page.goto('/document/d1');
 
-  await page.getByText('ייבוא סעיפים').click();
+  // main reaches the importer from the `+` at the foot of the sidebar, alongside
+  // the other three things you can add to a document (Edit.tsx:287).
+  await page.getByTestId(ADD_MENU_IDS.trigger).click();
+  await page.getByTestId(ADD_MENU_IDS.action('import')).click();
   await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.root)).toBeVisible();
 
   await page.getByTestId(IMPORT_DOC_MODAL_IDS.docRow('id1')).click();
@@ -62,7 +67,7 @@ test('deleting a section trashes it, and restoring brings it back', async ({ pag
   await page.getByTestId(SECTION_MENU_IDS.deleteAction).click();
   await expect(sectionBody).toHaveCount(0);
 
-  await page.getByText(/שחזור סעיפים/).click();
+  await page.getByTestId(SIDEBAR_FAB_ROW_IDS.restoreBtn).click();
   await expect(page.getByTestId(RESTORE_MODAL_IDS.root)).toBeVisible();
   await expect(page.getByTestId(RESTORE_MODAL_IDS.emptyState)).not.toBeVisible();
 

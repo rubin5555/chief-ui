@@ -60,6 +60,23 @@ export const ModalTitle = styled.h2`
   margin: 0;
 `;
 
+// The 'confirm' variant's header: the question itself, centred over the body with
+// no rule beneath it. No close button — a confirm dialog's two buttons *are* the
+// ways out, and a third one in the corner only raises the question of which
+// answer it counts as.
+export const ConfirmHeader = styled.div`
+  flex-shrink: 0;
+  padding: 28px 32px 0;
+`;
+
+export const ConfirmTitle = styled.h2`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: ${gray[900]};
+  text-align: center;
+`;
+
 export const CloseButton = styled.button`
   color: ${gray[400]};
   transition: color 0.15s;

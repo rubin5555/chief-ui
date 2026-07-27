@@ -1,12 +1,19 @@
 import { lazy, Suspense, useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
+import { DISTRIBUTED_STATUSES, EDITABLE_STATUSES } from '../../document.constants';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import type { Section } from '../../types';
 import { ApprovalWorkflow } from '../ApprovalWorkflow';
 import { DocumentOutlineTree } from '../DocumentOutlineTree';
-import { ActionBtn, ActionsRow, SidebarRoot, TreeScroll } from './DocumentSidebar.styles';
+import { DocProgressBars } from './components/DocProgressBars';
+import { DocStatusHeader } from './components/DocStatusHeader';
+import type { AddActionId } from './components/SidebarFabRow';
+import { SidebarFabRow } from './components/SidebarFabRow';
+import { useDocumentSidebarAnalytics } from './DocumentSidebar.analytics';
+import { SidebarDivider, SidebarRoot, StatusBlock } from './DocumentSidebar.styles';
 import { DOCUMENT_SIDEBAR_IDS } from './DocumentSidebar.testids';
+import { nextAppendixTitle } from './documentSidebar.utils';
 
 const ImportDocModal = lazy(() =>
   import('../ImportDocModal').then((m) => ({ default: m.ImportDocModal })),
@@ -15,28 +22,72 @@ const RestoreModal = lazy(() =>
   import('../RestoreModal').then((m) => ({ default: m.RestoreModal })),
 );
 
+/** Statuses whose progress main reports, which are exactly the two draft ones (Edit.tsx:3826). */
+const PROGRESS_STATUSES = new Set(['טיוטה פנימית', 'בהכנה']);
+
 export interface DocumentSidebarProps {
   tree: ReturnType<typeof useDocumentTree>;
   trash: ReturnType<typeof useDocumentTrash>;
   overrides: ReturnType<typeof useDocumentOverrides>;
+  /** Wired in the phase that builds the emphasis block; the menu action is main's. */
+  onAddEmphasis?: () => void;
 }
 
-// main's right-hand outline column (Edit.tsx:3793-4099): the document's status
-// controls, its outline, and the buttons for importing and restoring sections.
+// main's right-hand outline column (Edit.tsx:3793): the document's status, its
+// progress, the buttons that move it along, its outline, and the two round
+// actions at the foot.
+//
 // Owns the two modals its own buttons open, per
 // .claude/skills/modal-placement.md — the trigger and the render stay together.
 //
 // `tree`, `trash` and `overrides` arrive as whole hook objects rather than a dozen
-// unpacked callbacks; the outline tree needs most of the tree API once it becomes
-// editable, and exploding them here would just move the wall of props.
-export const DocumentSidebar = ({ tree, trash, overrides }: DocumentSidebarProps) => {
+// unpacked callbacks; the outline tree uses most of the tree API, and exploding
+// them here would just move the wall of props.
+export const DocumentSidebar = ({
+  tree,
+  trash,
+  overrides,
+  onAddEmphasis,
+}: DocumentSidebarProps) => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [newSubjectId, setNewSubjectId] = useState<string | null>(null);
+  const { trackAddActionChosen, trackImportCompleted, trackRestoreCompleted } =
+    useDocumentSidebarAnalytics();
 
-  const handleOpenImport = () => setShowImportModal(true);
+  // A document that can't be edited offers none of the actions that edit it: no
+  // add, no restore, no drag handles, no row menus (main's isReadOnly, 3139).
+  const readOnly = !EDITABLE_STATUSES.has(overrides.status);
+  const isDistributed = DISTRIBUTED_STATUSES.has(overrides.status);
+
   const handleCloseImport = () => setShowImportModal(false);
   const handleOpenRestore = () => setShowRestoreModal(true);
   const handleCloseRestore = () => setShowRestoreModal(false);
+
+  const handleAddAction = (action: AddActionId) => {
+    trackAddActionChosen(action);
+
+    if (action === 'subject') {
+      // Created empty and immediately handed to the outline's rename input, so a
+      // new topic is named where it will live rather than in a dialog.
+      setNewSubjectId(tree.addSubject());
+    } else if (action === 'appendix') {
+      tree.addSubject(nextAppendixTitle(tree.subjects));
+    } else if (action === 'import') {
+      setShowImportModal(true);
+    } else {
+      onAddEmphasis?.();
+    }
+  };
+
+  // Empty means the topic was never named, so it goes away again — see
+  // DocumentOutlineTree's saveNew comment.
+  const handleSaveNewSubject = (title: string) => {
+    if (!newSubjectId) return;
+    if (title) tree.updateSubjectTitle(newSubjectId, title);
+    else tree.removeSubject(newSubjectId);
+    setNewSubjectId(null);
+  };
 
   // Imported sections land under the tree's first subject — there's no "pick a
   // target subject" step yet (see ImportDocModal's doc comment). Built via
@@ -60,42 +111,45 @@ export const DocumentSidebar = ({ tree, trash, overrides }: DocumentSidebarProps
         ),
       );
     }
+    trackImportCompleted(sectionTitles.length);
     setShowImportModal(false);
   };
 
   const handleRestoreSections = (entries: typeof trash.entries) => {
     trash.restore(entries);
+    trackRestoreCompleted(entries.length);
     setShowRestoreModal(false);
   };
 
   return (
-    <SidebarRoot data-testid={DOCUMENT_SIDEBAR_IDS.root}>
+    <SidebarRoot dir="rtl" data-testid={DOCUMENT_SIDEBAR_IDS.root}>
+      <StatusBlock>
+        <DocStatusHeader status={overrides.status} />
+        {PROGRESS_STATUSES.has(overrides.status) && (
+          <DocProgressBars subjects={tree.subjects} sectionMeta={overrides.mergedSectionMeta} />
+        )}
+      </StatusBlock>
+
       <ApprovalWorkflow
         docName={overrides.header.name}
         status={overrides.status}
         onStatusChange={overrides.setStatus}
       />
 
-      <TreeScroll>
-        <DocumentOutlineTree subjects={tree.subjects} sectionMeta={overrides.mergedSectionMeta} />
-      </TreeScroll>
+      <SidebarDivider />
 
-      <ActionsRow>
-        <ActionBtn
-          type="button"
-          data-testid={DOCUMENT_SIDEBAR_IDS.importBtn}
-          onClick={handleOpenImport}
-        >
-          ייבוא סעיפים
-        </ActionBtn>
-        <ActionBtn
-          type="button"
-          data-testid={DOCUMENT_SIDEBAR_IDS.restoreBtn}
-          onClick={handleOpenRestore}
-        >
-          שחזור סעיפים ({trash.entries.length})
-        </ActionBtn>
-      </ActionsRow>
+      <DocumentOutlineTree
+        tree={tree}
+        sectionMeta={overrides.mergedSectionMeta}
+        readOnly={readOnly}
+        isDistributed={isDistributed}
+        newSubjectId={newSubjectId}
+        onSaveNewSubject={handleSaveNewSubject}
+      />
+
+      {!readOnly && (
+        <SidebarFabRow onRestoreClick={handleOpenRestore} onAddAction={handleAddAction} />
+      )}
 
       <Suspense fallback={null}>
         {showImportModal && (

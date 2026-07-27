@@ -5,6 +5,8 @@ import { ModalPortal } from '@/components/ui/ModalPortal';
 import { useDialogClose } from '@/hooks/useDialogClose';
 import {
   CloseButton,
+  ConfirmHeader,
+  ConfirmTitle,
   ModalBody,
   ModalCard,
   ModalFooter,
@@ -37,6 +39,12 @@ interface ModalProps {
   // not just the ones it renders itself. Defaults to starting the close
   // animation immediately, with no side effect.
   onRequestClose?: () => void;
+  // 'confirm' is for a short question with two answers: the title centres over
+  // the body with no rule beneath it and no close X, because a confirm dialog's
+  // dismissal is one of the two buttons rather than a third, quieter way out.
+  // Everything else — focus trap, Escape, overlay click, animation — is
+  // unchanged, and 'default' is untouched.
+  variant?: 'default' | 'confirm';
   footer?: ReactNode;
   footerAlign?: 'end' | 'between';
   width?: number;
@@ -55,6 +63,7 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
       icon,
       onClose,
       onRequestClose,
+      variant = 'default',
       footer,
       footerAlign = 'end',
       width,
@@ -137,15 +146,21 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
             $height={height}
             $maxHeight={maxHeight}
           >
-            <ModalHeader data-testid={`${base}-header`}>
-              <ModalHeaderLeft>
-                {icon && <ModalHeaderIcon>{icon}</ModalHeaderIcon>}
-                <ModalTitle>{title}</ModalTitle>
-              </ModalHeaderLeft>
-              <CloseButton data-testid={`${base}-close`} onClick={onChromeClose}>
-                <X size={20} />
-              </CloseButton>
-            </ModalHeader>
+            {variant === 'confirm' ? (
+              <ConfirmHeader data-testid={`${base}-header`}>
+                <ConfirmTitle>{title}</ConfirmTitle>
+              </ConfirmHeader>
+            ) : (
+              <ModalHeader data-testid={`${base}-header`}>
+                <ModalHeaderLeft>
+                  {icon && <ModalHeaderIcon>{icon}</ModalHeaderIcon>}
+                  <ModalTitle>{title}</ModalTitle>
+                </ModalHeaderLeft>
+                <CloseButton data-testid={`${base}-close`} onClick={onChromeClose}>
+                  <X size={20} />
+                </CloseButton>
+              </ModalHeader>
+            )}
             <ModalBody data-testid={`${base}-body`} $noPadding={noBodyPadding}>
               {children}
             </ModalBody>

@@ -4,18 +4,40 @@ import { ACCEPTENCE_VERIFICATION_IDS } from '../../../../src/pages/document/comp
 import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/ApprovalDetailsModal/ApprovalDetailsModal.testids';
 import { APPROVAL_ROTATION_IDS } from '../../../../src/pages/document/components/ApprovalRotation/ApprovalRotation.testids';
 import { APPROVAL_WORKFLOW_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/ApprovalWorkflow.testids';
+import { STATUS_FLOW_NAV_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/StatusFlowNav/StatusFlowNav.testids';
 import { DISTRIBUTE_DOC_IDS } from '../../../../src/pages/document/components/DistributeDoc/DistributeDoc.testids';
+import { DOC_STATUS_HEADER_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/DocStatusHeader/DocStatusHeader.testids';
 
 const RANK = 'סא״ל';
 const USER = 'כהן א.';
 const RECIPIENT = 'אבי כהן';
-const STATUS_DRAFT = 'טיוטה';
-const STATUS_IN_APPROVAL = 'בסבב אישורים';
-const STATUS_IN_PREP = 'בהכנה';
-const STATUS_OPERATIONAL = 'מבצעית';
+
+// The sidebar states the status as a sentence — `מסמך טיוטה` — rather than as a
+// bare chip, which is main's wording (Edit.tsx:3800).
+const statusText = (status: string) => `מסמך ${status}`;
+
+/**
+ * Walk the document from its seeded status up to the approval round.
+ *
+ * The seed document is `טיוטה`, which isn't a step in STATUS_FLOW at all, so the
+ * first press enters the flow at its start rather than skipping ahead — three
+ * presses in total before the round-configuration modal opens. That is main's
+ * stepper, and it is why this isn't a single "start an approval round" button.
+ */
+const advanceToApprovalRound = async (page: import('@playwright/test').Page) => {
+  const advance = page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn);
+  const title = page.getByTestId(DOC_STATUS_HEADER_IDS.title);
+
+  await advance.click();
+  await expect(title).toHaveText(statusText('טיוטה פנימית'));
+  await advance.click();
+  await expect(title).toHaveText(statusText('בהכנה'));
+  await advance.click();
+};
 
 const configureOneStageRound = async (page: import('@playwright/test').Page) => {
-  await page.getByTestId(APPROVAL_WORKFLOW_IDS.primaryBtn).click();
+  await advanceToApprovalRound(page);
+
   await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.ranksSelect).click();
   await page.getByTestId(SEARCHABLE_MULTI_SELECT_IDS.option(RANK)).click();
   // Click the modal heading (not Escape, which also closes the Modal itself)
@@ -27,17 +49,43 @@ const configureOneStageRound = async (page: import('@playwright/test').Page) => 
   await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.submitBtn).click();
 };
 
+const distribute = async (page: import('@playwright/test').Page) => {
+  await configureOneStageRound(page);
+  await page.getByTestId(APPROVAL_ROTATION_IDS.approveBtn).click();
+  await page.getByTestId(APPROVAL_ROTATION_IDS.distributeNowBtn).click();
+};
+
+test('stepping the document forward walks it through the status flow', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  const title = page.getByTestId(DOC_STATUS_HEADER_IDS.title);
+  await expect(title).toHaveText(statusText('טיוטה'));
+
+  // Off-flow, so there is nowhere back to go and only one button appears.
+  await expect(page.getByTestId(STATUS_FLOW_NAV_IDS.revertBtn)).toHaveCount(0);
+
+  await page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn).click();
+  await expect(title).toHaveText(statusText('טיוטה פנימית'));
+
+  // Now inside the flow: forward to `בהכנה`, back to where it came from.
+  await page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn).click();
+  await expect(title).toHaveText(statusText('בהכנה'));
+
+  await page.getByTestId(STATUS_FLOW_NAV_IDS.revertBtn).click();
+  await expect(title).toHaveText(statusText('טיוטה פנימית'));
+});
+
 test('starting an approval round moves the document into the rotation carousel', async ({
   page,
 }) => {
   await page.goto('/document/d1');
 
-  await expect(page.getByTestId(APPROVAL_WORKFLOW_IDS.statusChip)).toHaveText(STATUS_DRAFT);
-
   await configureOneStageRound(page);
 
   await expect(page.getByTestId(APPROVAL_ROTATION_IDS.root)).toBeVisible();
-  await expect(page.getByTestId(APPROVAL_WORKFLOW_IDS.statusChip)).toHaveText(STATUS_IN_APPROVAL);
+  await expect(page.getByTestId(DOC_STATUS_HEADER_IDS.title)).toHaveText(
+    statusText('בסבב אישורים'),
+  );
 });
 
 test('approving the only stage prompts to distribute, and distributing opens the share modal', async ({
@@ -51,7 +99,7 @@ test('approving the only stage prompts to distribute, and distributing opens the
 
   await page.getByTestId(APPROVAL_ROTATION_IDS.distributeNowBtn).click();
 
-  await expect(page.getByTestId(APPROVAL_WORKFLOW_IDS.statusChip)).toHaveText(STATUS_OPERATIONAL);
+  await expect(page.getByTestId(DOC_STATUS_HEADER_IDS.title)).toHaveText(statusText('מבצעית'));
   await expect(page.getByTestId(DISTRIBUTE_DOC_IDS.root)).toBeVisible();
 
   const sendBtn = page.getByTestId(DISTRIBUTE_DOC_IDS.sendBtn);
@@ -75,13 +123,27 @@ test('rejecting the round sends the document back to in-prep', async ({ page }) 
   await page.getByTestId(APPROVAL_ROTATION_IDS.confirmRejectBtn).click();
 
   await expect(page.getByTestId(APPROVAL_ROTATION_IDS.root)).not.toBeVisible();
-  await expect(page.getByTestId(APPROVAL_WORKFLOW_IDS.statusChip)).toHaveText(STATUS_IN_PREP);
+  await expect(page.getByTestId(DOC_STATUS_HEADER_IDS.title)).toHaveText(statusText('בהכנה'));
 });
 
-test('acceptance verification (HML receipt confirmation) opens standalone and submits', async ({
+test('a distributed document offers HML receipt confirmation, and nothing to edit', async ({
   page,
 }) => {
   await page.goto('/document/d1');
+
+  // Confirming receipt is a recipient's action on a document that has actually
+  // been distributed, so it appears only once the document is `מבצעית` — before
+  // that there is nothing to confirm receipt of.
+  await expect(page.getByTestId(APPROVAL_WORKFLOW_IDS.acceptanceBtn)).toHaveCount(0);
+
+  await distribute(page);
+  // Modal's own header close, whose testid is derived from the dialog's.
+  await page.getByTestId(`${DISTRIBUTE_DOC_IDS.root}-close`).click();
+  await expect(page.getByTestId(DISTRIBUTE_DOC_IDS.root)).not.toBeVisible();
+
+  // A distributed document is read-only: no status moves left in either direction.
+  await expect(page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn)).toHaveCount(0);
+  await expect(page.getByTestId(STATUS_FLOW_NAV_IDS.revertBtn)).toHaveCount(0);
 
   await page.getByTestId(APPROVAL_WORKFLOW_IDS.acceptanceBtn).click();
   await expect(page.getByTestId(ACCEPTENCE_VERIFICATION_IDS.root)).toBeVisible();

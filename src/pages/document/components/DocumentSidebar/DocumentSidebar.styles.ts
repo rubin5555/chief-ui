@@ -1,6 +1,5 @@
 import styled from 'styled-components';
-import { flexScroll, resetButton } from '@/styles/mixins';
-import { colors, gray, radii, transitions } from '@/styles/theme';
+import { colors, gray } from '@/styles/theme';
 import { SIDEBAR_WIDTH } from '../../document.measurements';
 
 // main's outline sidebar (Edit.tsx:3793). It is the first child of the body row
@@ -30,30 +29,15 @@ export const SidebarRoot = styled.aside`
   }
 `;
 
-/** The tree scrolls; the action row below it stays put. */
-export const TreeScroll = styled.div`
-  ${flexScroll}
+// Status line and progress bars are one block in main, with the 8px gap between
+// them coming from the header and 16px below the pair (Edit.tsx:3796).
+export const StatusBlock = styled.div`
+  margin-bottom: 16px;
 `;
 
-export const ActionsRow = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 1px solid ${gray[200]};
-`;
-
-export const ActionBtn = styled.button`
-  ${resetButton}
-  padding: 6px 10px;
-  border-radius: ${radii.lg};
-  font-size: 12px;
-  color: ${gray[600]};
-  text-align: right;
-  transition: background-color ${transitions.fast};
-
-  &:hover {
-    background-color: ${gray[50]};
-  }
+/** Separates the document's own controls from its contents. */
+export const SidebarDivider = styled.div`
+  height: 1px;
+  margin-bottom: 16px;
+  background-color: ${gray[200]};
 `;

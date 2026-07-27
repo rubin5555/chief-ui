@@ -271,9 +271,19 @@ const DOCUMENT_SECTION_META: SectionMetaMap = {
   's1-1': seedMeta('approved', 's1-1'),
   's1-2': seedMeta('approved'),
   's2-1': seedMeta('approved', 's2-1'),
+  // Every section carries its parent topic's status, because in main that is
+  // literally the only status a section has: main stores `status` on topics only
+  // (Edit.tsx:1744) and its outline paints each section row with the *parent's*
+  // colour (3991). This model keeps status per node — which is what the filter
+  // and Phase 7's per-section transitions need — so the seed mirrors main's
+  // colours node by node instead of leaving four rows grey.
+  's2-2': seedMeta('approved'),
   's3-1': seedMeta('fix', 's3-1'),
   's3-2': seedMeta('fix'),
+  's3-3': seedMeta('fix'),
   's4-1': seedMeta('pending'),
+  's4-2': seedMeta('pending'),
+  's4-3': seedMeta('pending'),
 };
 
 const emptyPermissions = () => ({ approvers: [], editors: [] });

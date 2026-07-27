@@ -109,5 +109,14 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
 
   const close = () => setOpen(false);
 
-  return { open, pos, btnRef, panelRef, toggle, close } as const;
+  // Closing after an action that puts focus somewhere else itself — a rename field
+  // that opens where the row was, a menu item that creates a node and focuses it.
+  // The refocus above would blur that field in the same commit it appeared, and a
+  // field that commits on blur would be gone again before anyone saw it.
+  const closeWithoutRefocus = () => {
+    suppressRefocusRef.current = true;
+    setOpen(false);
+  };
+
+  return { open, pos, btnRef, panelRef, toggle, close, closeWithoutRefocus } as const;
 };

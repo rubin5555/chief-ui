@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 import { SEARCHABLE_MULTI_SELECT_IDS } from '../../../src/components/ui/SearchableMultiSelect/SearchableMultiSelect.testids';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from '../../../src/pages/document/components/ClassifiedViewersModal/ClassifiedViewersModal.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
-import { DOCUMENT_OUTLINE_TREE_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/DocumentOutlineTree.testids';
+import { OUTLINE_SECTION_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSectionRow/OutlineSectionRow.testids';
+import { OUTLINE_SUBJECT_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubjectRow/OutlineSubjectRow.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
 import { SECTION_CHAT_IDS } from '../../../src/pages/document/components/SectionChat/SectionChat.testids';
 import { SECTION_MENU_IDS } from '../../../src/pages/document/components/SectionMenu/SectionMenu.testids';
@@ -21,15 +22,15 @@ test('renders the seeded document with its header and outline tree', async ({ pa
   await expect(page.getByTestId(DOCUMENT_METADATA_PILL_IDS.title)).toContainText(
     'נוהל בטיחות 2026',
   );
-  await expect(page.getByTestId(DOCUMENT_OUTLINE_TREE_IDS.subject('s1'))).toBeVisible();
+  await expect(page.getByTestId(OUTLINE_SUBJECT_ROW_IDS.root('s1'))).toBeVisible();
   await expect(page.getByTestId(SUBJECT_BLOCK_IDS.root('s1'))).toBeVisible();
 });
 
 test('collapses and expands a subject in the outline tree', async ({ page }) => {
   await page.goto('/document/d1');
 
-  const toggle = page.getByTestId(DOCUMENT_OUTLINE_TREE_IDS.subjectToggle('s1'));
-  const firstSection = page.getByTestId(DOCUMENT_OUTLINE_TREE_IDS.section('s1-1'));
+  const toggle = page.getByTestId(OUTLINE_SUBJECT_ROW_IDS.toggle('s1'));
+  const firstSection = page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-1'));
 
   await expect(firstSection).toBeVisible();
   await toggle.click();

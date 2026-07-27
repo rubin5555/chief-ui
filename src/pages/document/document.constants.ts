@@ -29,12 +29,27 @@ export const SUPERSCRIPT_NUMS = ['¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '
  */
 export const STATUS_FLOW = ['טיוטה פנימית', 'בהכנה', 'בסבב אישורים', 'ממתין להפצה'];
 
-/** Statuses in which the document is still editable. */
+/**
+ * Statuses in which the document is still editable — the complement of main's
+ * `isReadOnly` list (Edit.tsx:3139), which enumerates the other six. Stated as
+ * the short side on purpose: a status nobody has thought about should arrive
+ * read-only rather than editable.
+ */
 export const EDITABLE_STATUSES = new Set(['טיוטה פנימית', 'טיוטה', 'בהכנה']);
 
 /**
+ * Statuses a document reaches by being distributed (main's isDistributedDoc,
+ * Edit.tsx:3140). Distinct from "not editable": a document in `בסבב אישורים` is
+ * locked for editing but has not been distributed, and the outline's status dots
+ * hide only for the ones that have.
+ */
+export const DISTRIBUTED_STATUSES = new Set(['מבצעית', 'נצורה', 'הסתיימה', 'התבטלה']);
+
+/**
  * Statuses in which most of EditDocDetailsModal's fields become read-only
- * (main's isLimitedEdit, Edit.tsx:2225).
+ * (main's isLimitedEdit, Edit.tsx:2225). Identical membership to
+ * DISTRIBUTED_STATUSES today and still separate: one is about what a form lets
+ * you type, the other about where the document is in its lifecycle.
  */
 export const LIMITED_EDIT_STATUSES = new Set(['מבצעית', 'נצורה', 'הסתיימה', 'התבטלה']);
 

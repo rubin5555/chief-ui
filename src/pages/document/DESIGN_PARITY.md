@@ -76,6 +76,9 @@ kind rather than just in lightness.
 | `#fafafa` | 1 | `docColors.letterheadBg` | the in-paper letterhead block |
 | `#f5f5f5` | 1 | `docColors.rowDivider` | import-table row separator |
 | `#eff6ff` | 1 | `docColors.cellActiveBg` | active table cell (`parity/` only) |
+| `bg-amber-400` = `#fbbf24` | 1 | `docColors.progressAmber` | the sidebar's "in preparation" progress fill. Same light value as `searchHit`, separate token — a filled bar and a text outline needn't stay the same amber in dark mode. |
+| `hover:bg-white/70` | 2 | `docColors.translucentHover` | hover fill on the sidebar's bordered buttons. Translucent because what shows through is the page gradient. |
+| `hover:bg-gray-200/70` | 3 | `docColors.iconHover` | hover behind the outline tree's small round icon buttons — `gray[200]` at 70%, which lands lighter than `gray[100]`. |
 | `#F6F9FC → #F9F3ED`, 7 stops | 1 | `docColors.canvasGradient` | the page's `linear-gradient(135deg, …)` behind the paper, as one property |
 
 ## Deliberately **not** tokens: the two colour palettes
@@ -148,6 +151,18 @@ Phase 2 rebuilt the page skeleton to main's. The pieces that are easy to
   `justify-between` with two groups and no middle one at all
   (`TopNavbar.tsx:1216`), so centring the toolbar would put it somewhere main
   never puts it. `NavToolbarSlotContext` portals it into the leading group.
+- **Only *section* rows carry a status dot in the outline.** Topic rows have a
+  chevron and a title; sub-section rows have a Hebrew letter and a title. main
+  puts the dot on the middle level alone (`Edit.tsx:3990`), and hides it entirely
+  once the document has been distributed.
+- **The sidebar has no text buttons.** Importing and restoring are reached from
+  the two round navy buttons at the foot of the column (`Edit.tsx:4082`) — the
+  `+` opens a four-item menu, one of which is the importer.
+- **The status flow is a stepper, not a jump.** The seed document is `טיוטה`,
+  which isn't a step in `STATUS_FLOW` at all, so its one button reads
+  `העבר לטיוטה פנימית` and there is nothing to go back to. Reaching the approval
+  round takes three presses. main behaves the same way, by way of `indexOf`
+  returning `-1`.
 - **The filter panel commits on `סנן`**, not on each tick. main stages the
   selection locally and only writes it when you press the button
   (`Edit.tsx:2518`) — so four boxes re-render the document once, and `נקה` clears
@@ -155,8 +170,17 @@ Phase 2 rebuilt the page skeleton to main's. The pieces that are easy to
 
 ## Known deltas
 
-Two things that are *not* pixel-faithful, both deliberate, both cheap to change
-if you'd rather they weren't:
+Things that are *not* pixel-faithful, all deliberate, all cheap to change if
+you'd rather they weren't:
+
+- **The sidebar's progress bars show real numbers.** main hardcodes `0/3 סעיפים
+  בהכנה` and `2/5 סעיפים אושרו` — two fractions that don't even share a
+  denominator — so the bars here count the document's own sections instead. The
+  bars look identical; the numbers differ from main's, and the second fill lands
+  at the same 40% by coincidence.
+- **The `+` menu opens 2px lower than main's.** main hand-computes
+  `bottom: innerHeight - rect.top + 8`; `useFloatingPanel` flips the panel upward
+  on its own with a 6px gap, and brings the viewport clamp with it.
 
 - **`NavStart`'s gap is 12px; main's is 16px.** It sits between "Chief" and the
   reality-mode pill on every page, and it predates this migration. Widening it
@@ -170,6 +194,13 @@ if you'd rather they weren't:
 
 Also temporarily inert: the toolbar's **הרשאות** button. main renders it, so it
 renders — the five-tab document-permissions modal it opens is still to be built.
+
+And one addition with no counterpart in main: the sidebar's **אישור קבלה (חמ״ל)**
+button, shown only once a document has been distributed. main has a modal for
+this (`ViduyKabalahModal`, 2546) that nothing ever opens — `setShowViduyKabalah(true)`
+has no call site — so there is no button of main's to match, and none of main's
+is displaced: on a distributed document main leaves this part of the sidebar
+empty.
 
 ## Checking parity
 

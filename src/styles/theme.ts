@@ -35,11 +35,23 @@ export const docColors = {
   compareBg: 'var(--doc-compare-bg)',
   compareBorder: 'var(--doc-compare-border)',
   searchHit: 'var(--doc-search-hit)',
+  // main's `bg-amber-400` progress fill (Edit.tsx:3831). Same light value as
+  // searchHit, deliberately its own token: a filled bar and a text outline are
+  // different roles and needn't stay the same amber once dark mode diverges.
+  progressAmber: 'var(--doc-progress-amber)',
   warningStrong: 'var(--doc-warning-strong)',
   stampInk: 'var(--doc-stamp-ink)',
   chatOwnAccent: 'var(--doc-chat-own-accent)',
   chatArrowBorder: 'var(--doc-chat-arrow-border)',
   cellActiveBg: 'var(--doc-cell-active-bg)',
+  // main's `hover:bg-white/70` on the sidebar's bordered buttons. Translucent
+  // rather than solid because what shows through is the page's own gradient, so
+  // the hover reads as a lift off the canvas instead of a white patch on it.
+  translucentHover: 'var(--doc-translucent-hover)',
+  // main's `hover:bg-gray-200/70` behind the outline tree's small round icon
+  // buttons — gray[200]'s exact value at 70%, which lands lighter than gray[100]
+  // and is why this isn't just that token.
+  iconHover: 'var(--doc-icon-hover)',
 } as const;
 
 // Status colours for the document page. Consumers index this instead of
@@ -60,6 +72,15 @@ export const shadows = {
   lg: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)',
   xl: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
   xxl: '0 25px 50px -12px rgba(0,0,0,0.25)',
+  // Tighter and darker than `md`: a small floating chip needs a defined edge
+  // rather than the soft ambient spread a card gets (main's status tooltip,
+  // Edit.tsx:3817).
+  tooltip: '0 2px 6px rgba(0,0,0,0.10)',
+  // A navy-tinted lift for a filled primary button, rather than the neutral grey
+  // of the scale above. main puts the same one on the sidebar's status-flow
+  // button (Edit.tsx:3850) and on its round FAB buttons (4088), which is why it
+  // lives here and not in either component's styles.
+  primary: '0 2px 8px rgba(27,58,107,0.3)',
 } as const;
 
 export const radii = {
