@@ -1,6 +1,7 @@
 export const DOC_ACTION_TOOLBAR_IDS = {
   root: 'doc-action-toolbar',
-  filter: 'doc-action-toolbar-filter',
+  // No `filter` id — the filter trigger is contributed by the page through the
+  // toolbar's `filter` slot, and carries FILTER_PANEL_IDS.trigger instead.
   editDoc: 'doc-action-toolbar-edit-doc',
   duplicate: 'doc-action-toolbar-duplicate',
   permissions: 'doc-action-toolbar-permissions',

@@ -66,6 +66,9 @@ export const radii = {
   // 4px — main's smallest corner, for a rounded rect that is a hover affordance
   // on inline text (an editable heading) rather than a container.
   sm: '4px',
+  // 6px — main's `rounded-md`, for the small square controls (the filter panel's
+  // own checkbox) that would read as circles at `lg`.
+  md: '6px',
   lg: '8px',
   xl: '12px',
   '2xl': '16px',

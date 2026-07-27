@@ -10,6 +10,7 @@ export const DuplicateButton = ({ onClick }: DuplicateButtonProps) => (
   <IconAction
     type="button"
     title="שכפול"
+    aria-label="שכפול"
     data-testid={DOC_ACTION_TOOLBAR_IDS.duplicate}
     onClick={onClick}
   >

@@ -1,5 +1,5 @@
 import { css } from 'styled-components';
-import { colors, radii, transitions } from '@/styles/theme';
+import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const ellipsis = css`
   overflow: hidden;
@@ -58,6 +58,26 @@ export const focusPrimaryBorder = css`
   &:focus {
     outline: none;
     border-color: ${colors.primary};
+  }
+`;
+
+// One of main's navbar action icons (TopNavbar.tsx:1254): a 16px glyph in a
+// circular hit area that only tints on hover — no active/selected state, since
+// what's active is shown in the page itself rather than on the button.
+//
+// It lives here rather than in DocActionToolbar.styles.ts because the document
+// page's FilterPanel renders its own trigger *into* that toolbar and has to be
+// indistinguishable from the buttons beside it, and src/styles is the nearest
+// common ancestor of a layout component and a page one.
+export const navIconAction = css`
+  padding: 6px;
+  border-radius: ${radii.full};
+  transition: background-color ${transitions.normal};
+  ${flexCenter}
+  color: ${gray[500]};
+
+  &:hover {
+    background-color: ${gray[100]};
   }
 `;
 

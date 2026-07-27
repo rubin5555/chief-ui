@@ -10,6 +10,7 @@ export const EditDocButton = ({ onClick }: EditDocButtonProps) => (
   <IconAction
     type="button"
     title="עריכת פרטי מסמך"
+    aria-label="עריכת פרטי מסמך"
     data-testid={DOC_ACTION_TOOLBAR_IDS.editDoc}
     onClick={onClick}
   >

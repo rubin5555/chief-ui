@@ -1,89 +1,84 @@
 import { getRouteApi } from '@tanstack/react-router';
-import { Filter } from 'lucide-react';
+import { Filter, X } from 'lucide-react';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { IconButtonRoot } from '@/components/ui/IconButton';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import type { SectionStatus } from '../../types';
-import { ClearBtn, ClearRow, OptionRow, PanelBody } from './FilterPanel.styles';
+import { StatusFilterList } from './components/StatusFilterList';
+import { useFilterPanelAnalytics } from './FilterPanel.analytics';
+import { CloseButton, FilterTrigger, PanelHeader, PanelTitle } from './FilterPanel.styles';
 import { FILTER_PANEL_IDS } from './FilterPanel.testids';
 
 const routeApi = getRouteApi('/document/$id');
 
-const PANEL_WIDTH = 180;
+// main's panel is 240px wide and hard-pinned to `top: 52, right: 12`
+// (Edit.tsx:2493) — which only lands under the navbar's filter icon by coincidence
+// of where that icon happens to sit. useFloatingPanel anchors it to the trigger's
+// real rect instead, so it stays put if the toolbar ever moves, and clamps or flips
+// at the viewport edge.
+const PANEL_WIDTH = 240;
 
-const STATUS_OPTIONS: { id: SectionStatus; label: string }[] = [
-  { id: 'editing', label: 'בעריכה' },
-  { id: 'pending', label: 'ממתין' },
-  { id: 'approved', label: 'מאושר' },
-  { id: 'fix', label: 'לתיקון' },
-  { id: 'idle', label: 'ללא סטטוס' },
-];
-
-// Status filter is bookmarkable (it changes which sections render), so it's
+// Renders its trigger into the navbar's document-actions toolbar (see
+// DocumentActionsSlot) rather than owning a spot in the page: the trigger and the
+// popover have to be one component, because the popover is positioned off the
+// trigger's own bounding rect.
+//
+// The *applied* filter is bookmarkable — it changes which sections render — so it's
 // backed by the route's `statuses` search param rather than local state, per
-// .claude/skills/router-state-splitting.md.
+// .claude/skills/router-state-splitting.md. The staged selection inside the open
+// panel is not; that belongs to StatusFilterList.
 export const FilterPanel = () => {
   const { statuses } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
   const panel = useFloatingPanel<HTMLButtonElement>();
+  const { trackPanelOpened, trackFilterApplied } = useFilterPanelAnalytics();
 
-  const activeStatuses = statuses ? statuses.split(',') : [];
+  const applied = statuses ? (statuses.split(',') as SectionStatus[]) : [];
 
-  const handleToggle = (status: SectionStatus) => () => {
-    const next = activeStatuses.includes(status)
-      ? activeStatuses.filter((s) => s !== status)
-      : [...activeStatuses, status];
-    navigate({ search: (prev) => ({ ...prev, statuses: next.join(',') }), replace: true });
+  const handleToggleOpen = () => {
+    if (!panel.open) trackPanelOpened();
+    panel.toggle(PANEL_WIDTH);
   };
 
-  const handleClear = () =>
-    navigate({ search: (prev) => ({ ...prev, statuses: '' }), replace: true });
-  const handleToggleOpen = () => panel.toggle(PANEL_WIDTH);
+  const handleApply = (next: SectionStatus[]) => {
+    trackFilterApplied(next);
+    navigate({ search: (prev) => ({ ...prev, statuses: next.join(',') }), replace: true });
+    panel.close();
+  };
 
   return (
     <>
-      <IconButtonRoot
+      <FilterTrigger
         ref={panel.btnRef}
         type="button"
-        $isActive={panel.open || activeStatuses.length > 0}
-        aria-label="סינון לפי סטטוס"
+        title="סינון"
+        aria-label="סינון סעיפים לפי סטטוס"
         data-testid={FILTER_PANEL_IDS.trigger}
         onClick={handleToggleOpen}
       >
         <Filter size={16} />
-      </IconButtonRoot>
+      </FilterTrigger>
 
       {panel.open && panel.pos && (
         <FloatingPanel
           ref={panel.panelRef}
           $pos={panel.pos}
           $width={PANEL_WIDTH}
+          dir="rtl"
           data-testid={FILTER_PANEL_IDS.panel}
         >
-          <PanelBody>
-            {STATUS_OPTIONS.map((option) => (
-              <OptionRow key={option.id}>
-                <input
-                  type="checkbox"
-                  checked={activeStatuses.includes(option.id)}
-                  onChange={handleToggle(option.id)}
-                  data-testid={FILTER_PANEL_IDS.option(option.id)}
-                />
-                {option.label}
-              </OptionRow>
-            ))}
-            {activeStatuses.length > 0 && (
-              <ClearRow>
-                <ClearBtn
-                  type="button"
-                  onClick={handleClear}
-                  data-testid={FILTER_PANEL_IDS.clearBtn}
-                >
-                  ניקוי סינון
-                </ClearBtn>
-              </ClearRow>
-            )}
-          </PanelBody>
+          <PanelHeader>
+            <PanelTitle>סינון סעיפים לפי סטטוס</PanelTitle>
+            <CloseButton
+              type="button"
+              aria-label="סגירה"
+              data-testid={FILTER_PANEL_IDS.closeBtn}
+              onClick={panel.close}
+            >
+              <X size={14} />
+            </CloseButton>
+          </PanelHeader>
+
+          <StatusFilterList applied={applied} onApply={handleApply} />
         </FloatingPanel>
       )}
     </>

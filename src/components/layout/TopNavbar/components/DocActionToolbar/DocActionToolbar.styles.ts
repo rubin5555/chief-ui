@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { flexCenter, flexGap } from '@/styles/mixins';
+import { flexCenter, flexGap, navIconAction } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
 export const ToolbarRoot = styled.div`
@@ -8,12 +8,7 @@ export const ToolbarRoot = styled.div`
 `;
 
 export const IconAction = styled.button`
-  padding: 6px;
-  border-radius: ${radii.full};
-  transition: background-color 0.15s;
-  ${flexCenter}
-  color: ${gray[500]};
-  &:hover { background-color: ${gray[100]}; }
+  ${navIconAction}
 `;
 
 export const Divider = styled.span`

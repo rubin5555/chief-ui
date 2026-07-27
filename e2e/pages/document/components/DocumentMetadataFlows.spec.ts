@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
 import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/EditDocDetailsModal/EditDocDetailsModal.testids';
@@ -9,17 +10,13 @@ import { SECTION_MENU_IDS } from '../../../../src/pages/document/components/Sect
 import { SUBJECT_BLOCK_IDS } from '../../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
 import { clickCentred } from '../../../support/interactions';
 
-// TEMPORARILY DISABLED — has no trigger to click right now, not a broken flow.
-// The metadata pill that replaced DocHeaderCard is inert, exactly as main's is
-// (Edit.tsx:3689): main opens EditDocDetailsModal from the navbar's
-// document-actions toolbar, which is built but not yet mounted. The next phase
-// mounts it and this test comes straight back, pointed at that trigger.
-test.fixme('editing document details updates the header, with a dirty warning', async ({
-  page,
-}) => {
+// The metadata pill itself is inert, exactly as main's is (Edit.tsx:3689) — details
+// are edited from the navbar's document-actions toolbar, which the page portals up
+// there via DocumentActionsSlot.
+test('editing document details updates the header, with a dirty warning', async ({ page }) => {
   await page.goto('/document/d1');
 
-  await page.locator('button[aria-label="עריכת פרטי מסמך"]').click();
+  await page.getByTestId(DOC_ACTION_TOOLBAR_IDS.editDoc).click();
   await expect(page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.root)).toBeVisible();
   await expect(page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.dirtyWarning)).not.toBeVisible();
 
@@ -76,14 +73,10 @@ test('deleting a section trashes it, and restoring brings it back', async ({ pag
   await expect(sectionBody).toBeVisible();
 });
 
-// TEMPORARILY DISABLED for the same reason as the edit-details test above: the
-// trigger isn't mounted yet, the flow isn't broken. main's paper toolbar holds
-// the editor ribbon and the active-filter chips only (Edit.tsx:4106-4129) — the
-// filter button lives in the navbar's document-actions toolbar. The next phase
-// mounts it and this test returns unchanged.
-test.fixme('status filter hides sections that do not match the selected status', async ({
-  page,
-}) => {
+// main's paper toolbar holds the editor ribbon and the active-filter chips only
+// (Edit.tsx:4106-4129); the filter trigger belongs to the navbar's document-actions
+// toolbar, which the page fills through DocumentActionsSlot.
+test('status filter hides sections that do not match the selected status', async ({ page }) => {
   await page.goto('/document/d1');
 
   // s1-1 is seeded 'approved' (DOCUMENT_SECTION_META in src/api/docs.ts), so
@@ -92,13 +85,22 @@ test.fixme('status filter hides sections that do not match the selected status',
   await page.getByTestId(FILTER_PANEL_IDS.trigger).click();
   await expect(page.getByTestId(FILTER_PANEL_IDS.panel)).toBeVisible();
 
+  // Ticking an option only stages it; main commits on סנן (Edit.tsx:2518), and the
+  // panel closes with it.
   await page.getByTestId(FILTER_PANEL_IDS.option('pending')).click();
+  await expect(page).not.toHaveURL(/statuses=pending/);
+
+  await page.getByTestId(FILTER_PANEL_IDS.applyBtn).click();
   await expect(page).toHaveURL(/statuses=pending/);
+  await expect(page.getByTestId(FILTER_PANEL_IDS.panel)).toHaveCount(0);
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-1'))).toHaveCount(0);
 
-  // The panel stays open after checking an option (it's a multi-select, not
-  // a single-pick dropdown), so the clear button is already visible here.
+  // Reopening seeds the staged selection from the URL, so נקה + סנן is how you get
+  // back to an unfiltered document.
+  await page.getByTestId(FILTER_PANEL_IDS.trigger).click();
   await page.getByTestId(FILTER_PANEL_IDS.clearBtn).click();
+  await page.getByTestId(FILTER_PANEL_IDS.applyBtn).click();
+
   await expect(page).not.toHaveURL(/statuses=pending/);
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-1'))).toBeVisible();
 });

@@ -11,7 +11,7 @@ interface ExportButtonProps {
 }
 
 export const ExportButton = ({ title, testId, isLoading, icon, onClick }: ExportButtonProps) => (
-  <IconAction type="button" title={title} data-testid={testId} onClick={onClick}>
+  <IconAction type="button" title={title} aria-label={title} data-testid={testId} onClick={onClick}>
     {isLoading ? (
       <SpinningLoader>
         <Loader2 size={16} />

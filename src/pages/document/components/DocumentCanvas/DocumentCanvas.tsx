@@ -7,6 +7,7 @@ import { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import type { DocumentDto } from '../../types';
 import { ComparisonBar } from '../ComparisonBar';
 import { BarRow } from '../components.shared.styles';
+import { DocumentActionsSlot } from '../DocumentActionsSlot';
 import { DocumentMetadataPill } from '../DocumentMetadataPill';
 import { DocumentSidebar } from '../DocumentSidebar';
 import { PaperCanvas } from '../PaperCanvas';
@@ -43,6 +44,10 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
 
   const canvasBody = (
     <ContentEditorProvider>
+      {/* Renders nothing here — it portals the document's action toolbar into the
+          navbar, and owns the modals that toolbar opens. */}
+      <DocumentActionsSlot overrides={overrides} />
+
       <BarRow>
         <DocumentMetadataPill header={overrides.header} />
       </BarRow>

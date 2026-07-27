@@ -143,6 +143,33 @@ Phase 2 rebuilt the page skeleton to main's. The pieces that are easy to
   (main's ghost-span trick); subject and sub-section titles fill the row.
 - **The metadata pill is inert** — no edit pencil. Document details are edited
   from the navbar's document-actions toolbar.
+- **The document's action icons live in the navbar's *leading* group**, right
+  after the reality-mode pill — not in a centre slot. main's navbar is a plain
+  `justify-between` with two groups and no middle one at all
+  (`TopNavbar.tsx:1216`), so centring the toolbar would put it somewhere main
+  never puts it. `NavToolbarSlotContext` portals it into the leading group.
+- **The filter panel commits on `סנן`**, not on each tick. main stages the
+  selection locally and only writes it when you press the button
+  (`Edit.tsx:2518`) — so four boxes re-render the document once, and `נקה` clears
+  the staging area rather than the applied filter.
+
+## Known deltas
+
+Two things that are *not* pixel-faithful, both deliberate, both cheap to change
+if you'd rather they weren't:
+
+- **`NavStart`'s gap is 12px; main's is 16px.** It sits between "Chief" and the
+  reality-mode pill on every page, and it predates this migration. Widening it
+  also shifts the document toolbar 4px and invalidates
+  `e2e/components/layout/TopNavbar.spec.ts`'s screenshot baseline, so it's left
+  alone rather than churned as a side effect of a document-page phase.
+- **No in-app link to a document.** main opens one from its catalog page, which
+  dev doesn't have; inventing a navbar link would put an element on *every* page
+  that main has nowhere. The brand is a real link home, and the document is
+  reached at `/document/d1`.
+
+Also temporarily inert: the toolbar's **הרשאות** button. main renders it, so it
+renders — the five-tab document-permissions modal it opens is still to be built.
 
 ## Checking parity
 

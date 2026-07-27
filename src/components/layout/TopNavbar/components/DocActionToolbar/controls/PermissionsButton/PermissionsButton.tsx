@@ -10,6 +10,7 @@ export const PermissionsButton = ({ onClick }: PermissionsButtonProps) => (
   <IconAction
     type="button"
     title="הרשאות"
+    aria-label="הרשאות"
     data-testid={DOC_ACTION_TOOLBAR_IDS.permissions}
     onClick={onClick}
   >

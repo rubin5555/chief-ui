@@ -1,5 +1,6 @@
 import { Outlet } from '@tanstack/react-router';
 import { User } from 'lucide-react';
+import { useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { NotificationsMenu } from '@/components/layout/TopNavbar/components/NotificationsMenu';
@@ -8,30 +9,42 @@ import { SupportMenu } from '@/components/layout/TopNavbar/components/SupportMen
 import { ThemeToggle } from '@/components/layout/TopNavbar/components/ThemeToggle';
 import { TrainingMenu } from '@/components/layout/TopNavbar/components/TrainingMenu';
 import { IconButton } from '@/components/ui/IconButton';
-import { BrandSpan } from './AppLayout.styles';
+import { NavToolbarSlotProvider } from '@/context/NavToolbarSlotContext';
+import { BrandLink, NavToolbarHost } from './AppLayout.styles';
 
 // Shared chrome for every routed page — rendered once at the root layout
 // (see src/routes/__root.tsx), right next to <Outlet/>, instead of each page
 // component re-mounting its own TopNavbar/AppShell.
-export const AppLayout = () => (
-  <AppShell>
-    <TopNavbar
-      start={
-        <>
-          <BrandSpan>Chief</BrandSpan>
-          <RealityModeSwitch />
-        </>
-      }
-      end={
-        <>
-          <NotificationsMenu />
-          <SupportMenu />
-          <TrainingMenu />
-          <ThemeToggle />
-          <IconButton aria-label="פרופיל" icon={<User size={20} />} isActive />
-        </>
-      }
-    />
-    <Outlet />
-  </AppShell>
-);
+//
+// The only state here is the toolbar slot's host element. AppLayout deliberately
+// knows nothing about what a page puts in it — pages portal their own toolbar in
+// and keep their own handlers and modals, per NavToolbarSlotContext's doc comment.
+export const AppLayout = () => {
+  const [navToolbarNode, setNavToolbarNode] = useState<HTMLDivElement | null>(null);
+
+  return (
+    <NavToolbarSlotProvider value={navToolbarNode}>
+      <AppShell>
+        <TopNavbar
+          start={
+            <>
+              <BrandLink to="/">Chief</BrandLink>
+              <RealityModeSwitch />
+              <NavToolbarHost ref={setNavToolbarNode} />
+            </>
+          }
+          end={
+            <>
+              <NotificationsMenu />
+              <SupportMenu />
+              <TrainingMenu />
+              <ThemeToggle />
+              <IconButton aria-label="פרופיל" icon={<User size={20} />} isActive />
+            </>
+          }
+        />
+        <Outlet />
+      </AppShell>
+    </NavToolbarSlotProvider>
+  );
+};

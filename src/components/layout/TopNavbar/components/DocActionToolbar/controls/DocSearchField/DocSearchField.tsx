@@ -7,19 +7,25 @@ import { SearchCloseButton, SearchField, SearchFieldInput } from '../../DocActio
 import { DOC_ACTION_TOOLBAR_IDS } from '../../DocActionToolbar.testids';
 
 interface DocSearchFieldProps {
+  /** Seeds the field from a bookmarked query; not tracked afterwards. */
+  initialValue: string;
   onChange: (query: string) => void;
   onClose: () => void;
 }
 
 // Owns its own keystroke-level value/debounce so typing here only re-renders
 // this field, not the whole toolbar — only the debounced query bubbles up.
-export const DocSearchField = ({ onChange, onClose }: DocSearchFieldProps) => {
-  const [value, setValue] = useState('');
+export const DocSearchField = ({ initialValue, onChange, onClose }: DocSearchFieldProps) => {
+  const [value, setValue] = useState(initialValue);
   const debouncedValue = useDebounce(value, SEARCH_DEBOUNCE_MS);
 
+  // Fires on the debounced value only. `onChange` is deliberately not a dependency:
+  // its owner rebuilds the closure every render, so including it would re-publish the
+  // same query on every unrelated re-render of the page above.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment above
   useEffect(() => {
     onChange(debouncedValue);
-  }, [debouncedValue, onChange]);
+  }, [debouncedValue]);
 
   const onInputChange = (e: ChangeEvent<HTMLInputElement>) => setValue(e.target.value);
 
@@ -32,6 +38,7 @@ export const DocSearchField = ({ onChange, onClose }: DocSearchFieldProps) => {
       <Search size={12} color={gray[500]} />
       <SearchFieldInput
         autoFocus
+        aria-label="חיפוש במסמך"
         data-testid={DOC_ACTION_TOOLBAR_IDS.searchInput}
         value={value}
         onChange={onInputChange}
@@ -41,6 +48,7 @@ export const DocSearchField = ({ onChange, onClose }: DocSearchFieldProps) => {
       />
       <SearchCloseButton
         type="button"
+        aria-label="סגירת חיפוש"
         data-testid={DOC_ACTION_TOOLBAR_IDS.searchClose}
         onClick={onClose}
       >

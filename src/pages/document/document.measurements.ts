@@ -39,8 +39,12 @@ export const PAPER_SHADOW = '0 1px 4px rgba(0,0,0,0.18)';
 /** Hairline dashed rule marking each A4 page boundary, drawn at 297mm intervals. */
 export const PAGE_BREAK_LINE_WIDTH = '1.5px';
 
-/** Zoom bounds, matching TopNavbar's ZoomControl so the URL can't hold an unreachable value. */
+/**
+ * Zoom bounds, and the single source for them: the route schema validates `?zoom=`
+ * against these and DocumentActionsSlot clamps to them before writing. The navbar's
+ * ZoomControl deliberately doesn't know them — it knows only its own step size — so
+ * there is no second copy to fall out of sync with what the URL will accept.
+ */
 export const ZOOM_MIN = 50;
 export const ZOOM_MAX = 200;
-export const ZOOM_STEP = 10;
 export const ZOOM_DEFAULT = 100;

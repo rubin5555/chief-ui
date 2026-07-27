@@ -3,7 +3,6 @@ import { analytics } from '@/analytics';
 const ANALYTICS_CATEGORY = 'סרגל פעולות מסמך';
 
 const ACTIONS = {
-  FILTER_CLICKED: 'לחיצה על סינון',
   EDIT_DOC_CLICKED: 'לחיצה על עריכת פרטי מסמך',
   DUPLICATE_CLICKED: 'לחיצה על שכפול',
   PERMISSIONS_CLICKED: 'לחיצה על הרשאות מסמך',
@@ -14,10 +13,6 @@ const ACTIONS = {
 } as const;
 
 export const useDocActionToolbarAnalytics = () => {
-  const trackFilterClicked = () => {
-    analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.FILTER_CLICKED });
-  };
-
   const trackEditDocClicked = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.EDIT_DOC_CLICKED });
   };
@@ -54,7 +49,6 @@ export const useDocActionToolbarAnalytics = () => {
   };
 
   return {
-    trackFilterClicked,
     trackEditDocClicked,
     trackDuplicateClicked,
     trackPermissionsClicked,
