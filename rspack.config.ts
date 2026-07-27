@@ -47,6 +47,14 @@ export default defineConfig({
         test: /\.css$/,
         type: 'css/auto',
       },
+      // Images resolve to a URL instead of being inlined, so the document
+      // letterhead's emblem is cached on its own rather than riding along in the
+      // JS bundle. They live in src and go through the bundler because `public/`
+      // holds only the HTML template — nothing copies it into the build.
+      {
+        test: /\.(svg|png|jpe?g|gif|webp)$/,
+        type: 'asset/resource',
+      },
     ],
   },
   plugins: [

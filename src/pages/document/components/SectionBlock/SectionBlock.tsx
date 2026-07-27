@@ -23,6 +23,7 @@ export interface SectionBlockProps {
   /** Continuous position in the document, not within the parent subject. */
   number: number;
   filteredSectionIds: Set<string>;
+  searchMatchIds: Set<string>;
   tree: ReturnType<typeof useDocumentTree>;
   overrides: ReturnType<typeof useDocumentOverrides>;
   trash: ReturnType<typeof useDocumentTrash>;
@@ -34,6 +35,7 @@ export const SectionBlock = ({
   section,
   number,
   filteredSectionIds,
+  searchMatchIds,
   tree,
   overrides,
   trash,
@@ -66,7 +68,10 @@ export const SectionBlock = ({
   const handleDelete = () => trash.remove(subjectId, section);
 
   return (
-    <SectionRoot data-testid={SECTION_BLOCK_IDS.root(section.id)}>
+    <SectionRoot
+      $highlighted={searchMatchIds.has(section.id)}
+      data-testid={SECTION_BLOCK_IDS.root(section.id)}
+    >
       <SectionHeaderRow>
         <SectionNumber>{number}.</SectionNumber>
         <TitleSlot>

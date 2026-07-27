@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { PROFILE_FALLBACK, useProfile } from '@/api/profile';
 import { ContentEditorProvider } from '@/components/ui/ContentEditor';
 import { CollabProvider } from '@/context/CollabContext';
 import { useDocumentTree } from '@/hooks/useDocumentTree';
+import { DISTRIBUTED_STATUSES, EDITABLE_STATUSES } from '../../document.constants';
 import { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import type { DocumentDto } from '../../types';
@@ -11,6 +13,7 @@ import { DocumentActionsSlot } from '../DocumentActionsSlot';
 import { DocumentMetadataPill } from '../DocumentMetadataPill';
 import { DocumentSidebar } from '../DocumentSidebar';
 import { PaperCanvas } from '../PaperCanvas';
+import { SourceSystemsNotice } from '../SourceSystemsNotice';
 import { BodyRow } from './DocumentCanvas.styles';
 import { DOCUMENT_CANVAS_IDS } from './DocumentCanvas.testids';
 
@@ -34,6 +37,19 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
   const overrides = useDocumentOverrides(data);
   const trash = useDocumentTrash(tree);
 
+  // Whether the emphasis card is shown lives here because its switch and its
+  // rendering are in different columns: the sidebar's `+` menu turns it on, the
+  // paper draws it.
+  const [showEmphasis, setShowEmphasis] = useState(false);
+
+  // Derived from the status, never stored: `isReadOnly` is what the status
+  // *means*, not a second thing that could disagree with it. Both columns get the
+  // same answer because it is worked out once, here, above both of them.
+  const readOnly = !EDITABLE_STATUSES.has(overrides.status);
+  const isDistributed = DISTRIBUTED_STATUSES.has(overrides.status);
+
+  const handleAddEmphasis = () => setShowEmphasis(true);
+
   // Real-time collab needs a real signed-in user id, which dev has no auth/
   // session concept for yet — reuses the same useProfile()/PROFILE_FALLBACK
   // identity ProfilePage already passes as TemplatesPanel's currentUserId, rather
@@ -52,13 +68,35 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
         <DocumentMetadataPill header={overrides.header} />
       </BarRow>
 
+      {/* main hides the provenance notice once the document is locked
+          (Edit.tsx:3711) — where its content came from stops being actionable
+          when you can no longer refresh it. */}
+      {!readOnly && data.sourceSystems.length > 0 && (
+        <BarRow>
+          <SourceSystemsNotice systems={data.sourceSystems} />
+        </BarRow>
+      )}
+
       <BarRow>
         <ComparisonBar />
       </BarRow>
 
       <BodyRow data-testid={DOCUMENT_CANVAS_IDS.root}>
-        <DocumentSidebar tree={tree} trash={trash} overrides={overrides} />
-        <PaperCanvas tree={tree} overrides={overrides} trash={trash} />
+        <DocumentSidebar
+          tree={tree}
+          trash={trash}
+          overrides={overrides}
+          readOnly={readOnly}
+          isDistributed={isDistributed}
+          onAddEmphasis={handleAddEmphasis}
+        />
+        <PaperCanvas
+          tree={tree}
+          overrides={overrides}
+          trash={trash}
+          readOnly={readOnly}
+          showEmphasis={showEmphasis}
+        />
       </BodyRow>
     </ContentEditorProvider>
   );

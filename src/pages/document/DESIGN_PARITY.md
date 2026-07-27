@@ -79,6 +79,7 @@ kind rather than just in lightness.
 | `bg-amber-400` = `#fbbf24` | 1 | `docColors.progressAmber` | the sidebar's "in preparation" progress fill. Same light value as `searchHit`, separate token — a filled bar and a text outline needn't stay the same amber in dark mode. |
 | `hover:bg-white/70` | 2 | `docColors.translucentHover` | hover fill on the sidebar's bordered buttons. Translucent because what shows through is the page gradient. |
 | `hover:bg-gray-200/70` | 3 | `docColors.iconHover` | hover behind the outline tree's small round icon buttons — `gray[200]` at 70%, which lands lighter than `gray[100]`. |
+| `hover:bg-amber-100` = `#fef3c7` | 4 | `docColors.amberHover` | the same icon-button hover, for buttons sitting on the amber emphasis card where a grey wash would read as a hole in the tint. |
 | `#F6F9FC → #F9F3ED`, 7 stops | 1 | `docColors.canvasGradient` | the page's `linear-gradient(135deg, …)` behind the paper, as one property |
 
 ## Deliberately **not** tokens: the two colour palettes
@@ -163,6 +164,15 @@ Phase 2 rebuilt the page skeleton to main's. The pieces that are easy to
   `העבר לטיוטה פנימית` and there is nothing to go back to. Reaching the approval
   round takes three presses. main behaves the same way, by way of `indexOf`
   returning `-1`.
+- **The in-document search draws an outline, not a highlight.** A matching topic
+  gets `2px solid` amber at a 4px offset, a matching section the same at 2px —
+  `outline`, so a hit never reflows the page under it. main styles exactly this
+  (`Edit.tsx:4218`), but its own `docSearchQuery` is declared and never set, so
+  the outline has never appeared there. What reaches it here is the navbar's
+  search field, by way of `?q=`.
+- **The letterhead's two seeded fields are main's literal values** —
+  `2026(06)221047` and `123456789098`. They look like data and are not: main
+  hardcodes them in `useState`, and so does this.
 - **The filter panel commits on `סנן`**, not on each tick. main stages the
   selection locally and only writes it when you press the button
   (`Edit.tsx:2518`) — so four boxes re-render the document once, and `נקה` clears
@@ -181,6 +191,9 @@ you'd rather they weren't:
 - **The `+` menu opens 2px lower than main's.** main hand-computes
   `bottom: innerHeight - rect.top + 8`; `useFloatingPanel` flips the panel upward
   on its own with a 6px gap, and brings the viewport clamp with it.
+- **The emphasis card is missing two icons.** main draws attach and chat buttons
+  on it with no `onClick` behind either (`Edit.tsx:4183`); they arrive here with
+  `AttachmentPicker`, because two dead icons are worse than two absent ones.
 
 - **`NavStart`'s gap is 12px; main's is 16px.** It sits between "Chief" and the
   reality-mode pill on every page, and it predates this migration. Widening it

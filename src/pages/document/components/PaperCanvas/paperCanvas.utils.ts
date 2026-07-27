@@ -1,6 +1,40 @@
 import type { SectionStatus, Subject } from '../../types';
 
 /**
+ * The ids of every node whose title or content contains `query`.
+ *
+ * Case-insensitive and trimmed, matching main (Edit.tsx:4215). An empty query
+ * matches nothing rather than everything — an outline where every row is
+ * highlighted says exactly as much as one where none is.
+ *
+ * main's own version of this is unreachable: `docSearchQuery` is declared and
+ * never set (3205), so the amber outline it styles has never appeared. The
+ * markup is main's; the query reaching it comes from the navbar's search field
+ * through the URL.
+ */
+export const collectSearchMatchIds = (subjects: Subject[], query: string): Set<string> => {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return new Set();
+
+  const matched = new Set<string>();
+  const match = (id: string, ...text: (string | undefined)[]) => {
+    if (text.some((value) => value?.toLowerCase().includes(needle))) matched.add(id);
+  };
+
+  for (const subject of subjects) {
+    match(subject.id, subject.title);
+    for (const section of subject.sections) {
+      match(section.id, section.title, section.content);
+      for (const subSection of section.subSections) {
+        match(subSection.id, subSection.title, subSection.content);
+      }
+    }
+  }
+
+  return matched;
+};
+
+/**
  * Pair each subject with the document-wide number its first section carries.
  *
  * main numbers sections continuously across topics (`secCounter`, Edit.tsx:4390)

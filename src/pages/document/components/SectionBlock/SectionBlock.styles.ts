@@ -1,10 +1,17 @@
 import styled from 'styled-components';
-import { colors, radii } from '@/styles/theme';
+import { colors, docColors, radii } from '@/styles/theme';
 
-/** A section inside a topic (main's Edit.tsx:4394) — half a topic's bottom gap. */
-export const SectionRoot = styled.div`
+/**
+ * A section inside a topic (main's Edit.tsx:4394) — half a topic's bottom gap.
+ *
+ * The search outline sits 2px out rather than the topic's 4px, so a matching
+ * section inside a matching topic reads as nested instead of as one thick band.
+ */
+export const SectionRoot = styled.div<{ $highlighted: boolean }>`
   margin-bottom: 5mm;
   border-radius: ${radii.lg};
+  outline: ${({ $highlighted }) => ($highlighted ? `2px solid ${docColors.searchHit}` : 'none')};
+  outline-offset: 2px;
 `;
 
 /**

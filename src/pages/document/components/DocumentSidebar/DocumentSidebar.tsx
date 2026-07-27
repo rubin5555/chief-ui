@@ -1,6 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
-import { DISTRIBUTED_STATUSES, EDITABLE_STATUSES } from '../../document.constants';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import type { Section } from '../../types';
@@ -29,8 +28,14 @@ export interface DocumentSidebarProps {
   tree: ReturnType<typeof useDocumentTree>;
   trash: ReturnType<typeof useDocumentTrash>;
   overrides: ReturnType<typeof useDocumentOverrides>;
-  /** Wired in the phase that builds the emphasis block; the menu action is main's. */
-  onAddEmphasis?: () => void;
+  /**
+   * Both derived from the document's status by DocumentCanvas, which is above
+   * this column and the paper — deriving them again here would be a second answer
+   * to the same question.
+   */
+  readOnly: boolean;
+  isDistributed: boolean;
+  onAddEmphasis: () => void;
 }
 
 // main's right-hand outline column (Edit.tsx:3793): the document's status, its
@@ -47,6 +52,8 @@ export const DocumentSidebar = ({
   tree,
   trash,
   overrides,
+  readOnly,
+  isDistributed,
   onAddEmphasis,
 }: DocumentSidebarProps) => {
   const [showImportModal, setShowImportModal] = useState(false);
@@ -54,11 +61,6 @@ export const DocumentSidebar = ({
   const [newSubjectId, setNewSubjectId] = useState<string | null>(null);
   const { trackAddActionChosen, trackImportCompleted, trackRestoreCompleted } =
     useDocumentSidebarAnalytics();
-
-  // A document that can't be edited offers none of the actions that edit it: no
-  // add, no restore, no drag handles, no row menus (main's isReadOnly, 3139).
-  const readOnly = !EDITABLE_STATUSES.has(overrides.status);
-  const isDistributed = DISTRIBUTED_STATUSES.has(overrides.status);
 
   const handleCloseImport = () => setShowImportModal(false);
   const handleOpenRestore = () => setShowRestoreModal(true);
@@ -76,7 +78,7 @@ export const DocumentSidebar = ({
     } else if (action === 'import') {
       setShowImportModal(true);
     } else {
-      onAddEmphasis?.();
+      onAddEmphasis();
     }
   };
 

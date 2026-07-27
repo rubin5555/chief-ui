@@ -67,6 +67,7 @@
   --doc-cell-active-bg: #eff6ff;
   --doc-translucent-hover: rgba(255, 255, 255, 0.7);
   --doc-icon-hover: rgba(229, 231, 235, 0.7);
+  --doc-amber-hover: #fef3c7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -135,6 +136,7 @@
     --doc-cell-active-bg: #1c2634;
     --doc-translucent-hover: rgba(255, 255, 255, 0.08);
     --doc-icon-hover: rgba(55, 65, 81, 0.7);
+    --doc-amber-hover: #4a3b1a;
   }
 }
 
@@ -203,4 +205,5 @@
   --doc-cell-active-bg: #1c2634;
   --doc-translucent-hover: rgba(255, 255, 255, 0.08);
   --doc-icon-hover: rgba(55, 65, 81, 0.7);
+  --doc-amber-hover: #4a3b1a;
 }

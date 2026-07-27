@@ -1,14 +1,20 @@
 import styled from 'styled-components';
-import { gray, radii } from '@/styles/theme';
+import { docColors, gray, radii } from '@/styles/theme';
 
 /**
  * A topic block inside the paper (main's Edit.tsx:4219). The generous 10mm gap
  * below is what separates topics on a printed page — sections inside one topic
  * sit half that far apart.
+ *
+ * `outline` rather than `border` for a search hit: an outline is drawn outside
+ * the box and takes no space, so highlighting a topic can't reflow the page under
+ * it. The 4px offset holds it clear of the heading rule; a section's sits closer.
  */
-export const SubjectRoot = styled.section`
+export const SubjectRoot = styled.section<{ $highlighted: boolean }>`
   margin-bottom: 10mm;
   border-radius: ${radii.lg};
+  outline: ${({ $highlighted }) => ($highlighted ? `2px solid ${docColors.searchHit}` : 'none')};
+  outline-offset: 4px;
 `;
 
 /**

@@ -17,6 +17,8 @@ export interface SubjectBlockProps {
   firstSectionNumber: number;
   /** Sections whose status is currently filtered out, by id. */
   filteredSectionIds: Set<string>;
+  /** Nodes matching the in-document search, by id. Empty when nothing is searched. */
+  searchMatchIds: Set<string>;
   tree: ReturnType<typeof useDocumentTree>;
   overrides: ReturnType<typeof useDocumentOverrides>;
   trash: ReturnType<typeof useDocumentTrash>;
@@ -33,6 +35,7 @@ export const SubjectBlock = ({
   subject,
   firstSectionNumber,
   filteredSectionIds,
+  searchMatchIds,
   tree,
   overrides,
   trash,
@@ -40,7 +43,10 @@ export const SubjectBlock = ({
   const handleTitleChange = (title: string) => tree.updateSubjectTitle(subject.id, title);
 
   return (
-    <SubjectRoot data-testid={SUBJECT_BLOCK_IDS.root(subject.id)}>
+    <SubjectRoot
+      $highlighted={searchMatchIds.has(subject.id)}
+      data-testid={SUBJECT_BLOCK_IDS.root(subject.id)}
+    >
       <SubjectHeaderRow>
         <NodeTitleField
           nodeId={subject.id}
@@ -61,6 +67,7 @@ export const SubjectBlock = ({
             // the ones that remain.
             number={firstSectionNumber + sectionIndex}
             filteredSectionIds={filteredSectionIds}
+            searchMatchIds={searchMatchIds}
             tree={tree}
             overrides={overrides}
             trash={trash}

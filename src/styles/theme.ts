@@ -52,6 +52,10 @@ export const docColors = {
   // buttons — gray[200]'s exact value at 70%, which lands lighter than gray[100]
   // and is why this isn't just that token.
   iconHover: 'var(--doc-icon-hover)',
+  // main's `hover:bg-amber-100` — the same icon-button hover as `iconHover`, but
+  // for buttons sitting on the amber emphasis card, where a grey wash would read
+  // as a hole in the tint.
+  amberHover: 'var(--doc-amber-hover)',
 } as const;
 
 // Status colours for the document page. Consumers index this instead of

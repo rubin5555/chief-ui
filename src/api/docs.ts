@@ -150,6 +150,10 @@ export const GET_DOCUMENT_QUERY = gql`
         }
       }
       sectionMeta
+      sourceSystems {
+        name
+        field
+      }
     }
   }
 `;
@@ -207,6 +211,10 @@ export const UPDATE_DOCUMENT_MUTATION = gql`
         }
       }
       sectionMeta
+      sourceSystems {
+        name
+        field
+      }
     }
   }
 `;
