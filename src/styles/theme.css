@@ -20,6 +20,50 @@
   --gray-700: #374151;
   --gray-800: #1f2937;
   --gray-900: #111827;
+
+  /* Document-page tokens. Every light value below is a literal from main's
+     Edit.tsx, kept byte-identical on purpose — these exist precisely because
+     no base token above matched, and snapping to a near-miss would have
+     recoloured the page. See src/pages/document/DESIGN_PARITY.md. */
+  --doc-canvas-gradient: linear-gradient(
+    135deg,
+    #f6f9fc 0%,
+    #f8fafb 20%,
+    #faf8fa 35%,
+    #fbf7f9 50%,
+    #faf5f1 65%,
+    #f9f3ed 85%,
+    #f9f3ed 100%
+  );
+  --doc-neutral-bar: #ebebeb;
+  --doc-page-break-line: #cbd5e1;
+  --doc-hairline: #f1f5f9;
+  --doc-surface-subtle: #f8fafc;
+  --doc-letterhead-bg: #fafafa;
+  --doc-row-divider: #f5f5f5;
+  --doc-ink: #1e293b;
+  --doc-ink-inverse: #f8fafc;
+  --doc-placeholder-ink: #c4c9d4;
+  --doc-primary-hover: #152e54;
+  --doc-primary-light-border: #c7d7f5;
+  --doc-status-approved: #16a34a;
+  --doc-status-fix: #dc2626;
+  --doc-status-idle: #94a3b8;
+  --doc-status-preparing: #f59e0b;
+  --doc-status-in-approval: #3b82f6;
+  --doc-status-awaiting-distribution: #10b981;
+  --doc-status-import-preparing: #0284c7;
+  --doc-amber-ink: #92400e;
+  --doc-amber-icon: #b45309;
+  --doc-amber-border: #fcd34d;
+  --doc-compare-bg: #dbeafe;
+  --doc-compare-border: #93c5fd;
+  --doc-search-hit: #fbbf24;
+  --doc-warning-strong: #9b1c1c;
+  --doc-stamp-ink: #1a1a1a;
+  --doc-chat-own-accent: #93afd4;
+  --doc-chat-arrow-border: #e2e8f0;
+  --doc-cell-active-bg: #eff6ff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -45,6 +89,46 @@
     --gray-700: #e5e7eb;
     --gray-800: #f3f4f6;
     --gray-900: #f9fafb;
+
+    --doc-canvas-gradient: linear-gradient(
+      135deg,
+      #14181f 0%,
+      #161a21 20%,
+      #1a1820 35%,
+      #1c1a20 50%,
+      #1c1a17 65%,
+      #1b1915 85%,
+      #1b1915 100%
+    );
+    --doc-neutral-bar: #252a33;
+    --doc-page-break-line: #3a4250;
+    --doc-hairline: #282e38;
+    --doc-surface-subtle: #1f242c;
+    --doc-letterhead-bg: #1e232a;
+    --doc-row-divider: #242a33;
+    --doc-ink: #e8ecf2;
+    --doc-ink-inverse: #151a21;
+    --doc-placeholder-ink: #5b6472;
+    --doc-primary-hover: #8fb0dc;
+    --doc-primary-light-border: #33455e;
+    --doc-status-approved: #4ade80;
+    --doc-status-fix: #f87171;
+    --doc-status-idle: #7b8697;
+    --doc-status-preparing: #fbbf24;
+    --doc-status-in-approval: #7aa7f5;
+    --doc-status-awaiting-distribution: #34d399;
+    --doc-status-import-preparing: #38bdf8;
+    --doc-amber-ink: #e0a86a;
+    --doc-amber-icon: #d99a4e;
+    --doc-amber-border: #5c4a1e;
+    --doc-compare-bg: #1e2c3f;
+    --doc-compare-border: #3c5a80;
+    --doc-search-hit: #d9a13c;
+    --doc-warning-strong: #f0928a;
+    --doc-stamp-ink: #e2e6ec;
+    --doc-chat-own-accent: #4d6a94;
+    --doc-chat-arrow-border: #2b313b;
+    --doc-cell-active-bg: #1c2634;
   }
 }
 
@@ -70,4 +154,44 @@
   --gray-700: #e5e7eb;
   --gray-800: #f3f4f6;
   --gray-900: #f9fafb;
+
+  --doc-canvas-gradient: linear-gradient(
+    135deg,
+    #14181f 0%,
+    #161a21 20%,
+    #1a1820 35%,
+    #1c1a20 50%,
+    #1c1a17 65%,
+    #1b1915 85%,
+    #1b1915 100%
+  );
+  --doc-neutral-bar: #252a33;
+  --doc-page-break-line: #3a4250;
+  --doc-hairline: #282e38;
+  --doc-surface-subtle: #1f242c;
+  --doc-letterhead-bg: #1e232a;
+  --doc-row-divider: #242a33;
+  --doc-ink: #e8ecf2;
+  --doc-ink-inverse: #151a21;
+  --doc-placeholder-ink: #5b6472;
+  --doc-primary-hover: #8fb0dc;
+  --doc-primary-light-border: #33455e;
+  --doc-status-approved: #4ade80;
+  --doc-status-fix: #f87171;
+  --doc-status-idle: #7b8697;
+  --doc-status-preparing: #fbbf24;
+  --doc-status-in-approval: #7aa7f5;
+  --doc-status-awaiting-distribution: #34d399;
+  --doc-status-import-preparing: #38bdf8;
+  --doc-amber-ink: #e0a86a;
+  --doc-amber-icon: #d99a4e;
+  --doc-amber-border: #5c4a1e;
+  --doc-compare-bg: #1e2c3f;
+  --doc-compare-border: #3c5a80;
+  --doc-search-hit: #d9a13c;
+  --doc-warning-strong: #f0928a;
+  --doc-stamp-ink: #e2e6ec;
+  --doc-chat-own-accent: #4d6a94;
+  --doc-chat-arrow-border: #2b313b;
+  --doc-cell-active-bg: #1c2634;
 }
