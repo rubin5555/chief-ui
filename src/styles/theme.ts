@@ -63,6 +63,9 @@ export const shadows = {
 } as const;
 
 export const radii = {
+  // 4px — main's smallest corner, for a rounded rect that is a hover affordance
+  // on inline text (an editable heading) rather than a container.
+  sm: '4px',
   lg: '8px',
   xl: '12px',
   '2xl': '16px',

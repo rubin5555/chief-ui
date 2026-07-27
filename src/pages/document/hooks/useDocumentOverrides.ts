@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { DocumentDto, DocumentHeader, SectionMeta, SectionMetaMap } from '../../types';
-import { emptySectionMeta } from '../../types';
+import type { DocumentDto, DocumentHeader, SectionMeta, SectionMetaMap } from '../types';
+import { emptySectionMeta } from '../types';
 
 // Doc-level status/header and per-section status/hidden/classification/
 // attachments/footnotes aren't part of useDocumentTree's tree state (see

@@ -1,6 +1,6 @@
 import { BookOpen } from 'lucide-react';
 import { forwardRef } from 'react';
-import { IconButtonRoot } from '@/components/ui/IconButton/IconButton.styles';
+import { IconButtonRoot } from '@/components/ui/IconButton';
 import { TRAINING_MENU_IDS } from '../TrainingMenu.testids';
 
 interface TrainingTriggerButtonProps {

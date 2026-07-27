@@ -1,7 +1,7 @@
 import { getRouteApi } from '@tanstack/react-router';
 import { Filter } from 'lucide-react';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { IconButtonRoot } from '@/components/ui/IconButton/IconButton.styles';
+import { IconButtonRoot } from '@/components/ui/IconButton';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import type { SectionStatus } from '../../types';
 import { ClearBtn, ClearRow, OptionRow, PanelBody } from './FilterPanel.styles';

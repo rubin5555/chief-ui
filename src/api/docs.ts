@@ -297,7 +297,7 @@ export const DOCUMENT_FALLBACK: DocumentDto = {
     orderNum: '001',
     department: 'משאבי אנוש',
     effectiveDate: '01/06/2026',
-    classification: 'בלמ"ס',
+    classification: 'בלמ״ס',
     referenceNum: 'פ.מ. 12/2025',
   },
   subjects: [

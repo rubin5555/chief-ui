@@ -11,7 +11,7 @@ import {
 import { lazy, Suspense, useState } from 'react';
 import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { IconButtonRoot } from '@/components/ui/IconButton/IconButton.styles';
+import { IconButtonRoot } from '@/components/ui/IconButton';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
 import type { UnderlineTab } from '@/components/ui/UnderlineTabs';
 import { UnderlineTabs } from '@/components/ui/UnderlineTabs';

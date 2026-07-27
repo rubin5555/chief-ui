@@ -1,6 +1,6 @@
 import { Bell } from 'lucide-react';
 import { forwardRef } from 'react';
-import { IconButtonBadge, IconButtonRoot } from '@/components/ui/IconButton/IconButton.styles';
+import { IconButtonBadge, IconButtonRoot } from '@/components/ui/IconButton';
 import { NOTIFICATIONS_MENU_IDS } from '../NotificationsMenu.testids';
 
 interface NotificationsTriggerButtonProps {

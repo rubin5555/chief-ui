@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import { colors, gray } from '@/styles/theme';
-import type { SectionMetaMap, SectionStatus, Subject } from '../../types';
+import { SECTION_STATUS_COLOR } from '../../document.constants';
+import type { SectionMetaMap, Subject } from '../../types';
 import {
   ChevronSlot,
   SectionList,
@@ -17,14 +17,6 @@ export interface DocumentOutlineTreeProps {
   subjects: Subject[];
   sectionMeta: SectionMetaMap;
 }
-
-const STATUS_DOT_COLOR: Record<SectionStatus, string> = {
-  editing: colors.primary,
-  pending: colors.warning,
-  approved: colors.accent,
-  fix: colors.danger,
-  idle: gray[400],
-};
 
 // Read-only outline for Phase 1 — expand/collapse only, no drag/rename yet
 // (that lands once DocumentOutlineTree grows a `tree: DocumentTreeApi` prop
@@ -58,7 +50,7 @@ export const DocumentOutlineTree = ({ subjects, sectionMeta }: DocumentOutlineTr
               <ChevronSlot $expanded={isExpanded}>
                 <ChevronDown size={14} />
               </ChevronSlot>
-              <StatusDot $color={STATUS_DOT_COLOR[subjectStatus]} />
+              <StatusDot $color={SECTION_STATUS_COLOR[subjectStatus]} />
               <SubjectLabel>{subject.title || 'נושא ללא שם'}</SubjectLabel>
             </SubjectRow>
 
@@ -71,7 +63,7 @@ export const DocumentOutlineTree = ({ subjects, sectionMeta }: DocumentOutlineTr
                       key={section.id}
                       data-testid={DOCUMENT_OUTLINE_TREE_IDS.section(section.id)}
                     >
-                      <StatusDot $color={STATUS_DOT_COLOR[sectionStatus]} />
+                      <StatusDot $color={SECTION_STATUS_COLOR[sectionStatus]} />
                       {section.title || 'סעיף ללא שם'}
                     </SectionRow>
                   );

@@ -1,50 +1,15 @@
 import styled from 'styled-components';
 import { colors, gray, radii } from '@/styles/theme';
-import type { SectionStatus } from '../../types';
 
-export const SectionBlock = styled.div<{ $depth: 'section' | 'subSection' }>`
+// The heading row that used to live here now belongs to SectionBlock /
+// SubSectionBlock. main's header row differs per level (border, index format,
+// title typography) and carries the node's action cluster, so it is the parent
+// block's markup, not the body's — and the block is what knows the node's
+// position, which is what the index shows.
+export const BodyRoot = styled.div`
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
-	padding-right: ${(props) => (props.$depth === 'subSection' ? '24px' : '0')};
-	margin-bottom: 12px;
-`;
-
-export const HeadingRow = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 8px;
-`;
-
-export const HeadingIndex = styled.span<{ $muted?: boolean }>`
-	flex-shrink: 0;
-	font-weight: 600;
-	font-size: ${(props) => (props.$muted ? '13px' : '14px')};
-	color: ${(props) => (props.$muted ? gray[500] : colors.primary)};
-`;
-
-export const HeadingTitle = styled.h3<{ $muted?: boolean }>`
-	flex: 1;
-	margin: 0;
-	font-size: ${(props) => (props.$muted ? '14px' : '16px')};
-	font-weight: ${(props) => (props.$muted ? 500 : 600)};
-	color: ${gray[900]};
-`;
-
-const STATUS_COLOR: Record<SectionStatus, string> = {
-  editing: colors.primary,
-  pending: colors.warning,
-  approved: colors.accent,
-  fix: colors.danger,
-  idle: gray[400],
-};
-
-export const StatusBadge = styled.span<{ $status: SectionStatus }>`
-	flex-shrink: 0;
-	width: 8px;
-	height: 8px;
-	border-radius: ${radii.full};
-	background-color: ${(props) => STATUS_COLOR[props.$status]};
 `;
 
 export const HiddenNotice = styled.div`

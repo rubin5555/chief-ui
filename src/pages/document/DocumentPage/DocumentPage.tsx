@@ -4,7 +4,7 @@ import { useDocument } from '@/api/docs';
 import { PanelLoading } from '@/components/ui/PanelLoading';
 import { DocumentCanvas } from '../components/DocumentCanvas';
 import { useDocumentPageAnalytics } from './DocumentPage.analytics';
-import { PageScroll } from './DocumentPage.styles';
+import { PageRoot } from './DocumentPage.styles';
 import { DOCUMENT_PAGE_IDS } from './DocumentPage.testids';
 
 const routeApi = getRouteApi('/document/$id');
@@ -28,8 +28,8 @@ export const DocumentPage = () => {
   }, [data]);
 
   return (
-    <PageScroll data-testid={DOCUMENT_PAGE_IDS.root}>
+    <PageRoot dir="rtl" data-testid={DOCUMENT_PAGE_IDS.root}>
       {loading || !data ? <PanelLoading /> : <DocumentCanvas data={data} />}
-    </PageScroll>
+    </PageRoot>
   );
 };

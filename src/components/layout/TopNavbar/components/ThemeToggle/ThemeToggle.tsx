@@ -1,6 +1,6 @@
 import { Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
-import { IconButtonRoot } from '@/components/ui/IconButton/IconButton.styles';
+import { IconButtonRoot } from '@/components/ui/IconButton';
 import { useThemeToggleAnalytics } from './ThemeToggle.analytics';
 import { THEME_STORAGE_KEY } from './ThemeToggle.constants';
 import { THEME_TOGGLE_IDS } from './ThemeToggle.testids';

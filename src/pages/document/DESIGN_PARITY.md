@@ -106,6 +106,44 @@ sidebar that doubles as those bars' offset, the paper shadow, the zoom bounds.
 That file is deliberately separate from `theme.ts`: these values are
 theme-independent, so they must not sit next to things dark mode overrides.
 
+## Two palettes that look like one
+
+main keeps **two** status colour maps and they disagree. Confusing them is easy
+and visible, so they are separate constants in `document.constants.ts`:
+
+| status | section (`SECTION_STATUS_COLOR`, Edit.tsx:1708) | document (`DOC_STATUS_COLOR`, Edit.tsx:1699) |
+| --- | --- | --- |
+| working | `editing` → `#1B3A6B` navy | `בהכנה` → `#f59e0b` amber |
+| in review | `pending` → `#d97706` amber | `בסבב אישורים` → `#3b82f6` bright blue |
+| none/idle | `idle` → `#9ca3af` grey | `טיוטה פנימית` → `#94a3b8` slate |
+
+A document status outside `STATUS_FLOW` (`מבצעית` and the other terminal states)
+falls through to grey — `DOC_STATUS_FALLBACK_COLOR`, main's `?? '#6b7280'`.
+
+There is a **third**, coarser mapping: the per-section status *label* in a
+heading row (Edit.tsx:4452) collapses everything that isn't `approved`/`fix` to
+amber `#d97706`, `idle` included — so a section can show a grey dot in the
+sidebar and an amber `ממתין לאישור` in the paper. That one is local to
+`SectionStatusLabel`, deliberately not shared.
+
+## Structure, not just colour
+
+Phase 2 rebuilt the page skeleton to main's. The pieces that are easy to
+"tidy up" and must not be:
+
+- **The chrome bars' `padding-inline-end: 256px`** (`BarRow`). The bars span the
+  viewport but the paper is pushed left by the sidebar; without the offset every
+  bar sits ~128px off-centre. Looks like a hack, is load-bearing.
+- **`zoom`, not `transform: scale`**, on the paper. `zoom` reflows, so the scroll
+  container's height tracks the scaled sheet.
+- **Section numbering is continuous across topics** (`1.`, `2.`, `3.`…), not
+  `1.1`/`1.2` — main's `secCounter`. Sub-sections use Hebrew letters (`א.`).
+- **In-paper titles are `<input>`s, not headings.** Clicking a title retitles the
+  node. Only the *section* level shrink-wraps its hover highlight to the text
+  (main's ghost-span trick); subject and sub-section titles fill the row.
+- **The metadata pill is inert** — no edit pencil. Document details are edited
+  from the navbar's document-actions toolbar.
+
 ## Checking parity
 
 Run both trees and compare the same region side by side:

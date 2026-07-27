@@ -3,7 +3,7 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { type SectionCommentDto, useAddSectionComment, useSectionComments } from '@/api/comments';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { IconButtonBadge, IconButtonRoot } from '@/components/ui/IconButton/IconButton.styles';
+import { IconButtonBadge, IconButtonRoot } from '@/components/ui/IconButton';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import {
   CloseBtn,

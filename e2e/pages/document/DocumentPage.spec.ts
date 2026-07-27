@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { SEARCHABLE_MULTI_SELECT_IDS } from '../../../src/components/ui/SearchableMultiSelect/SearchableMultiSelect.testids';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from '../../../src/pages/document/components/ClassifiedViewersModal/ClassifiedViewersModal.testids';
-import { DOC_HEADER_CARD_IDS } from '../../../src/pages/document/components/DocHeaderCard/DocHeaderCard.testids';
-import { DOCUMENT_CANVAS_IDS } from '../../../src/pages/document/components/DocumentCanvas/DocumentCanvas.testids';
+import { DOCUMENT_METADATA_PILL_IDS } from '../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
 import { DOCUMENT_OUTLINE_TREE_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/DocumentOutlineTree.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
 import { SECTION_CHAT_IDS } from '../../../src/pages/document/components/SectionChat/SectionChat.testids';
 import { SECTION_MENU_IDS } from '../../../src/pages/document/components/SectionMenu/SectionMenu.testids';
+import { SUBJECT_BLOCK_IDS } from '../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
 import { DOCUMENT_PAGE_IDS } from '../../../src/pages/document/DocumentPage/DocumentPage.testids';
 
 import { clickCentred } from '../../support/interactions';
@@ -15,9 +15,14 @@ test('renders the seeded document with its header and outline tree', async ({ pa
   await page.goto('/document/d1');
 
   await expect(page.getByTestId(DOCUMENT_PAGE_IDS.root)).toBeVisible();
-  await expect(page.getByTestId(DOC_HEADER_CARD_IDS.title)).toHaveText('נוהל בטיחות 2026');
+  // The metadata pill shows the organisation inside the same element as the
+  // name ("נוהל בטיחות 2026 (ארגון א׳)"), matching main's markup — hence
+  // toContainText rather than an exact match.
+  await expect(page.getByTestId(DOCUMENT_METADATA_PILL_IDS.title)).toContainText(
+    'נוהל בטיחות 2026',
+  );
   await expect(page.getByTestId(DOCUMENT_OUTLINE_TREE_IDS.subject('s1'))).toBeVisible();
-  await expect(page.getByTestId(DOCUMENT_CANVAS_IDS.subject('s1'))).toBeVisible();
+  await expect(page.getByTestId(SUBJECT_BLOCK_IDS.root('s1'))).toBeVisible();
 });
 
 test('collapses and expands a subject in the outline tree', async ({ page }) => {
