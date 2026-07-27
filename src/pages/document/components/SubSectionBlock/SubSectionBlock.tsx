@@ -1,17 +1,20 @@
+import { useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import { HE_ALPHA } from '../../document.constants';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
-import { DEFAULT_CLASSIFICATION_LEVEL, type NodePermissions, type SubSection } from '../../types';
+import {
+  type AttachmentFile,
+  DEFAULT_CLASSIFICATION_LEVEL,
+  type NodePermissions,
+  type SubSection,
+} from '../../types';
+import { AttachmentPicker } from '../AttachmentPicker';
 import { EditableSectionBody } from '../EditableSectionBody';
+import { NodeActionRow } from '../NodeActionRow';
 import { NodeTitleField } from '../NodeTitleField';
 import { SectionChat } from '../SectionChat';
 import { SectionMenu } from '../SectionMenu';
-import {
-  HeaderActions,
-  SubSectionHeaderRow,
-  SubSectionMarker,
-  SubSectionRoot,
-} from './SubSectionBlock.styles';
+import { SubSectionHeaderRow, SubSectionMarker, SubSectionRoot } from './SubSectionBlock.styles';
 import { SUB_SECTION_BLOCK_IDS } from './SubSectionBlock.testids';
 
 export interface SubSectionBlockProps {
@@ -22,6 +25,7 @@ export interface SubSectionBlockProps {
   index: number;
   tree: ReturnType<typeof useDocumentTree>;
   overrides: ReturnType<typeof useDocumentOverrides>;
+  readOnly: boolean;
 }
 
 // The third tree level. Unlike a section it has no delete-to-trash path — a
@@ -34,8 +38,14 @@ export const SubSectionBlock = ({
   index,
   tree,
   overrides,
+  readOnly,
 }: SubSectionBlockProps) => {
   const meta = overrides.getMeta(subSection.id);
+
+  // Whether the attachments dialog is open lives here rather than inside
+  // AttachmentPicker, because the chips under the body open it too and they are
+  // rendered by a different child.
+  const [attachmentsOpen, setAttachmentsOpen] = useState(false);
 
   const handleTitleChange = (title: string) =>
     tree.updateSubSectionTitle(subjectId, sectionId, subSection.id, title);
@@ -65,6 +75,11 @@ export const SubSectionBlock = ({
 
   const handleDelete = () => tree.removeSubSection(subjectId, sectionId, subSection.id);
 
+  const handleAttachmentsChange = (attachments: AttachmentFile[]) =>
+    overrides.patchMeta(subSection.id, { attachments });
+
+  const handleOpenAttachments = () => setAttachmentsOpen(true);
+
   const marker = HE_ALPHA[index] ?? String(index + 1);
 
   return (
@@ -77,26 +92,46 @@ export const SubSectionBlock = ({
           value={subSection.title}
           onChange={handleTitleChange}
         />
-        <HeaderActions>
-          {/* main labels a sub-section chat with its marker, so a reader can tell
-              two similarly-titled sub-sections apart in the chat header. */}
-          <SectionChat
-            sectionId={subSection.id}
-            title={`${marker}. ${subSection.title || 'תת סעיף ללא שם'}`}
-          />
-          <SectionMenu
-            sectionId={subSection.id}
-            permissions={subSection.permissions}
-            isHidden={meta.hidden}
-            classificationLevel={meta.classification.level}
-            classificationViewerIds={meta.classification.viewerIds}
-            onChangePermissions={handlePermissionsChange}
-            onToggleHidden={handleToggleHidden}
-            onToggleClassified={handleToggleClassified}
-            onChangeClassificationViewers={handleChangeClassificationViewers}
-            onDelete={handleDelete}
-          />
-        </HeaderActions>
+        <NodeActionRow
+          nodeId={subSection.id}
+          lastModified={meta.lastModified}
+          sourceOrigin={meta.sourceOrigin}
+          copyText={subSection.content}
+          readOnly={readOnly}
+          attach={
+            !readOnly && (
+              <AttachmentPicker
+                nodeId={subSection.id}
+                attachments={meta.attachments}
+                isOpen={attachmentsOpen}
+                onOpenChange={setAttachmentsOpen}
+                onChange={handleAttachmentsChange}
+              />
+            )
+          }
+          chat={
+            // main labels a sub-section chat with its marker, so a reader can
+            // tell two similarly-titled sub-sections apart in the chat header.
+            <SectionChat
+              sectionId={subSection.id}
+              title={`${marker}. ${subSection.title || 'תת סעיף ללא שם'}`}
+            />
+          }
+          options={
+            <SectionMenu
+              sectionId={subSection.id}
+              permissions={subSection.permissions}
+              isHidden={meta.hidden}
+              classificationLevel={meta.classification.level}
+              classificationViewerIds={meta.classification.viewerIds}
+              onChangePermissions={handlePermissionsChange}
+              onToggleHidden={handleToggleHidden}
+              onToggleClassified={handleToggleClassified}
+              onChangeClassificationViewers={handleChangeClassificationViewers}
+              onDelete={handleDelete}
+            />
+          }
+        />
       </SubSectionHeaderRow>
 
       <EditableSectionBody
@@ -105,6 +140,7 @@ export const SubSectionBlock = ({
         content={subSection.content}
         meta={meta}
         onContentChange={handleContentChange}
+        onOpenAttachments={handleOpenAttachments}
       />
     </SubSectionRoot>
   );

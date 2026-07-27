@@ -1,20 +1,22 @@
+import { useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../hooks/useDocumentTrash';
-import { DEFAULT_CLASSIFICATION_LEVEL, type NodePermissions, type Section } from '../../types';
+import {
+  type AttachmentFile,
+  DEFAULT_CLASSIFICATION_LEVEL,
+  type NodePermissions,
+  type Section,
+} from '../../types';
+import { AttachmentPicker } from '../AttachmentPicker';
 import { EditableSectionBody } from '../EditableSectionBody';
+import { NodeActionRow } from '../NodeActionRow';
 import { NodeTitleField } from '../NodeTitleField';
 import { SectionChat } from '../SectionChat';
 import { SectionMenu } from '../SectionMenu';
 import { SectionStatusLabel } from '../SectionStatusLabel';
 import { SubSectionBlock } from '../SubSectionBlock';
-import {
-  HeaderActions,
-  SectionHeaderRow,
-  SectionNumber,
-  SectionRoot,
-  TitleSlot,
-} from './SectionBlock.styles';
+import { SectionHeaderRow, SectionNumber, SectionRoot, TitleSlot } from './SectionBlock.styles';
 import { SECTION_BLOCK_IDS } from './SectionBlock.testids';
 
 export interface SectionBlockProps {
@@ -27,6 +29,7 @@ export interface SectionBlockProps {
   tree: ReturnType<typeof useDocumentTree>;
   overrides: ReturnType<typeof useDocumentOverrides>;
   trash: ReturnType<typeof useDocumentTrash>;
+  readOnly: boolean;
 }
 
 // One section: numbered heading row, body, then its sub-sections.
@@ -39,8 +42,13 @@ export const SectionBlock = ({
   tree,
   overrides,
   trash,
+  readOnly,
 }: SectionBlockProps) => {
   const meta = overrides.getMeta(section.id);
+
+  // Owned here rather than inside AttachmentPicker because the chips under the
+  // body open the same dialog, and they are rendered by a different child.
+  const [attachmentsOpen, setAttachmentsOpen] = useState(false);
 
   const handleTitleChange = (title: string) =>
     tree.updateSectionTitle(subjectId, section.id, title);
@@ -67,6 +75,11 @@ export const SectionBlock = ({
 
   const handleDelete = () => trash.remove(subjectId, section);
 
+  const handleAttachmentsChange = (attachments: AttachmentFile[]) =>
+    overrides.patchMeta(section.id, { attachments });
+
+  const handleOpenAttachments = () => setAttachmentsOpen(true);
+
   return (
     <SectionRoot
       $highlighted={searchMatchIds.has(section.id)}
@@ -83,21 +96,39 @@ export const SectionBlock = ({
           />
         </TitleSlot>
         <SectionStatusLabel sectionId={section.id} status={meta.status} isHidden={meta.hidden} />
-        <HeaderActions>
-          <SectionChat sectionId={section.id} title={section.title || 'סעיף ללא שם'} />
-          <SectionMenu
-            sectionId={section.id}
-            permissions={section.permissions}
-            isHidden={meta.hidden}
-            classificationLevel={meta.classification.level}
-            classificationViewerIds={meta.classification.viewerIds}
-            onChangePermissions={handlePermissionsChange}
-            onToggleHidden={handleToggleHidden}
-            onToggleClassified={handleToggleClassified}
-            onChangeClassificationViewers={handleChangeClassificationViewers}
-            onDelete={handleDelete}
-          />
-        </HeaderActions>
+        <NodeActionRow
+          nodeId={section.id}
+          lastModified={meta.lastModified}
+          sourceOrigin={meta.sourceOrigin}
+          copyText={section.content}
+          readOnly={readOnly}
+          attach={
+            !readOnly && (
+              <AttachmentPicker
+                nodeId={section.id}
+                attachments={meta.attachments}
+                isOpen={attachmentsOpen}
+                onOpenChange={setAttachmentsOpen}
+                onChange={handleAttachmentsChange}
+              />
+            )
+          }
+          chat={<SectionChat sectionId={section.id} title={section.title || 'סעיף ללא שם'} />}
+          options={
+            <SectionMenu
+              sectionId={section.id}
+              permissions={section.permissions}
+              isHidden={meta.hidden}
+              classificationLevel={meta.classification.level}
+              classificationViewerIds={meta.classification.viewerIds}
+              onChangePermissions={handlePermissionsChange}
+              onToggleHidden={handleToggleHidden}
+              onToggleClassified={handleToggleClassified}
+              onChangeClassificationViewers={handleChangeClassificationViewers}
+              onDelete={handleDelete}
+            />
+          }
+        />
       </SectionHeaderRow>
 
       <EditableSectionBody
@@ -106,6 +137,7 @@ export const SectionBlock = ({
         content={section.content}
         meta={meta}
         onContentChange={handleContentChange}
+        onOpenAttachments={handleOpenAttachments}
       />
 
       {/* Hiding a section hides its sub-sections with it, as main does. */}
@@ -120,6 +152,7 @@ export const SectionBlock = ({
               index={subSectionIndex}
               tree={tree}
               overrides={overrides}
+              readOnly={readOnly}
             />
           ),
         )}

@@ -43,17 +43,6 @@ export const FootnoteList = styled.ol`
 	color: ${gray[600]};
 `;
 
-export const AttachmentChips = styled.div`
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-	margin-top: 4px;
-`;
-
-export const AttachmentChip = styled.span`
-	padding: 3px 10px;
-	border-radius: ${radii.full};
-	background-color: ${gray[100]};
-	color: ${gray[700]};
-	font-size: 12px;
-`;
+// The attachment chips moved to AttachmentPicker/components/AttachmentChipList,
+// where they sit next to the dialog they open. They were grey pills here; main's
+// are navy text links, one per line (Edit.tsx:4586).

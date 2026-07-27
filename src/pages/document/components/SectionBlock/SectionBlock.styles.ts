@@ -43,9 +43,5 @@ export const TitleSlot = styled.div`
   direction: rtl;
 `;
 
-export const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
-`;
+// The header's action cluster is NodeActionRow now — the same row main draws on
+// every node — so there is no local wrapper for it here any more.

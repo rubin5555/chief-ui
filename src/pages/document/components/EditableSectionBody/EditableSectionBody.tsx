@@ -1,16 +1,10 @@
-import { EyeOff, Lock, Paperclip } from 'lucide-react';
+import { EyeOff, Lock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { ContentEditor } from '@/components/ui/ContentEditor';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { SectionMeta } from '../../types';
-import {
-  AttachmentChip,
-  AttachmentChips,
-  BodyRoot,
-  ClassifiedBox,
-  FootnoteList,
-  HiddenNotice,
-} from './EditableSectionBody.styles';
+import { AttachmentChipList } from '../AttachmentPicker';
+import { BodyRoot, ClassifiedBox, FootnoteList, HiddenNotice } from './EditableSectionBody.styles';
 import { EDITABLE_SECTION_BODY_IDS } from './EditableSectionBody.testids';
 
 export interface EditableSectionBodyProps {
@@ -19,6 +13,8 @@ export interface EditableSectionBodyProps {
   content: string;
   meta: SectionMeta;
   onContentChange: (content: string) => void;
+  /** Opens the same dialog the node's paperclip does — the chips are a way in, not a second list. */
+  onOpenAttachments: () => void;
 }
 
 const PLACEHOLDER: Record<EditableSectionBodyProps['depth'], string> = {
@@ -41,6 +37,7 @@ export const EditableSectionBody = ({
   content,
   meta,
   onContentChange,
+  onOpenAttachments,
 }: EditableSectionBodyProps) => {
   const isClassified = meta.classification.level !== null;
 
@@ -109,16 +106,7 @@ export const EditableSectionBody = ({
         </FootnoteList>
       )}
 
-      {meta.attachments.length > 0 && (
-        <AttachmentChips>
-          {meta.attachments.map((attachment) => (
-            <AttachmentChip key={attachment.id}>
-              <Paperclip size={11} />
-              {attachment.name}
-            </AttachmentChip>
-          ))}
-        </AttachmentChips>
-      )}
+      <AttachmentChipList nodeId={id} attachments={meta.attachments} onOpen={onOpenAttachments} />
     </BodyRoot>
   );
 };

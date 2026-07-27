@@ -71,6 +71,7 @@ export const PaperCanvas = ({
                 tree={tree}
                 overrides={overrides}
                 trash={trash}
+                readOnly={readOnly}
               />
             ))}
           </PaperInner>

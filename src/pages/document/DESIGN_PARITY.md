@@ -170,6 +170,11 @@ Phase 2 rebuilt the page skeleton to main's. The pieces that are easy to
   (`Edit.tsx:4218`), but its own `docSearchQuery` is declared and never set, so
   the outline has never appeared there. What reaches it here is the navbar's
   search field, by way of `?q=`.
+- **Attachments are chips, not pills.** main lists them one per line under the
+  content box as small navy text links (`Edit.tsx:4586`); every one of them opens
+  the same dialog rather than acting on its own file.
+- **The paperclip turns navy once a node has files.** It doubles as the
+  indicator that something is attached, which is why it isn't always grey.
 - **The letterhead's two seeded fields are main's literal values** —
   `2026(06)221047` and `123456789098`. They look like data and are not: main
   hardcodes them in `useState`, and so does this.
@@ -191,9 +196,17 @@ you'd rather they weren't:
 - **The `+` menu opens 2px lower than main's.** main hand-computes
   `bottom: innerHeight - rect.top + 8`; `useFloatingPanel` flips the panel upward
   on its own with a 6px gap, and brings the viewport clamp with it.
-- **The emphasis card is missing two icons.** main draws attach and chat buttons
-  on it with no `onClick` behind either (`Edit.tsx:4183`); they arrive here with
-  `AttachmentPicker`, because two dead icons are worse than two absent ones.
+- **The emphasis card has no chat button.** main draws one there with no
+  `onClick` behind it (`Edit.tsx:4187`); the card isn't a section, so there is no
+  thread for it to open. Its attach button is live.
+- **A leaf topic has no content box.** main gives a topic with no sections a body
+  of its own (`Edit.tsx:4302`), which the tree model here can't hold — `Subject`
+  has no `content` field, and adding one touches the hook `TemplateModal` shares.
+  Visible on `נספחים` and `חתימות`, both of which render as a heading alone.
+- **The per-node refresh button opens the source list.** main's has no `onClick`
+  at all; there is nothing connected to refresh from, in main or here, so it
+  shows which system the node's content came from instead of pretending to
+  re-fetch it.
 
 - **`NavStart`'s gap is 12px; main's is 16px.** It sits between "Chief" and the
   reality-mode pill on every page, and it predates this migration. Widening it

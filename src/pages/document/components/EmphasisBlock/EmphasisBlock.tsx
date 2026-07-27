@@ -1,6 +1,8 @@
 import { Lightbulb } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
+import type { AttachmentFile } from '../../types';
+import { AttachmentPicker } from '../AttachmentPicker';
 import { NodeActionRow } from '../NodeActionRow';
 import {
   EmphasisRoot,
@@ -39,13 +41,15 @@ const fitToContent = (element: HTMLTextAreaElement | null) => {
 // because the switch is in the sidebar's `+` menu and the card is in the paper.
 export const EmphasisBlock = ({ readOnly }: EmphasisBlockProps) => {
   const [text, setText] = useState('');
+  // The card isn't a tree node, so its attachments have nowhere in SectionMeta to
+  // live — they are local state here, exactly as its text is.
+  const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
+  const [attachmentsOpen, setAttachmentsOpen] = useState(false);
 
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setText(event.target.value);
     fitToContent(event.currentTarget);
   };
-
-  const handleCopy = () => navigator.clipboard.writeText(text);
 
   return (
     <EmphasisRoot dir="rtl" data-testid={EMPHASIS_BLOCK_IDS.root}>
@@ -55,9 +59,28 @@ export const EmphasisBlock = ({ readOnly }: EmphasisBlockProps) => {
         </HeaderIcon>
         <HeaderTitle>דגשים לכתיבה</HeaderTitle>
 
-        {/* No source origin: these notes are written here, never imported, so
-            main draws the refresh button permanently disabled. */}
-        <NodeActionRow nodeId={NODE_ID} tone="amber" readOnly={readOnly} onCopy={handleCopy} />
+        {/* No source origin and no stamp: these notes are written here, never
+            imported, so main draws the refresh button permanently disabled and
+            has nothing to date. No chat either — main's button there has no
+            handler, and there is no thread for a card that isn't a section. */}
+        <NodeActionRow
+          nodeId={NODE_ID}
+          copyText={text}
+          tone="amber"
+          readOnly={readOnly}
+          attach={
+            !readOnly && (
+              <AttachmentPicker
+                nodeId={NODE_ID}
+                attachments={attachments}
+                isOpen={attachmentsOpen}
+                onOpenChange={setAttachmentsOpen}
+                onChange={setAttachments}
+                tone="amber"
+              />
+            )
+          }
+        />
       </HeaderRow>
 
       <EmphasisTextarea
