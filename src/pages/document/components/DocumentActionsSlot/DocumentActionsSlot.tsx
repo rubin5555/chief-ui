@@ -2,18 +2,15 @@ import { getRouteApi } from '@tanstack/react-router';
 import { lazy, Suspense, useState } from 'react';
 import { DocActionToolbar } from '@/components/layout/TopNavbar/components/DocActionToolbar';
 import { NavToolbarSlot } from '@/context/NavToolbarSlotContext';
-import { DISTRIBUTED_STATUSES } from '../../document.constants';
 import { ZOOM_MAX, ZOOM_MIN } from '../../document.measurements';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { DocumentHeader } from '../../types';
+import { useDocPermissions } from '../DocPermissionsModal';
 import type { EditDocDetailsMode } from '../EditDocDetailsModal';
 import { FilterPanel } from '../FilterPanel';
 
 const EditDocDetailsModal = lazy(() =>
   import('../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
-);
-const DocPermissionsModal = lazy(() =>
-  import('./components/DocPermissionsModal').then((m) => ({ default: m.DocPermissionsModal })),
 );
 
 const routeApi = getRouteApi('/document/$id');
@@ -36,13 +33,14 @@ export const DocumentActionsSlot = ({ overrides }: DocumentActionsSlotProps) => 
   const { zoom, q } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
   const [detailsMode, setDetailsMode] = useState<EditDocDetailsMode | null>(null);
-  const [showPermissions, setShowPermissions] = useState(false);
+  // The permissions dialog is shared with the section menus, so it is the
+  // provider's to render — this button only asks for it, with no level in mind.
+  const { openDocPermissions } = useDocPermissions();
 
   const handleOpenEdit = () => setDetailsMode('edit');
   const handleOpenDuplicate = () => setDetailsMode('duplicate');
   const handleCloseDetails = () => setDetailsMode(null);
-  const handleOpenPermissions = () => setShowPermissions(true);
-  const handleClosePermissions = () => setShowPermissions(false);
+  const handleOpenPermissions = () => openDocPermissions();
 
   // Clamped here rather than in ZoomControl, and rather than left to the route
   // schema: zod's `.min()/.max()` with a `.catch()` fallback *rejects* an
@@ -79,13 +77,6 @@ export const DocumentActionsSlot = ({ overrides }: DocumentActionsSlotProps) => 
       </NavToolbarSlot>
 
       <Suspense fallback={null}>
-        {showPermissions && (
-          <DocPermissionsModal
-            isDistributed={DISTRIBUTED_STATUSES.has(overrides.status)}
-            onClose={handleClosePermissions}
-          />
-        )}
-
         {detailsMode && (
           <EditDocDetailsModal
             mode={detailsMode}

@@ -12,7 +12,22 @@ export interface PermissionLevel {
   label: string;
   Icon: ElementType;
   description: string;
+  /**
+   * The last two permissions are granted per section rather than over the whole
+   * document — "עורכי הסעיף יוכלו לערוך רק את הסעיף שבעבורו ניתנה להם ההרשאה" —
+   * so choosing them swaps the members column for the document's section tree.
+   */
+  isSectionScoped?: boolean;
 }
+
+/**
+ * The two per-section permissions, named so that a section's own menu can ask for
+ * the one it means without restating the string.
+ */
+export const SECTION_PERMISSION_LEVEL_IDS = {
+  editors: 'section-editors',
+  approvers: 'section-approvers',
+} as const;
 
 /**
  * `צפייה טרם הפצה` becomes `מורשים לייצוא לוורד` once the document is distributed
@@ -42,16 +57,18 @@ export const buildPermissionLevels = (isDistributed: boolean): PermissionLevel[]
       'המשתמשים עם הרשאה זו יוכלו לנהל את הפקודה כמו ״בעל פקודה״ — לערוך ולאשר את כל הסעיפים, לשנות את סדר הפקודה ולנהל את הרשאות הצפייה, העריכה והאישור.',
   },
   {
-    id: 'section-editors',
+    id: SECTION_PERMISSION_LEVEL_IDS.editors,
     label: 'עורכי סעיפים',
     Icon: PenLine,
+    isSectionScoped: true,
     description:
       'המשתמשים עם הרשאה זו יוכלו לערוך את הסעיף כשהפקודה בסטטוס ״בהכנה״. עורכי הסעיף יוכלו לערוך רק את הסעיף שבעבורו ניתנה להם ההרשאה. משתמשים אלו יהיו משויכים לרשימת התפוצה.',
   },
   {
-    id: 'section-approvers',
+    id: SECTION_PERMISSION_LEVEL_IDS.approvers,
     label: 'מאשרי סעיף',
     Icon: UserCheck,
+    isSectionScoped: true,
     description:
       'המשתמשים עם הרשאה זו יוכלו לאשר את הסעיף כשהפקודה בסטטוס ״בהכנה״. מאשרי הסעיף יוכלו לאשר רק את הסעיף שבעבורו ניתנה להם ההרשאה. משתמשים אלו משויכים לרשימת התפוצה.',
   },

@@ -1,0 +1,188 @@
+import { X } from 'lucide-react';
+import { useState } from 'react';
+import type { Member } from '@/components/PeoplePicker';
+import type { Subject } from '../../../../types';
+import { DOC_PERMISSIONS_MODAL_IDS } from '../../DocPermissionsModal.testids';
+import {
+  AssignedId,
+  AssignedList,
+  AssignedName,
+  AssignedRow,
+  Chevron,
+  ClearButton,
+  RemoveButton,
+  SectionCount,
+  SectionIndex,
+  SectionList,
+  SectionRow,
+  SectionTitle,
+  SubjectRow,
+  SubjectTitle,
+  TreeBody,
+  TreeHeader,
+  TreeRoot,
+  TreeTitle,
+  UnassignedNotice,
+} from './SectionAssignmentTree.styles';
+
+interface SectionAssignmentTreeProps {
+  subjects: Subject[];
+  members: Member[];
+  /** Section ids per member id. */
+  sectionsByMember: Record<string, string[]>;
+  /** Sections the next person picked will be assigned to. */
+  selectedSectionIds: string[];
+  onToggleSection: (id: string) => void;
+  onClearSections: () => void;
+  onUnassign: (memberId: string, sectionId: string) => void;
+}
+
+/**
+ * The document's own sections, for the two permissions that are granted per
+ * section rather than over the whole document (main's TopNavbar.tsx:814).
+ *
+ * Select the sections first, then pick people: whoever is picked while a section
+ * is selected is granted the permission on that section, and appears underneath
+ * it. That order is main's, and it is the reason this column replaces the members
+ * list rather than sitting next to it — for these two permissions, "who" is only
+ * meaningful alongside "for what".
+ *
+ * The sections are the real document's, read by the dialog and passed down, not a
+ * fixture: a permission is granted on a section that exists.
+ */
+export const SectionAssignmentTree = ({
+  subjects,
+  members,
+  sectionsByMember,
+  selectedSectionIds,
+  onToggleSection,
+  onClearSections,
+  onUnassign,
+}: SectionAssignmentTreeProps) => {
+  // Opens on whichever topics hold an already-selected section, so arriving here
+  // from a section's own menu shows that section rather than the shut tree it is
+  // hiding inside.
+  const [openSubjects, setOpenSubjects] = useState<string[]>(() =>
+    subjects
+      .filter((subject) =>
+        subject.sections.some((section) => selectedSectionIds.includes(section.id)),
+      )
+      .map((subject) => subject.id),
+  );
+  const [openSections, setOpenSections] = useState<string[]>([]);
+
+  const toggleOpen = (ids: string[], id: string) =>
+    ids.includes(id) ? ids.filter((candidate) => candidate !== id) : [...ids, id];
+
+  const handleSubjectClick = (id: string) => () => setOpenSubjects((prev) => toggleOpen(prev, id));
+  const handleSectionClick = (id: string) => () => onToggleSection(id);
+  const handleCountClick = (id: string) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpenSections((prev) => toggleOpen(prev, id));
+  };
+  const handleUnassign = (memberId: string, sectionId: string) => () =>
+    onUnassign(memberId, sectionId);
+
+  const membersOf = (sectionId: string) =>
+    members.filter((member) => (sectionsByMember[member.id] ?? []).includes(sectionId));
+
+  const unassignedCount = members.filter(
+    (member) => (sectionsByMember[member.id] ?? []).length === 0,
+  ).length;
+
+  return (
+    <TreeRoot data-testid={DOC_PERMISSIONS_MODAL_IDS.sectionTree}>
+      <TreeHeader>
+        <TreeTitle>בחר סעיפים לשיוך</TreeTitle>
+        {selectedSectionIds.length > 0 && (
+          <ClearButton
+            type="button"
+            data-testid={DOC_PERMISSIONS_MODAL_IDS.clearSections}
+            onClick={onClearSections}
+          >
+            {selectedSectionIds.length} נבחרו · נקה
+          </ClearButton>
+        )}
+      </TreeHeader>
+
+      <TreeBody>
+        {subjects.map((subject) => {
+          const isOpen = openSubjects.includes(subject.id);
+          return (
+            <div key={subject.id}>
+              <SubjectRow
+                type="button"
+                aria-expanded={isOpen}
+                data-testid={DOC_PERMISSIONS_MODAL_IDS.subjectRow(subject.id)}
+                onClick={handleSubjectClick(subject.id)}
+              >
+                <Chevron size={14} $open={isOpen} aria-hidden="true" />
+                <SubjectTitle>{subject.title}</SubjectTitle>
+              </SubjectRow>
+
+              {isOpen && (
+                <SectionList>
+                  {subject.sections.map((section, index) => {
+                    const isSelected = selectedSectionIds.includes(section.id);
+                    const assigned = membersOf(section.id);
+                    const isListOpen = openSections.includes(section.id);
+                    return (
+                      <div key={section.id}>
+                        <SectionRow
+                          type="button"
+                          $selected={isSelected}
+                          aria-pressed={isSelected}
+                          data-testid={DOC_PERMISSIONS_MODAL_IDS.sectionRow(section.id)}
+                          onClick={handleSectionClick(section.id)}
+                        >
+                          <SectionIndex>{index + 1}.</SectionIndex>
+                          <SectionTitle $selected={isSelected}>{section.title}</SectionTitle>
+                          {assigned.length > 0 && (
+                            <SectionCount
+                              as="span"
+                              role="button"
+                              tabIndex={0}
+                              $open={isListOpen}
+                              data-testid={DOC_PERMISSIONS_MODAL_IDS.sectionMemberCount(section.id)}
+                              onClick={handleCountClick(section.id)}
+                            >
+                              {assigned.length}
+                            </SectionCount>
+                          )}
+                        </SectionRow>
+
+                        {isListOpen && assigned.length > 0 && (
+                          <AssignedList>
+                            {assigned.map((member) => (
+                              <AssignedRow key={member.id}>
+                                <AssignedName>{member.name}</AssignedName>
+                                <AssignedId>{member.idNumber}</AssignedId>
+                                <RemoveButton
+                                  type="button"
+                                  aria-label={`הסרת ${member.name} מהסעיף`}
+                                  onClick={handleUnassign(member.id, section.id)}
+                                >
+                                  <X size={12} />
+                                </RemoveButton>
+                              </AssignedRow>
+                            ))}
+                          </AssignedList>
+                        )}
+                      </div>
+                    );
+                  })}
+                </SectionList>
+              )}
+            </div>
+          );
+        })}
+
+        {unassignedCount > 0 && (
+          <UnassignedNotice data-testid={DOC_PERMISSIONS_MODAL_IDS.unassigned}>
+            {unassignedCount} נבחרו ללא סעיף. בחר סעיפים ולאחר מכן הוסף אותם שוב.
+          </UnassignedNotice>
+        )}
+      </TreeBody>
+    </TreeRoot>
+  );
+};

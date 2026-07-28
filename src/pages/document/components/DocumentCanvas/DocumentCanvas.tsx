@@ -9,6 +9,7 @@ import { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import type { DocumentDto } from '../../types';
 import { ComparisonBar } from '../ComparisonBar';
 import { BarRow } from '../components.shared.styles';
+import { DocPermissionsProvider } from '../DocPermissionsModal';
 import { DocumentActionsSlot } from '../DocumentActionsSlot';
 import { DocumentMetadataPill } from '../DocumentMetadataPill';
 import { DocumentSidebar } from '../DocumentSidebar';
@@ -61,51 +62,56 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
 
   const canvasBody = (
     <ContentEditorProvider>
-      {/* Renders nothing here — it portals the document's action toolbar into the
-          navbar, and owns the modals that toolbar opens. */}
-      <DocumentActionsSlot overrides={overrides} />
+      {/* Wraps everything below because the permissions dialog is asked for from
+          both ends of the page: the navbar toolbar's key, and a section's 3-dots
+          menu four levels inside the paper. */}
+      <DocPermissionsProvider isDistributed={isDistributed}>
+        {/* Renders nothing here — it portals the document's action toolbar into
+            the navbar, and owns the modals that toolbar opens. */}
+        <DocumentActionsSlot overrides={overrides} />
 
-      <BarRow>
-        <DocumentMetadataPill header={overrides.header} />
-      </BarRow>
-
-      {/* main hides the provenance notice once the document is locked
-          (Edit.tsx:3711) — where its content came from stops being actionable
-          when you can no longer refresh it. */}
-      {!readOnly && data.sourceSystems.length > 0 && (
         <BarRow>
-          <SourceSystemsNotice systems={data.sourceSystems} />
+          <DocumentMetadataPill header={overrides.header} />
         </BarRow>
-      )}
 
-      <BarRow>
-        <ComparisonBar />
-      </BarRow>
+        {/* main hides the provenance notice once the document is locked
+            (Edit.tsx:3711) — where its content came from stops being actionable
+            when you can no longer refresh it. */}
+        {!readOnly && data.sourceSystems.length > 0 && (
+          <BarRow>
+            <SourceSystemsNotice systems={data.sourceSystems} />
+          </BarRow>
+        )}
 
-      {/* The provider wraps both columns because that is the span of what it
-          connects: the approval flow that asks whether the document has been
-          signed is in the sidebar, and the signatures it asks about are three
-          levels inside the paper. */}
-      <SignatureGateProvider>
-        <BodyRow data-testid={DOCUMENT_CANVAS_IDS.root}>
-          <DocumentSidebar
-            tree={tree}
-            trash={trash}
-            overrides={overrides}
-            readOnly={readOnly}
-            isDistributed={isDistributed}
-            onAddEmphasis={handleAddEmphasis}
-          />
-          <PaperCanvas
-            tree={tree}
-            overrides={overrides}
-            trash={trash}
-            readOnly={readOnly}
-            isDistributed={isDistributed}
-            showEmphasis={showEmphasis}
-          />
-        </BodyRow>
-      </SignatureGateProvider>
+        <BarRow>
+          <ComparisonBar />
+        </BarRow>
+
+        {/* This provider wraps both columns because that is the span of what it
+            connects: the approval flow that asks whether the document has been
+            signed is in the sidebar, and the signatures it asks about are three
+            levels inside the paper. */}
+        <SignatureGateProvider>
+          <BodyRow data-testid={DOCUMENT_CANVAS_IDS.root}>
+            <DocumentSidebar
+              tree={tree}
+              trash={trash}
+              overrides={overrides}
+              readOnly={readOnly}
+              isDistributed={isDistributed}
+              onAddEmphasis={handleAddEmphasis}
+            />
+            <PaperCanvas
+              tree={tree}
+              overrides={overrides}
+              trash={trash}
+              readOnly={readOnly}
+              isDistributed={isDistributed}
+              showEmphasis={showEmphasis}
+            />
+          </BodyRow>
+        </SignatureGateProvider>
+      </DocPermissionsProvider>
     </ContentEditorProvider>
   );
 

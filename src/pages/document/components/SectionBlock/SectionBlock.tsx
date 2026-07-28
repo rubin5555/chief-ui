@@ -6,7 +6,6 @@ import {
   type AttachmentFile,
   DEFAULT_CLASSIFICATION_LEVEL,
   type Footnote,
-  type NodePermissions,
   type Section,
   type SectionStatus,
 } from '../../types';
@@ -66,9 +65,6 @@ export const SectionBlock = ({
 
   const handleContentChange = (content: string) =>
     tree.updateSectionContent(subjectId, section.id, content);
-
-  const handlePermissionsChange = (role: keyof NodePermissions, value: string[]) =>
-    tree.updateSectionPermissions(subjectId, section.id, { ...section.permissions, [role]: value });
 
   const handleToggleHidden = () => overrides.patchMeta(section.id, { hidden: !meta.hidden });
 
@@ -135,7 +131,6 @@ export const SectionBlock = ({
         content={section.content}
         number={number}
         meta={meta}
-        permissions={section.permissions}
         readOnly={readOnly}
         isDistributed={isDistributed}
         attachmentsOpen={attachmentsOpen}
@@ -143,7 +138,6 @@ export const SectionBlock = ({
         onTitleChange={handleTitleChange}
         onAttachmentsChange={handleAttachmentsChange}
         onMessageSent={handleMessageSent}
-        onChangePermissions={handlePermissionsChange}
         onToggleHidden={handleToggleHidden}
         onToggleClassified={handleToggleClassified}
         onChangeClassificationViewers={handleChangeClassificationViewers}

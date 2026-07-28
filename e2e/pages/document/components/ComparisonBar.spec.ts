@@ -1,11 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
 import { COMPARISON_BAR_IDS } from '../../../../src/pages/document/components/ComparisonBar/ComparisonBar.testids';
 import { VERSION_PICKER_MODAL_IDS } from '../../../../src/pages/document/components/ComparisonBar/components/VersionPickerModal/VersionPickerModal.testids';
-import { DOC_PERMISSIONS_MODAL_IDS } from '../../../../src/pages/document/components/DocumentActionsSlot/components/DocPermissionsModal/DocPermissionsModal.testids';
 
-// Comparing the document against an earlier version, and the document-level
-// permissions dialog.
+// Comparing the document against an earlier version. The permissions dialog it
+// used to share a file with now has its own spec under DocumentActionsSlot/.
 
 const VERSION = 'עדכון מס׳ 1';
 
@@ -61,36 +59,4 @@ test('the view toggles hold their state, and the difference nav has nothing to w
   await expect(page.getByTestId(COMPARISON_BAR_IDS.navCounter)).toHaveText('0/0');
   await expect(page.getByTestId(COMPARISON_BAR_IDS.prevBtn)).toBeDisabled();
   await expect(page.getByTestId(COMPARISON_BAR_IDS.nextBtn)).toBeDisabled();
-});
-
-test('the permissions dialog explains each level and keeps its members apart', async ({ page }) => {
-  await page.goto('/document/d1');
-
-  await page.getByTestId(DOC_ACTION_TOOLBAR_IDS.permissions).click();
-  const modal = page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.root);
-  await expect(modal).toBeVisible();
-
-  // Opens on the first level, with main's wording for it.
-  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.description)).toContainText(
-    'יוכלו לצפות בתוכן הפקודה לאחר הפצתה',
-  );
-  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.memberCount)).toHaveText('0');
-
-  await page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.membersSelect).click();
-  await page.getByText('אבי כהן', { exact: true }).click();
-  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.memberCount)).toHaveText('1');
-
-  // The dropdown stays open after a pick — more than one person can hold a
-  // permission — and this far down a dialog it opens upward, over the tabs.
-  // Escape dismisses the dropdown and leaves the dialog standing.
-  await page.keyboard.press('Escape');
-  await expect(modal).toBeVisible();
-
-  // A different level is a different list — switching tabs must not carry members
-  // across.
-  await page.getByText('ניהול פקודה', { exact: true }).click();
-  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.description)).toContainText(
-    'לנהל את הפקודה כמו ״בעל פקודה״',
-  );
-  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.memberCount)).toHaveText('0');
 });

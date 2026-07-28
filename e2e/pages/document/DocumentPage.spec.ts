@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import { SEARCHABLE_MULTI_SELECT_IDS } from '../../../src/components/ui/SearchableMultiSelect/SearchableMultiSelect.testids';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from '../../../src/pages/document/components/ClassifiedViewersModal/ClassifiedViewersModal.testids';
+import { DOC_PERMISSIONS_MODAL_IDS } from '../../../src/pages/document/components/DocPermissionsModal/DocPermissionsModal.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
 import { OUTLINE_SECTION_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSectionRow/OutlineSectionRow.testids';
 import { OUTLINE_SUBJECT_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubjectRow/OutlineSubjectRow.testids';
@@ -151,18 +151,22 @@ test('classifying a section opens the viewers picker and gates its content', asy
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-2'))).toHaveCount(0);
 });
 
-test('editing section approvers through the permissions view', async ({ page }) => {
+test('a section asks for its approvers in the document permissions dialog', async ({ page }) => {
   await page.goto('/document/d1');
 
   await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
   await page.getByTestId(SECTION_MENU_IDS.approversAction).click();
 
-  const select = page.getByTestId(SECTION_MENU_IDS.permissionsSelect);
-  await expect(select).toBeVisible();
-  await select.click();
-  await page.getByTestId(SEARCHABLE_MULTI_SELECT_IDS.option('אבי כהן')).click();
-
-  await expect(select).toContainText('אבי כהן');
+  // Opened on מאשרי סעיף with this section already selected, so the permission
+  // lands where it was asked for rather than on the whole document.
+  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.root)).toBeVisible();
+  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.description)).toContainText(
+    'יוכלו לאשר את הסעיף',
+  );
+  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.sectionRow('s1-1'))).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
 });
 
 test('deleting a section from the section menu removes it from the tree', async ({ page }) => {

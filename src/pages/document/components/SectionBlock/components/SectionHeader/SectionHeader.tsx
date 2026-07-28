@@ -1,4 +1,4 @@
-import type { AttachmentFile, NodePermissions, SectionMeta } from '../../../../types';
+import type { AttachmentFile, SectionMeta } from '../../../../types';
 import { AttachmentPicker } from '../../../AttachmentPicker';
 import { NodeActionRow } from '../../../NodeActionRow';
 import { NodeTitleField } from '../../../NodeTitleField';
@@ -15,7 +15,6 @@ export interface SectionHeaderProps {
   /** Continuous position in the document, not within the parent subject. */
   number: number;
   meta: SectionMeta;
-  permissions: NodePermissions;
   readOnly: boolean;
   isDistributed: boolean;
   attachmentsOpen: boolean;
@@ -23,7 +22,6 @@ export interface SectionHeaderProps {
   onTitleChange: (title: string) => void;
   onAttachmentsChange: (attachments: AttachmentFile[]) => void;
   onMessageSent: () => void;
-  onChangePermissions: (role: keyof NodePermissions, value: string[]) => void;
   onToggleHidden: () => void;
   onToggleClassified: () => void;
   onChangeClassificationViewers: (ids: string[]) => void;
@@ -44,7 +42,6 @@ export const SectionHeader = ({
   content,
   number,
   meta,
-  permissions,
   readOnly,
   isDistributed,
   attachmentsOpen,
@@ -52,7 +49,6 @@ export const SectionHeader = ({
   onTitleChange,
   onAttachmentsChange,
   onMessageSent,
-  onChangePermissions,
   onToggleHidden,
   onToggleClassified,
   onChangeClassificationViewers,
@@ -106,11 +102,9 @@ export const SectionHeader = ({
           sectionId={sectionId}
           sectionTitle={title}
           instructions={meta.instructions ?? ''}
-          permissions={permissions}
           isHidden={meta.hidden}
           classificationLevel={meta.classification.level}
           classificationViewerIds={meta.classification.viewerIds}
-          onChangePermissions={onChangePermissions}
           onToggleHidden={onToggleHidden}
           onToggleClassified={onToggleClassified}
           onChangeClassificationViewers={onChangeClassificationViewers}

@@ -251,13 +251,20 @@ you'd rather they weren't:
   also shifts the document toolbar 4px and invalidates
   `e2e/components/layout/TopNavbar.spec.ts`'s screenshot baseline, so it's left
   alone rather than churned as a side effect of a document-page phase.
+- **A section's permissions open the document dialog, not an editor of their own.**
+  מאשרי הסעיף and עורכי הסעיף on a section's 3-dots menu open `DocPermissionsModal`
+  on the matching permission with that section preselected — main's `permTrigger`
+  (`TopNavbar.tsx:1093`). An earlier phase kept an inline per-section picker
+  instead, on the reasoning that per-section permissions are per-section data;
+  that was wrong in one way that matters: these two permissions are *granted* per
+  section but *held* document-wide, so an inline editor could only ever show the
+  slice of them belonging to one section, and there was no way to see who held a
+  permission across the document. The inline view and the tree's per-node
+  `permissions` writes are gone with it.
 - **No in-app link to a document.** main opens one from its catalog page, which
   dev doesn't have; inventing a navbar link would put an element on *every* page
   that main has nowhere. The brand is a real link home, and the document is
   reached at `/document/d1`.
-
-Also temporarily inert: the toolbar's **הרשאות** button. main renders it, so it
-renders — the five-tab document-permissions modal it opens is still to be built.
 
 And one addition with no counterpart in main: the sidebar's **אישור קבלה (חמ״ל)**
 button, shown only once a document has been distributed. main has a modal for
@@ -283,10 +290,11 @@ missing:
 - **Document-permission persistence.** `DocPermissionsModal` has main's five levels
   and its wording, and its members are local state — there is no
   document-permissions shape on the API to write them to. Same reason as above.
-- **main's permission importers.** Each level in main can be filled from mailing
-  lists, HML groups, network directories or an Excel upload — the machinery
-  `src/modals/MailingListFormModal` already implements for a different purpose. Here a
-  level takes people from the network roster through the app's own multi-select.
+- **Excel import.** main offers a sixth source on each permission — an `.xlsx`
+  upload with one column of personal numbers, previewed as a spreadsheet mock-up
+  (`TopNavbar.tsx:761`). The other five sources are live and shared with the
+  mailing-list form; this one has no reader behind it, and a file picker that
+  drops the file on the floor is worse than not offering it yet.
 
 Everything else main has is either live or in **`parity/`** — the Word-style
 ribbon, the table view, the acceptance dialog nothing in main can open, the

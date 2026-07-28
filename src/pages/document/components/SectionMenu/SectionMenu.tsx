@@ -2,11 +2,9 @@ import { MoreVertical } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
-import type { NodePermissions } from '../../types';
+import { SECTION_PERMISSION_LEVEL_IDS, useDocPermissions } from '../DocPermissionsModal';
 import { ACTION_ICON_SIZE, ActionBtn, type ActionTone } from '../NodeActionRow';
 import { SectionMenuActions } from './components/SectionMenuActions';
-import type { PermissionRole } from './components/SectionPermissionsView';
-import { SectionPermissionsView } from './components/SectionPermissionsView';
 import { useSectionMenuAnalytics } from './SectionMenu.analytics';
 import { SECTION_MENU_IDS } from './SectionMenu.testids';
 
@@ -26,11 +24,9 @@ export interface SectionMenuProps {
   sectionTitle: string;
   instructions: string;
   tone?: ActionTone;
-  permissions: NodePermissions;
   isHidden: boolean;
   classificationLevel: string | null;
   classificationViewerIds: string[];
-  onChangePermissions: (role: PermissionRole, value: string[]) => void;
   onToggleHidden: () => void;
   onToggleClassified: () => void;
   onChangeClassificationViewers: (ids: string[]) => void;
@@ -39,18 +35,24 @@ export interface SectionMenuProps {
   onDelete: () => void;
 }
 
-// A node's 3-dots menu: its own trigger, its popover, the two modals its actions
-// open, and which of its two views is showing. The views are under components/.
+/**
+ * A node's 3-dots menu: its own trigger, its popover, and the two modals its
+ * actions open.
+ *
+ * מאשרי הסעיף and עורכי הסעיף open the document permissions dialog on the matching
+ * permission with this section already selected, rather than editing the section's
+ * approvers here. That is main's routing (its `permTrigger`, TopNavbar.tsx:1093),
+ * and it is the honest one: those two permissions are granted per section but held
+ * document-wide, so a per-section editor can only ever show a slice of them.
+ */
 export const SectionMenu = ({
   sectionId,
   sectionTitle,
   instructions,
   tone = 'default',
-  permissions,
   isHidden,
   classificationLevel,
   classificationViewerIds,
-  onChangePermissions,
   onToggleHidden,
   onToggleClassified,
   onChangeClassificationViewers,
@@ -59,8 +61,7 @@ export const SectionMenu = ({
   onDelete,
 }: SectionMenuProps) => {
   const panel = useFloatingPanel<HTMLButtonElement>();
-  const [view, setView] = useState<'actions' | 'permissions'>('actions');
-  const [activeRole, setActiveRole] = useState<PermissionRole>('approvers');
+  const { openDocPermissions } = useDocPermissions();
   const [showClassifiedViewers, setShowClassifiedViewers] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const {
@@ -73,20 +74,14 @@ export const SectionMenu = ({
 
   const isClassified = classificationLevel !== null;
 
-  // Reopening always lands on the actions: the permissions view is somewhere you
-  // went, not a state the menu should remember being in.
-  const handleToggle = () => {
-    panel.toggle(PANEL_WIDTH);
-    setView('actions');
-  };
+  const handleToggle = () => panel.toggle(PANEL_WIDTH);
 
-  const handleOpenPermissions = (role: PermissionRole) => () => {
-    setActiveRole(role);
-    setView('permissions');
+  // Closes the menu on the way: the dialog it opens is a full-screen one, and a
+  // popover left standing behind an overlay is a popover nobody can reach.
+  const handleOpenPermissions = (levelId: string) => () => {
+    panel.close();
+    openDocPermissions({ levelId, sectionId });
   };
-
-  const handleBackToActions = () => setView('actions');
-  const handlePermissionsChange = (value: string[]) => onChangePermissions(activeRole, value);
 
   const handleToggleHidden = () => {
     trackHiddenToggled(!isHidden);
@@ -153,27 +148,17 @@ export const SectionMenu = ({
           $width={PANEL_WIDTH}
           data-testid={SECTION_MENU_IDS.panel(sectionId)}
         >
-          {view === 'actions' ? (
-            <SectionMenuActions
-              isHidden={isHidden}
-              isClassified={isClassified}
-              onOpenApprovers={handleOpenPermissions('approvers')}
-              onOpenEditors={handleOpenPermissions('editors')}
-              onToggleHidden={handleToggleHidden}
-              onToggleClassified={handleToggleClassified}
-              onOpenInstructions={handleOpenInstructions}
-              onAddFootnote={handleAddFootnote}
-              onDelete={handleDelete}
-            />
-          ) : (
-            <SectionPermissionsView
-              permissions={permissions}
-              activeRole={activeRole}
-              onRoleChange={setActiveRole}
-              onChange={handlePermissionsChange}
-              onBack={handleBackToActions}
-            />
-          )}
+          <SectionMenuActions
+            isHidden={isHidden}
+            isClassified={isClassified}
+            onOpenApprovers={handleOpenPermissions(SECTION_PERMISSION_LEVEL_IDS.approvers)}
+            onOpenEditors={handleOpenPermissions(SECTION_PERMISSION_LEVEL_IDS.editors)}
+            onToggleHidden={handleToggleHidden}
+            onToggleClassified={handleToggleClassified}
+            onOpenInstructions={handleOpenInstructions}
+            onAddFootnote={handleAddFootnote}
+            onDelete={handleDelete}
+          />
         </FloatingPanel>
       )}
 

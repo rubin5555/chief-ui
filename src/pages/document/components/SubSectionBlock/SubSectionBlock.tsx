@@ -6,7 +6,6 @@ import {
   type AttachmentFile,
   DEFAULT_CLASSIFICATION_LEVEL,
   type Footnote,
-  type NodePermissions,
   type SubSection,
 } from '../../types';
 import { AttachmentPicker } from '../AttachmentPicker';
@@ -53,12 +52,6 @@ export const SubSectionBlock = ({
 
   const handleContentChange = (content: string) =>
     tree.updateSubSectionContent(subjectId, sectionId, subSection.id, content);
-
-  const handlePermissionsChange = (role: keyof NodePermissions, value: string[]) =>
-    tree.updateSubSectionPermissions(subjectId, sectionId, subSection.id, {
-      ...subSection.permissions,
-      [role]: value,
-    });
 
   const handleToggleHidden = () => overrides.patchMeta(subSection.id, { hidden: !meta.hidden });
 
@@ -134,11 +127,9 @@ export const SubSectionBlock = ({
               sectionId={subSection.id}
               sectionTitle={subSection.title}
               instructions={meta.instructions ?? ''}
-              permissions={subSection.permissions}
               isHidden={meta.hidden}
               classificationLevel={meta.classification.level}
               classificationViewerIds={meta.classification.viewerIds}
-              onChangePermissions={handlePermissionsChange}
               onToggleHidden={handleToggleHidden}
               onToggleClassified={handleToggleClassified}
               onChangeClassificationViewers={handleChangeClassificationViewers}
