@@ -1,0 +1,137 @@
+import { lazy, Suspense } from 'react';
+import type { HmlGroupDto } from '@/api/approvals';
+import type { DocumentHeader } from '../../../../types';
+import type { ApprovalRoundConfig } from '../../../ApprovalDetailsModal';
+import type { ApproverSignature } from '../../../SignaturesSection';
+import type { ApprovalFlowStep } from '../../approvalWorkflow.types';
+
+const AcceptenceVerification = lazy(() =>
+  import('../../../AcceptenceVerification').then((m) => ({ default: m.AcceptenceVerification })),
+);
+const ApprovalDetailsModal = lazy(() =>
+  import('../../../ApprovalDetailsModal').then((m) => ({ default: m.ApprovalDetailsModal })),
+);
+const ApprovalRotation = lazy(() =>
+  import('../../../ApprovalRotation').then((m) => ({ default: m.ApprovalRotation })),
+);
+const DistributeDoc = lazy(() =>
+  import('../../../DistributeDoc').then((m) => ({ default: m.DistributeDoc })),
+);
+const EditDocDetailsModal = lazy(() =>
+  import('../../../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
+);
+const ApprovalDirtyWarningModal = lazy(() =>
+  import('../../../EditDocDetailsModal/components/ApprovalDirtyWarningModal').then((m) => ({
+    default: m.ApprovalDirtyWarningModal,
+  })),
+);
+const DistributeConfirmModal = lazy(() =>
+  import('../DistributeConfirmModal').then((m) => ({ default: m.DistributeConfirmModal })),
+);
+const DistributeProgressToast = lazy(() =>
+  import('../DistributeProgressToast').then((m) => ({ default: m.DistributeProgressToast })),
+);
+
+export interface ApprovalFlowModalsProps {
+  step: ApprovalFlowStep;
+  header: DocumentHeader;
+  status: string;
+  hmlGroups: HmlGroupDto[];
+  roundConfig: ApprovalRoundConfig | null;
+  /** Non-null while the toast is up — it outlives the step that started it. */
+  distributedTo: number | null;
+  onClose: () => void;
+  onSaveHeader: (header: DocumentHeader) => void;
+  onReviewContinue: (isDirty: boolean) => void;
+  onDirtyWarningBack: () => void;
+  onDirtyWarningContinue: () => void;
+  onDetailsSubmit: (config: ApprovalRoundConfig) => void;
+  onReject: (reason: string) => void;
+  onApprove: (signature: ApproverSignature) => void;
+  onDistributeFromRotation: () => void;
+  onConfirmDistribute: () => void;
+  onSent: (recipients: string[]) => void;
+  onCloseToast: () => void;
+}
+
+// Every dialog the approval flow can put on screen, picked by the step it is on.
+//
+// Split out of ApprovalWorkflow so that component is the flow's *state machine* —
+// which step follows which, and what each transition does — rather than a
+// transition table with eight lazy imports stapled underneath it.
+//
+// One Suspense boundary around all of them: only ever one is mounted, and a
+// per-modal boundary would be eight of the same `null`.
+export const ApprovalFlowModals = ({
+  step,
+  header,
+  status,
+  hmlGroups,
+  roundConfig,
+  distributedTo,
+  onClose,
+  onSaveHeader,
+  onReviewContinue,
+  onDirtyWarningBack,
+  onDirtyWarningContinue,
+  onDetailsSubmit,
+  onReject,
+  onApprove,
+  onDistributeFromRotation,
+  onConfirmDistribute,
+  onSent,
+  onCloseToast,
+}: ApprovalFlowModalsProps) => (
+  <Suspense fallback={null}>
+    {step === 'review' && (
+      <EditDocDetailsModal
+        mode="approval"
+        header={header}
+        docStatus={status}
+        onClose={onClose}
+        onSave={onSaveHeader}
+        onContinue={onReviewContinue}
+      />
+    )}
+
+    {step === 'dirtyWarning' && (
+      <ApprovalDirtyWarningModal onBack={onDirtyWarningBack} onContinue={onDirtyWarningContinue} />
+    )}
+
+    {step === 'details' && <ApprovalDetailsModal onClose={onClose} onSubmit={onDetailsSubmit} />}
+
+    {/* Guarded on the config as well as the step: there is no round to show
+        without one, and the step alone can't promise it exists. */}
+    {step === 'rotation' && roundConfig && (
+      <ApprovalRotation
+        docName={header.name}
+        config={roundConfig}
+        hmlGroups={hmlGroups}
+        onClose={onClose}
+        onReject={onReject}
+        onApprove={onApprove}
+        onDistribute={onDistributeFromRotation}
+      />
+    )}
+
+    {step === 'distributeConfirm' && (
+      <DistributeConfirmModal
+        docName={header.name}
+        onConfirm={onConfirmDistribute}
+        onClose={onClose}
+      />
+    )}
+
+    {step === 'distribute' && (
+      <DistributeDoc docName={header.name} onClose={onClose} onSend={onSent} />
+    )}
+
+    {step === 'acceptance' && <AcceptenceVerification onClose={onClose} onSend={onClose} />}
+
+    {/* Not keyed off the step: distribution carries on while you go back to
+        reading the document, so the toast outlives the dialog that started it. */}
+    {distributedTo !== null && (
+      <DistributeProgressToast recipientCount={distributedTo} onClose={onCloseToast} />
+    )}
+  </Suspense>
+);

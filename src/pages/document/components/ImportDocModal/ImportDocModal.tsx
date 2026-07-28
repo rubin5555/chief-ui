@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import type { UnderlineTab } from '@/components/ui/UnderlineTabs';
 import { UnderlineTabs } from '@/components/ui/UnderlineTabs';
+import { useImportDocModalAnalytics } from './ImportDocModal.analytics';
 import {
   Body,
   DocListColumn,
@@ -45,6 +46,7 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
 
   const [activeTab, setActiveTab] = useState<DocTab>('drafts');
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const { trackSourcePicked, trackImportSubmitted } = useImportDocModalAnalytics();
   // Keyed by section id, as main does — ids are stable and unique, so this
   // survives reordering and gives each checkbox an unambiguous testid, which
   // neither a title nor a list index manages.
@@ -60,6 +62,7 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
   };
 
   const handleSelectDoc = (docId: string) => () => {
+    trackSourcePicked(docId);
     setSelectedDocId(docId);
     setCheckedIds([]);
   };
@@ -74,9 +77,11 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
     // Maps ids back to titles rather than passing ids through: the tree builds
     // brand-new sections with fresh uuids, so the source id has no meaning
     // downstream — only the title survives the copy.
-    onImport(
-      sections.filter((section) => checkedIds.includes(section.id)).map((section) => section.title),
-    );
+    const titles = sections
+      .filter((section) => checkedIds.includes(section.id))
+      .map((section) => section.title);
+    trackImportSubmitted(titles.length);
+    onImport(titles);
   };
 
   return (

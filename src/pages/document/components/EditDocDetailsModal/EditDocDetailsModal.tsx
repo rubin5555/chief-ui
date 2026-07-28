@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { LIMITED_EDIT_STATUSES } from '../../document.constants';
 import type { DocumentHeader } from '../../types';
 import { DocDetailsFields } from './components/DocDetailsFields';
+import { useEditDocDetailsModalAnalytics } from './EditDocDetailsModal.analytics';
 import {
   type EditDocDetailsMode,
   MODAL_TITLES,
@@ -54,6 +55,7 @@ export const EditDocDetailsModal = ({
   // count as having renamed the copy.
   const [nameTouched, setNameTouched] = useState(false);
 
+  const { trackDetailsSaved, trackReviewContinued } = useEditDocDetailsModalAnalytics();
   const form = useDocDetailsForm(header, onSave);
 
   const isLimitedEdit = LIMITED_EDIT_STATUSES.has(docStatus);
@@ -69,11 +71,13 @@ export const EditDocDetailsModal = ({
     // these edits, so they have to have happened.
     if (mode === 'approval') {
       const isDirty = form.state.isDirty;
+      trackReviewContinued(isDirty);
       if (isDirty) onSave({ ...header, ...form.state.values });
       onContinue?.(isDirty);
       return;
     }
 
+    trackDetailsSaved(mode);
     form.handleSubmit();
   };
 

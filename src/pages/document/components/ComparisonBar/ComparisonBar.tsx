@@ -1,6 +1,7 @@
 import { getRouteApi } from '@tanstack/react-router';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
+import { useComparisonBarAnalytics } from './ComparisonBar.analytics';
 import {
   Bar,
   CompareTriggerBtn,
@@ -45,18 +46,27 @@ export const ComparisonBar = () => {
   const [hideDeleted, setHideDeleted] = useState(false);
   const [showHighlight, setShowHighlight] = useState(false);
   const [navIndex, setNavIndex] = useState(1);
+  const { trackComparisonStarted, trackViewToggled } = useComparisonBarAnalytics();
 
   const handleOpenPicker = () => setShowPicker(true);
   const handleClosePicker = () => setShowPicker(false);
 
-  const handlePickVersion = (label: string) =>
-    navigate({ search: (prev) => ({ ...prev, compareVersion: label }), replace: true });
+  const handlePickVersion = (label: string) => {
+    trackComparisonStarted(label);
+    return navigate({ search: (prev) => ({ ...prev, compareVersion: label }), replace: true });
+  };
 
   const handleClose = () =>
     navigate({ search: (prev) => ({ ...prev, compareVersion: '' }), replace: true });
 
-  const handleToggleHideDeleted = () => setHideDeleted((prev) => !prev);
-  const handleToggleHighlight = () => setShowHighlight((prev) => !prev);
+  const handleToggleHideDeleted = () => {
+    trackViewToggled('הסתרת תוכן מחוק', !hideDeleted);
+    setHideDeleted((prev) => !prev);
+  };
+  const handleToggleHighlight = () => {
+    trackViewToggled('הצגת מרקור טקסט', !showHighlight);
+    setShowHighlight((prev) => !prev);
+  };
   const handlePrev = () => setNavIndex((prev) => Math.max(1, prev - 1));
   const handleNext = () => setNavIndex((prev) => Math.min(DIFFERENCE_COUNT, prev + 1));
 

@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import type { AttachmentFile } from '../../types';
 import { ACTION_ICON_SIZE, ActionBtn, type ActionTone } from '../NodeActionRow';
+import { useAttachmentPickerAnalytics } from './AttachmentPicker.analytics';
 import { HiddenFileInput } from './AttachmentPicker.styles';
 import { ATTACHMENT_PICKER_IDS } from './AttachmentPicker.testids';
 import { toAttachmentFiles } from './attachmentPicker.utils';
@@ -37,6 +38,7 @@ export const AttachmentPicker = ({
   tone = 'default',
 }: AttachmentPickerProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const { trackFilesAttached, trackFileRemoved } = useAttachmentPickerAnalytics();
 
   // Every object URL this component has minted, so they can be released when it
   // goes away. A ref rather than state: nothing renders from it, and it has to
@@ -63,6 +65,7 @@ export const AttachmentPicker = ({
     event.target.value = '';
     if (chosen.length === 0) return;
 
+    trackFilesAttached(chosen.length);
     const added = toAttachmentFiles(chosen);
     for (const attachment of added) {
       if (attachment.objectUrl) mintedUrlsRef.current.push(attachment.objectUrl);
@@ -75,6 +78,7 @@ export const AttachmentPicker = ({
   };
 
   const handleRemove = (attachmentId: string) => {
+    trackFileRemoved();
     const removed = attachments.find((attachment) => attachment.id === attachmentId);
     if (removed?.objectUrl) {
       URL.revokeObjectURL(removed.objectUrl);

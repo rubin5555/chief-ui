@@ -7,6 +7,7 @@ import { ACTION_ICON_SIZE, ActionBtn, type ActionTone } from '../NodeActionRow';
 import { SectionMenuActions } from './components/SectionMenuActions';
 import type { PermissionRole } from './components/SectionPermissionsView';
 import { SectionPermissionsView } from './components/SectionPermissionsView';
+import { useSectionMenuAnalytics } from './SectionMenu.analytics';
 import { SECTION_MENU_IDS } from './SectionMenu.testids';
 
 const ClassifiedViewersModal = lazy(() =>
@@ -62,6 +63,13 @@ export const SectionMenu = ({
   const [activeRole, setActiveRole] = useState<PermissionRole>('approvers');
   const [showClassifiedViewers, setShowClassifiedViewers] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const {
+    trackHiddenToggled,
+    trackClassifiedToggled,
+    trackInstructionsSaved,
+    trackFootnoteAdded,
+    trackSectionDeleted,
+  } = useSectionMenuAnalytics();
 
   const isClassified = classificationLevel !== null;
 
@@ -81,6 +89,7 @@ export const SectionMenu = ({
   const handlePermissionsChange = (value: string[]) => onChangePermissions(activeRole, value);
 
   const handleToggleHidden = () => {
+    trackHiddenToggled(!isHidden);
     onToggleHidden();
     panel.close();
   };
@@ -89,6 +98,7 @@ export const SectionMenu = ({
   // nobody may see is not a useful state to leave behind.
   const handleToggleClassified = () => {
     const turningOn = !isClassified;
+    trackClassifiedToggled(turningOn);
     onToggleClassified();
     panel.close();
     if (turningOn) setShowClassifiedViewers(true);
@@ -100,17 +110,24 @@ export const SectionMenu = ({
   };
 
   const handleAddFootnote = () => {
+    trackFootnoteAdded();
     onAddFootnote();
     panel.close();
   };
 
   const handleDelete = () => {
+    trackSectionDeleted();
     onDelete();
     panel.close();
   };
 
   const handleCloseClassifiedViewers = () => setShowClassifiedViewers(false);
   const handleCloseInstructions = () => setShowInstructions(false);
+
+  const handleSaveInstructions = (instructions: string) => {
+    trackInstructionsSaved();
+    onChangeInstructions(instructions);
+  };
 
   return (
     <>
@@ -173,7 +190,7 @@ export const SectionMenu = ({
           <SectionInstructionsModal
             sectionTitle={sectionTitle}
             instructions={instructions}
-            onSave={onChangeInstructions}
+            onSave={handleSaveInstructions}
             onClose={handleCloseInstructions}
           />
         )}

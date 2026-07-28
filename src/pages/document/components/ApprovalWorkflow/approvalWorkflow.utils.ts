@@ -25,3 +25,28 @@ export const getPrevStatus = (status: string): string | null => {
   const index = STATUS_FLOW.indexOf(status);
   return index > 0 ? STATUS_FLOW[index - 1] : null;
 };
+
+/**
+ * What the forward button says, or `null` when there is no forward step to offer.
+ *
+ * Pure and separate from the component because it is a decision table, not
+ * rendering: four statuses, each with its own wording, and one of them (`בסבב
+ * אישורים`) where "forward" means opening the round rather than leaving it.
+ */
+export const getAdvanceLabel = (status: string, canStep: boolean): string | null => {
+  if (status === 'ממתין להפצה') return 'הפץ מסמך';
+  const next = getNextStatus(status);
+  if (!canStep || !next) return null;
+  if (status === 'בסבב אישורים') return 'אישור/דחיית המסמך';
+  if (next === 'בסבב אישורים') return 'העבר לסבב אישורים';
+  return `העבר ל${next}`;
+};
+
+/** What the back button says, or `null` when there is nowhere back to go. */
+export const getRevertLabel = (status: string, canStep: boolean): string | null => {
+  if (status === 'ממתין להפצה') return 'החזר לעריכה';
+  const prev = getPrevStatus(status);
+  if (!canStep || !prev) return null;
+  if (status === 'בסבב אישורים') return 'החזר לעריכה';
+  return `החזר למסמך ${prev}`;
+};

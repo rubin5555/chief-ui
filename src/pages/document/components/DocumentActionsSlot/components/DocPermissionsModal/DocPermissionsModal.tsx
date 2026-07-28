@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
 import type { UnderlineTab } from '@/components/ui/UnderlineTabs';
 import { UnderlineTabs } from '@/components/ui/UnderlineTabs';
+import { useDocPermissionsModalAnalytics } from './DocPermissionsModal.analytics';
 import { buildPermissionLevels } from './DocPermissionsModal.constants';
 import {
   LevelDescription,
@@ -47,14 +48,23 @@ export const DocPermissionsModal = ({ isDistributed, onClose }: DocPermissionsMo
 
   const [activeId, setActiveId] = useState(levels[0].id);
   const [membersByLevel, setMembersByLevel] = useState<Record<string, string[]>>({});
+  const { trackLevelViewed, trackMembersChanged } = useDocPermissionsModalAnalytics();
 
   const activeLevel = levels.find((level) => level.id === activeId) ?? levels[0];
   const activeMembers = membersByLevel[activeLevel.id] ?? [];
 
   const tabs: UnderlineTab[] = levels.map((level) => ({ id: level.id, label: level.label }));
 
-  const handleMembersChange = (names: string[]) =>
+  const handleMembersChange = (names: string[]) => {
+    trackMembersChanged(activeLevel.label, names.length);
     setMembersByLevel((prev) => ({ ...prev, [activeLevel.id]: names }));
+  };
+
+  const handleLevelChange = (id: string) => {
+    const level = levels.find((candidate) => candidate.id === id);
+    if (level) trackLevelViewed(level.label);
+    setActiveId(id);
+  };
 
   const handleClose = () => modalRef.current?.requestClose();
 
@@ -75,7 +85,7 @@ export const DocPermissionsModal = ({ isDistributed, onClose }: DocPermissionsMo
       data-testid={DOC_PERMISSIONS_MODAL_IDS.root}
     >
       <PermissionBody>
-        <UnderlineTabs tabs={tabs} activeId={activeId} onChange={setActiveId} />
+        <UnderlineTabs tabs={tabs} activeId={activeId} onChange={handleLevelChange} />
 
         <LevelHeader>
           <LevelIcon>

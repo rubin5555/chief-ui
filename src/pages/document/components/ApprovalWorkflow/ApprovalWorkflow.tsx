@@ -1,52 +1,22 @@
-import { lazy, Suspense, useState } from 'react';
+import { useState } from 'react';
 import { HML_GROUPS_FALLBACK, useHmlGroups } from '@/api/approvals';
 import { Button } from '@/components/ui/Button';
 import { DISTRIBUTED_STATUSES, EDITABLE_STATUSES } from '../../document.constants';
 import type { DocumentHeader } from '../../types';
 import type { ApprovalRoundConfig } from '../ApprovalDetailsModal';
 import { useSignatureGate } from '../SignaturesSection';
+import { useApprovalWorkflowAnalytics } from './ApprovalWorkflow.analytics';
 import { AcceptanceRow } from './ApprovalWorkflow.styles';
 import { APPROVAL_WORKFLOW_IDS } from './ApprovalWorkflow.testids';
-import { getNextStatus, getPrevStatus } from './approvalWorkflow.utils';
-import { DistributeConfirmModal } from './components/DistributeConfirmModal';
-import { DistributeProgressToast } from './components/DistributeProgressToast';
+import type { ApprovalFlowStep } from './approvalWorkflow.types';
+import {
+  getAdvanceLabel,
+  getNextStatus,
+  getPrevStatus,
+  getRevertLabel,
+} from './approvalWorkflow.utils';
+import { ApprovalFlowModals } from './components/ApprovalFlowModals';
 import { StatusFlowNav } from './components/StatusFlowNav';
-
-const AcceptenceVerification = lazy(() =>
-  import('../AcceptenceVerification').then((m) => ({ default: m.AcceptenceVerification })),
-);
-const ApprovalDetailsModal = lazy(() =>
-  import('../ApprovalDetailsModal').then((m) => ({ default: m.ApprovalDetailsModal })),
-);
-const ApprovalRotation = lazy(() =>
-  import('../ApprovalRotation').then((m) => ({ default: m.ApprovalRotation })),
-);
-const DistributeDoc = lazy(() =>
-  import('../DistributeDoc').then((m) => ({ default: m.DistributeDoc })),
-);
-const EditDocDetailsModal = lazy(() =>
-  import('../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
-);
-const ApprovalDirtyWarningModal = lazy(() =>
-  import('../EditDocDetailsModal/components/ApprovalDirtyWarningModal').then((m) => ({
-    default: m.ApprovalDirtyWarningModal,
-  })),
-);
-
-// `review` is main's approval-mode details dialog, which comes before the round is
-// configured; `dirtyWarning` is the question it raises if the document's values
-// were edited on the way through.
-type FlowStep =
-  | 'idle'
-  | 'review'
-  | 'dirtyWarning'
-  | 'details'
-  | 'rotation'
-  // `distributeConfirm` is the question in front of the share dialog; `distribute`
-  // is the dialog itself.
-  | 'distributeConfirm'
-  | 'distribute'
-  | 'acceptance';
 
 export const DOC_STATUS = {
   DRAFT: 'טיוטה',
@@ -76,8 +46,7 @@ export const ApprovalWorkflow = ({
   onStatusChange,
   onHeaderChange,
 }: ApprovalWorkflowProps) => {
-  const docName = header.name;
-  const [step, setStep] = useState<FlowStep>('idle');
+  const [step, setStep] = useState<ApprovalFlowStep>('idle');
   const [roundConfig, setRoundConfig] = useState<ApprovalRoundConfig | null>(null);
   // Not a step: the toast outlives the dialog that started it, and distribution
   // carries on while you go back to reading the document.
@@ -85,35 +54,21 @@ export const ApprovalWorkflow = ({
   const { data } = useHmlGroups();
   const hmlGroups = data ?? HML_GROUPS_FALLBACK.hmlGroups;
   const gate = useSignatureGate();
+  const { trackStatusAdvanced, trackStatusReverted, trackRoundBlockedUnsigned } =
+    useApprovalWorkflowAnalytics();
 
   const isInApproval = status === DOC_STATUS.IN_APPROVAL;
   const isAwaitingDistribution = status === DOC_STATUS.AWAITING_DISTRIBUTION;
   const isDistributed = DISTRIBUTED_STATUSES.has(status);
   const nextStatus = getNextStatus(status);
-  const prevStatus = getPrevStatus(status);
 
   // main's gate on both buttons (Edit.tsx:3862): a locked document offers no
   // status moves, except while in an approval round — where the whole point is
   // to approve or reject it.
   const canStep = EDITABLE_STATUSES.has(status) || isInApproval;
 
-  const advanceLabel = isAwaitingDistribution
-    ? 'הפץ מסמך'
-    : !canStep || !nextStatus
-      ? null
-      : isInApproval
-        ? 'אישור/דחיית המסמך'
-        : nextStatus === DOC_STATUS.IN_APPROVAL
-          ? 'העבר לסבב אישורים'
-          : `העבר ל${nextStatus}`;
-
-  const revertLabel = isAwaitingDistribution
-    ? 'החזר לעריכה'
-    : !canStep || !prevStatus
-      ? null
-      : isInApproval
-        ? 'החזר לעריכה'
-        : `החזר למסמך ${prevStatus}`;
+  const advanceLabel = getAdvanceLabel(status, canStep);
+  const revertLabel = getRevertLabel(status, canStep);
 
   const handleAdvance = () => {
     // Distribution is the one step that can't be walked back, so it asks first.
@@ -125,12 +80,17 @@ export const ApprovalWorkflow = ({
     // The round opens with main's review step; the signature gate sits on *its*
     // continue button (Edit.tsx:4920), not here.
     else if (nextStatus === DOC_STATUS.IN_APPROVAL) setStep('review');
-    else if (nextStatus) onStatusChange(nextStatus);
+    else if (nextStatus) {
+      trackStatusAdvanced(nextStatus);
+      onStatusChange(nextStatus);
+    }
   };
 
   const handleRevert = () => {
-    if (isAwaitingDistribution) onStatusChange(DOC_STATUS.IN_PREP);
-    else if (prevStatus) onStatusChange(prevStatus);
+    const target = isAwaitingDistribution ? DOC_STATUS.IN_PREP : getPrevStatus(status);
+    if (!target) return;
+    trackStatusReverted(target);
+    onStatusChange(target);
   };
 
   // A document nobody has signed can't enter an approval round. The check is
@@ -138,6 +98,7 @@ export const ApprovalWorkflow = ({
   // another subtree and this handler has to decide now.
   const handleReviewContinue = (isDirty: boolean) => {
     if (!gate.requireSignature()) {
+      trackRoundBlockedUnsigned();
       setStep('idle');
       return;
     }
@@ -205,61 +166,26 @@ export const ApprovalWorkflow = ({
         </AcceptanceRow>
       )}
 
-      <Suspense fallback={null}>
-        {step === 'review' && (
-          <EditDocDetailsModal
-            mode="approval"
-            header={header}
-            docStatus={status}
-            onClose={handleClose}
-            onSave={onHeaderChange}
-            onContinue={handleReviewContinue}
-          />
-        )}
-
-        {step === 'dirtyWarning' && (
-          <ApprovalDirtyWarningModal
-            onBack={handleDirtyWarningBack}
-            onContinue={handleDirtyWarningContinue}
-          />
-        )}
-
-        {step === 'details' && (
-          <ApprovalDetailsModal onClose={handleClose} onSubmit={handleDetailsSubmit} />
-        )}
-
-        {step === 'rotation' && roundConfig && (
-          <ApprovalRotation
-            docName={docName}
-            config={roundConfig}
-            hmlGroups={hmlGroups}
-            onClose={handleClose}
-            onReject={handleReject}
-            onApprove={gate.addApproverSignature}
-            onDistribute={handleDistributeFromRotation}
-          />
-        )}
-
-        {step === 'distributeConfirm' && (
-          <DistributeConfirmModal
-            docName={docName}
-            onConfirm={handleConfirmDistribute}
-            onClose={handleClose}
-          />
-        )}
-
-        {step === 'distribute' && (
-          <DistributeDoc docName={docName} onClose={handleClose} onSend={handleSent} />
-        )}
-
-        {step === 'acceptance' && (
-          <AcceptenceVerification onClose={handleClose} onSend={handleClose} />
-        )}
-
-        {distributedTo !== null && (
-          <DistributeProgressToast recipientCount={distributedTo} onClose={handleCloseToast} />
-        )}
-      </Suspense>
+      <ApprovalFlowModals
+        step={step}
+        header={header}
+        status={status}
+        hmlGroups={hmlGroups}
+        roundConfig={roundConfig}
+        distributedTo={distributedTo}
+        onClose={handleClose}
+        onSaveHeader={onHeaderChange}
+        onReviewContinue={handleReviewContinue}
+        onDirtyWarningBack={handleDirtyWarningBack}
+        onDirtyWarningContinue={handleDirtyWarningContinue}
+        onDetailsSubmit={handleDetailsSubmit}
+        onReject={handleReject}
+        onApprove={gate.addApproverSignature}
+        onDistributeFromRotation={handleDistributeFromRotation}
+        onConfirmDistribute={handleConfirmDistribute}
+        onSent={handleSent}
+        onCloseToast={handleCloseToast}
+      />
     </>
   );
 };

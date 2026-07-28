@@ -14,6 +14,7 @@ import { EditableSectionBody } from '../EditableSectionBody';
 import { SubSectionBlock } from '../SubSectionBlock';
 import { SectionHeader } from './components/SectionHeader';
 import { SectionStatusActions } from './components/SectionStatusActions';
+import { useSectionBlockAnalytics } from './SectionBlock.analytics';
 import { SectionRoot } from './SectionBlock.styles';
 import { SECTION_BLOCK_IDS } from './SectionBlock.testids';
 
@@ -58,6 +59,7 @@ export const SectionBlock = ({
   // alongside a Record of statuses and two helpers to read them (Edit.tsx:3211),
   // which is three representations of the same fact.
   const [isAwaitingFix, setIsAwaitingFix] = useState(false);
+  const { trackStatusChanged, trackFixRequested, trackFixApplied } = useSectionBlockAnalytics();
 
   const handleTitleChange = (title: string) =>
     tree.updateSectionTitle(subjectId, section.id, title);
@@ -90,18 +92,23 @@ export const SectionBlock = ({
   const handleOpenAttachments = () => setAttachmentsOpen(true);
 
   const handleStatusChange = (status: SectionStatus) => {
+    trackStatusChanged(status);
     overrides.patchMeta(section.id, { status });
     setIsAwaitingFix(false);
   };
 
   // main opens the chat here as well. This arms the section and leaves the panel
   // to the reader — see DESIGN_PARITY.md's note on why.
-  const handleRequestFix = () => setIsAwaitingFix(true);
+  const handleRequestFix = () => {
+    trackFixRequested();
+    setIsAwaitingFix(true);
+  };
 
   // The reason and the status change are one act: whatever is written first after
   // `לתיקון` is the explanation, and posting it is what moves the section.
   const handleMessageSent = () => {
     if (!isAwaitingFix) return;
+    trackFixApplied();
     overrides.patchMeta(section.id, { status: 'fix' });
     setIsAwaitingFix(false);
   };

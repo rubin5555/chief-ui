@@ -5,6 +5,7 @@ import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { Modal } from '@/components/ui/Modal';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useClassifiedViewersModalAnalytics } from './ClassifiedViewersModal.analytics';
 import { Body, EmptyState, MutedCell, NameCell, TableWrap } from './ClassifiedViewersModal.styles';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from './ClassifiedViewersModal.testids';
 
@@ -37,12 +38,15 @@ export const ClassifiedViewersModal = ({
       person.env.includes(debouncedSearch),
   );
 
-  const handleToggle = (id: string) => () =>
-    onChange(
-      selectedIds.includes(id)
-        ? selectedIds.filter((viewerId) => viewerId !== id)
-        : [...selectedIds, id],
-    );
+  const { trackViewersChanged } = useClassifiedViewersModalAnalytics();
+
+  const handleToggle = (id: string) => () => {
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter((viewerId) => viewerId !== id)
+      : [...selectedIds, id];
+    trackViewersChanged(next.length);
+    onChange(next);
+  };
 
   return (
     <Modal

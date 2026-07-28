@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import type { Section } from '../../types';
+import { useRestoreModalAnalytics } from './RestoreModal.analytics';
 import { Body, EmptyState, List, Row } from './RestoreModal.styles';
 import { RESTORE_MODAL_IDS } from './RestoreModal.testids';
 
@@ -27,6 +28,7 @@ const FORM_ID = 'restore-modal-form';
 // simplification; only top-level section deletes are restorable today).
 export const RestoreModal = ({ deletedSections, onClose, onRestore }: RestoreModalProps) => {
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
+  const { trackRestoreSubmitted } = useRestoreModalAnalytics();
 
   const handleToggle = (sectionId: string) => () =>
     setCheckedIds((prev) =>
@@ -35,7 +37,9 @@ export const RestoreModal = ({ deletedSections, onClose, onRestore }: RestoreMod
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onRestore(deletedSections.filter((entry) => checkedIds.includes(entry.section.id)));
+    const restored = deletedSections.filter((entry) => checkedIds.includes(entry.section.id));
+    trackRestoreSubmitted(restored.length);
+    onRestore(restored);
   };
 
   return (

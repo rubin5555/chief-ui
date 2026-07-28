@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
+import { useApprovalDetailsModalAnalytics } from './ApprovalDetailsModal.analytics';
 import {
   Body,
   Field,
@@ -66,6 +67,7 @@ export const ApprovalDetailsModal = ({
     setStageUsers((prev) => ({ ...prev, [rank]: users }));
 
   const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value);
+  const { trackRoundConfigured } = useApprovalDetailsModalAnalytics();
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -73,6 +75,7 @@ export const ApprovalDetailsModal = ({
       .filter((group) => selectedHmlNames.includes(group.name))
       .map((group) => group.id);
 
+    trackRoundConfigured(selectedRanks.length, hmlGroupIds.length);
     onSubmitConfig({
       stages: selectedRanks.map((rank) => ({ rank, users: stageUsers[rank] ?? [] })),
       hmlGroupIds,

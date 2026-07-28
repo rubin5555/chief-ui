@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import type { ApprovalRoundConfig } from '../ApprovalDetailsModal';
 import type { ApproverSignature } from '../SignaturesSection';
+import { useApprovalRotationAnalytics } from './ApprovalRotation.analytics';
 import { FooterActions } from './ApprovalRotation.shared.styles';
 import { APPROVAL_ROTATION_IDS } from './ApprovalRotation.testids';
 import { DistributePrompt } from './components/DistributePrompt';
@@ -61,6 +62,7 @@ export const ApprovalRotation = ({
   const [notesByKey, setNotesByKey] = useState<Record<string, string>>({});
   const [signature, setSignature] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const { trackStageApproved, trackRoundRejected } = useApprovalRotationAnalytics();
 
   const activeStage = stages[activeStageIndex];
   // Keyed by stage *and* user: notes belong to the person, not to the stage, and
@@ -82,6 +84,7 @@ export const ApprovalRotation = ({
 
   const handleApprove = () => {
     setApprovedStageIndices((prev) => new Set(prev).add(activeStageIndex));
+    trackStageApproved(activeStage.rank, signature !== null);
     // Reported before the local reset, and with `hasSignature` rather than the
     // name itself: the stamp shows the rank and approver, and the picked
     // signature only decides whether a handwritten mark is drawn over it.
@@ -103,7 +106,10 @@ export const ApprovalRotation = ({
 
   const handleOpenReject = () => setView('reject');
   const handleCancelReject = () => setView('carousel');
-  const handleRejectSubmit = () => onReject(rejectReason);
+  const handleRejectSubmit = () => {
+    trackRoundRejected();
+    onReject(rejectReason);
+  };
 
   const handleDistributeNow = () => {
     onClose();

@@ -4,6 +4,7 @@ import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
+import { useDistributeDocAnalytics } from './DistributeDoc.analytics';
 import { Body, BodyTextarea, Field, FieldLabel } from './DistributeDoc.styles';
 import { DISTRIBUTE_DOC_IDS } from './DistributeDoc.testids';
 
@@ -29,11 +30,13 @@ export const DistributeDoc = ({ docName, onClose, onSend }: DistributeDocProps) 
   const people = data ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
 
   const [recipients, setRecipients] = useState<string[]>([]);
+  const { trackDistributeSent } = useDistributeDocAnalytics();
   const [body, setBody] = useState(buildDefaultBody(docName));
 
   const handleBodyChange = (e: ChangeEvent<HTMLTextAreaElement>) => setBody(e.target.value);
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
+    trackDistributeSent(recipients.length);
     onSend(recipients, body);
   };
 

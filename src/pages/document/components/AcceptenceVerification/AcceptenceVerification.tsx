@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { Modal } from '@/components/ui/Modal';
+import { useAcceptenceVerificationAnalytics } from './AcceptenceVerification.analytics';
 import {
   Body,
   Field,
@@ -36,12 +37,14 @@ export const AcceptenceVerification = ({ onClose, onSend }: AcceptenceVerificati
   const [approvedBy, setApprovedBy] = useState('');
   const [date, setDate] = useState('');
   const [notes, setNotes] = useState('');
+  const { trackAcceptanceSent } = useAcceptenceVerificationAnalytics();
 
   const handleApprovedByChange = (e: ChangeEvent<HTMLInputElement>) =>
     setApprovedBy(e.target.value);
   const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value);
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
+    trackAcceptanceSent();
     onSend({ approvedBy, date, notes });
   };
 

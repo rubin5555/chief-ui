@@ -5,6 +5,7 @@ import { type SectionCommentDto, useAddSectionComment, useSectionComments } from
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import { ACTION_ICON_SIZE, ActionBtn, type ActionTone } from '../NodeActionRow';
+import { useSectionChatAnalytics } from './SectionChat.analytics';
 import {
   CloseBtn,
   EmptyState,
@@ -57,6 +58,7 @@ export const SectionChat = ({
   const [message, setMessage] = useState('');
   const [markerMode, setMarkerMode] = useState(false);
   const [quote, setQuote] = useState('');
+  const { trackPanelOpened, trackMessageSent } = useSectionChatAnalytics();
 
   const comments = [...(data ?? []), ...sentComments];
 
@@ -78,7 +80,10 @@ export const SectionChat = ({
     return () => document.removeEventListener('mouseup', handleMouseUp);
   }, [markerMode]);
 
-  const handleToggle = () => panel.toggle(PANEL_WIDTH);
+  const handleToggle = () => {
+    if (!panel.open) trackPanelOpened();
+    panel.toggle(PANEL_WIDTH);
+  };
   const handleClearQuote = () => setQuote('');
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value);
   const handleToggleMarker = () => {
@@ -90,6 +95,7 @@ export const SectionChat = ({
     e.preventDefault();
     const text = message.trim();
     if (!text && !quote) return;
+    trackMessageSent(Boolean(quote));
     const sent = await addComment({ sectionId, input: { text, quote: quote || undefined } });
     if (sent) setSentComments((prev) => [...prev, sent]);
     setMessage('');

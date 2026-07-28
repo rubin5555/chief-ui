@@ -7,6 +7,7 @@ import { NodeTitleField } from '../NodeTitleField';
 import { ApproverStampList } from './components/ApproverStampList';
 import { SignatureTextarea } from './components/SignatureTextarea';
 import { useSignatureGate } from './SignatureGateContext';
+import { useSignaturesSectionAnalytics } from './SignaturesSection.analytics';
 import {
   AddSignatureBtn,
   HeaderActions,
@@ -60,6 +61,7 @@ export const SignaturesSection = ({
   const [showRequired, setShowRequired] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const { trackTemplateUsed, trackSignatureAdded } = useSignaturesSectionAnalytics();
 
   // Read by the gate check below, which is registered once and must see the
   // current texts rather than the ones from the render that registered it.
@@ -97,13 +99,17 @@ export const SignaturesSection = ({
     if (value.trim()) setShowRequired(false);
   };
 
-  const handleAddSignature = () => setSignatures((prev) => [...prev, emptyBlock()]);
+  const handleAddSignature = () => {
+    trackSignatureAdded();
+    setSignatures((prev) => [...prev, emptyBlock()]);
+  };
   const handleOpenTemplates = () => setShowTemplates(true);
   const handleCloseTemplates = () => setShowTemplates(false);
 
   // A template fills the first empty block rather than always appending: someone
   // who pressed `+` and then went looking for a template meant to fill that one.
   const handlePickTemplate = (content: string) => {
+    trackTemplateUsed();
     setSignatures((prev) => {
       const empty = prev.find((signature) => signature.text === '');
       if (!empty) return [...prev, { id: makeBlockId(), text: content }];
