@@ -26,6 +26,25 @@ export const GlobalStyles = createGlobalStyle`
     font-family: inherit;
   }
 
+  /*
+   * Keyboard focus, drawn once and drawn deliberately.
+   *
+   * :focus-visible rather than :focus — the browser lights the latter on every
+   * mouse click as well, which is the "focus ring appears for no reason" noise
+   * the default styling is blamed for. This is the app's own colour at a weight
+   * that reads on a light and a dark surface alike, and an outline (not a
+   * border) so it takes no space and follows whatever radius the element has.
+   *
+   * Components that already answer focus themselves override this: the
+   * focusPrimaryBorder mixin's &:focus is a class-plus-pseudo selector and
+   * outranks a bare pseudo-class, so a field that tints its border on focus
+   * doesn't also get a ring around it.
+   */
+  :focus-visible {
+    outline: 2px solid ${colors.primary};
+    outline-offset: 2px;
+  }
+
   p,h1,h2,h3,h4,h5,h6 {
     margin: 0;
   }

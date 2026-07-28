@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 // panelWidth: pass a number to use the standard right-anchor formula (left = r.left + r.width - panelWidth)
 // or pass a function for a custom position calculation
@@ -14,32 +14,39 @@ export interface Pos {
 const EDGE_MARGIN = 8;
 const GAP = 6;
 const MAX_PANEL_HEIGHT = 320;
-const MIN_PANEL_HEIGHT = 120;
 
-const computePos = (r: DOMRect, spec: PosSpec): Pos => {
+/**
+ * Where a panel of `contentHeight` should sit relative to its trigger.
+ *
+ * Below the trigger is the default. It flips above only when the panel does not
+ * fit below — not when the space merely looks tight — because a menu that fits
+ * has no reason to move, and one that doesn't is unreachable where it is.
+ *
+ * When it fits on neither side (a viewport shorter than the menu), it takes the
+ * roomier side and scrolls inside it. Nothing is ever placed past an edge and
+ * left there: FloatingPanel clips to its own box, so overflowing the viewport
+ * doesn't hide the panel, it silently amputates its lower half.
+ */
+const computePos = (r: DOMRect, spec: PosSpec, contentHeight: number): Pos => {
   const raw =
     typeof spec === 'function' ? spec(r) : { top: r.bottom + GAP, left: r.left + r.width - spec };
   const maxLeft = window.innerWidth - (typeof spec === 'number' ? spec : 0) - EDGE_MARGIN;
   const left = Math.min(Math.max(raw.left, EDGE_MARGIN), Math.max(maxLeft, EDGE_MARGIN));
 
-  const spaceBelow = window.innerHeight - r.bottom - GAP - EDGE_MARGIN;
+  const spaceBelow = window.innerHeight - raw.top - EDGE_MARGIN;
   const spaceAbove = r.top - GAP - EDGE_MARGIN;
+  const wanted = Math.min(contentHeight, MAX_PANEL_HEIGHT);
+  const above: Pos = { bottom: window.innerHeight - r.top + GAP, left, maxHeight: wanted };
 
-  // flip upward when there isn't enough room below but there's more room above — otherwise the
-  // panel renders past the viewport bottom with no way to reach its lower options
-  if (spaceBelow < MIN_PANEL_HEIGHT && spaceAbove > spaceBelow) {
-    return {
-      bottom: window.innerHeight - r.top + GAP,
-      left,
-      maxHeight: Math.min(MAX_PANEL_HEIGHT, spaceAbove),
-    };
-  }
-  return {
-    top: raw.top,
-    left,
-    maxHeight: Math.min(MAX_PANEL_HEIGHT, Math.max(spaceBelow, MIN_PANEL_HEIGHT)),
-  };
+  if (wanted <= spaceBelow) return { top: raw.top, left, maxHeight: wanted };
+  if (wanted <= spaceAbove) return above;
+  return spaceAbove > spaceBelow
+    ? { ...above, maxHeight: spaceAbove }
+    : { top: raw.top, left, maxHeight: spaceBelow };
 };
+
+const samePos = (a: Pos | null, b: Pos) =>
+  a?.top === b.top && a?.bottom === b.bottom && a?.left === b.left && a?.maxHeight === b.maxHeight;
 
 export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElement>() => {
   const [open, setOpen] = useState(false);
@@ -48,6 +55,7 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
   const panelRef = useRef<HTMLDivElement>(null);
   const wasOpenRef = useRef(false);
   const suppressRefocusRef = useRef(false);
+  const specRef = useRef<PosSpec>(0);
 
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
@@ -59,15 +67,8 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
       )
         setOpen(false);
     };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
     document.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onMouseDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
+    return () => document.removeEventListener('mousedown', onMouseDown);
   }, []);
 
   useEffect(() => {
@@ -92,17 +93,61 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
       suppressRefocusRef.current = true;
       setOpen(false);
     };
+    // Escape belongs to the panel, not to whatever is behind it: a menu open over
+    // a dialog is the innermost thing on screen, and closing the dialog out from
+    // under it is not what the key was pressed for. Capture phase plus
+    // stopPropagation is how it wins — ui/Modal listens on `document` too, and it
+    // was mounted (and so registered) first, so a bubble-phase listener here would
+    // always run second, after the dialog had already gone. Registered only while
+    // open, so a closed panel never swallows anyone else's Escape.
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      setOpen(false);
+    };
     window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', onResize);
+    document.addEventListener('keydown', onKeyDown, true);
     return () => {
       window.removeEventListener('scroll', onScroll, true);
       window.removeEventListener('resize', onResize);
+      document.removeEventListener('keydown', onKeyDown, true);
     };
   }, [open]);
 
+  // The first placement is a guess: the panel doesn't exist yet, so there is no
+  // height to fit. This corrects it against the real one before the browser
+  // paints, and keeps correcting it as the panel's content changes — a menu that
+  // swaps to a taller view (SectionMenu's permissions) has to be re-placed, or it
+  // grows straight through the bottom of the window.
+  //
+  // Deliberately no dependency array: the trigger can move and the content can
+  // change without either being state this hook can watch. `samePos` is what stops
+  // that being a loop — a placement that agrees with the current one sets nothing.
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    const trigger = btnRef.current;
+    if (!open || !panel || !trigger) return;
+
+    // Measured with the cap lifted, because the number we need is how tall the
+    // panel *wants* to be. Reading it while capped measures the cap instead: a
+    // panel whose content stretches (a chat list, anything on `flex: 1`) reports
+    // back the height we just gave it, minus its own border — so every pass would
+    // hand the next one a slightly smaller number and the placement would never
+    // settle. Restored in the same layout pass, so this never reaches the screen.
+    const capped = panel.style.maxHeight;
+    panel.style.maxHeight = 'none';
+    const natural = panel.scrollHeight;
+    panel.style.maxHeight = capped;
+
+    const next = computePos(trigger.getBoundingClientRect(), specRef.current, natural);
+    setPos((prev) => (samePos(prev, next) ? prev : next));
+  });
+
   const toggle = (spec: PosSpec) => {
     if (!open && btnRef.current) {
-      setPos(computePos(btnRef.current.getBoundingClientRect(), spec));
+      specRef.current = spec;
+      setPos(computePos(btnRef.current.getBoundingClientRect(), spec, MAX_PANEL_HEIGHT));
     }
     setOpen((o) => !o);
   };

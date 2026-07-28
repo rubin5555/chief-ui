@@ -80,6 +80,12 @@ test('the permissions dialog explains each level and keeps its members apart', a
   await page.getByText('אבי כהן', { exact: true }).click();
   await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.memberCount)).toHaveText('1');
 
+  // The dropdown stays open after a pick — more than one person can hold a
+  // permission — and this far down a dialog it opens upward, over the tabs.
+  // Escape dismisses the dropdown and leaves the dialog standing.
+  await page.keyboard.press('Escape');
+  await expect(modal).toBeVisible();
+
   // A different level is a different list — switching tabs must not carry members
   // across.
   await page.getByText('ניהול פקודה', { exact: true }).click();

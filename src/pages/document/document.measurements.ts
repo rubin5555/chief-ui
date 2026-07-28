@@ -26,7 +26,7 @@ export const PAPER_PADDING = '16mm 20mm 20mm 20mm';
 export const BAR_WIDTH = '230mm';
 
 /**
- * main's `w-64` outline sidebar. Doubles as the bars' `padding-inline-end`:
+ * main's `w-64` outline sidebar. Doubles as the bars' physical `padding-right`:
  * the bars span the full viewport, so offsetting them by the sidebar's width
  * is what optically centres them over the paper. Reproduce it — a plain
  * `justify-content: center` would sit them 128px off to the side.

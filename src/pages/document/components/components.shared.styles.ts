@@ -14,18 +14,24 @@ import { SIDEBAR_WIDTH } from '../document.measurements';
  * Full-viewport row holding one of the three chrome bars above the document:
  * the metadata pill, the source-systems notice, and the comparison bar.
  *
- * `padding-inline-end: SIDEBAR_WIDTH` is what optically centres the bar over the
+ * `padding-right: SIDEBAR_WIDTH` is what optically centres the bar over the
  * paper. The row spans the whole viewport, but the paper below it is pushed left
  * by the sidebar, so a plain `justify-content: center` would leave every bar
  * ~128px off-centre. main does exactly this (Edit.tsx:3688) — it looks like a
  * hack and it is load-bearing.
+ *
+ * Physical `right`, not `inline-end`: the sidebar is the body row's first child
+ * on an RTL page, so it sits on the physical right, and the padding has to be on
+ * the same side it is. `inline-end` resolves to the left here and pushes every
+ * bar a full sidebar's width the wrong way — the same reason the sidebar's own
+ * divider is pinned with `left: 0`.
  */
 export const BarRow = styled.div`
   display: flex;
   justify-content: center;
   width: 100%;
   flex-shrink: 0;
-  padding-inline-end: ${SIDEBAR_WIDTH}px;
+  padding-right: ${SIDEBAR_WIDTH}px;
 `;
 
 /**

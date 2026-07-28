@@ -23,5 +23,10 @@ export const FloatingPanel = styled.div.attrs<FloatingPanelProps>((props) => ({
   z-index: 99999;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* Vertically scrollable rather than clipped: useFloatingPanel caps the height
+     to the room the panel actually has, and when a menu is taller than that the
+     options past the cap have to stay reachable. Horizontally still hidden, so
+     the rounded corners keep their shape. */
+  overflow-x: hidden;
+  overflow-y: auto;
 `;

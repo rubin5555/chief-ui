@@ -45,16 +45,31 @@ export const ZoomValue = styled.span`
   font-variant-numeric: tabular-nums;
 `;
 
+/*
+ * The pill, not the input inside it, is what shows focus. The input is a
+ * transparent field with no edge of its own, so a ring around it would trace a
+ * rectangle floating inside a rounded pill; the pill is the control as far as
+ * anyone looking at it is concerned.
+ *
+ * `:focus-within` rather than `:focus-visible` on the input: this field is
+ * auto-focused the moment it opens, and a search box that gives no sign it is
+ * ready to be typed into is the thing being fixed here.
+ */
 export const SearchField = styled.div`
   ${flexGap(6)}
   background: ${gray[100]};
   border-radius: ${radii.full};
   padding: 4px 12px;
+  &:focus-within {
+    outline: 2px solid ${colors.primary};
+    outline-offset: 1px;
+  }
 `;
 
 export const SearchFieldInput = styled.input`
   font-size: 12px;
   background: transparent;
+  /* Focus is drawn by SearchField above, once, around the whole pill. */
   outline: none;
   width: 128px;
   text-align: right;
