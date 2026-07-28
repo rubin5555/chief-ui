@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import type { PersonalList } from '@/modals/MailingListModal';
+import type { PersonalList } from '@/modals/MailingListFormModal';
 import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 

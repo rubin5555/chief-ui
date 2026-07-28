@@ -5,7 +5,7 @@ import { registerStub } from './stubLink';
 // The pool of people who can be granted sight of a classified (ממודר) section.
 //
 // This is deliberately a separate resource from networkPeople.ts even though
-// the shapes rhyme. That file backs four MailingListModal consumers; repointing
+// the shapes rhyme. That file backs four MailingListFormModal consumers; repointing
 // it at main's CLASSIFIED_POOL to get exact fidelity here would have silently
 // changed all of them. A real backend would also expose these separately —
 // clearance-bearing personnel is not the same list as network contacts.

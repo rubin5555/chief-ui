@@ -5,6 +5,8 @@ import { TEMPLATES_PANEL_IDS } from '../../../../../src/pages/profile/components
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   await page.waitForSelector(`[data-testid="${TEMPLATES_PANEL_IDS.root}"]`);
+  // The panel is on screen before its rows are — see ProfilePage.spec.ts.
+  await expect(page.getByTestId(ITEM_ROW_IDS.root).first()).toBeVisible();
 });
 
 test('panel screenshot', async ({ page }) => {

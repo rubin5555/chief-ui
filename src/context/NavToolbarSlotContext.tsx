@@ -13,7 +13,7 @@ import { createPortal } from 'react-dom';
 // be worse, rendering those modals in the navbar's subtree while their state
 // lived in the page, which .claude/skills/modal-placement.md rules out outright.
 //
-// Same shape as SearchSlotContext, which already does this for MailingListModal's
+// Same shape as SearchSlotContext, which already does this for MailingListFormModal's
 // tabs — they render their own search field into the panel's fixed header row.
 const NavToolbarSlotContext = createContext<HTMLDivElement | null>(null);
 

@@ -4,7 +4,7 @@ import { colors, gray, radii, transitions } from '@/styles/theme';
 
 // Shared across AppendixList/SubjectTree/SectionRow/TemplateModalBody — these
 // are the common building blocks of the subject/section/appendix tree UI, not
-// any single component's own concern. See src/modals/MailingListModal/tabs/tabs.shared.styles.ts
+// any single component's own concern. See src/modals/MailingListFormModal/tabs/tabs.shared.styles.ts
 // for the same pattern used elsewhere in the codebase.
 
 export const TitleInput = styled.input`

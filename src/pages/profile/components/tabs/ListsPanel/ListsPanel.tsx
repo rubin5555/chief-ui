@@ -6,7 +6,7 @@ import { ItemRow } from '@/components/ui/ItemRow';
 import { ModalLoading } from '@/components/ui/ModalLoading';
 import { PanelLoading } from '@/components/ui/PanelLoading';
 import { useEntityModal } from '@/hooks/useEntityModal';
-import type { Member, ModalMode } from '@/modals/MailingListModal';
+import type { Member, ModalMode } from '@/modals/MailingListFormModal';
 import { TabPanelShell } from '../TabPanelShell';
 import { useFilterableList } from '../useFilterableList';
 import { useListsPanelAnalytics } from './ListsPanel.analytics';
@@ -23,8 +23,8 @@ export interface DistributionList {
 
 const noop = () => {};
 
-const MailingListModal = lazy(() =>
-  import('@/modals/MailingListModal').then((m) => ({ default: m.MailingListModal })),
+const MailingListFormModal = lazy(() =>
+  import('@/modals/MailingListFormModal').then((m) => ({ default: m.MailingListFormModal })),
 );
 
 interface ListsPanelProps {
@@ -138,7 +138,7 @@ export const ListsPanel = ({ departmentOptions, onDelete }: ListsPanelProps) => 
 
       {listModal.mode && (
         <Suspense fallback={<ModalLoading />}>
-          <MailingListModal
+          <MailingListFormModal
             mode={listModal.mode}
             initialName={listModal.editing?.name}
             initialMembers={listModal.editing?.members}

@@ -31,7 +31,7 @@ export interface DocPermissionsModalProps {
 //
 // **Scope.** main pairs each level with a full importer — mailing lists, HML
 // groups, network directories, an Excel upload — which is the same machinery
-// `src/modals/MailingListModal` already implements for a different purpose. Here
+// `src/modals/MailingListFormModal` already implements for a different purpose. Here
 // each level takes people from the network roster through the app's own
 // multi-select. The five levels and their wording are main's; the way people get
 // into them is dev's existing one.

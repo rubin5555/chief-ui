@@ -285,7 +285,7 @@ missing:
   document-permissions shape on the API to write them to. Same reason as above.
 - **main's permission importers.** Each level in main can be filled from mailing
   lists, HML groups, network directories or an Excel upload — the machinery
-  `src/modals/MailingListModal` already implements for a different purpose. Here a
+  `src/modals/MailingListFormModal` already implements for a different purpose. Here a
   level takes people from the network roster through the app's own multi-select.
 
 Everything else main has is either live or in **`parity/`** — the Word-style
