@@ -65,6 +65,9 @@
   --doc-chat-own-accent: #93afd4;
   --doc-chat-arrow-border: #e2e8f0;
   --doc-cell-active-bg: #eff6ff;
+  --doc-cell-active-border: #3b82f6;
+  --doc-selection-bg: #dbeafe;
+  --doc-selection-border: #93c5fd;
   --doc-translucent-hover: rgba(255, 255, 255, 0.7);
   --doc-icon-hover: rgba(229, 231, 235, 0.7);
   --doc-amber-hover: #fef3c7;
@@ -134,6 +137,9 @@
     --doc-chat-own-accent: #4d6a94;
     --doc-chat-arrow-border: #2b313b;
     --doc-cell-active-bg: #1c2634;
+    --doc-cell-active-border: #5b8de8;
+    --doc-selection-bg: #1e2c3f;
+    --doc-selection-border: #3c5a80;
     --doc-translucent-hover: rgba(255, 255, 255, 0.08);
     --doc-icon-hover: rgba(55, 65, 81, 0.7);
     --doc-amber-hover: #4a3b1a;
@@ -203,6 +209,9 @@
   --doc-chat-own-accent: #4d6a94;
   --doc-chat-arrow-border: #2b313b;
   --doc-cell-active-bg: #1c2634;
+  --doc-cell-active-border: #5b8de8;
+  --doc-selection-bg: #1e2c3f;
+  --doc-selection-border: #3c5a80;
   --doc-translucent-hover: rgba(255, 255, 255, 0.08);
   --doc-icon-hover: rgba(55, 65, 81, 0.7);
   --doc-amber-hover: #4a3b1a;

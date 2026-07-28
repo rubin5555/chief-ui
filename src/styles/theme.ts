@@ -44,6 +44,14 @@ export const docColors = {
   chatOwnAccent: 'var(--doc-chat-own-accent)',
   chatArrowBorder: 'var(--doc-chat-arrow-border)',
   cellActiveBg: 'var(--doc-cell-active-bg)',
+  cellActiveBorder: 'var(--doc-cell-active-border)',
+  // The tint a hovered region takes while it is *being* chosen — the table-size
+  // picker's grid, and the comparison bar's own background. Same light value as
+  // `compareBg`/`compareBorder` today, kept separate for the same reason
+  // `progressAmber` is separate from `searchHit`: a transient hover preview and a
+  // persistent bar are different roles, and needn't move together later.
+  selectionBg: 'var(--doc-selection-bg)',
+  selectionBorder: 'var(--doc-selection-border)',
   // main's `hover:bg-white/70` on the sidebar's bordered buttons. Translucent
   // rather than solid because what shows through is the page's own gradient, so
   // the hover reads as a lift off the canvas instead of a white patch on it.

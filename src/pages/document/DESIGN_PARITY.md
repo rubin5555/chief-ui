@@ -287,8 +287,13 @@ missing:
   lists, HML groups, network directories or an Excel upload — the machinery
   `src/modals/MailingListModal` already implements for a different purpose. Here a
   level takes people from the network roster through the app's own multi-select.
-- **`parity/`** — the Word-style ribbon, the table view and the other components
-  parked out of the live page, with a route to inspect them.
+
+Everything else main has is either live or in **`parity/`** — the Word-style
+ribbon, the table view, the acceptance dialog nothing in main can open, the
+undo/redo stacks nothing in main renders, the recursive outline row and the
+page-break reflow. All six are ported, all six render at `/document/parity`, and
+`src/pages/document/parity/README.md` says of each why it isn't live and what
+replaced it.
 
 ## Checking parity
 
@@ -296,6 +301,10 @@ Run both trees and compare the same region side by side:
 
 - prototype — `C:/Users/Chief/YoniSRE/chief-ui.worktrees/main`, `pnpm dev`
 - this page — `pnpm dev`, then `/document/d1`
+- the parked components — the same `pnpm dev`, then `/document/parity`. Compare
+  the ribbon, the colour picker, the table's floating toolbar and its properties
+  dialog against main's; the other three have no on-screen counterpart in main to
+  compare against, and the parity README says why.
 
 Then toggle the OS theme. Every element must have a sensible dark value: if
 something stays stubbornly light, a token was wired into `:root` only and not
