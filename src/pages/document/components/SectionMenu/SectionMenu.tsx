@@ -1,33 +1,12 @@
-import {
-  AlertCircle,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  FileText,
-  Lock,
-  MoreVertical,
-  Trash2,
-  UserCheck,
-  Users,
-} from 'lucide-react';
+import { MoreVertical } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
-import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
-import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
-import type { UnderlineTab } from '@/components/ui/UnderlineTabs';
-import { UnderlineTabs } from '@/components/ui/UnderlineTabs';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import type { NodePermissions } from '../../types';
-import { ACTION_ICON_SIZE, type ActionTone, ActionBtn as RowActionBtn } from '../NodeActionRow';
-import {
-  ActionBtn,
-  ActionList,
-  BackBtn,
-  BackLabel,
-  BackRow,
-  PermissionsView,
-  Separator,
-} from './SectionMenu.styles';
+import { ACTION_ICON_SIZE, ActionBtn, type ActionTone } from '../NodeActionRow';
+import { SectionMenuActions } from './components/SectionMenuActions';
+import type { PermissionRole } from './components/SectionPermissionsView';
+import { SectionPermissionsView } from './components/SectionPermissionsView';
 import { SECTION_MENU_IDS } from './SectionMenu.testids';
 
 const ClassifiedViewersModal = lazy(() =>
@@ -40,13 +19,6 @@ const SectionInstructionsModal = lazy(() =>
 );
 
 const PANEL_WIDTH = 220;
-
-type PermissionRole = 'approvers' | 'editors';
-
-const ROLE_TABS: UnderlineTab[] = [
-  { id: 'approvers', label: 'מאשרי הסעיף' },
-  { id: 'editors', label: 'עורכי הסעיף' },
-];
 
 export interface SectionMenuProps {
   sectionId: string;
@@ -66,10 +38,8 @@ export interface SectionMenuProps {
   onDelete: () => void;
 }
 
-// Owns its own trigger + dropdown (per .claude/skills/modal-placement.md)
-// and, once classification is turned on, the viewers-picker modal it opens.
-// Main's fake export-to-Word/Excel actions aren't ported — there's no real
-// export capability yet to back them with.
+// A node's 3-dots menu: its own trigger, its popover, the two modals its actions
+// open, and which of its two views is showing. The views are under components/.
 export const SectionMenu = ({
   sectionId,
   sectionTitle,
@@ -92,11 +62,11 @@ export const SectionMenu = ({
   const [activeRole, setActiveRole] = useState<PermissionRole>('approvers');
   const [showClassifiedViewers, setShowClassifiedViewers] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
-  const { data } = useNetworkPeople();
-  const peopleNames = (data ?? NETWORK_PEOPLE_FALLBACK.networkPeople).map((person) => person.name);
 
   const isClassified = classificationLevel !== null;
 
+  // Reopening always lands on the actions: the permissions view is somewhere you
+  // went, not a state the menu should remember being in.
   const handleToggle = () => {
     panel.toggle(PANEL_WIDTH);
     setView('actions');
@@ -108,7 +78,6 @@ export const SectionMenu = ({
   };
 
   const handleBackToActions = () => setView('actions');
-  const handleRoleChange = (id: string) => setActiveRole(id as PermissionRole);
   const handlePermissionsChange = (value: string[]) => onChangePermissions(activeRole, value);
 
   const handleToggleHidden = () => {
@@ -116,6 +85,8 @@ export const SectionMenu = ({
     panel.close();
   };
 
+  // Turning classification on opens the viewers picker straight away: a section
+  // nobody may see is not a useful state to leave behind.
   const handleToggleClassified = () => {
     const turningOn = !isClassified;
     onToggleClassified();
@@ -128,8 +99,6 @@ export const SectionMenu = ({
     setShowInstructions(true);
   };
 
-  const handleCloseInstructions = () => setShowInstructions(false);
-
   const handleAddFootnote = () => {
     onAddFootnote();
     panel.close();
@@ -141,12 +110,13 @@ export const SectionMenu = ({
   };
 
   const handleCloseClassifiedViewers = () => setShowClassifiedViewers(false);
+  const handleCloseInstructions = () => setShowInstructions(false);
 
   return (
     <>
-      {/* NodeActionRow's own button — this is the last control on that row, and
-          has to match the ones before it. */}
-      <RowActionBtn
+      {/* NodeActionRow's own button — this is the last control on that row, and has
+          to match the ones before it. */}
+      <ActionBtn
         ref={panel.btnRef}
         type="button"
         $tone={tone}
@@ -157,7 +127,7 @@ export const SectionMenu = ({
         onClick={handleToggle}
       >
         <MoreVertical size={ACTION_ICON_SIZE} aria-hidden="true" />
-      </RowActionBtn>
+      </ActionBtn>
 
       {panel.open && panel.pos && (
         <FloatingPanel
@@ -167,89 +137,25 @@ export const SectionMenu = ({
           data-testid={SECTION_MENU_IDS.panel(sectionId)}
         >
           {view === 'actions' ? (
-            <ActionList>
-              <ActionBtn
-                type="button"
-                onClick={handleOpenPermissions('approvers')}
-                data-testid={SECTION_MENU_IDS.approversAction}
-              >
-                <UserCheck size={14} />
-                מאשרי הסעיף
-              </ActionBtn>
-              <ActionBtn
-                type="button"
-                onClick={handleOpenPermissions('editors')}
-                data-testid={SECTION_MENU_IDS.editorsAction}
-              >
-                <Users size={14} />
-                עורכי הסעיף
-              </ActionBtn>
-              <Separator />
-              <ActionBtn
-                type="button"
-                onClick={handleToggleHidden}
-                data-testid={SECTION_MENU_IDS.toggleHiddenAction}
-              >
-                {isHidden ? <Eye size={14} /> : <EyeOff size={14} />}
-                {isHidden ? 'הצגת סעיף' : 'הסתרת סעיף'}
-              </ActionBtn>
-              <ActionBtn
-                type="button"
-                onClick={handleToggleClassified}
-                data-testid={SECTION_MENU_IDS.toggleClassifiedAction}
-              >
-                <Lock size={14} />
-                {isClassified ? 'ביטול הגדרה כממודר' : 'הגדרה כסעיף ממודר'}
-              </ActionBtn>
-              <Separator />
-              <ActionBtn
-                type="button"
-                onClick={handleOpenInstructions}
-                data-testid={SECTION_MENU_IDS.instructionsAction}
-              >
-                <AlertCircle size={14} />
-                הנחיות לסעיף
-              </ActionBtn>
-              <ActionBtn
-                type="button"
-                onClick={handleAddFootnote}
-                data-testid={SECTION_MENU_IDS.addFootnoteAction}
-              >
-                <FileText size={14} />
-                הוספת הערת שוליים
-              </ActionBtn>
-              <Separator />
-              <ActionBtn
-                type="button"
-                $danger
-                onClick={handleDelete}
-                data-testid={SECTION_MENU_IDS.deleteAction}
-              >
-                <Trash2 size={14} />
-                מחיקת סעיף
-              </ActionBtn>
-            </ActionList>
+            <SectionMenuActions
+              isHidden={isHidden}
+              isClassified={isClassified}
+              onOpenApprovers={handleOpenPermissions('approvers')}
+              onOpenEditors={handleOpenPermissions('editors')}
+              onToggleHidden={handleToggleHidden}
+              onToggleClassified={handleToggleClassified}
+              onOpenInstructions={handleOpenInstructions}
+              onAddFootnote={handleAddFootnote}
+              onDelete={handleDelete}
+            />
           ) : (
-            <PermissionsView>
-              <BackRow>
-                <BackBtn
-                  type="button"
-                  onClick={handleBackToActions}
-                  data-testid={SECTION_MENU_IDS.backBtn}
-                >
-                  <ChevronRight size={14} />
-                </BackBtn>
-                <BackLabel>הרשאות</BackLabel>
-              </BackRow>
-              <UnderlineTabs tabs={ROLE_TABS} activeId={activeRole} onChange={handleRoleChange} />
-              <SearchableMultiSelect
-                options={peopleNames}
-                selected={permissions[activeRole]}
-                onChange={handlePermissionsChange}
-                placeholder="חיפוש שם..."
-                data-testid={SECTION_MENU_IDS.permissionsSelect}
-              />
-            </PermissionsView>
+            <SectionPermissionsView
+              permissions={permissions}
+              activeRole={activeRole}
+              onRoleChange={setActiveRole}
+              onChange={handlePermissionsChange}
+              onBack={handleBackToActions}
+            />
           )}
         </FloatingPanel>
       )}

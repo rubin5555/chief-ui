@@ -10,17 +10,11 @@ import {
   type Section,
   type SectionStatus,
 } from '../../types';
-import { AttachmentPicker } from '../AttachmentPicker';
 import { EditableSectionBody } from '../EditableSectionBody';
-import { NodeActionRow } from '../NodeActionRow';
-import { NodeTitleField } from '../NodeTitleField';
-import { SectionChat } from '../SectionChat';
-import { SectionMenu } from '../SectionMenu';
-import { SectionStatusLabel } from '../SectionStatusLabel';
 import { SubSectionBlock } from '../SubSectionBlock';
-import { SectionInstructionsTip } from './components/SectionInstructionsTip';
+import { SectionHeader } from './components/SectionHeader';
 import { SectionStatusActions } from './components/SectionStatusActions';
-import { SectionHeaderRow, SectionNumber, SectionRoot, TitleSlot } from './SectionBlock.styles';
+import { SectionRoot } from './SectionBlock.styles';
 import { SECTION_BLOCK_IDS } from './SectionBlock.testids';
 
 export interface SectionBlockProps {
@@ -38,7 +32,9 @@ export interface SectionBlockProps {
   isDistributed: boolean;
 }
 
-// One section: numbered heading row, body, then its sub-sections.
+// One section: its heading row, its body, its status controls, then its
+// sub-sections. This component owns the state and the writes; the heading row's
+// assembly is in components/SectionHeader.
 export const SectionBlock = ({
   subjectId,
   section,
@@ -59,8 +55,8 @@ export const SectionBlock = ({
 
   // Whether this section is waiting for someone to say what needs fixing. One
   // boolean per section, local to it — main keeps a page-level Set of ids
-  // alongside a Record of statuses and two helpers to read them
-  // (Edit.tsx:3211), which is three representations of the same fact.
+  // alongside a Record of statuses and two helpers to read them (Edit.tsx:3211),
+  // which is three representations of the same fact.
   const [isAwaitingFix, setIsAwaitingFix] = useState(false);
 
   const handleTitleChange = (title: string) =>
@@ -126,69 +122,28 @@ export const SectionBlock = ({
       $highlighted={searchMatchIds.has(section.id)}
       data-testid={SECTION_BLOCK_IDS.root(section.id)}
     >
-      <SectionHeaderRow>
-        <SectionNumber>{number}.</SectionNumber>
-        <TitleSlot>
-          <NodeTitleField
-            nodeId={section.id}
-            variant="section"
-            value={section.title}
-            onChange={handleTitleChange}
-          />
-        </TitleSlot>
-        {meta.instructions && (
-          <SectionInstructionsTip sectionId={section.id} instructions={meta.instructions} />
-        )}
-        <SectionStatusLabel
-          sectionId={section.id}
-          status={meta.status}
-          isHidden={meta.hidden}
-          isDistributedDoc={isDistributed}
-        />
-        <NodeActionRow
-          nodeId={section.id}
-          lastModified={meta.lastModified}
-          sourceOrigin={meta.sourceOrigin}
-          copyText={section.content}
-          readOnly={readOnly}
-          attach={
-            !readOnly && (
-              <AttachmentPicker
-                nodeId={section.id}
-                attachments={meta.attachments}
-                isOpen={attachmentsOpen}
-                onOpenChange={setAttachmentsOpen}
-                onChange={handleAttachmentsChange}
-              />
-            )
-          }
-          chat={
-            <SectionChat
-              sectionId={section.id}
-              title={section.title || 'סעיף ללא שם'}
-              onMessageSent={handleMessageSent}
-            />
-          }
-          options={
-            <SectionMenu
-              sectionId={section.id}
-              sectionTitle={section.title}
-              instructions={meta.instructions ?? ''}
-              permissions={section.permissions}
-              isHidden={meta.hidden}
-              classificationLevel={meta.classification.level}
-              classificationViewerIds={meta.classification.viewerIds}
-              onChangePermissions={handlePermissionsChange}
-              onToggleHidden={handleToggleHidden}
-              onToggleClassified={handleToggleClassified}
-              onChangeClassificationViewers={handleChangeClassificationViewers}
-              onChangeInstructions={handleInstructionsChange}
-              onAddFootnote={handleAddFootnote}
-              onDelete={handleDelete}
-            />
-          }
-        />
-      </SectionHeaderRow>
+      <SectionHeader
+        sectionId={section.id}
+        title={section.title}
+        content={section.content}
+        number={number}
+        meta={meta}
+        permissions={section.permissions}
+        readOnly={readOnly}
+        isDistributed={isDistributed}
+        attachmentsOpen={attachmentsOpen}
+        onAttachmentsOpenChange={setAttachmentsOpen}
+        onTitleChange={handleTitleChange}
+        onAttachmentsChange={handleAttachmentsChange}
+        onMessageSent={handleMessageSent}
+        onChangePermissions={handlePermissionsChange}
+        onToggleHidden={handleToggleHidden}
+        onToggleClassified={handleToggleClassified}
+        onChangeClassificationViewers={handleChangeClassificationViewers}
+        onChangeInstructions={handleInstructionsChange}
+        onAddFootnote={handleAddFootnote}
+        onDelete={handleDelete}
+      />
 
       <EditableSectionBody
         id={section.id}

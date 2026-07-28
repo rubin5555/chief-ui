@@ -1,41 +1,15 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { ChangeEvent, FormEvent } from 'react';
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import type { HmlGroupDto } from '@/api/approvals';
 import { SIGNATURES_FALLBACK, useSignatures } from '@/api/signatures';
 import { Button } from '@/components/ui/Button';
-import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { Modal } from '@/components/ui/Modal';
-import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import type { ApprovalRoundConfig } from '../ApprovalDetailsModal';
 import type { ApproverSignature } from '../SignaturesSection';
-import {
-  Card,
-  CarouselHeader,
-  CarouselNavBtn,
-  CarouselTitle,
-  DistributePromptBody,
-  DistributePromptBox,
-  DistributePromptTitle,
-  FooterActions,
-  HmlChip,
-  HmlList,
-  Notes,
-  RejectBox,
-  SignatureActionBtn,
-  SignatureActions,
-  SignatureBox,
-  SignatureLabel,
-  SignatureSection,
-  StageLabel,
-  TimelineConnector,
-  TimelineDot,
-  TimelineItem,
-  TimelineLabel,
-  TimelineRow,
-  UserLabel,
-} from './ApprovalRotation.styles';
+import { FooterActions } from './ApprovalRotation.shared.styles';
 import { APPROVAL_ROTATION_IDS } from './ApprovalRotation.testids';
+import { DistributePrompt } from './components/DistributePrompt';
+import { RejectForm } from './components/RejectForm';
+import { RotationCarousel } from './components/RotationCarousel';
 
 type RotationView = 'carousel' | 'reject' | 'distribute';
 
@@ -47,24 +21,22 @@ export interface ApprovalRotationProps {
   onReject: (reason: string) => void;
   /**
    * Fired per approved stage, carrying who approved it. The document stamps them
-   * into its signatures section — until now the picked signature was set and then
-   * thrown away on the next line.
+   * into its signatures section.
    */
   onApprove: (signature: ApproverSignature) => void;
   onDistribute: () => void;
 }
 
-const SIGNATURE_PANEL_WIDTH = 160;
-const REJECT_FORM_ID = 'approval-rotation-reject-form';
-
-// Re-derived from scratch against main's dual-index (selectedStageIdx shared
-// across a rank/user axis and a separate HML axis) carousel — that shape was
-// flagged as easy to get subtly wrong. Here, approval only ever acts on one
-// index (activeStageIndex, the current approver stage) with a nested
-// viewedUserIndex for browsing that stage's named users; HML groups are
-// shown read-only, not part of the same axis at all. That removes the
-// free-navigation/dual-index footgun rather than just modeling it more
-// carefully.
+// Owns the round's state and which of its three views is showing; each view is its
+// own component under components/.
+//
+// Re-derived from scratch against main's dual-index carousel (a selectedStageIdx
+// shared across a rank/user axis and a separate HML axis), which was flagged as
+// easy to get subtly wrong. Here approval only ever acts on one index — the
+// current stage — with a nested viewedUserIndex for browsing that stage's named
+// users, and HML groups are shown read-only rather than being part of the same
+// axis at all. That removes the free-navigation footgun instead of modelling it
+// more carefully.
 export const ApprovalRotation = ({
   docName,
   config,
@@ -89,30 +61,29 @@ export const ApprovalRotation = ({
   const [notesByKey, setNotesByKey] = useState<Record<string, string>>({});
   const [signature, setSignature] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
-  const sigPanel = useFloatingPanel<HTMLButtonElement>();
 
   const activeStage = stages[activeStageIndex];
+  // Keyed by stage *and* user: notes belong to the person, not to the stage, and
+  // paging between two approvers must not show one the other's remarks.
   const noteKey = `${activeStageIndex}-${viewedUserIndex}`;
-  const canGoPrevUser = viewedUserIndex > 0;
-  const canGoNextUser = viewedUserIndex < activeStage.users.length - 1;
 
-  const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) =>
-    setNotesByKey((prev) => ({ ...prev, [noteKey]: e.target.value }));
-
+  const handleNoteChange = (note: string) =>
+    setNotesByKey((prev) => ({ ...prev, [noteKey]: note }));
   const handlePrevUser = () => setViewedUserIndex((prev) => prev - 1);
   const handleNextUser = () => setViewedUserIndex((prev) => prev + 1);
-
-  const handleOpenSignaturePanel = () => sigPanel.toggle(SIGNATURE_PANEL_WIDTH);
-  const handlePickSignature = (name: string) => () => {
-    setSignature(name);
-    sigPanel.close();
-  };
+  const handlePickSignature = (name: string) => setSignature(name);
   const handleClearSignature = () => setSignature(null);
+
+  // The section-fix note is written in the section's own chat thread, which is in
+  // the document behind this dialog — so the only thing to do here is get out of
+  // the way. Closing is honest about that; opening a second dialog on top would
+  // not be.
+  const handleAddFixNote = () => onClose();
 
   const handleApprove = () => {
     setApprovedStageIndices((prev) => new Set(prev).add(activeStageIndex));
     // Reported before the local reset, and with `hasSignature` rather than the
-    // name itself: the stamp shows the *rank and approver*, and the picked
+    // name itself: the stamp shows the rank and approver, and the picked
     // signature only decides whether a handwritten mark is drawn over it.
     onApprove({
       rank: activeStage.rank,
@@ -120,6 +91,7 @@ export const ApprovalRotation = ({
       hasSignature: signature !== null,
     });
     setSignature(null);
+
     const nextIndex = activeStageIndex + 1;
     if (nextIndex < stages.length) {
       setActiveStageIndex(nextIndex);
@@ -131,14 +103,8 @@ export const ApprovalRotation = ({
 
   const handleOpenReject = () => setView('reject');
   const handleCancelReject = () => setView('carousel');
-  const handleRejectSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    onReject(rejectReason);
-  };
-  const handleRejectReasonChange = (e: ChangeEvent<HTMLTextAreaElement>) =>
-    setRejectReason(e.target.value);
+  const handleRejectSubmit = () => onReject(rejectReason);
 
-  const handleSkipDistribute = onClose;
   const handleDistributeNow = () => {
     onClose();
     onDistribute();
@@ -152,6 +118,9 @@ export const ApprovalRotation = ({
       maxHeight="85vh"
       data-testid={APPROVAL_ROTATION_IDS.root}
       footer={
+        // Only the carousel uses the modal's footer; the other two views carry
+        // their own buttons, because in both cases the buttons answer a question
+        // the view itself is asking.
         view === 'carousel' ? (
           <FooterActions>
             <Button type="button" variant="ghost" onClick={onClose}>
@@ -177,161 +146,39 @@ export const ApprovalRotation = ({
       }
     >
       {view === 'carousel' && (
-        <>
-          <TimelineRow>
-            {stages.map((stage, index) => {
-              const state = approvedStageIndices.has(index)
-                ? 'approved'
-                : index === activeStageIndex
-                  ? 'active'
-                  : 'idle';
-              return (
-                <Fragment key={stage.rank}>
-                  <TimelineItem>
-                    <TimelineDot
-                      $state={state}
-                      data-testid={APPROVAL_ROTATION_IDS.stageDot(index)}
-                    />
-                    <TimelineLabel $state={state}>{stage.rank}</TimelineLabel>
-                  </TimelineItem>
-                  {index < stages.length - 1 && <TimelineConnector />}
-                </Fragment>
-              );
-            })}
-          </TimelineRow>
-
-          {configuredHmlGroups.length > 0 && (
-            <HmlList>
-              {configuredHmlGroups.map((group) => (
-                <HmlChip key={group.id}>{group.name}</HmlChip>
-              ))}
-            </HmlList>
-          )}
-
-          <Card>
-            <CarouselHeader>
-              <CarouselNavBtn
-                type="button"
-                onClick={handleNextUser}
-                disabled={!canGoNextUser}
-                data-testid={APPROVAL_ROTATION_IDS.nextUserBtn}
-              >
-                <ChevronLeft size={16} />
-              </CarouselNavBtn>
-              <CarouselTitle>
-                <StageLabel>{activeStage.rank}</StageLabel>
-                <UserLabel>{activeStage.users[viewedUserIndex] ?? 'ללא שם'}</UserLabel>
-              </CarouselTitle>
-              <CarouselNavBtn
-                type="button"
-                onClick={handlePrevUser}
-                disabled={!canGoPrevUser}
-                data-testid={APPROVAL_ROTATION_IDS.prevUserBtn}
-              >
-                <ChevronRight size={16} />
-              </CarouselNavBtn>
-            </CarouselHeader>
-
-            <Notes
-              value={notesByKey[noteKey] ?? ''}
-              onChange={handleNotesChange}
-              placeholder={`הערות ${activeStage.users[viewedUserIndex] ?? ''}...`}
-              dir="rtl"
-              data-testid={APPROVAL_ROTATION_IDS.notes}
-            />
-
-            <SignatureSection>
-              <SignatureLabel>חתימת המאשר</SignatureLabel>
-              <SignatureBox>{signature ?? 'אין חתימה'}</SignatureBox>
-              <SignatureActions>
-                <SignatureActionBtn
-                  ref={sigPanel.btnRef}
-                  type="button"
-                  onClick={handleOpenSignaturePanel}
-                  data-testid={APPROVAL_ROTATION_IDS.signatureTrigger}
-                >
-                  בחירת חתימה
-                </SignatureActionBtn>
-                <SignatureActionBtn
-                  type="button"
-                  onClick={handleClearSignature}
-                  data-testid={APPROVAL_ROTATION_IDS.clearSignatureBtn}
-                >
-                  נקה חתימה
-                </SignatureActionBtn>
-                {sigPanel.open && sigPanel.pos && (
-                  <FloatingPanel
-                    ref={sigPanel.panelRef}
-                    $pos={sigPanel.pos}
-                    $width={SIGNATURE_PANEL_WIDTH}
-                  >
-                    {signatureOptions.map((option) => (
-                      <SignatureActionBtn
-                        key={option.id}
-                        type="button"
-                        onClick={handlePickSignature(option.name)}
-                        data-testid={APPROVAL_ROTATION_IDS.signatureOption(option.name)}
-                      >
-                        {option.name}
-                      </SignatureActionBtn>
-                    ))}
-                  </FloatingPanel>
-                )}
-              </SignatureActions>
-            </SignatureSection>
-          </Card>
-        </>
+        <RotationCarousel
+          stages={stages}
+          hmlGroups={configuredHmlGroups}
+          activeStageIndex={activeStageIndex}
+          approvedStageIndices={approvedStageIndices}
+          viewedUserIndex={viewedUserIndex}
+          note={notesByKey[noteKey] ?? ''}
+          signature={signature}
+          signatureOptions={signatureOptions}
+          onNoteChange={handleNoteChange}
+          onPrevUser={handlePrevUser}
+          onNextUser={handleNextUser}
+          onPickSignature={handlePickSignature}
+          onClearSignature={handleClearSignature}
+          onAddFixNote={handleAddFixNote}
+        />
       )}
 
       {view === 'reject' && (
-        <RejectBox id={REJECT_FORM_ID} onSubmit={handleRejectSubmit}>
-          <Notes
-            value={rejectReason}
-            onChange={handleRejectReasonChange}
-            placeholder="פרט את סיבת הדחייה..."
-            dir="rtl"
-            autoFocus
-            data-testid={APPROVAL_ROTATION_IDS.rejectReason}
-          />
-          <FooterActions>
-            <Button type="button" variant="ghost" onClick={handleCancelReject}>
-              ביטול
-            </Button>
-            <Button
-              type="submit"
-              form={REJECT_FORM_ID}
-              data-testid={APPROVAL_ROTATION_IDS.confirmRejectBtn}
-            >
-              דחייה
-            </Button>
-          </FooterActions>
-        </RejectBox>
+        <RejectForm
+          reason={rejectReason}
+          onReasonChange={setRejectReason}
+          onSubmit={handleRejectSubmit}
+          onCancel={handleCancelReject}
+        />
       )}
 
       {view === 'distribute' && (
-        <DistributePromptBox>
-          <DistributePromptTitle>הפצת המסמך</DistributePromptTitle>
-          <DistributePromptBody>
-            כל השלבים אושרו — האם ברצונך להפיץ את המסמך &quot;{docName}&quot;?
-          </DistributePromptBody>
-          <FooterActions>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSkipDistribute}
-              data-testid={APPROVAL_ROTATION_IDS.distributeLaterBtn}
-            >
-              לא כרגע
-            </Button>
-            <Button
-              type="button"
-              onClick={handleDistributeNow}
-              data-testid={APPROVAL_ROTATION_IDS.distributeNowBtn}
-            >
-              הפצת המסמך
-            </Button>
-          </FooterActions>
-        </DistributePromptBox>
+        <DistributePrompt
+          docName={docName}
+          onDistributeNow={handleDistributeNow}
+          onDistributeLater={onClose}
+        />
       )}
     </Modal>
   );

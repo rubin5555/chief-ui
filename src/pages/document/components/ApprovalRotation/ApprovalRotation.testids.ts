@@ -3,6 +3,8 @@ export const APPROVAL_ROTATION_IDS = {
   stageDot: (index: number) => `approval-rotation-stage-${index}`,
   prevUserBtn: 'approval-rotation-prev-user',
   nextUserBtn: 'approval-rotation-next-user',
+  pageDots: 'approval-rotation-page-dots',
+  fixNoteLink: 'approval-rotation-fix-note',
   notes: 'approval-rotation-notes',
   signatureTrigger: 'approval-rotation-signature-trigger',
   signatureOption: (name: string) => `approval-rotation-signature-option-${name}`,
