@@ -2,9 +2,9 @@ import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import type { Subject } from '../../types';
+import { SubjectHeaderRow, SubjectRoot } from '../components.shared.styles';
 import { NodeTitleField } from '../NodeTitleField';
 import { SectionBlock } from '../SectionBlock';
-import { SubjectHeaderRow, SubjectRoot } from './SubjectBlock.styles';
 import { SUBJECT_BLOCK_IDS } from './SubjectBlock.testids';
 
 export interface SubjectBlockProps {

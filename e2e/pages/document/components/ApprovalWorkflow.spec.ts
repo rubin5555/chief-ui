@@ -7,6 +7,7 @@ import { APPROVAL_WORKFLOW_IDS } from '../../../../src/pages/document/components
 import { STATUS_FLOW_NAV_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/StatusFlowNav/StatusFlowNav.testids';
 import { DISTRIBUTE_DOC_IDS } from '../../../../src/pages/document/components/DistributeDoc/DistributeDoc.testids';
 import { DOC_STATUS_HEADER_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/DocStatusHeader/DocStatusHeader.testids';
+import { SIGNATURE_TEXTAREA_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/SignatureTextarea/SignatureTextarea.testids';
 
 const RANK = 'סא״ל';
 const USER = 'כהן א.';
@@ -27,6 +28,10 @@ const statusText = (status: string) => `מסמך ${status}`;
 const advanceToApprovalRound = async (page: import('@playwright/test').Page) => {
   const advance = page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn);
   const title = page.getByTestId(DOC_STATUS_HEADER_IDS.title);
+
+  // A document nobody has signed is refused the round outright — see
+  // SignaturesSection.spec.ts for that gate on its own.
+  await page.getByTestId(SIGNATURE_TEXTAREA_IDS.field(0)).fill('בברכה, כהן');
 
   await advance.click();
   await expect(title).toHaveText(statusText('טיוטה פנימית'));

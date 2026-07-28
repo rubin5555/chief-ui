@@ -152,6 +152,15 @@ Phase 2 rebuilt the page skeleton to main's. The pieces that are easy to
   `justify-between` with two groups and no middle one at all
   (`TopNavbar.tsx:1216`), so centring the toolbar would put it somewhere main
   never puts it. `NavToolbarSlotContext` portals it into the leading group.
+- **`חתימות` is a topic drawn by its own component.** main special-cases it on
+  the title (`Edit.tsx:4303`) and so does this: the topic holds signature blocks
+  rather than sections, and its heading row carries `התבניות שלי` and
+  `הוספת חתימה נוספת` where other topics carry nothing. Renaming the topic turns
+  it back into an ordinary one — main's behaviour too, since the title is all
+  either has to go on.
+- **Text signatures above, approver stamps below** (main's commit `a88946f`), and
+  the red required-border goes on the textarea with no box around the section
+  (`c39c266`).
 - **Only *section* rows carry a status dot in the outline.** Topic rows have a
   chevron and a title; sub-section rows have a Hebrew letter and a title. main
   puts the dot on the middle level alone (`Edit.tsx:3990`), and hides it entirely
@@ -213,7 +222,8 @@ you'd rather they weren't:
 - **A leaf topic has no content box.** main gives a topic with no sections a body
   of its own (`Edit.tsx:4302`), which the tree model here can't hold — `Subject`
   has no `content` field, and adding one touches the hook `TemplateModal` shares.
-  Visible on `נספחים` and `חתימות`, both of which render as a heading alone.
+  Visible on `נספחים`, which renders as a heading alone. `חתימות` is unaffected:
+  it is drawn by `SignaturesSection`, which holds its own content.
 - **The per-node refresh button opens the source list.** main's has no `onClick`
   at all; there is nothing connected to refresh from, in main or here, so it
   shows which system the node's content came from instead of pretending to

@@ -3,6 +3,7 @@ import { HML_GROUPS_FALLBACK, useHmlGroups } from '@/api/approvals';
 import { Button } from '@/components/ui/Button';
 import { DISTRIBUTED_STATUSES, EDITABLE_STATUSES } from '../../document.constants';
 import type { ApprovalRoundConfig } from '../ApprovalDetailsModal';
+import { useSignatureGate } from '../SignaturesSection';
 import { AcceptanceRow } from './ApprovalWorkflow.styles';
 import { APPROVAL_WORKFLOW_IDS } from './ApprovalWorkflow.testids';
 import { getNextStatus, getPrevStatus } from './approvalWorkflow.utils';
@@ -49,6 +50,7 @@ export const ApprovalWorkflow = ({ docName, status, onStatusChange }: ApprovalWo
   const [roundConfig, setRoundConfig] = useState<ApprovalRoundConfig | null>(null);
   const { data } = useHmlGroups();
   const hmlGroups = data ?? HML_GROUPS_FALLBACK.hmlGroups;
+  const gate = useSignatureGate();
 
   const isInApproval = status === DOC_STATUS.IN_APPROVAL;
   const isAwaitingDistribution = status === DOC_STATUS.AWAITING_DISTRIBUTION;
@@ -85,8 +87,12 @@ export const ApprovalWorkflow = ({ docName, status, onStatusChange }: ApprovalWo
     // falls back to a hardcoded set of stages here; this opens the configuration
     // modal instead, so what you approve is a round that actually exists.
     else if (isInApproval) setStep(roundConfig ? 'rotation' : 'details');
-    else if (nextStatus === DOC_STATUS.IN_APPROVAL) setStep('details');
-    else if (nextStatus) onStatusChange(nextStatus);
+    // A document nobody has signed can't enter an approval round. The check is
+    // synchronous and its answer is a return value, because the signatures live
+    // in another subtree and this handler has to decide now.
+    else if (nextStatus === DOC_STATUS.IN_APPROVAL) {
+      if (gate.requireSignature()) setStep('details');
+    } else if (nextStatus) onStatusChange(nextStatus);
   };
 
   const handleRevert = () => {
@@ -154,6 +160,7 @@ export const ApprovalWorkflow = ({ docName, status, onStatusChange }: ApprovalWo
             hmlGroups={hmlGroups}
             onClose={handleClose}
             onReject={handleReject}
+            onApprove={gate.addApproverSignature}
             onDistribute={handleDistributeFromRotation}
           />
         )}

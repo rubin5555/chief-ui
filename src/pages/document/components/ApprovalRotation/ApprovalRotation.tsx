@@ -8,6 +8,7 @@ import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { Modal } from '@/components/ui/Modal';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import type { ApprovalRoundConfig } from '../ApprovalDetailsModal';
+import type { ApproverSignature } from '../SignaturesSection';
 import {
   Card,
   CarouselHeader,
@@ -44,6 +45,12 @@ export interface ApprovalRotationProps {
   hmlGroups: HmlGroupDto[];
   onClose: () => void;
   onReject: (reason: string) => void;
+  /**
+   * Fired per approved stage, carrying who approved it. The document stamps them
+   * into its signatures section — until now the picked signature was set and then
+   * thrown away on the next line.
+   */
+  onApprove: (signature: ApproverSignature) => void;
   onDistribute: () => void;
 }
 
@@ -64,6 +71,7 @@ export const ApprovalRotation = ({
   hmlGroups,
   onClose,
   onReject,
+  onApprove,
   onDistribute,
 }: ApprovalRotationProps) => {
   const { data } = useSignatures();
@@ -103,6 +111,14 @@ export const ApprovalRotation = ({
 
   const handleApprove = () => {
     setApprovedStageIndices((prev) => new Set(prev).add(activeStageIndex));
+    // Reported before the local reset, and with `hasSignature` rather than the
+    // name itself: the stamp shows the *rank and approver*, and the picked
+    // signature only decides whether a handwritten mark is drawn over it.
+    onApprove({
+      rank: activeStage.rank,
+      name: activeStage.users[viewedUserIndex] ?? activeStage.rank,
+      hasSignature: signature !== null,
+    });
     setSignature(null);
     const nextIndex = activeStageIndex + 1;
     if (nextIndex < stages.length) {
