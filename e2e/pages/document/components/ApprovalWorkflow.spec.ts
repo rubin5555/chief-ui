@@ -4,6 +4,7 @@ import { ACCEPTENCE_VERIFICATION_IDS } from '../../../../src/pages/document/comp
 import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/ApprovalDetailsModal/ApprovalDetailsModal.testids';
 import { APPROVAL_ROTATION_IDS } from '../../../../src/pages/document/components/ApprovalRotation/ApprovalRotation.testids';
 import { APPROVAL_WORKFLOW_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/ApprovalWorkflow.testids';
+import { DISTRIBUTE_PROGRESS_TOAST_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/DistributeProgressToast/DistributeProgressToast.testids';
 import { STATUS_FLOW_NAV_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/StatusFlowNav/StatusFlowNav.testids';
 import { DISTRIBUTE_DOC_IDS } from '../../../../src/pages/document/components/DistributeDoc/DistributeDoc.testids';
 import { DOC_STATUS_HEADER_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/DocStatusHeader/DocStatusHeader.testids';
@@ -123,6 +124,21 @@ test('approving the only stage prompts to distribute, and distributing opens the
   await expect(sendBtn).toBeEnabled();
   await sendBtn.click();
   await expect(page.getByTestId(DISTRIBUTE_DOC_IDS.root)).not.toBeVisible();
+
+  // The share dialog hands over to the corner toast, which ramps to 100% and then
+  // says how many people it reached — one, since one recipient was picked.
+  const toast = page.getByTestId(DISTRIBUTE_PROGRESS_TOAST_IDS.root);
+  await expect(toast).toContainText('הפצת המסמך מתבצעת');
+  await expect(page.getByTestId(DISTRIBUTE_PROGRESS_TOAST_IDS.percent)).toHaveText('100%');
+  await expect(toast).toContainText('המסמך הופץ בהצלחה');
+  await expect(page.getByTestId(DISTRIBUTE_PROGRESS_TOAST_IDS.detail)).toHaveText(
+    'הופץ ל1 משתמשים',
+  );
+
+  // Dismissable only once it has landed — there is nothing to do with a
+  // half-distributed document.
+  await page.getByTestId(DISTRIBUTE_PROGRESS_TOAST_IDS.closeBtn).click();
+  await expect(toast).toHaveCount(0);
 });
 
 test('rejecting the round sends the document back to in-prep', async ({ page }) => {

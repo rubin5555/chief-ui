@@ -8,6 +8,8 @@ import { useSignatureGate } from '../SignaturesSection';
 import { AcceptanceRow } from './ApprovalWorkflow.styles';
 import { APPROVAL_WORKFLOW_IDS } from './ApprovalWorkflow.testids';
 import { getNextStatus, getPrevStatus } from './approvalWorkflow.utils';
+import { DistributeConfirmModal } from './components/DistributeConfirmModal';
+import { DistributeProgressToast } from './components/DistributeProgressToast';
 import { StatusFlowNav } from './components/StatusFlowNav';
 
 const AcceptenceVerification = lazy(() =>
@@ -40,6 +42,9 @@ type FlowStep =
   | 'dirtyWarning'
   | 'details'
   | 'rotation'
+  // `distributeConfirm` is the question in front of the share dialog; `distribute`
+  // is the dialog itself.
+  | 'distributeConfirm'
   | 'distribute'
   | 'acceptance';
 
@@ -74,6 +79,9 @@ export const ApprovalWorkflow = ({
   const docName = header.name;
   const [step, setStep] = useState<FlowStep>('idle');
   const [roundConfig, setRoundConfig] = useState<ApprovalRoundConfig | null>(null);
+  // Not a step: the toast outlives the dialog that started it, and distribution
+  // carries on while you go back to reading the document.
+  const [distributedTo, setDistributedTo] = useState<number | null>(null);
   const { data } = useHmlGroups();
   const hmlGroups = data ?? HML_GROUPS_FALLBACK.hmlGroups;
   const gate = useSignatureGate();
@@ -108,7 +116,8 @@ export const ApprovalWorkflow = ({
         : `החזר למסמך ${prevStatus}`;
 
   const handleAdvance = () => {
-    if (isAwaitingDistribution) setStep('distribute');
+    // Distribution is the one step that can't be walked back, so it asks first.
+    if (isAwaitingDistribution) setStep('distributeConfirm');
     // A round has to be configured before it can be approved or rejected. main
     // falls back to a hardcoded set of stages here; this opens the configuration
     // modal instead, so what you approve is a round that actually exists.
@@ -137,6 +146,16 @@ export const ApprovalWorkflow = ({
 
   const handleDirtyWarningBack = () => setStep('review');
   const handleDirtyWarningContinue = () => setStep('details');
+
+  const handleConfirmDistribute = () => setStep('distribute');
+
+  // The share dialog closes, and the toast takes over from it.
+  const handleSent = (recipients: string[]) => {
+    setDistributedTo(recipients.length);
+    setStep('idle');
+  };
+
+  const handleCloseToast = () => setDistributedTo(null);
 
   const handleOpenAcceptance = () => setStep('acceptance');
   const handleClose = () => setStep('idle');
@@ -221,12 +240,24 @@ export const ApprovalWorkflow = ({
           />
         )}
 
+        {step === 'distributeConfirm' && (
+          <DistributeConfirmModal
+            docName={docName}
+            onConfirm={handleConfirmDistribute}
+            onClose={handleClose}
+          />
+        )}
+
         {step === 'distribute' && (
-          <DistributeDoc docName={docName} onClose={handleClose} onSend={handleClose} />
+          <DistributeDoc docName={docName} onClose={handleClose} onSend={handleSent} />
         )}
 
         {step === 'acceptance' && (
           <AcceptenceVerification onClose={handleClose} onSend={handleClose} />
+        )}
+
+        {distributedTo !== null && (
+          <DistributeProgressToast recipientCount={distributedTo} onClose={handleCloseToast} />
         )}
       </Suspense>
     </>

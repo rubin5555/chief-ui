@@ -208,6 +208,11 @@ you'd rather they weren't:
 - **The emphasis card has no chat button.** main draws one there with no
   `onClick` behind it (`Edit.tsx:4187`); the card isn't a section, so there is no
   thread for it to open. Its attach button is live.
+- **The distribute toast counts real recipients.** main says
+  `הופץ לכ- 156 משתמשים` from a hardcoded 156; this counts the people actually
+  picked in the share dialog. It has no close button until it finishes — there is
+  nothing to do with a half-distributed document, and dismissing the only sign
+  that it is happening would leave nothing to come back to.
 - **A comparison is a version, not a flag.** main keeps `comparisonMode` and
   `comparisonVersionLabel` as separate state; the route carries only
   `compareVersion`, because two params for one fact can disagree —
@@ -271,8 +276,6 @@ missing:
   counter reads `0/0` and its difference navigation is disabled. main hardcodes
   `comparisonTotal = 3` (`Edit.tsx:3512`); `DIFFERENCE_COUNT` in `ComparisonBar`
   is the one line that changes when there is something real to count.
-- **`DistributeProgressToast`** — main's bottom-left progress card
-  (`Edit.tsx:5047`) and the distribute confirmation in front of it.
 - **`EditDocDetailsModal`'s dropped fields** — the Amazon entity selector, doc
   type, folder, exit date and four toggle rows (`Edit.tsx:2145-2420`). Deliberately
   waiting on a real backend shape rather than being held in state that goes
