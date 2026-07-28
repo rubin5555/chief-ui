@@ -5,6 +5,7 @@ import { APPROVAL_ROTATION_IDS } from '../../../../src/pages/document/components
 import { STATUS_FLOW_NAV_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/StatusFlowNav/StatusFlowNav.testids';
 import { DISTRIBUTE_DOC_IDS } from '../../../../src/pages/document/components/DistributeDoc/DistributeDoc.testids';
 import { DOC_STATUS_HEADER_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/DocStatusHeader/DocStatusHeader.testids';
+import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/EditDocDetailsModal/EditDocDetailsModal.testids';
 import { APPROVER_STAMP_LIST_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/ApproverStampList/ApproverStampList.testids';
 import { APPROVER_STAMP_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/ApproverStampList/components/ApproverStamp/ApproverStamp.testids';
 import { SIGNATURE_TEMPLATES_MODAL_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/SignatureTemplatesModal/SignatureTemplatesModal.testids';
@@ -61,6 +62,10 @@ test('an unsigned document is refused an approval round, and says why', async ({
   await advanceToApprovalStep(page);
   await page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn).click();
 
+  // The gate is on the review step's `המשך`, where main puts it — so the details
+  // dialog opens and then refuses to hand the flow on.
+  await page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.submitBtn).click();
+
   // The round-configuration dialog never opens; the signatures block asks to be
   // filled in instead.
   await expect(page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.root)).toHaveCount(0);
@@ -80,6 +85,7 @@ test('an unsigned document is refused an approval round, and says why', async ({
   await expect(page.getByTestId(SIGNATURES_SECTION_IDS.requiredWarning)).toHaveCount(0);
 
   await page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn).click();
+  await page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.submitBtn).click();
   await expect(page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.root)).toBeVisible();
 });
 
@@ -89,6 +95,7 @@ test('approving a stage stamps the approver into the signatures block', async ({
   await page.getByTestId(SIGNATURE_TEXTAREA_IDS.field(0)).fill('בברכה, כהן');
   await advanceToApprovalStep(page);
   await page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn).click();
+  await page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.submitBtn).click();
 
   await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.ranksSelect).click();
   await page.getByTestId(SEARCHABLE_MULTI_SELECT_IDS.option(RANK)).click();

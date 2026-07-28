@@ -7,6 +7,7 @@ import { APPROVAL_WORKFLOW_IDS } from '../../../../src/pages/document/components
 import { STATUS_FLOW_NAV_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/StatusFlowNav/StatusFlowNav.testids';
 import { DISTRIBUTE_DOC_IDS } from '../../../../src/pages/document/components/DistributeDoc/DistributeDoc.testids';
 import { DOC_STATUS_HEADER_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/DocStatusHeader/DocStatusHeader.testids';
+import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/EditDocDetailsModal/EditDocDetailsModal.testids';
 import { SIGNATURE_TEXTAREA_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/SignatureTextarea/SignatureTextarea.testids';
 
 const RANK = 'סא״ל';
@@ -38,6 +39,11 @@ const advanceToApprovalRound = async (page: import('@playwright/test').Page) => 
   await advance.click();
   await expect(title).toHaveText(statusText('בהכנה'));
   await advance.click();
+
+  // main puts a review of the document's details in front of the round
+  // (Edit.tsx:2431); `המשך` is what carries the flow on.
+  await expect(page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.root)).toBeVisible();
+  await page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.submitBtn).click();
 };
 
 const configureOneStageRound = async (page: import('@playwright/test').Page) => {

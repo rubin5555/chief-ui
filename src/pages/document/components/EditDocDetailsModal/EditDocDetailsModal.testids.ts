@@ -7,4 +7,6 @@ export const EDIT_DOC_DETAILS_MODAL_IDS = {
   effectiveDate: 'edit-doc-details-effective-date',
   dirtyWarning: 'edit-doc-details-dirty-warning',
   submitBtn: 'edit-doc-details-submit',
+  duplicateNameHint: 'edit-doc-details-duplicate-hint',
+  readOnlyValue: (field: string) => `edit-doc-details-readonly-${field}`,
 };

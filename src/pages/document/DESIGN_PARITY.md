@@ -208,6 +208,10 @@ you'd rather they weren't:
 - **The emphasis card has no chat button.** main draws one there with no
   `onClick` behind it (`Edit.tsx:4187`); the card isn't a section, so there is no
   thread for it to open. Its attach button is live.
+- **The approval-mode review step saves what you edit.** main shows the document's
+  details on the way into a round, warns that "these changes apply to this version
+  only", and then discards them — `onContinue` never writes (`Edit.tsx:4920`).
+  Here the edit is saved, which is what makes that warning true.
 - **`לתיקון` doesn't open the chat by itself.** main's button both arms the
   section and opens its thread (`Edit.tsx:4611`), because chat state there is a
   single page-level object. Here each thread owns its own open state — which is
@@ -248,6 +252,23 @@ this (`ViduyKabalahModal`, 2546) that nothing ever opens — `setShowViduyKabala
 has no call site — so there is no button of main's to match, and none of main's
 is displaced: on a distributed document main leaves this part of the sidebar
 empty.
+
+## Still to build
+
+Tracked here so a reviewer isn't left guessing what is deliberate and what is
+missing:
+
+- **`ComparisonBar`** is a placeholder, not main's bar (`Edit.tsx:3730`): the pill
+  toggles, the `n/3` difference navigation and the version picker behind it.
+- **`DocPermissionsModal`** — the five-tab document-level permissions dialog the
+  toolbar's `הרשאות` button will open.
+- **`DistributeProgressToast`** — main's bottom-left progress card
+  (`Edit.tsx:5047`) and the distribute confirmation in front of it.
+- **`EditDocDetailsModal`'s dropped fields** — the Amazon entity selector, doc
+  type, folder, exit date and four toggle rows (`Edit.tsx:2145-2420`). What is
+  there is the five fields `DocumentHeader` models.
+- **`parity/`** — the Word-style ribbon, the table view and the other components
+  parked out of the live page, with a route to inspect them.
 
 ## Checking parity
 

@@ -133,9 +133,10 @@ export const DocumentSidebar = ({
       </StatusBlock>
 
       <ApprovalWorkflow
-        docName={overrides.header.name}
+        header={overrides.header}
         status={overrides.status}
         onStatusChange={overrides.setStatus}
+        onHeaderChange={overrides.onHeaderChange}
       />
 
       <SidebarDivider />

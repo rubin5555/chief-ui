@@ -1,64 +1,79 @@
-import { useForm } from '@tanstack/react-form';
-import type { ChangeEvent, FormEvent } from 'react';
+import type { FormEvent } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { Modal } from '@/components/ui/Modal';
-import { Select } from '@/components/ui/Select';
+import { LIMITED_EDIT_STATUSES } from '../../document.constants';
 import type { DocumentHeader } from '../../types';
+import { DocDetailsFields } from './components/DocDetailsFields';
 import {
-  CLASSIFICATION_OPTIONS,
-  DEPARTMENT_OPTIONS,
   type EditDocDetailsMode,
   MODAL_TITLES,
-  ORGANIZATION_OPTIONS,
   SUBMIT_LABELS,
 } from './EditDocDetailsModal.constants';
-import {
-  Body,
-  DirtyWarning,
-  Field,
-  FieldLabel,
-  FieldRow,
-  NameInput,
-} from './EditDocDetailsModal.styles';
+import { Body, DirtyWarning } from './EditDocDetailsModal.styles';
 import { EDIT_DOC_DETAILS_MODAL_IDS } from './EditDocDetailsModal.testids';
+import { useDocDetailsForm } from './useDocDetailsForm';
 
 export interface EditDocDetailsModalProps {
   mode: EditDocDetailsMode;
   header: DocumentHeader;
+  /** Decides whether the fields are editable at all — see LIMITED_EDIT_STATUSES. */
+  docStatus: string;
   onClose: () => void;
   onSave: (header: DocumentHeader) => void;
+  /**
+   * Approval mode only: the details step has been accepted, and `isDirty` says
+   * whether the document's values were changed on the way through — which decides
+   * whether the round starts straight away or asks about it first.
+   */
+  onContinue?: (isDirty: boolean) => void;
 }
 
 const FORM_ID = 'edit-doc-details-form';
 
-// Multi-mode per the phased plan (edit/duplicate/issue-update/issue-new),
-// pattern-matched on TemplateModal.tsx's `useForm` + mode-prop shape. Only
-// `edit` has a real trigger wired up today (DocHeaderCard's pencil icon) --
-// duplicate/issue-update/issue-new have no doc-list/catalog page in dev yet
-// to navigate from/to, so they're implemented but not yet reachable from
-// the UI. Fields are limited to what DocumentHeader actually models (name/
-// organization/department/effectiveDate/classification) -- template/
-// orderNum/referenceNum are treated as fixed identity, not edited here.
+// The document's details, in five modes that differ only in their title, their
+// submit label and what submitting means (main's EditDocDetailsModal, Edit.tsx:2220).
+//
+// `edit` saves and closes. `approval` is the review step into an approval round:
+// it saves too — main doesn't, which makes its own "these changes apply to this
+// version only" warning a promise about edits it then discards — and then hands
+// the flow on. `duplicate` refuses to submit until the copy has been renamed.
+//
+// Only `edit` and `approval` have triggers today; duplicate and the two issue
+// modes wait on a catalog page dev doesn't have.
 export const EditDocDetailsModal = ({
   mode,
   header,
+  docStatus,
   onClose,
   onSave,
+  onContinue,
 }: EditDocDetailsModalProps) => {
-  const form = useForm({
-    defaultValues: {
-      name: header.name,
-      organization: header.organization,
-      department: header.department,
-      effectiveDate: header.effectiveDate,
-      classification: header.classification,
-    },
-    onSubmit: ({ value }) => onSave({ ...header, ...value }),
-  });
+  // Whether the name has been edited, which is what duplicate mode is waiting for.
+  // Tracked separately from `isDirty` because any other field going dirty must not
+  // count as having renamed the copy.
+  const [nameTouched, setNameTouched] = useState(false);
 
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const form = useDocDetailsForm(header, onSave);
+
+  const isLimitedEdit = LIMITED_EDIT_STATUSES.has(docStatus);
+  const needsRename = mode === 'duplicate' && !nameTouched;
+
+  const handleNameTouched = () => setNameTouched(true);
+
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    if (needsRename) return;
+
+    // Approval mode saves *and* continues: the warning it may raise next is about
+    // these edits, so they have to have happened.
+    if (mode === 'approval') {
+      const isDirty = form.state.isDirty;
+      if (isDirty) onSave({ ...header, ...form.state.values });
+      onContinue?.(isDirty);
+      return;
+    }
+
     form.handleSubmit();
   };
 
@@ -73,13 +88,20 @@ export const EditDocDetailsModal = ({
           <Button type="button" variant="secondary" onClick={onClose}>
             ביטול
           </Button>
-          <Button type="submit" form={FORM_ID} data-testid={EDIT_DOC_DETAILS_MODAL_IDS.submitBtn}>
+          <Button
+            type="submit"
+            form={FORM_ID}
+            disabled={needsRename}
+            data-testid={EDIT_DOC_DETAILS_MODAL_IDS.submitBtn}
+          >
             {SUBMIT_LABELS[mode]}
           </Button>
         </>
       }
     >
-      <Body id={FORM_ID} onSubmit={onSubmit}>
+      <Body id={FORM_ID} onSubmit={handleSubmit}>
+        {/* Only in edit mode. Approval mode raises the same point as a dialog of
+            its own once you continue, and saying it twice would be noise. */}
         {mode === 'edit' && (
           <form.Subscribe selector={(state) => state.isDirty}>
             {(isDirty) =>
@@ -92,83 +114,12 @@ export const EditDocDetailsModal = ({
           </form.Subscribe>
         )}
 
-        <form.Field name="name">
-          {(field) => {
-            const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
-              field.handleChange(e.target.value);
-            return (
-              <Field>
-                <FieldLabel htmlFor={EDIT_DOC_DETAILS_MODAL_IDS.nameInput}>שם המסמך</FieldLabel>
-                <NameInput
-                  id={EDIT_DOC_DETAILS_MODAL_IDS.nameInput}
-                  data-testid={EDIT_DOC_DETAILS_MODAL_IDS.nameInput}
-                  value={field.state.value}
-                  onChange={handleChange}
-                  dir="rtl"
-                />
-              </Field>
-            );
-          }}
-        </form.Field>
-
-        <FieldRow>
-          <form.Field name="organization">
-            {(field) => (
-              <Field>
-                <FieldLabel as="span">ארגון</FieldLabel>
-                <Select
-                  options={ORGANIZATION_OPTIONS}
-                  value={field.state.value}
-                  onChange={field.handleChange}
-                  data-testid={EDIT_DOC_DETAILS_MODAL_IDS.organizationSelect}
-                />
-              </Field>
-            )}
-          </form.Field>
-
-          <form.Field name="department">
-            {(field) => (
-              <Field>
-                <FieldLabel as="span">מחלקה</FieldLabel>
-                <Select
-                  options={DEPARTMENT_OPTIONS}
-                  value={field.state.value}
-                  onChange={field.handleChange}
-                  data-testid={EDIT_DOC_DETAILS_MODAL_IDS.departmentSelect}
-                />
-              </Field>
-            )}
-          </form.Field>
-        </FieldRow>
-
-        <FieldRow>
-          <form.Field name="classification">
-            {(field) => (
-              <Field>
-                <FieldLabel as="span">סיווג</FieldLabel>
-                <Select
-                  options={CLASSIFICATION_OPTIONS}
-                  value={field.state.value}
-                  onChange={field.handleChange}
-                  data-testid={EDIT_DOC_DETAILS_MODAL_IDS.classificationSelect}
-                />
-              </Field>
-            )}
-          </form.Field>
-
-          <form.Field name="effectiveDate">
-            {(field) => (
-              <Field>
-                <FieldLabel as="span">תאריך תוקף</FieldLabel>
-                <DateTimePicker
-                  value={field.state.value}
-                  onChange={field.handleChange}
-                  data-testid={EDIT_DOC_DETAILS_MODAL_IDS.effectiveDate}
-                />
-              </Field>
-            )}
-          </form.Field>
-        </FieldRow>
+        <DocDetailsFields
+          form={form}
+          needsRename={needsRename}
+          isLimitedEdit={isLimitedEdit}
+          onNameTouched={handleNameTouched}
+        />
       </Body>
     </Modal>
   );

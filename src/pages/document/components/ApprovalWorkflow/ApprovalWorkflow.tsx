@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { HML_GROUPS_FALLBACK, useHmlGroups } from '@/api/approvals';
 import { Button } from '@/components/ui/Button';
 import { DISTRIBUTED_STATUSES, EDITABLE_STATUSES } from '../../document.constants';
+import type { DocumentHeader } from '../../types';
 import type { ApprovalRoundConfig } from '../ApprovalDetailsModal';
 import { useSignatureGate } from '../SignaturesSection';
 import { AcceptanceRow } from './ApprovalWorkflow.styles';
@@ -21,8 +22,26 @@ const ApprovalRotation = lazy(() =>
 const DistributeDoc = lazy(() =>
   import('../DistributeDoc').then((m) => ({ default: m.DistributeDoc })),
 );
+const EditDocDetailsModal = lazy(() =>
+  import('../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
+);
+const ApprovalDirtyWarningModal = lazy(() =>
+  import('../EditDocDetailsModal/components/ApprovalDirtyWarningModal').then((m) => ({
+    default: m.ApprovalDirtyWarningModal,
+  })),
+);
 
-type FlowStep = 'idle' | 'details' | 'rotation' | 'distribute' | 'acceptance';
+// `review` is main's approval-mode details dialog, which comes before the round is
+// configured; `dirtyWarning` is the question it raises if the document's values
+// were edited on the way through.
+type FlowStep =
+  | 'idle'
+  | 'review'
+  | 'dirtyWarning'
+  | 'details'
+  | 'rotation'
+  | 'distribute'
+  | 'acceptance';
 
 export const DOC_STATUS = {
   DRAFT: 'טיוטה',
@@ -33,9 +52,10 @@ export const DOC_STATUS = {
 } as const;
 
 export interface ApprovalWorkflowProps {
-  docName: string;
+  header: DocumentHeader;
   status: string;
   onStatusChange: (status: string) => void;
+  onHeaderChange: (header: DocumentHeader) => void;
 }
 
 // Owns the whole draft -> approval-round -> distribution flow and every modal it
@@ -45,7 +65,13 @@ export interface ApprovalWorkflowProps {
 // It renders no chrome itself beyond StatusFlowNav's two buttons: which status
 // comes next, and whether pressing forward opens a modal or just writes the new
 // status, is this component's business because it is the one holding the modals.
-export const ApprovalWorkflow = ({ docName, status, onStatusChange }: ApprovalWorkflowProps) => {
+export const ApprovalWorkflow = ({
+  header,
+  status,
+  onStatusChange,
+  onHeaderChange,
+}: ApprovalWorkflowProps) => {
+  const docName = header.name;
   const [step, setStep] = useState<FlowStep>('idle');
   const [roundConfig, setRoundConfig] = useState<ApprovalRoundConfig | null>(null);
   const { data } = useHmlGroups();
@@ -87,18 +113,30 @@ export const ApprovalWorkflow = ({ docName, status, onStatusChange }: ApprovalWo
     // falls back to a hardcoded set of stages here; this opens the configuration
     // modal instead, so what you approve is a round that actually exists.
     else if (isInApproval) setStep(roundConfig ? 'rotation' : 'details');
-    // A document nobody has signed can't enter an approval round. The check is
-    // synchronous and its answer is a return value, because the signatures live
-    // in another subtree and this handler has to decide now.
-    else if (nextStatus === DOC_STATUS.IN_APPROVAL) {
-      if (gate.requireSignature()) setStep('details');
-    } else if (nextStatus) onStatusChange(nextStatus);
+    // The round opens with main's review step; the signature gate sits on *its*
+    // continue button (Edit.tsx:4920), not here.
+    else if (nextStatus === DOC_STATUS.IN_APPROVAL) setStep('review');
+    else if (nextStatus) onStatusChange(nextStatus);
   };
 
   const handleRevert = () => {
     if (isAwaitingDistribution) onStatusChange(DOC_STATUS.IN_PREP);
     else if (prevStatus) onStatusChange(prevStatus);
   };
+
+  // A document nobody has signed can't enter an approval round. The check is
+  // synchronous and its answer is a return value, because the signatures live in
+  // another subtree and this handler has to decide now.
+  const handleReviewContinue = (isDirty: boolean) => {
+    if (!gate.requireSignature()) {
+      setStep('idle');
+      return;
+    }
+    setStep(isDirty ? 'dirtyWarning' : 'details');
+  };
+
+  const handleDirtyWarningBack = () => setStep('review');
+  const handleDirtyWarningContinue = () => setStep('details');
 
   const handleOpenAcceptance = () => setStep('acceptance');
   const handleClose = () => setStep('idle');
@@ -149,6 +187,24 @@ export const ApprovalWorkflow = ({ docName, status, onStatusChange }: ApprovalWo
       )}
 
       <Suspense fallback={null}>
+        {step === 'review' && (
+          <EditDocDetailsModal
+            mode="approval"
+            header={header}
+            docStatus={status}
+            onClose={handleClose}
+            onSave={onHeaderChange}
+            onContinue={handleReviewContinue}
+          />
+        )}
+
+        {step === 'dirtyWarning' && (
+          <ApprovalDirtyWarningModal
+            onBack={handleDirtyWarningBack}
+            onContinue={handleDirtyWarningContinue}
+          />
+        )}
+
         {step === 'details' && (
           <ApprovalDetailsModal onClose={handleClose} onSubmit={handleDetailsSubmit} />
         )}

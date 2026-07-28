@@ -80,6 +80,7 @@ export const DocumentActionsSlot = ({ overrides }: DocumentActionsSlotProps) => 
           <EditDocDetailsModal
             mode={detailsMode}
             header={overrides.header}
+            docStatus={overrides.status}
             onClose={handleCloseDetails}
             onSave={handleSaveDetails}
           />
