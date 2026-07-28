@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { flexGap, resetButton } from '@/styles/mixins';
+import { resetButton } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
 export const BodyLayout = styled.div`
@@ -8,16 +8,8 @@ export const BodyLayout = styled.div`
 	overflow: hidden;
 `;
 
-export const RightPanel = styled.div`
-	width: 700px;
-	flex-shrink: 0;
-	display: flex;
-	flex-direction: column;
-	border-left: 1px solid ${colors.border};
-	overflow: hidden;
-`;
-
-export const LeftPanel = styled.div`
+/** Holds the members half, which fills whatever the sources half leaves. */
+export const MembersColumn = styled.div`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
@@ -65,25 +57,6 @@ export const WarnText = styled.p`
 	text-align: right;
 `;
 
-export const TabBar = styled.div`
-	flex-shrink: 0;
-	display: flex;
-	gap: 6px;
-	padding: 12px 16px;
-`;
-
-export const TabContent = styled.div`
-	display: flex;
-	overflow: hidden;
-	flex: 1;
-`;
-
-export const PlaceholderText = styled.p`
-	margin: auto;
-	color: ${gray[400]};
-	font-size: 12px;
-`;
-
 export const CancelBtn = styled.button`
 	font-size: 14px;
 	color: ${gray[500]};
@@ -92,11 +65,4 @@ export const CancelBtn = styled.button`
 	&:hover {
 		color: ${gray[700]};
 	}
-`;
-
-export const SearchRow = styled.div`
-	${flexGap(8)}
-	padding: 12px 16px;
-	border-bottom: 1px solid ${colors.border};
-	flex-shrink: 0;
 `;

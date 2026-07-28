@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import type { NetworkPerson } from '@/modals/MailingListFormModal';
+import type { NetworkPerson } from '@/components/PeoplePicker';
 import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 

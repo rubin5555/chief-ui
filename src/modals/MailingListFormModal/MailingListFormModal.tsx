@@ -1,26 +1,29 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { Member } from '@/components/PeoplePicker';
+import { MembersPanel, PeopleSourcesPanel } from '@/components/PeoplePicker';
 import { Button } from '@/components/ui/Button';
 import type { ModalHandle } from '@/components/ui/Modal';
 import { Modal } from '@/components/ui/Modal';
-import { ImportPanel } from './components/ImportPanel';
-import { MembersPanel } from './components/MembersPanel';
-import { useImportSource } from './hooks/useImportSource';
+import { Select } from '@/components/ui/Select';
 import { useMailingListFormModalAnalytics } from './MailingListFormModal.analytics';
-import type { ImportTabId, Member } from './MailingListFormModal.constants';
-import { BodyLayout, CancelBtn, LeftPanel } from './MailingListFormModal.styles';
+import { AGAF_OPTIONS } from './MailingListFormModal.constants';
+import {
+  BodyLayout,
+  CancelBtn,
+  FieldInput,
+  FieldLabel,
+  FormSection,
+  MembersColumn,
+  WarnText,
+} from './MailingListFormModal.styles';
 import { MAILING_LIST_FORM_IDS } from './MailingListFormModal.testids';
-import { DocTab } from './tabs/DocTab';
-import { HamalTab } from './tabs/HamalTab';
-import { MirageTab } from './tabs/MirageTab';
-import { NetworkTab } from './tabs/NetworkTab';
-import { PersonalTab } from './tabs/PersonalTab';
 
 export type ModalMode = 'new' | 'edit' | 'duplicate';
 
 const FORM_ID = 'mailing-list-form';
 
-const byIdNumber = (m: Member) => m.idNumber;
-const byId = (m: Member) => m.id;
+/** main pairs a 700px source column with the members list filling the rest. */
+const SOURCES_WIDTH = 700;
 
 interface MailingListFormModalProps {
   mode?: ModalMode;
@@ -50,7 +53,8 @@ const SAVE_LABELS: Record<ModalMode, string> = {
  * "Form", not "MailingListModal", because it is not the only dialog in the app
  * that gathers people from these sources: the document permissions dialog does
  * the same thing for a different purpose, and a name that claimed mailing lists
- * in general left no room to say which one you meant.
+ * in general left no room to say which one you meant. The gathering itself is
+ * `@/components/PeoplePicker`, shared by both; what is left here is the form.
  */
 export const MailingListFormModal = ({
   mode = 'new',
@@ -62,28 +66,7 @@ export const MailingListFormModal = ({
   const [listName, setListName] = useState(initialName);
   const [dirty, setDirty] = useState(false);
   const [members, setMembers] = useState<Member[]>(initialMembers);
-  const [activeTab, setActiveTab] = useState<ImportTabId | null>(null);
-  const [networkInitialQuery, setNetworkInitialQuery] = useState('');
-  const [autoFocusNetworkSearch, setAutoFocusNetworkSearch] = useState(false);
-  const [groupExpanded, setGroupExpanded] = useState<string | null>(null);
-
-  const addedMemberIds = new Set(members.map((m) => m.id));
-
-  const addMembers = (newMembers: Member[], dedupeKey: (member: Member) => string | undefined) => {
-    setMembers((prev) => {
-      const existingKeys = new Set(prev.map(dedupeKey));
-      return [...prev, ...newMembers.filter((m) => !existingKeys.has(dedupeKey(m)))];
-    });
-    setDirty(true);
-  };
-
-  const { addedIds: docAdded, onImport: onDocImport } = useImportSource(byIdNumber, addMembers);
-  const { addedIds: hamalAdded, onImport: onHamalImport } = useImportSource(byId, addMembers);
-  const { addedIds: mirageAdded, onImport: onMirageImport } = useImportSource(byId, addMembers);
-  const { addedIds: personalAdded, onImport: onPersonalImport } = useImportSource(
-    byIdNumber,
-    addMembers,
-  );
+  const modalRef = useRef<ModalHandle>(null);
 
   const {
     trackModalOpened,
@@ -98,55 +81,25 @@ export const MailingListFormModal = ({
     setDirty(true);
   };
 
-  const onTabChange = (id: ImportTabId) => {
-    setActiveTab(id);
-    trackTabChanged(id);
-  };
-
-  // Called at most once per modal lifetime: ImportPanel's pre-search box unmounts as soon as
-  // activeTab flips away from null, so this only fires on the focus/first-keystroke that
-  // switches into the network tab.
-  const onActivateNetworkFromSearch = (query: string) => {
-    if (activeTab !== null) return;
-    setNetworkInitialQuery(query);
-    setAutoFocusNetworkSearch(true);
-    onTabChange('network');
-  };
-
-  const onToggleGroup = useCallback(
-    (id: string) => setGroupExpanded((prev) => (prev === id ? null : id)),
-    [],
-  );
-
-  const onRemoveMember = useCallback(
-    (id: string) => {
-      setMembers((prev) => prev.filter((m) => m.id !== id));
-      setDirty(true);
-      trackMemberRemoved();
-    },
-    [trackMemberRemoved],
-  );
-
-  const onAddMember = (member: Member) => {
-    setMembers((prev) => {
-      if (prev.some((m) => m.id === member.id || (m.idNumber && m.idNumber === member.idNumber)))
-        return prev;
-      return [...prev, member];
-    });
+  const onMembersChange = (next: Member[]) => {
+    setMembers(next);
     setDirty(true);
+  };
+
+  const onRemoveMember = (id: string) => {
+    setMembers((prev) => prev.filter((m) => m.id !== id));
+    setDirty(true);
+    trackMemberRemoved();
   };
 
   useEffect(() => {
     trackModalOpened(mode);
   }, []);
 
-  const modalRef = useRef<ModalHandle>(null);
-
   const handleCancel = () => {
     trackCancelled(mode);
     modalRef.current?.requestClose();
   };
-  const handleTabSelect = (id: ImportTabId) => () => onTabChange(id);
 
   const isDupBlocked = mode === 'duplicate' && listName === initialName;
   const isEditBlocked = mode === 'edit' && !dirty;
@@ -158,21 +111,6 @@ export const MailingListFormModal = ({
     trackSaveClicked(mode, members.length);
     onSave(listName, members);
     modalRef.current?.requestClose();
-  };
-
-  const tabContent: Record<ImportTabId, React.ReactNode> = {
-    network: (
-      <NetworkTab
-        addedMemberIds={addedMemberIds}
-        onAdd={onAddMember}
-        initialQuery={networkInitialQuery}
-        autoFocus={autoFocusNetworkSearch}
-      />
-    ),
-    doc: <DocTab addedDocIds={docAdded} onImport={onDocImport} />,
-    hamal: <HamalTab addedGroupIds={hamalAdded} onImport={onHamalImport} />,
-    mirage: <MirageTab addedGroupIds={mirageAdded} onImport={onMirageImport} />,
-    personal: <PersonalTab addedListIds={personalAdded} onImport={onPersonalImport} />,
   };
 
   const footer = (
@@ -192,6 +130,33 @@ export const MailingListFormModal = ({
     </>
   );
 
+  const nameAndDepartment = (
+    <FormSection id={FORM_ID} onSubmit={onFormSubmit}>
+      <div>
+        <FieldLabel htmlFor="list-name">שם רשימת התפוצה</FieldLabel>
+        <FieldInput
+          id="list-name"
+          data-testid={MAILING_LIST_FORM_IDS.nameInput}
+          type="text"
+          value={listName}
+          onChange={onNameChange}
+          placeholder="הזן שם רשימה..."
+          $warn={isDupBlocked}
+        />
+        {isDupBlocked && <WarnText>יש לשנות את שם הרשימה לפני השכפול</WarnText>}
+      </div>
+      <div>
+        <FieldLabel htmlFor="list-agaf">בחירת אגף</FieldLabel>
+        <Select
+          id="list-agaf"
+          data-testid={MAILING_LIST_FORM_IDS.agafSelect}
+          options={AGAF_OPTIONS}
+          placeholder="בחר אגף..."
+        />
+      </div>
+    </FormSection>
+  );
+
   return (
     <Modal
       ref={modalRef}
@@ -207,26 +172,17 @@ export const MailingListFormModal = ({
       data-testid={MAILING_LIST_FORM_IDS.root}
     >
       <BodyLayout>
-        <ImportPanel
-          formId={FORM_ID}
-          onFormSubmit={onFormSubmit}
-          listName={listName}
-          onNameChange={onNameChange}
-          isDupBlocked={isDupBlocked}
-          activeTab={activeTab}
-          onTabSelect={handleTabSelect}
-          onActivateNetworkFromSearch={onActivateNetworkFromSearch}
-          tabContent={tabContent}
+        <PeopleSourcesPanel
+          members={members}
+          onMembersChange={onMembersChange}
+          header={nameAndDepartment}
+          width={SOURCES_WIDTH}
+          onTabChange={trackTabChanged}
         />
 
-        <LeftPanel data-testid={MAILING_LIST_FORM_IDS.membersPanel}>
-          <MembersPanel
-            members={members}
-            groupExpanded={groupExpanded}
-            onToggleGroup={onToggleGroup}
-            onRemove={onRemoveMember}
-          />
-        </LeftPanel>
+        <MembersColumn>
+          <MembersPanel members={members} onRemove={onRemoveMember} />
+        </MembersColumn>
       </BodyLayout>
     </Modal>
   );

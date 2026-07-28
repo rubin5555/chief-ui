@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import type { HamalGroup } from '@/modals/MailingListFormModal';
+import type { HamalGroup } from '@/components/PeoplePicker';
 import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 

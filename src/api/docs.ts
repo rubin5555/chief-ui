@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import type { DocItem } from '@/modals/MailingListFormModal';
+import type { DocItem } from '@/components/PeoplePicker';
 import {
   type DocumentDto,
   emptySectionMeta,

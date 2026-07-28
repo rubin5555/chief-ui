@@ -1,12 +1,13 @@
 import { Copy, Trash2 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { LISTS_FALLBACK, useLists } from '@/api/lists';
+import type { Member } from '@/components/PeoplePicker';
 import type { RowAction } from '@/components/ui/ItemRow';
 import { ItemRow } from '@/components/ui/ItemRow';
 import { ModalLoading } from '@/components/ui/ModalLoading';
 import { PanelLoading } from '@/components/ui/PanelLoading';
 import { useEntityModal } from '@/hooks/useEntityModal';
-import type { Member, ModalMode } from '@/modals/MailingListFormModal';
+import type { ModalMode } from '@/modals/MailingListFormModal';
 import { TabPanelShell } from '../TabPanelShell';
 import { useFilterableList } from '../useFilterableList';
 import { useListsPanelAnalytics } from './ListsPanel.analytics';

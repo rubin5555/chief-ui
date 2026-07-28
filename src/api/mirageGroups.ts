@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import type { MirageGroup } from '@/modals/MailingListFormModal';
+import type { MirageGroup } from '@/components/PeoplePicker';
 import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 

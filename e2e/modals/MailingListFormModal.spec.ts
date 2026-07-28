@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { IMPORT_TABS } from '../../src/components/PeoplePicker/PeoplePicker.constants';
+import { PEOPLE_PICKER_IDS } from '../../src/components/PeoplePicker/PeoplePicker.testids';
 import { TAB_CARD_IDS } from '../../src/components/ui/TabCard/TabCard.testids';
-import { IMPORT_TABS } from '../../src/modals/MailingListFormModal/MailingListFormModal.constants';
 import { MAILING_LIST_FORM_IDS } from '../../src/modals/MailingListFormModal/MailingListFormModal.testids';
 
 const PLACEHOLDER_TEXT = 'בחר מקור ייבוא או חפש לפי שם';
@@ -15,13 +16,13 @@ test.beforeEach(async ({ page }) => {
 test('opens with the form and tab bar visible', async ({ page }) => {
   await expect(page.getByTestId(MAILING_LIST_FORM_IDS.root)).toBeVisible();
   await expect(page.getByTestId(MAILING_LIST_FORM_IDS.nameInput)).toBeVisible();
-  await expect(page.getByTestId(MAILING_LIST_FORM_IDS.tabBar)).toBeVisible();
-  await expect(page.getByTestId(MAILING_LIST_FORM_IDS.membersPanel)).toBeVisible();
+  await expect(page.getByTestId(PEOPLE_PICKER_IDS.tabBar)).toBeVisible();
+  await expect(page.getByTestId(PEOPLE_PICKER_IDS.membersPanel)).toBeVisible();
 });
 
 test('every import tab is reachable', async ({ page }) => {
-  const tabBar = page.getByTestId(MAILING_LIST_FORM_IDS.tabBar);
-  const tabContent = page.getByTestId(MAILING_LIST_FORM_IDS.tabContent);
+  const tabBar = page.getByTestId(PEOPLE_PICKER_IDS.tabBar);
+  const tabContent = page.getByTestId(PEOPLE_PICKER_IDS.tabContent);
 
   for (const { label } of IMPORT_TABS) {
     await tabBar.getByText(label).click();
