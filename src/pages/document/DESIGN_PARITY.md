@@ -208,6 +208,14 @@ you'd rather they weren't:
 - **The emphasis card has no chat button.** main draws one there with no
   `onClick` behind it (`Edit.tsx:4187`); the card isn't a section, so there is no
   thread for it to open. Its attach button is live.
+- **A comparison is a version, not a flag.** main keeps `comparisonMode` and
+  `comparisonVersionLabel` as separate state; the route carries only
+  `compareVersion`, because two params for one fact can disagree —
+  `compare=true` with no version, or the reverse. Picking a version opens the bar;
+  clearing it closes it.
+- **The version picker is reached from the bar's own button.** main opens it from a
+  navbar control this page doesn't have, so the button that stood in for the bar
+  now opens the picker instead of toggling a comparison against nothing.
 - **The approval-mode review step saves what you edit.** main shows the document's
   details on the way into a round, warns that "these changes apply to this version
   only", and then discards them — `onContinue` never writes (`Edit.tsx:4920`).
@@ -258,15 +266,24 @@ empty.
 Tracked here so a reviewer isn't left guessing what is deliberate and what is
 missing:
 
-- **`ComparisonBar`** is a placeholder, not main's bar (`Edit.tsx:3730`): the pill
-  toggles, the `n/3` difference navigation and the version picker behind it.
-- **`DocPermissionsModal`** — the five-tab document-level permissions dialog the
-  toolbar's `הרשאות` button will open.
+- **A diff engine.** `ComparisonBar` is main's bar, and picking a version is real,
+  but nothing computes what actually differs between two versions — so its
+  counter reads `0/0` and its difference navigation is disabled. main hardcodes
+  `comparisonTotal = 3` (`Edit.tsx:3512`); `DIFFERENCE_COUNT` in `ComparisonBar`
+  is the one line that changes when there is something real to count.
 - **`DistributeProgressToast`** — main's bottom-left progress card
   (`Edit.tsx:5047`) and the distribute confirmation in front of it.
 - **`EditDocDetailsModal`'s dropped fields** — the Amazon entity selector, doc
-  type, folder, exit date and four toggle rows (`Edit.tsx:2145-2420`). What is
-  there is the five fields `DocumentHeader` models.
+  type, folder, exit date and four toggle rows (`Edit.tsx:2145-2420`). Deliberately
+  waiting on a real backend shape rather than being held in state that goes
+  nowhere; what is there is the five fields `DocumentHeader` models.
+- **Document-permission persistence.** `DocPermissionsModal` has main's five levels
+  and its wording, and its members are local state — there is no
+  document-permissions shape on the API to write them to. Same reason as above.
+- **main's permission importers.** Each level in main can be filled from mailing
+  lists, HML groups, network directories or an Excel upload — the machinery
+  `src/modals/MailingListModal` already implements for a different purpose. Here a
+  level takes people from the network roster through the app's own multi-select.
 - **`parity/`** — the Word-style ribbon, the table view and the other components
   parked out of the live page, with a route to inspect them.
 

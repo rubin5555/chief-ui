@@ -2,6 +2,7 @@ import { getRouteApi } from '@tanstack/react-router';
 import { lazy, Suspense, useState } from 'react';
 import { DocActionToolbar } from '@/components/layout/TopNavbar/components/DocActionToolbar';
 import { NavToolbarSlot } from '@/context/NavToolbarSlotContext';
+import { DISTRIBUTED_STATUSES } from '../../document.constants';
 import { ZOOM_MAX, ZOOM_MIN } from '../../document.measurements';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { DocumentHeader } from '../../types';
@@ -10,6 +11,9 @@ import { FilterPanel } from '../FilterPanel';
 
 const EditDocDetailsModal = lazy(() =>
   import('../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
+);
+const DocPermissionsModal = lazy(() =>
+  import('./components/DocPermissionsModal').then((m) => ({ default: m.DocPermissionsModal })),
 );
 
 const routeApi = getRouteApi('/document/$id');
@@ -32,10 +36,13 @@ export const DocumentActionsSlot = ({ overrides }: DocumentActionsSlotProps) => 
   const { zoom, q } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
   const [detailsMode, setDetailsMode] = useState<EditDocDetailsMode | null>(null);
+  const [showPermissions, setShowPermissions] = useState(false);
 
   const handleOpenEdit = () => setDetailsMode('edit');
   const handleOpenDuplicate = () => setDetailsMode('duplicate');
   const handleCloseDetails = () => setDetailsMode(null);
+  const handleOpenPermissions = () => setShowPermissions(true);
+  const handleClosePermissions = () => setShowPermissions(false);
 
   // Clamped here rather than in ZoomControl, and rather than left to the route
   // schema: zod's `.min()/.max()` with a `.catch()` fallback *rejects* an
@@ -65,17 +72,20 @@ export const DocumentActionsSlot = ({ overrides }: DocumentActionsSlotProps) => 
           searchQuery={q}
           onEditDocClick={handleOpenEdit}
           onDuplicateClick={handleOpenDuplicate}
+          onPermissionsClick={handleOpenPermissions}
           onZoomChange={handleZoomChange}
           onSearchChange={handleSearchChange}
         />
       </NavToolbarSlot>
 
-      {/* No onPermissionsClick yet: the 5-tab document permissions modal is still
-          to be built. The button is rendered because main renders it — an icon
-          missing from the row is more misleading than one that doesn't open
-          anything yet. */}
-
       <Suspense fallback={null}>
+        {showPermissions && (
+          <DocPermissionsModal
+            isDistributed={DISTRIBUTED_STATUSES.has(overrides.status)}
+            onClose={handleClosePermissions}
+          />
+        )}
+
         {detailsMode && (
           <EditDocDetailsModal
             mode={detailsMode}
