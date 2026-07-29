@@ -229,3 +229,16 @@ test('deleting a section from the section menu removes it from the tree', async 
 
   await expect(sectionBody).toHaveCount(0);
 });
+
+test('a section menu that fits does not scroll', async ({ page }) => {
+  await page.goto('/document/d1');
+  await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
+
+  // Its eight actions are well under the 320px cap, so there is nothing to
+  // scroll to — and a scrollbar on a menu that fits is the panel having been
+  // measured a fraction of a pixel too short.
+  const overflow = await page
+    .getByTestId(SECTION_MENU_IDS.panel('s1-1'))
+    .evaluate((panel) => panel.scrollHeight - panel.clientHeight);
+  expect(overflow).toBe(0);
+});

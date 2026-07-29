@@ -179,9 +179,16 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
     // back the height we just gave it, minus its own border — so every pass would
     // hand the next one a slightly smaller number and the placement would never
     // settle. Restored in the same layout pass, so this never reaches the screen.
+    // The borders have to be added back. `box-sizing` is border-box globally, so
+    // the `max-height` this produces caps the *border* box — while `scrollHeight`
+    // measures the content box, which excludes them. Handing one to the other
+    // capped every panel exactly its own border-width short of its content, so a
+    // menu whose eight items fit comfortably still had a scrollbar down its side,
+    // for two pixels that were never content.
     const capped = panel.style.maxHeight;
     panel.style.maxHeight = 'none';
-    const natural = panel.scrollHeight;
+    const borders = panel.offsetHeight - panel.clientHeight;
+    const natural = panel.scrollHeight + borders;
     panel.style.maxHeight = capped;
 
     const next = computePos(trigger.getBoundingClientRect(), specRef.current, natural);
