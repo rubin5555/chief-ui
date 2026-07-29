@@ -1,5 +1,65 @@
 import styled from 'styled-components';
-import { colors, gray, radii, transitions } from '@/styles/theme';
+import { colors, docColors, gray, radii, shadows, transitions } from '@/styles/theme';
+import { BUBBLE_LEFT, BUBBLE_MAX_HEIGHT, BUBBLE_WIDTH } from './SectionChat.constants';
+
+// Positioned by the `style` attr rather than CSS interpolation, so following a
+// scrolling section doesn't mint a class per pixel.
+export const BubbleRoot = styled.div.attrs<{ $top: number }>((props) => ({
+  style: { top: props.$top },
+}))<{ $top: number }>`
+	position: fixed;
+	left: ${BUBBLE_LEFT}px;
+	width: ${BUBBLE_WIDTH}px;
+	z-index: 99999;
+`;
+
+/**
+ * The speech-bubble tail, drawn as main draws it (Edit.tsx:406-422): two CSS
+ * triangles, a wider one in the border colour with a narrower fill sitting on top
+ * of it, so the point keeps the same 1px outline as the rest of the bubble.
+ *
+ * They are siblings of the bubble body rather than children because the body
+ * clips to its own rounded box — a tail inside it would be cut off at the very
+ * edge it needs to stick out past.
+ */
+const Tail = styled.div`
+	position: absolute;
+	width: 0;
+	height: 0;
+	border-top: 10px solid transparent;
+	border-bottom: 10px solid transparent;
+`;
+
+export const TailBorder = styled(Tail)`
+	/* Physical \`right\`, not \`inline-end\`: the paper this points at is to the
+	   bubble's physical right on this RTL page, the same side in either direction. */
+	right: -11px;
+	top: 9px;
+	border-left: 11px solid ${docColors.chatArrowBorder};
+	z-index: 1;
+`;
+
+export const TailFill = styled(Tail)`
+	right: -9px;
+	top: 10px;
+	border-top-width: 9px;
+	border-bottom-width: 9px;
+	border-left: 10px solid ${docColors.surfaceSubtle};
+	z-index: 2;
+`;
+
+export const BubbleBody = styled.div`
+	position: relative;
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	max-height: ${BUBBLE_MAX_HEIGHT}px;
+	border: 1px solid ${gray[200]};
+	border-radius: ${radii['2xl']};
+	background-color: ${colors.surface};
+	box-shadow: ${shadows.bubble};
+	overflow: hidden;
+`;
 
 export const Header = styled.div`
 	display: flex;
@@ -7,7 +67,10 @@ export const Header = styled.div`
 	justify-content: space-between;
 	gap: 8px;
 	padding: 8px 10px;
-	border-bottom: 1px solid ${colors.border};
+	/* Shares the tail's fill colour — the tail reads as this strip pulled into a
+	   point, so the two have to be the same tone. */
+	background-color: ${docColors.surfaceSubtle};
+	border-bottom: 1px solid ${gray[100]};
 	flex-shrink: 0;
 `;
 
@@ -38,7 +101,6 @@ export const MessagesList = styled.div`
 	flex: 1;
 	overflow-y: auto;
 	min-height: 80px;
-	max-height: 220px;
 	padding: 8px 10px;
 	display: flex;
 	flex-direction: column;
@@ -60,18 +122,41 @@ export const MessageBubble = styled.div<{ $mine: boolean }>`
 	background-color: ${(props) => (props.$mine ? colors.primary : gray[100])};
 	color: ${(props) => (props.$mine ? colors.surface : gray[800])};
 	font-size: 12px;
-	padding: 6px 10px;
 	white-space: pre-wrap;
 `;
 
-export const QuoteBlock = styled.div`
-	margin: -2px -6px 4px;
-	padding: 4px 8px;
-	border-radius: ${radii.lg};
+export const MessageText = styled.div<{ $quoted: boolean }>`
+	padding: ${(props) => (props.$quoted ? '4px 10px 6px' : '6px 10px')};
+`;
+
+// A white card inset into the coloured bubble, so quoted text reads as the
+// document's words rather than the commenter's. Its accent bar is lighter on
+// one's own messages (main's #93afd4) because the navy it would otherwise use
+// is the bubble those sit on, and a bar the colour of its background is no bar.
+export const QuoteBlock = styled.div<{ $mine: boolean }>`
+	margin: 5px 5px 0;
+	padding: 4px 7px;
+	border-radius: ${radii.md};
+	overflow: hidden;
 	background-color: ${colors.surface};
-	color: ${gray[600]};
+	border-right: 3px solid ${(props) => (props.$mine ? docColors.chatOwnAccent : colors.primary)};
+`;
+
+export const QuoteAuthor = styled.div`
 	font-size: 10px;
-	border-right: 3px solid ${colors.accent};
+	font-weight: 700;
+	margin-bottom: 1px;
+	color: ${colors.primary};
+`;
+
+export const QuoteText = styled.div`
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	font-size: 10px;
+	line-height: 1.4;
+	color: ${gray[700]};
 `;
 
 export const MarkerBanner = styled.div`
@@ -84,6 +169,18 @@ export const MarkerBanner = styled.div`
 	color: ${colors.warning};
 	font-size: 10px;
 	flex-shrink: 0;
+
+	span {
+		flex: 1;
+	}
+
+	button {
+		display: flex;
+		border: none;
+		background: none;
+		color: ${colors.warning};
+		cursor: pointer;
+	}
 `;
 
 export const QuoteStrip = styled.div`
@@ -137,6 +234,12 @@ export const SendBtn = styled.button`
 
 	&:hover {
 		opacity: 0.9;
+	}
+
+	/* The arrow has to fly the way the text reads (main mirrors it the same way,
+	   Edit.tsx:498) — lucide draws it pointing right, which is backwards here. */
+	svg {
+		transform: scaleX(-1);
 	}
 `;
 

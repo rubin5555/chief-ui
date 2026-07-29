@@ -225,13 +225,6 @@ you'd rather they weren't:
   details on the way into a round, warns that "these changes apply to this version
   only", and then discards them — `onContinue` never writes (`Edit.tsx:4920`).
   Here the edit is saved, which is what makes that warning true.
-- **`לתיקון` doesn't open the chat by itself.** main's button both arms the
-  section and opens its thread (`Edit.tsx:4611`), because chat state there is a
-  single page-level object. Here each thread owns its own open state — which is
-  what keeps it anchored to its own trigger — so opening one from a sibling would
-  mean a controlled-open API on the shared floating-panel hook, for one caller.
-  The coupling that matters is intact: the first message posted after `לתיקון`
-  is what moves the section to `דרוש תיקון`.
 - **Footnotes are added from the section menu.** main dispatches a global
   `insert-footnote` event from its Word-style ribbon, which lives in `parity/`
   and isn't wired to anything. The rendered footnotes are main's exactly; only
@@ -261,6 +254,13 @@ you'd rather they weren't:
   slice of them belonging to one section, and there was no way to see who held a
   permission across the document. The inline view and the tree's per-node
   `permissions` writes are gone with it.
+- **A comment thread quotes its real author.** main's quote card is labelled
+  `את/ה` or a hardcoded `שרי` (`Edit.tsx:453`); the comment carries an
+  `authorName`, so the card says who was actually quoted. The bubble is otherwise
+  main's: pinned to the page's left margin, tail pointing at the section, hidden
+  while its section is scrolled out of view. It is the one popover on this page
+  that is not on `useFloatingPanel` — it stays open through clicks in the paper,
+  because marking a passage to quote *is* a click in the paper.
 - **No in-app link to a document.** main opens one from its catalog page, which
   dev doesn't have; inventing a navbar link would put an element on *every* page
   that main has nowhere. The brand is a real link home, and the document is

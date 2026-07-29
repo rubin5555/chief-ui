@@ -93,6 +93,11 @@ export const shadows = {
   // button (Edit.tsx:3850) and on its round FAB buttons (4088), which is why it
   // lives here and not in either component's styles.
   primary: '0 2px 8px rgba(27,58,107,0.3)',
+  // main's chat bubble (Edit.tsx:425). Deeper and tighter than `md` because the
+  // bubble floats in the page's empty left margin with only the canvas gradient
+  // behind it — at `md`'s spread it reads as a stain on the page rather than a
+  // card above it.
+  bubble: '0 4px 16px rgba(0,0,0,0.12)',
 } as const;
 
 export const radii = {

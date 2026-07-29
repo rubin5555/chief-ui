@@ -48,7 +48,8 @@ test('sending a section back moves it only once the reason is written', async ({
   // what needs fixing.
   await expect(page.getByTestId(SECTION_STATUS_LABEL_IDS.root(PENDING))).toHaveText('ממתין לאישור');
 
-  await clickCentred(page.getByTestId(SECTION_CHAT_IDS.trigger(PENDING)));
+  // The button opens the thread itself — the place to say what needs fixing.
+  await expect(page.getByTestId(SECTION_CHAT_IDS.panel(PENDING))).toBeVisible();
   await page.getByTestId(SECTION_CHAT_IDS.input).fill('חסר פירוט בסעיף');
   await page.getByTestId(SECTION_CHAT_IDS.sendBtn).click();
 

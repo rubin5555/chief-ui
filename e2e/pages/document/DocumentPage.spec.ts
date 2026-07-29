@@ -5,6 +5,7 @@ import { DOCUMENT_METADATA_PILL_IDS } from '../../../src/pages/document/componen
 import { OUTLINE_SECTION_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSectionRow/OutlineSectionRow.testids';
 import { OUTLINE_SUBJECT_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubjectRow/OutlineSubjectRow.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
+import { PAPER_CANVAS_IDS } from '../../../src/pages/document/components/PaperCanvas/PaperCanvas.testids';
 import { SECTION_CHAT_IDS } from '../../../src/pages/document/components/SectionChat/SectionChat.testids';
 import { SECTION_MENU_IDS } from '../../../src/pages/document/components/SectionMenu/SectionMenu.testids';
 import { SUBJECT_BLOCK_IDS } from '../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
@@ -106,6 +107,36 @@ test('posting a section comment renders it in the chat panel', async ({ page }) 
   await expect(messages.first()).toContainText('איך אפשר לעזור בסעיף זה?');
   await expect(messages.last()).toContainText('הודעת בדיקה');
   await expect(page.getByTestId(SECTION_CHAT_IDS.input)).toHaveValue('');
+});
+
+test('the chat stays open while text is being marked in the document', async ({ page }) => {
+  // The bubble is open so the reader can work in the document underneath it —
+  // marking a passage to quote starts with a mousedown in the paper, which is
+  // exactly what a dismiss-on-outside-click panel closes on.
+  await page.goto('/document/d1');
+
+  await clickCentred(page.getByTestId(SECTION_CHAT_IDS.trigger('s1-1')));
+  const panel = page.getByTestId(SECTION_CHAT_IDS.panel('s1-1'));
+  await expect(panel).toBeVisible();
+
+  await page.getByTestId(SECTION_CHAT_IDS.markerToggle).click();
+  await expect(panel).toContainText('סמן טקסט במסמך');
+
+  await page.getByTestId(PAPER_CANVAS_IDS.paper).click({ position: { x: 4, y: 4 } });
+  await expect(panel).toBeVisible();
+});
+
+test('opening a second section chat closes the first', async ({ page }) => {
+  // Both bubbles live in the same strip of left margin, so two open at once
+  // would be one on top of the other.
+  await page.goto('/document/d1');
+
+  await clickCentred(page.getByTestId(SECTION_CHAT_IDS.trigger('s1-1')));
+  await expect(page.getByTestId(SECTION_CHAT_IDS.panel('s1-1'))).toBeVisible();
+
+  await clickCentred(page.getByTestId(SECTION_CHAT_IDS.trigger('s1-2')));
+  await expect(page.getByTestId(SECTION_CHAT_IDS.panel('s1-2'))).toBeVisible();
+  await expect(page.getByTestId(SECTION_CHAT_IDS.panel('s1-1'))).toHaveCount(0);
 });
 
 test('hiding a section via the section menu replaces its body with a hidden notice', async ({

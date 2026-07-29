@@ -5,6 +5,7 @@ import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import { ActiveFilterChips } from '../ActiveFilterChips';
 import { EmphasisBlock } from '../EmphasisBlock';
+import { SectionChatProvider } from '../SectionChat';
 import { SIGNATURES_TOPIC_TITLE, SignaturesSection } from '../SignaturesSection';
 import { SubjectBlock } from '../SubjectBlock';
 import { DocLetterhead } from './components/DocLetterhead';
@@ -49,54 +50,59 @@ export const PaperCanvas = ({
   const numbered = numberSubjects(tree.subjects);
 
   return (
-    <EditorScroll data-testid={PAPER_CANVAS_IDS.root}>
-      <Centered>
-        <StickyToolbar>
-          <ActiveFilterChips />
-          {/* A locked document has nothing to format, so main drops the ribbon
+    // Every comment thread on the page hangs off a section in this sheet, and
+    // they share one spot in the left margin — so opening one has to close the
+    // rest. This is the only ancestor all of them have.
+    <SectionChatProvider>
+      <EditorScroll data-testid={PAPER_CANVAS_IDS.root}>
+        <Centered>
+          <StickyToolbar>
+            <ActiveFilterChips />
+            {/* A locked document has nothing to format, so main drops the ribbon
               rather than disabling it (Edit.tsx:4130). */}
-          {!readOnly && <ContentEditorToolbar />}
-        </StickyToolbar>
+            {!readOnly && <ContentEditorToolbar />}
+          </StickyToolbar>
 
-        <Paper $zoom={zoom} data-testid={PAPER_CANVAS_IDS.paper}>
-          <PaperInner>
-            <DocLetterhead readOnly={readOnly} />
+          <Paper $zoom={zoom} data-testid={PAPER_CANVAS_IDS.paper}>
+            <PaperInner>
+              <DocLetterhead readOnly={readOnly} />
 
-            {showEmphasis && <EmphasisBlock readOnly={readOnly} />}
+              {showEmphasis && <EmphasisBlock readOnly={readOnly} />}
 
-            {/* `חתימות` is drawn by SignaturesSection instead of the generic
+              {/* `חתימות` is drawn by SignaturesSection instead of the generic
                 topic path — main special-cases it the same way (Edit.tsx:4303),
                 and it holds signature blocks rather than sections. The match is
                 on the title because that is all main has to go on; renaming the
                 topic turns it back into an ordinary one, which is main's
                 behaviour too. */}
-            {numbered.map(({ subject, firstSectionNumber }) =>
-              subject.title === SIGNATURES_TOPIC_TITLE ? (
-                <SignaturesSection
-                  key={subject.id}
-                  subject={subject}
-                  highlighted={searchMatchIds.has(subject.id)}
-                  tree={tree}
-                  readOnly={readOnly}
-                />
-              ) : (
-                <SubjectBlock
-                  key={subject.id}
-                  subject={subject}
-                  firstSectionNumber={firstSectionNumber}
-                  filteredSectionIds={filteredNodeIds}
-                  searchMatchIds={searchMatchIds}
-                  tree={tree}
-                  overrides={overrides}
-                  trash={trash}
-                  readOnly={readOnly}
-                  isDistributed={isDistributed}
-                />
-              ),
-            )}
-          </PaperInner>
-        </Paper>
-      </Centered>
-    </EditorScroll>
+              {numbered.map(({ subject, firstSectionNumber }) =>
+                subject.title === SIGNATURES_TOPIC_TITLE ? (
+                  <SignaturesSection
+                    key={subject.id}
+                    subject={subject}
+                    highlighted={searchMatchIds.has(subject.id)}
+                    tree={tree}
+                    readOnly={readOnly}
+                  />
+                ) : (
+                  <SubjectBlock
+                    key={subject.id}
+                    subject={subject}
+                    firstSectionNumber={firstSectionNumber}
+                    filteredSectionIds={filteredNodeIds}
+                    searchMatchIds={searchMatchIds}
+                    tree={tree}
+                    overrides={overrides}
+                    trash={trash}
+                    readOnly={readOnly}
+                    isDistributed={isDistributed}
+                  />
+                ),
+              )}
+            </PaperInner>
+          </Paper>
+        </Centered>
+      </EditorScroll>
+    </SectionChatProvider>
   );
 };

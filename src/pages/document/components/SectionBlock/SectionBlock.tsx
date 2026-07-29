@@ -10,6 +10,7 @@ import {
   type SectionStatus,
 } from '../../types';
 import { EditableSectionBody } from '../EditableSectionBody';
+import { useSectionChatCoordination } from '../SectionChat';
 import { SubSectionBlock } from '../SubSectionBlock';
 import { SectionHeader } from './components/SectionHeader';
 import { SectionStatusActions } from './components/SectionStatusActions';
@@ -58,6 +59,7 @@ export const SectionBlock = ({
   // alongside a Record of statuses and two helpers to read them (Edit.tsx:3211),
   // which is three representations of the same fact.
   const [isAwaitingFix, setIsAwaitingFix] = useState(false);
+  const { openChat } = useSectionChatCoordination();
   const { trackStatusChanged, trackFixRequested, trackFixApplied } = useSectionBlockAnalytics();
 
   const handleTitleChange = (title: string) =>
@@ -93,11 +95,13 @@ export const SectionBlock = ({
     setIsAwaitingFix(false);
   };
 
-  // main opens the chat here as well. This arms the section and leaves the panel
-  // to the reader — see DESIGN_PARITY.md's note on why.
+  // Arms the section and opens its thread in one go, as main does
+  // (Edit.tsx:4611) — the button asks for a fix, and the thread is where you say
+  // what needs fixing, so making the reader find it is asking twice.
   const handleRequestFix = () => {
     trackFixRequested();
     setIsAwaitingFix(true);
+    openChat(section.id);
   };
 
   // The reason and the status change are one act: whatever is written first after
