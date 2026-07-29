@@ -2,6 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
 import { PEOPLE_PICKER_IDS } from '../../../../src/components/PeoplePicker/PeoplePicker.testids';
+import { EXCEL_TAB_IDS } from '../../../../src/components/PeoplePicker/tabs/ExcelTab/ExcelTab.testids';
 import { DOC_PERMISSIONS_MODAL_IDS } from '../../../../src/pages/document/components/DocPermissionsModal/DocPermissionsModal.testids';
 
 const openPermissions = async (page: Page) => {
@@ -94,4 +95,18 @@ test('picking with no section selected says so instead of granting nothing', asy
   // main drops these into a list the section tree cannot show, which reads as the
   // pick having been ignored. They are counted and named instead.
   await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.unassigned)).toContainText('1 נבחרו');
+});
+
+test('the Excel source is offered here too, with its file picker and no search box', async ({
+  page,
+}) => {
+  await openPermissions(page);
+
+  await page.getByTestId(PEOPLE_PICKER_IDS.tabBar).getByText('Excel').click();
+
+  await expect(page.getByTestId(EXCEL_TAB_IDS.uploadBtn)).toBeVisible();
+  await expect(page.getByTestId(EXCEL_TAB_IDS.hint)).toContainText('עמודה A בלבד');
+  // Nothing to search in a file that hasn't been handed over, so the row that
+  // every other tab fills is out of the way rather than standing empty.
+  await expect(page.getByTestId(PEOPLE_PICKER_IDS.searchBar)).toBeHidden();
 });

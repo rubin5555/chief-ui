@@ -11,6 +11,23 @@ export const colors = {
   warningLight: 'var(--color-warning-light)',
 } as const;
 
+// The Excel import source: the green its chip and import button carry, and the
+// palette of the example spreadsheet drawn under them (main's
+// TopNavbar.tsx:471-798). App-level rather than `docColors` because the people
+// picker is shared — the mailing-list form shows the same tab.
+export const excelColors = {
+  green: 'var(--excel-green)',
+  /** Column headers and the row-number gutter. */
+  chromeBg: 'var(--excel-chrome-bg)',
+  gridLine: 'var(--excel-grid-line)',
+  /** Every other data row, so the grid reads as rows without needing a rule. */
+  zebraBg: 'var(--excel-zebra-bg)',
+  headerInk: 'var(--excel-header-ink)',
+  gutterInk: 'var(--excel-gutter-ink)',
+  cellInk: 'var(--excel-cell-ink)',
+  activeCellBg: 'var(--excel-active-cell-bg)',
+} as const;
+
 // Document-page palette. Separate from `colors` because these are specific to
 // the document editor's chrome rather than app-wide semantics — but resolved the
 // same way (a CSS custom property, so dark mode needs no React re-render).

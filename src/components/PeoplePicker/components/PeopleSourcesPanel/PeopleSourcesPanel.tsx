@@ -8,6 +8,7 @@ import { IMPORT_TABS } from '../../PeoplePicker.constants';
 import { PlaceholderText, SearchRow, TabBar, TabContent } from '../../PeoplePicker.styles';
 import { PEOPLE_PICKER_IDS } from '../../PeoplePicker.testids';
 import { DocTab } from '../../tabs/DocTab';
+import { ExcelTab } from '../../tabs/ExcelTab';
 import { HamalTab } from '../../tabs/HamalTab';
 import { MirageTab } from '../../tabs/MirageTab';
 import { NetworkTab } from '../../tabs/NetworkTab';
@@ -61,6 +62,7 @@ export const PeopleSourcesPanel = ({
   const [preSearchQuery, setPreSearchQuery] = useState('');
 
   const addedMemberIds = new Set(members.map((m) => m.id));
+  const activeTabHasSearch = IMPORT_TABS.find((tab) => tab.id === activeTab)?.hasSearch !== false;
 
   const addMembers = (newMembers: Member[], dedupeKey: (member: Member) => string | undefined) => {
     const existingKeys = new Set(members.map(dedupeKey));
@@ -118,6 +120,7 @@ export const PeopleSourcesPanel = ({
     hamal: <HamalTab addedGroupIds={hamalAdded} onImport={onHamalImport} />,
     mirage: <MirageTab addedGroupIds={mirageAdded} onImport={onMirageImport} />,
     personal: <PersonalTab addedListIds={personalAdded} onImport={onPersonalImport} />,
+    excel: <ExcelTab />,
   };
 
   return (
@@ -126,18 +129,24 @@ export const PeopleSourcesPanel = ({
         {header}
 
         <TabBar data-testid={PEOPLE_PICKER_IDS.tabBar}>
-          {IMPORT_TABS.map(({ id, label, Icon }) => (
+          {IMPORT_TABS.map(({ id, label, Icon, compact, idleIconColor }) => (
             <IconTab
               key={id}
               icon={Icon}
               label={label}
               isActive={activeTab === id}
+              compact={compact}
+              idleIconColor={idleIconColor}
               onClick={onTabSelect(id)}
             />
           ))}
         </TabBar>
 
-        <SearchRow ref={setSearchSlotNode} data-testid={PEOPLE_PICKER_IDS.searchBar}>
+        <SearchRow
+          ref={setSearchSlotNode}
+          $hidden={!activeTabHasSearch}
+          data-testid={PEOPLE_PICKER_IDS.searchBar}
+        >
           {activeTab === null && (
             <ModalSearchInput
               value={preSearchQuery}

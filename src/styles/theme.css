@@ -21,6 +21,19 @@
   --gray-800: #1f2937;
   --gray-900: #111827;
 
+  /* The Excel import source (main's TopNavbar.tsx:471-798): the brand green its
+     chip and button carry, and the palette of the little example spreadsheet
+     drawn beneath them. Not in `--doc-*` because the people picker is shared —
+     the mailing-list form draws the same tab. */
+  --excel-green: #1d6f42;
+  --excel-chrome-bg: #f8f9fa;
+  --excel-grid-line: #e2e4e7;
+  --excel-zebra-bg: #fafafa;
+  --excel-header-ink: #555555;
+  --excel-gutter-ink: #aaaaaa;
+  --excel-cell-ink: #1a1a1a;
+  --excel-active-cell-bg: #ebf0fa;
+
   /* Document-page tokens. Every light value below is a literal from main's
      Edit.tsx, kept byte-identical on purpose — these exist precisely because
      no base token above matched, and snapping to a near-miss would have
@@ -97,6 +110,15 @@
     --gray-800: #f3f4f6;
     --gray-900: #f9fafb;
 
+    --excel-green: #2f8f5b;
+    --excel-chrome-bg: #232830;
+    --excel-grid-line: #333a45;
+    --excel-zebra-bg: #1e232a;
+    --excel-header-ink: #b8bfc9;
+    --excel-gutter-ink: #79818d;
+    --excel-cell-ink: #e8ecf2;
+    --excel-active-cell-bg: #1f2a3b;
+
     --doc-canvas-gradient: linear-gradient(
       135deg,
       #14181f 0%,
@@ -168,6 +190,15 @@
   --gray-700: #e5e7eb;
   --gray-800: #f3f4f6;
   --gray-900: #f9fafb;
+
+  --excel-green: #2f8f5b;
+  --excel-chrome-bg: #232830;
+  --excel-grid-line: #333a45;
+  --excel-zebra-bg: #1e232a;
+  --excel-header-ink: #b8bfc9;
+  --excel-gutter-ink: #79818d;
+  --excel-cell-ink: #e8ecf2;
+  --excel-active-cell-bg: #1f2a3b;
 
   --doc-canvas-gradient: linear-gradient(
     135deg,

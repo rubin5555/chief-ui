@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { IMPORT_TABS } from '../../src/components/PeoplePicker/PeoplePicker.constants';
 import { PEOPLE_PICKER_IDS } from '../../src/components/PeoplePicker/PeoplePicker.testids';
+import { EXCEL_TAB_IDS } from '../../src/components/PeoplePicker/tabs/ExcelTab/ExcelTab.testids';
 import { TAB_CARD_IDS } from '../../src/components/ui/TabCard/TabCard.testids';
 import { MAILING_LIST_FORM_IDS } from '../../src/modals/MailingListFormModal/MailingListFormModal.testids';
 
@@ -33,4 +34,11 @@ test('every import tab is reachable', async ({ page }) => {
 test('closes on the cancel button', async ({ page }) => {
   await page.getByTestId(MAILING_LIST_FORM_IDS.cancelBtn).click();
   await expect(page.getByTestId(MAILING_LIST_FORM_IDS.root)).not.toBeVisible();
+});
+
+test('the Excel source is the same one the permissions dialog offers', async ({ page }) => {
+  await page.getByTestId(PEOPLE_PICKER_IDS.tabBar).getByText('Excel').click();
+
+  await expect(page.getByTestId(EXCEL_TAB_IDS.uploadBtn)).toContainText('ייבוא מאקסל');
+  await expect(page.getByTestId(EXCEL_TAB_IDS.hint)).toContainText('עמודה A בלבד');
 });
