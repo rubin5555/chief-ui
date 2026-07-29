@@ -1,0 +1,1 @@
+export { DocDetailField } from './DocDetailField';

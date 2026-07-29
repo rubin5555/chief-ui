@@ -5,10 +5,15 @@ import { Modal } from '@/components/ui/Modal';
 import { LIMITED_EDIT_STATUSES } from '../../document.constants';
 import type { DocumentHeader } from '../../types';
 import { DocDetailsFields } from './components/DocDetailsFields';
+import { DocFactsGrid } from './components/DocFactsGrid';
+import { DocOptionsCard } from './components/DocOptionsCard';
 import { useEditDocDetailsModalAnalytics } from './EditDocDetailsModal.analytics';
 import {
   type EditDocDetailsMode,
+  MODAL_MAX_HEIGHT,
   MODAL_TITLES,
+  MODAL_WIDTH,
+  ORDER_NUM_DIGITS,
   SUBMIT_LABELS,
 } from './EditDocDetailsModal.constants';
 import { Body, DirtyWarning } from './EditDocDetailsModal.styles';
@@ -61,6 +66,16 @@ export const EditDocDetailsModal = ({
   const isLimitedEdit = LIMITED_EDIT_STATUSES.has(docStatus);
   const needsRename = mode === 'duplicate' && !nameTouched;
 
+  // Issuing bumps one of the two numbers, and the facts show what the document
+  // is about to become rather than what it is (main, Edit.tsx:2264). main
+  // hardcodes the update number as `2`; this counts from the document's own.
+  const orderNum =
+    mode === 'issue-new'
+      ? String(Number(header.orderNum) + 1).padStart(ORDER_NUM_DIGITS, '0')
+      : header.orderNum;
+  const updateNum =
+    mode === 'issue-update' ? String(Number(header.updateNum) + 1) : header.updateNum;
+
   const handleNameTouched = () => setNameTouched(true);
 
   const handleSubmit = (event: FormEvent) => {
@@ -85,7 +100,8 @@ export const EditDocDetailsModal = ({
     <Modal
       title={MODAL_TITLES[mode]}
       onClose={onClose}
-      width={480}
+      width={MODAL_WIDTH}
+      maxHeight={MODAL_MAX_HEIGHT}
       data-testid={EDIT_DOC_DETAILS_MODAL_IDS.root}
       footer={
         <>
@@ -118,12 +134,22 @@ export const EditDocDetailsModal = ({
           </form.Subscribe>
         )}
 
+        <DocFactsGrid
+          classification={header.classification}
+          template={header.template}
+          organization={header.organization}
+          orderNum={orderNum}
+          updateNum={updateNum}
+        />
+
         <DocDetailsFields
           form={form}
           needsRename={needsRename}
           isLimitedEdit={isLimitedEdit}
           onNameTouched={handleNameTouched}
         />
+
+        <DocOptionsCard form={form} isLimitedEdit={isLimitedEdit} />
       </Body>
     </Modal>
   );

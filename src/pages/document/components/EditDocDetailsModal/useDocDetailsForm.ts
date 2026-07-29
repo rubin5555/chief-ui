@@ -15,15 +15,23 @@ export const useDocDetailsForm = (
   onSave: (header: DocumentHeader) => void,
 ) =>
   useForm({
-    // The five fields DocumentHeader actually models. `template`, `orderNum` and
-    // `referenceNum` are the document's identity rather than its details, and are
-    // not edited here — main shows them in the same dialog but never writes them.
+    // Everything main's dialog lets you change. `template`, `organization`,
+    // `classification`, `orderNum`, `updateNum` and `referenceNum` are absent on
+    // purpose: main shows them in the same dialog but never writes them, because
+    // they are settled when the document is created — see DocFactsGrid.
     defaultValues: {
       name: header.name,
-      organization: header.organization,
       department: header.department,
+      docType: header.docType,
+      folder: header.folder,
+      entityType: header.entityType,
+      entityName: header.entityName,
       effectiveDate: header.effectiveDate,
-      classification: header.classification,
+      expiryDate: header.expiryDate,
+      pdfAccess: header.pdfAccess,
+      cancelApproval: header.cancelApproval,
+      watermark: header.watermark,
+      distributeNatzura: header.distributeNatzura,
     },
     onSubmit: ({ value }) => onSave({ ...header, ...value }),
   });

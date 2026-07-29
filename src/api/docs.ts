@@ -122,10 +122,20 @@ export const GET_DOCUMENT_QUERY = gql`
         organization
         template
         orderNum
-        department
-        effectiveDate
+        updateNum
         classification
         referenceNum
+        department
+        docType
+        folder
+        entityType
+        entityName
+        effectiveDate
+        expiryDate
+        pdfAccess
+        cancelApproval
+        watermark
+        distributeNatzura
       }
       subjects {
         id
@@ -183,10 +193,20 @@ export const UPDATE_DOCUMENT_MUTATION = gql`
         organization
         template
         orderNum
-        department
-        effectiveDate
+        updateNum
         classification
         referenceNum
+        department
+        docType
+        folder
+        entityType
+        entityName
+        effectiveDate
+        expiryDate
+        pdfAccess
+        cancelApproval
+        watermark
+        distributeNatzura
       }
       subjects {
         id
@@ -308,15 +328,28 @@ export const DOCUMENT_FALLBACK: DocumentDto = {
   // every field here except name and orderNum, which it reads off the doc —
   // getOrCreateDocument below overrides exactly those two (plus organization,
   // which is 'ארגון א׳' for the seed document either way).
+  // main splits these between the metadata pill (Edit.tsx:3692) and
+  // EditDocDetailsModal's own defaults (2226-2238); both sets are here, so the
+  // pill and the dialog can't drift apart.
   header: {
     name: 'נוהל בטיחות 2026',
     organization: 'ארגון א׳',
     template: 'מסמך בטיחות',
     orderNum: '001',
-    department: 'משאבי אנוש',
-    effectiveDate: '01/06/2026',
+    updateNum: '1',
     classification: 'בלמ״ס',
     referenceNum: 'פ.מ. 12/2025',
+    department: 'משאבי אנוש',
+    docType: 'פקודה',
+    folder: 'תיקיית מבצעים 2026',
+    entityType: 'פרויקט',
+    entityName: 'פרויקט הגנה 2026',
+    effectiveDate: '01/06/2026',
+    expiryDate: '',
+    pdfAccess: 'authorized',
+    cancelApproval: false,
+    watermark: false,
+    distributeNatzura: false,
   },
   subjects: [
     {

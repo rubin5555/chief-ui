@@ -4,28 +4,34 @@ import { colors, docStatusColors, gray, radii } from '@/styles/theme';
 export const Body = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 24px;
 `;
 
 export const Field = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 `;
 
-export const FieldRow = styled.div`
-  display: flex;
-  gap: 12px;
+/**
+ * main's two-column field grid (Edit.tsx:2271). A grid rather than a flex row
+ * because three of the fields — the name, the folder and the entity — span both
+ * columns, which a row of equal halves can't express.
+ */
+export const FieldGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+`;
 
-  > * {
-    flex: 1;
-  }
+export const FullWidthField = styled.div`
+  grid-column: 1 / -1;
 `;
 
 export const FieldLabel = styled.label`
   font-size: 12px;
-  font-weight: 600;
-  color: ${gray[700]};
+  font-weight: 500;
+  color: ${gray[500]};
 `;
 
 // Red-bordered until a duplicate has been renamed, which is the only state where
@@ -34,11 +40,11 @@ export const NameInput = styled.input<{ $needsRename?: boolean }>`
   width: 100%;
   padding: 8px 12px;
   border-radius: ${radii.lg};
-  border: 1px solid
-    ${({ $needsRename }) => ($needsRename ? docStatusColors.fix : colors.border)};
-  background-color: ${gray[50]};
+  border: 1.5px solid ${({ $needsRename }) => ($needsRename ? docStatusColors.fix : gray[200])};
+  background-color: ${colors.surface};
   font-size: 13px;
-  color: ${gray[800]};
+  color: ${gray[700]};
+  transition: border-color 0.15s;
 
   &:focus {
     outline: none;
@@ -70,12 +76,26 @@ export const LabelRow = styled.span`
 `;
 
 /**
- * What a field becomes once the document is past editing. A span rather than a
- * disabled input: on a document that has been distributed these are printed
- * facts, and a greyed-out control still reads as something that might be enabled.
+ * A value nobody can change: either a fact settled when the document was created,
+ * or a field on a document that has moved past editing. Drawn as a filled box
+ * rather than a disabled control (main, Edit.tsx:2087) — a greyed-out input still
+ * reads as something that might become enabled, where this reads as a fact.
  */
 export const ReadOnlyValue = styled.span`
-  padding: 8px 0;
+  padding: 6px 12px;
+  border-radius: ${radii.lg};
+  border: 1px solid ${gray[100]};
+  background-color: ${gray[50]};
   font-size: 13px;
-  color: ${gray[700]};
+  color: ${gray[400]};
+  text-align: right;
+  cursor: default;
+  user-select: none;
+`;
+
+/** A read-only field's label is quieter than an editable one's. */
+export const ReadOnlyLabel = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: ${gray[400]};
 `;

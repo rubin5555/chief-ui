@@ -290,6 +290,17 @@ you'd rather they weren't:
   away the caret and anything typed since the last commit. Printing renders the
   lot — `beforeprint` flips it out of virtualization inside a `flushSync`, so the
   printer gets the document rather than the window.
+- **The details dialog's values outlive it.** `EditDocDetailsModal` is main's
+  full form (`Edit.tsx:2220`): the facts settled at creation, the seven editable
+  fields in main's two-column grid, and the four distribution options in their
+  bordered card. main holds every one of them in the dialog's own `useState`, so
+  closing it throws the lot away and reopening shows the defaults again — the
+  form is a mock-up of a form. Here they live on `DocumentHeader`, which is why
+  `DocumentHeader` grew from eight fields to eighteen. Two smaller consequences:
+  the classification and the organisation, which an earlier phase made editable
+  selects, are back to being facts as main has them; and a locked switch is
+  absent rather than present-but-inert, where main leaves a live-looking control
+  behind `pointer-events: none`.
 - **The sidebar outline is one flat list, not three nested ones.** It looks
   identical — nesting survives as an indent on the row rather than as a container
   around it — but a topic's row no longer renders its sections, and a section's
@@ -341,10 +352,6 @@ missing:
   counter reads `0/0` and its difference navigation is disabled. main hardcodes
   `comparisonTotal = 3` (`Edit.tsx:3512`); `DIFFERENCE_COUNT` in `ComparisonBar`
   is the one line that changes when there is something real to count.
-- **`EditDocDetailsModal`'s dropped fields** — the Amazon entity selector, doc
-  type, folder, exit date and four toggle rows (`Edit.tsx:2145-2420`). Deliberately
-  waiting on a real backend shape rather than being held in state that goes
-  nowhere; what is there is the five fields `DocumentHeader` models.
 - **Document-permission persistence.** `DocPermissionsModal` has main's five levels
   and its wording, and its members are local state — there is no
   document-permissions shape on the API to write them to. Same reason as above.
