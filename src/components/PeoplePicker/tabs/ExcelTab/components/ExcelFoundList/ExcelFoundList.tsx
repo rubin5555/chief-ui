@@ -1,0 +1,71 @@
+import type { DirectoryUser } from '@/api/users';
+import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import { SelectionCheckbox } from '../../../../components/SelectionCheckbox';
+import { ColHeader } from '../../../../PeoplePicker.shared.styles';
+import { CheckboxCell, EmptyState } from '../../../tabs.shared.styles';
+import { EXCEL_PREVIEW_GRID } from '../../ExcelTab.constants';
+import { EXCEL_TAB_IDS } from '../../ExcelTab.testids';
+import { ListCount, ListHeader, ListSection } from '../components.shared.styles';
+import { RowCell, RowName } from './ExcelFoundList.styles';
+
+interface ExcelFoundListProps {
+  people: DirectoryUser[];
+  /** Already imported from a sheet — checked, greyed, and not clickable. */
+  addedIdNumbers: Set<string>;
+  /** Everyone found is coming in unless they are in here. */
+  excludedIdNumbers: Set<string>;
+  onToggle: (idNumber: string) => void;
+}
+
+/** Everyone the search matched, all ticked until told otherwise. */
+export const ExcelFoundList = ({
+  people,
+  addedIdNumbers,
+  excludedIdNumbers,
+  onToggle,
+}: ExcelFoundListProps) => {
+  const handleToggle = (idNumber: string, isAdded: boolean) => () => {
+    if (!isAdded) onToggle(idNumber);
+  };
+
+  return (
+    <ListSection $fill data-testid={EXCEL_TAB_IDS.foundList}>
+      <ListHeader>
+        נמצאו במערכת
+        <ListCount>({people.length})</ListCount>
+      </ListHeader>
+
+      <GridTable
+        columns={EXCEL_PREVIEW_GRID}
+        headers={[
+          null,
+          <ColHeader $align="right">שם</ColHeader>,
+          <ColHeader>ת.ז.</ColHeader>,
+          <ColHeader>ארגון</ColHeader>,
+        ]}
+        items={people}
+        getRowKey={(person) => person.idNumber}
+        emptyState={<EmptyState>אף מספר אישי בקובץ לא נמצא במערכת</EmptyState>}
+        renderRow={(person: DirectoryUser) => {
+          const isAdded = addedIdNumbers.has(person.idNumber);
+          const isSelected = !isAdded && !excludedIdNumbers.has(person.idNumber);
+
+          return (
+            <GridTableRow
+              isSelected={isSelected}
+              isAdded={isAdded}
+              onClick={handleToggle(person.idNumber, isAdded)}
+            >
+              <CheckboxCell data-testid={EXCEL_TAB_IDS.foundRow(person.idNumber)}>
+                <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
+              </CheckboxCell>
+              <RowName>{person.name}</RowName>
+              <RowCell $tabular>{person.idNumber}</RowCell>
+              <RowCell>{person.environment}</RowCell>
+            </GridTableRow>
+          );
+        }}
+      />
+    </ListSection>
+  );
+};

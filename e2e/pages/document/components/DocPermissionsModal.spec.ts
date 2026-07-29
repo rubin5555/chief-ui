@@ -1,9 +1,14 @@
+import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
 import { PEOPLE_PICKER_IDS } from '../../../../src/components/PeoplePicker/PeoplePicker.testids';
 import { EXCEL_TAB_IDS } from '../../../../src/components/PeoplePicker/tabs/ExcelTab/ExcelTab.testids';
 import { DOC_PERMISSIONS_MODAL_IDS } from '../../../../src/pages/document/components/DocPermissionsModal/DocPermissionsModal.testids';
+
+const SHEET_FIXTURE = fileURLToPath(
+  new URL('../../../fixtures/personal-numbers.xlsx', import.meta.url),
+);
 
 const openPermissions = async (page: Page) => {
   await page.goto('/document/d1');
@@ -109,4 +114,31 @@ test('the Excel source is offered here too, with its file picker and no search b
   // Nothing to search in a file that hasn't been handed over, so the row that
   // every other tab fills is out of the way rather than standing empty.
   await expect(page.getByTestId(PEOPLE_PICKER_IDS.searchBar)).toBeHidden();
+});
+
+test('uploading a sheet lists who was found, what failed, and grants only what is ticked', async ({
+  page,
+}) => {
+  await openPermissions(page);
+  await page.getByTestId(PEOPLE_PICKER_IDS.tabBar).getByText('Excel').click();
+
+  // A real .xlsx, read in the browser — see e2e/fixtures/make-personal-numbers-xlsx.mjs
+  // for what is in column A and why.
+  await page.getByTestId(EXCEL_TAB_IDS.fileInput).setInputFiles(SHEET_FIXTURE);
+  await expect(page.getByTestId(EXCEL_TAB_IDS.hint)).toHaveText('personal-numbers.xlsx');
+
+  // Two lists: the people the numbers resolved to, and the cells that resolved
+  // to nobody — the second is why the upload doesn't just import itself.
+  await expect(page.getByTestId(EXCEL_TAB_IDS.foundList)).toContainText('אבי כהן');
+  const failed = page.getByTestId(EXCEL_TAB_IDS.failedList);
+  await expect(failed).toContainText('לא נמצא במערכת');
+  await expect(failed).toContainText('מספר אישי לא תקין');
+
+  // Everyone found arrives ticked, so unticking is what takes someone out.
+  await page.getByTestId(EXCEL_TAB_IDS.foundRow('012345678')).click();
+  await page.getByTestId(EXCEL_TAB_IDS.importBtn).click();
+
+  const members = page.getByTestId(PEOPLE_PICKER_IDS.membersPanel);
+  await expect(members).toContainText('שרה לוי');
+  await expect(members).not.toContainText('אבי כהן');
 });

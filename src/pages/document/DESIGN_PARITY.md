@@ -265,19 +265,24 @@ you'd rather they weren't:
   dev doesn't have; inventing a navbar link would put an element on *every* page
   that main has nowhere. The brand is a real link home, and the document is
   reached at `/document/d1`.
-- **The Excel import source names the file you picked, and stops there.** main's
-  chip and its example spreadsheet are reproduced exactly (`TopNavbar.tsx:471`,
-  `761`), but main's `onChange` is empty — a file is chosen and nothing happens
-  at all. Turning one into members needs an .xlsx parser (no dependency here) or
-  an endpoint to hand it to (no resolver either), and either would have to decide
-  what a personal number matching nobody should do. So the hint text is replaced
-  by the chosen filename and the import goes no further, rather than leaving a
-  reader unsure whether the click registered. Two smaller differences with it:
-  the caption reads `לדוגמא:` rather than main's `:לדוגמא`, which puts the colon
-  at the logical start of an RTL string and so renders it on the wrong side of
-  the word; and the shared search row is hidden while this tab is open, since a
-  file you haven't handed over has nothing to search — main keeps a search box
-  mounted here that searches nothing.
+- **The Excel import source has a second half main doesn't.** main's chip and its
+  example spreadsheet are reproduced exactly (`TopNavbar.tsx:471`, `761`), but
+  main's `onChange` is empty: a file is chosen and nothing happens at all. Here
+  the sheet is read **in the browser** (`src/utils/parseXlsx` — an .xlsx is a ZIP
+  of XML, and `DecompressionStream` means that needs no dependency; a parser
+  package would have cost a few hundred KB on a bundle already over its limit).
+  Only the numbers leave, to `SearchUsers` (`src/api/users.ts`, stubbed against
+  the same directory `NetworkTab` filters today) — the file itself goes nowhere.
+  The example is then replaced by two lists: the people the numbers resolved to,
+  all ticked, and the cells that resolved to nobody with the reason why, over an
+  `הוסף לרשימה` bar that adds the first list on a word from the user. `.xls` is
+  off the accept list — the old binary format can't be read this way, and main
+  accepts it while reading neither. Two smaller differences: the caption reads
+  `לדוגמא:` rather than main's `:לדוגמא`, which puts the colon at the logical
+  start of an RTL string and so renders it on the wrong side of the word; and the
+  shared search row is hidden while this tab is open, since a file you haven't
+  handed over has nothing to search — main keeps a search box mounted here that
+  searches nothing.
 
 And one addition with no counterpart in main: the sidebar's **אישור קבלה (חמ״ל)**
 button, shown only once a document has been distributed. main has a modal for

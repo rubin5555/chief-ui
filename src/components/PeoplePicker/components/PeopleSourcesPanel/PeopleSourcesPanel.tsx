@@ -76,6 +76,7 @@ export const PeopleSourcesPanel = ({
     byIdNumber,
     addMembers,
   );
+  const { addedIds: excelAdded, onImport: onExcelImport } = useImportSource(byIdNumber, addMembers);
 
   const onAddMember = (member: Member) => {
     if (members.some((m) => m.id === member.id || (m.idNumber && m.idNumber === member.idNumber)))
@@ -120,7 +121,7 @@ export const PeopleSourcesPanel = ({
     hamal: <HamalTab addedGroupIds={hamalAdded} onImport={onHamalImport} />,
     mirage: <MirageTab addedGroupIds={mirageAdded} onImport={onMirageImport} />,
     personal: <PersonalTab addedListIds={personalAdded} onImport={onPersonalImport} />,
-    excel: <ExcelTab />,
+    excel: <ExcelTab addedIdNumbers={excelAdded} onImport={onExcelImport} />,
   };
 
   return (

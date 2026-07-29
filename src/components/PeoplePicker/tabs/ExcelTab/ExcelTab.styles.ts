@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { flexGap } from '@/styles/mixins';
+import { ellipsis, flexGap } from '@/styles/mixins';
 import { colors, excelColors, gray, radii, transitions } from '@/styles/theme';
 
 export const UploadBar = styled.div`
@@ -35,4 +35,13 @@ export const UploadHint = styled.span`
 	font-size: 11px;
 	color: ${gray[400]};
 	text-align: right;
+`;
+
+/** The chosen file, once there is one — stated rather than hinted at. */
+export const FileNameLabel = styled.span`
+	font-size: 11px;
+	font-weight: 600;
+	color: ${gray[700]};
+	text-align: right;
+	${ellipsis}
 `;
