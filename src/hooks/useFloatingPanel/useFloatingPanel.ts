@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { getFocusable } from '@/utils/focusable';
 
 // panelWidth: pass a number to use the standard right-anchor formula (left = r.left + r.width - panelWidth)
 // or pass a function for a custom position calculation
@@ -48,7 +49,24 @@ const computePos = (r: DOMRect, spec: PosSpec, contentHeight: number): Pos => {
 const samePos = (a: Pos | null, b: Pos) =>
   a?.top === b.top && a?.bottom === b.bottom && a?.left === b.left && a?.maxHeight === b.maxHeight;
 
-export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElement>() => {
+export interface FloatingPanelOptions {
+  /**
+   * Move focus into the panel when it opens, and keep Tab inside it until it
+   * closes. For a *menu* — a button that opens a list of things to do next.
+   *
+   * Off by default, and deliberately not the default: a panel is portalled to
+   * the body, so it is no longer next to its trigger in the DOM and Tab would
+   * otherwise walk straight past it. But the same is not true of a combobox,
+   * where the trigger is the field you are typing in (`Select` keeps focus on
+   * its trigger and moves an `aria-activedescendant` instead) or where the panel
+   * focuses its own search box. Taking focus there would break typing.
+   */
+  focusOnOpen?: boolean;
+}
+
+export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElement>({
+  focusOnOpen = false,
+}: FloatingPanelOptions = {}) => {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
   const btnRef = useRef<TTrigger>(null);
@@ -101,9 +119,23 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
     // always run second, after the dialog had already gone. Registered only while
     // open, so a closed panel never swallows anyone else's Escape.
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      e.stopPropagation();
-      setOpen(false);
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setOpen(false);
+        return;
+      }
+      // Tab wraps within the panel rather than leaving it. Only while focus is
+      // actually inside — a panel left open behind a click elsewhere has no
+      // claim on the key. Closing returns focus to the trigger on its own, so
+      // there is no way to be stuck in here.
+      const panel = panelRef.current;
+      if (e.key !== 'Tab' || !focusOnOpen || !panel?.contains(document.activeElement)) return;
+      const items = getFocusable(panel);
+      if (items.length === 0) return;
+      const edge = e.shiftKey ? items[0] : items[items.length - 1];
+      if (document.activeElement !== edge) return;
+      e.preventDefault();
+      (e.shiftKey ? items[items.length - 1] : items[0]).focus();
     };
     window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', onResize);
@@ -113,7 +145,19 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
       window.removeEventListener('resize', onResize);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [open]);
+  }, [open, focusOnOpen]);
+
+  // Focus the first thing in the panel once it is on screen. The panel mounts in
+  // the same commit that sets `open`, so by the time this runs the ref is live;
+  // it is a passive effect rather than a layout one because the placement pass
+  // below still has to correct where the panel sits, and focusing can scroll.
+  useEffect(() => {
+    if (!open || !focusOnOpen) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+    const [first] = getFocusable(panel);
+    (first ?? panel).focus();
+  }, [open, focusOnOpen]);
 
   // The first placement is a guess: the panel doesn't exist yet, so there is no
   // height to fit. This corrects it against the real one before the browser

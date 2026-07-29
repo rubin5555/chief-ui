@@ -10,7 +10,7 @@ import { PANEL_WIDTH } from './SupportMenu.constants';
 // controls/ subcomponents are dumb and receive already-composed callbacks.
 export const SupportMenu = () => {
   const [showPermissions, setShowPermissions] = useState(false);
-  const panel = useFloatingPanel();
+  const panel = useFloatingPanel({ focusOnOpen: true });
   const { trackPanelOpened, trackPermissionsRequested, trackSupportChatOpened } =
     useSupportMenuAnalytics();
 

@@ -29,7 +29,7 @@ const PANEL_WIDTH = 240;
 export const FilterPanel = () => {
   const { statuses } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
-  const panel = useFloatingPanel<HTMLButtonElement>();
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
   const { trackPanelOpened, trackFilterApplied } = useFilterPanelAnalytics();
 
   const applied = statuses ? (statuses.split(',') as SectionStatus[]) : [];

@@ -46,7 +46,7 @@ export const ColorPickerButton = ({
   onChange,
   icon,
 }: ColorPickerButtonProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>();
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
   // The custom picker anchors to the chevron the same way the palette does, but
   // it is a dialog rather than a menu: it closes by answering it, not by clicking
   // away, so it isn't the floating panel's business.

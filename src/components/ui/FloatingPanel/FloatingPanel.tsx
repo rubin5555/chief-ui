@@ -31,6 +31,8 @@ export interface FloatingPanelProps extends ComponentPropsWithRef<'div'> {
  */
 export const FloatingPanel = ({ pos, width, ref, ...rest }: FloatingPanelProps) => (
   <ModalPortal>
-    <FloatingPanelRoot ref={ref} $pos={pos} $width={width} {...rest} />
+    {/* tabIndex -1 so a panel with nothing focusable in it can still take focus
+        itself; ahead of the spread, so a caller can say otherwise. */}
+    <FloatingPanelRoot ref={ref} tabIndex={-1} $pos={pos} $width={width} {...rest} />
   </ModalPortal>
 );

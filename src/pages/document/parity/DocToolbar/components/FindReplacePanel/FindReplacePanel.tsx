@@ -27,7 +27,7 @@ const PANEL_WIDTH = 320;
 // to anything — no search runs, nothing is replaced — which is the single clearest
 // reason the whole ribbon is parked here rather than shipped.
 export const FindReplacePanel = () => {
-  const panel = useFloatingPanel<HTMLButtonElement>();
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
   const [query, setQuery] = useState('');
   const [replacement, setReplacement] = useState('');
 

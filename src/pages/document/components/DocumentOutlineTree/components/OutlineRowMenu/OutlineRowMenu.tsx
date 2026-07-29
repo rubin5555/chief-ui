@@ -31,7 +31,7 @@ export const OutlineRowMenu = ({
   onRename,
   onDelete,
 }: OutlineRowMenuProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>();
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
 
   // The rows above are click-to-expand and drag-to-reorder; without this, opening
   // a topic's menu would also collapse it.

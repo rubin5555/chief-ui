@@ -3,6 +3,7 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { ModalPortal } from '@/components/ui/ModalPortal';
 import { useDialogClose } from '@/hooks/useDialogClose';
+import { getFocusable } from '@/utils/focusable';
 import {
   CloseButton,
   ConfirmHeader,
@@ -17,9 +18,6 @@ import {
   Overlay,
 } from './Modal.styles';
 import { MODAL_IDS } from './Modal.testids';
-
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export interface ModalHandle {
   // Starts the close animation and, once it finishes, calls the `onClose` prop.
@@ -90,11 +88,12 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
     useEffect(() => {
       previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
 
-      const focusable = cardRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      if (focusable && focusable.length > 0) {
+      const card = cardRef.current;
+      const focusable = card ? getFocusable(card) : [];
+      if (focusable.length > 0) {
         focusable[0].focus();
       } else {
-        cardRef.current?.focus();
+        card?.focus();
       }
 
       return () => {
@@ -112,8 +111,9 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
 
     const onTrapFocus = (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key !== 'Tab') return;
-      const focusable = cardRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      if (!focusable || focusable.length === 0) return;
+      const card = cardRef.current;
+      const focusable = card ? getFocusable(card) : [];
+      if (focusable.length === 0) return;
 
       const first = focusable[0];
       const last = focusable[focusable.length - 1];

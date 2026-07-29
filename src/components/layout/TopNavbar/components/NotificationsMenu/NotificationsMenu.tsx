@@ -9,7 +9,7 @@ import { PANEL_WIDTH } from './NotificationsMenu.constants';
 // controls/ subcomponents are dumb and receive already-composed callbacks.
 export const NotificationsMenu = () => {
   const [hasUnread, setHasUnread] = useState(true);
-  const panel = useFloatingPanel();
+  const panel = useFloatingPanel({ focusOnOpen: true });
   const { trackPanelOpened, trackMarkAllRead } = useNotificationsMenuAnalytics();
 
   const onToggle = () => {

@@ -21,7 +21,7 @@ export interface AddMenuProps {
 // room below, so the anchor here just asks for "below the button" and gets the
 // flip, the viewport clamp, outside-click and Escape for free.
 export const AddMenu = ({ onSelect }: AddMenuProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>();
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
 
   const handleToggle = () => panel.toggle((rect) => ({ top: rect.bottom + 6, left: rect.left }));
 

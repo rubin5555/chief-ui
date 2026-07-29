@@ -60,7 +60,7 @@ export const SectionMenu = ({
   onAddFootnote,
   onDelete,
 }: SectionMenuProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>();
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
   const { openDocPermissions } = useDocPermissions();
   const [showClassifiedViewers, setShowClassifiedViewers] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);

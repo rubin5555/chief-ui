@@ -11,7 +11,7 @@ import { FAQ_PANEL_WIDTH, TRAINING_PANEL_WIDTH } from './TrainingMenu.constants'
 // expanded) and receive already-composed callbacks.
 export const TrainingMenu = () => {
   const [showFaq, setShowFaq] = useState(false);
-  const panel = useFloatingPanel();
+  const panel = useFloatingPanel({ focusOnOpen: true });
   const { trackPanelOpened, trackFaqOpened, trackFaqItemToggled, trackCourseOpened } =
     useTrainingMenuAnalytics();
 

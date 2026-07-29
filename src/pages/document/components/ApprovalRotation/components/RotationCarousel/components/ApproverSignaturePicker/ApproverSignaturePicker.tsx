@@ -31,7 +31,7 @@ export const ApproverSignaturePicker = ({
   onPick,
   onClear,
 }: ApproverSignaturePickerProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>();
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
 
   const handleToggle = () => panel.toggle(PANEL_WIDTH);
   const handlePick = (name: string) => () => {

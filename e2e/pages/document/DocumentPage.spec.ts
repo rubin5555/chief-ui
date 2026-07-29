@@ -139,6 +139,24 @@ test('opening a second section chat closes the first', async ({ page }) => {
   await expect(page.getByTestId(SECTION_CHAT_IDS.panel('s1-1'))).toHaveCount(0);
 });
 
+test('a section menu takes focus when it opens and keeps Tab inside it', async ({ page }) => {
+  // The menu is portalled to the body, so it is no longer next to its trigger in
+  // the DOM — without this, Tab would walk straight past it into the page.
+  await page.goto('/document/d1');
+
+  await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
+  await expect(page.getByTestId(SECTION_MENU_IDS.approversAction)).toBeFocused();
+
+  // Tab off the last item wraps back to the first rather than leaving the menu.
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.getByTestId(SECTION_MENU_IDS.deleteAction)).toBeFocused();
+
+  // Escape closes it and hands focus back to the button that opened it.
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId(SECTION_MENU_IDS.panel('s1-1'))).toHaveCount(0);
+  await expect(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1'))).toBeFocused();
+});
+
 test('hiding a section via the section menu replaces its body with a hidden notice', async ({
   page,
 }) => {

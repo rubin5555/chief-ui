@@ -35,7 +35,7 @@ const TODAY: CalendarDate = {
 // — you can page through October without picking anything — so they are two pieces
 // of state here rather than main's six.
 export const InsertDatePanel = ({ onInsert }: InsertDatePanelProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>();
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
   const [view, setView] = useState<CalendarMonth>({ year: TODAY.year, month: TODAY.month });
   const [selected, setSelected] = useState<CalendarDate | null>(null);
   const [time, setTime] = useState(nowAsTime);

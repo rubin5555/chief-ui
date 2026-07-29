@@ -22,7 +22,7 @@ interface Props {
 export const ManualAddPanel = ({ onSave }: Props) => {
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const panel = useFloatingPanel();
+  const panel = useFloatingPanel({ focusOnOpen: true });
 
   const onToggle = (e: React.MouseEvent) => {
     e.preventDefault();

@@ -33,7 +33,7 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
   const [extraMembers, setExtraMembers] = useState<Record<string, PersonMember[]>>({});
   const [addMemberGroupId, setAddMemberGroupId] = useState<string | null>(null);
   const [addMemberPos, setAddMemberPos] = useState<Pos | null>(null);
-  const createPanel = useFloatingPanel();
+  const createPanel = useFloatingPanel({ focusOnOpen: true });
 
   const { data, loading: hamalGroupsLoading } = useHamalGroups();
   const hamalGroups = data ?? HAMAL_GROUPS_FALLBACK.hamalGroups;

@@ -16,7 +16,7 @@ export interface TableSizePickerProps {
 // catches it with a `useEffect` in the page; this calls a prop, because the two
 // ends are eight lines apart and an event bus between them buys nothing.
 export const TableSizePicker = ({ onInsert }: TableSizePickerProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>();
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
   const [hover, setHover] = useState<{ rows: number; cols: number } | null>(null);
 
   const handleToggle = () => {
