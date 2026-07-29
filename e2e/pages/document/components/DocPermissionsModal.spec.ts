@@ -154,3 +154,21 @@ test('the network search asks the directory instead of sifting a copy of it', as
   await expect(page.getByText('מחפש...')).toBeVisible();
   await expect(page.getByRole('button', { name: /אבי כהן/ })).toBeVisible();
 });
+
+test('the search results are mounted outside the column that clips its overflow', async ({
+  page,
+}) => {
+  await openPermissions(page);
+
+  await page.getByTestId(PEOPLE_PICKER_IDS.searchBar).getByRole('textbox').fill('אבי');
+  const result = page.getByRole('button', { name: /אבי כהן/ });
+  await expect(result).toBeVisible();
+
+  // The sources column is `overflow: hidden`, so a long enough list used to lose
+  // its last rows to an ancestor that has nothing to do with it.
+  const clipped = await result.evaluate(
+    (element, id) => Boolean(element.closest(`[data-testid="${id}"]`)),
+    PEOPLE_PICKER_IDS.sourcesPanel,
+  );
+  expect(clipped).toBe(false);
+});
