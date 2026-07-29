@@ -316,11 +316,11 @@ missing:
 - **Document-permission persistence.** `DocPermissionsModal` has main's five levels
   and its wording, and its members are local state — there is no
   document-permissions shape on the API to write them to. Same reason as above.
-- **Excel import.** main offers a sixth source on each permission — an `.xlsx`
-  upload with one column of personal numbers, previewed as a spreadsheet mock-up
-  (`TopNavbar.tsx:761`). The other five sources are live and shared with the
-  mailing-list form; this one has no reader behind it, and a file picker that
-  drops the file on the floor is worse than not offering it yet.
+- **A real `SearchUsers` resolver.** The people picker's network search and the
+  Excel import both ask `src/api/users.ts` rather than filtering a copy of the
+  directory in the browser, but it is still answered by a stub over the mock
+  pool. This is the one item here that is plumbing rather than a design decision:
+  the call sites don't change when a resolver appears.
 
 Everything else main has is either live or in **`parity/`** — the Word-style
 ribbon, the table view, the acceptance dialog nothing in main can open, the
