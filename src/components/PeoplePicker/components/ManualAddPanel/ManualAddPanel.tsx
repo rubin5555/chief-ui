@@ -60,7 +60,7 @@ export const ManualAddPanel = ({ onSave }: Props) => {
       </Button>
 
       {panel.open && panel.pos && (
-        <FloatingPanel ref={panel.panelRef} $pos={panel.pos} $width={280}>
+        <FloatingPanel ref={panel.panelRef} pos={panel.pos} width={280}>
           <PopoverHeader>
             <PopoverTitle>הוספה ידנית</PopoverTitle>
             <PopoverCloseBtn type="button" onClick={panel.close}>

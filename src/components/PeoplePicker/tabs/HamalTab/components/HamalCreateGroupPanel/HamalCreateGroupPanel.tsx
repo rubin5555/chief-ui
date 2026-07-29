@@ -71,7 +71,7 @@ export const HamalCreateGroupPanel = ({ panelRef, pos, onClose }: HamalCreateGro
     .slice(0, 8);
 
   return (
-    <FloatingPanel ref={panelRef} $pos={pos} $width={320}>
+    <FloatingPanel ref={panelRef} pos={pos} width={320}>
       <PopoverHeader>
         <PopoverTitle>קבוצה חדשה</PopoverTitle>
         <PopoverCloseBtn

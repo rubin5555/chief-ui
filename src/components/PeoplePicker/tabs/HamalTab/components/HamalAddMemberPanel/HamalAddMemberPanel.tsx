@@ -65,7 +65,7 @@ export const HamalAddMemberPanel = ({
     .slice(0, 8);
 
   return (
-    <FloatingPanel ref={panelRef} $pos={pos} $width={280}>
+    <FloatingPanel ref={panelRef} pos={pos} width={280}>
       <PopoverHeader>
         <PopoverTitle>הוסף חבר לקבוצה</PopoverTitle>
         <PopoverCloseBtn

@@ -74,8 +74,8 @@ export const OutlineRowMenu = ({
       {panel.open && panel.pos && (
         <FloatingPanel
           ref={panel.panelRef}
-          $pos={panel.pos}
-          $width={PANEL_WIDTH}
+          pos={panel.pos}
+          width={PANEL_WIDTH}
           dir="rtl"
           data-testid={OUTLINE_ROW_MENU_IDS.panel(nodeId)}
         >

@@ -25,7 +25,7 @@ export const SupportOptionsPanel = ({
   onPermissionsClick,
   onChatClick,
 }: SupportOptionsPanelProps) => (
-  <FloatingPanel ref={panelRef} data-testid={SUPPORT_MENU_IDS.panel} $pos={pos} $width={width}>
+  <FloatingPanel ref={panelRef} data-testid={SUPPORT_MENU_IDS.panel} pos={pos} width={width}>
     <PanelBody>
       <PanelOption
         type="button"

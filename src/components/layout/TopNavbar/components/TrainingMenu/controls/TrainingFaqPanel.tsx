@@ -44,12 +44,7 @@ export const TrainingFaqPanel = ({
   };
 
   return (
-    <FloatingPanel
-      ref={panelRef}
-      data-testid={TRAINING_MENU_IDS.faqPanel}
-      $pos={pos}
-      $width={width}
-    >
+    <FloatingPanel ref={panelRef} data-testid={TRAINING_MENU_IDS.faqPanel} pos={pos} width={width}>
       <FaqHeader>
         <FaqBackButton
           type="button"

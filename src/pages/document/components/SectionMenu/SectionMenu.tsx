@@ -144,8 +144,8 @@ export const SectionMenu = ({
       {panel.open && panel.pos && (
         <FloatingPanel
           ref={panel.panelRef}
-          $pos={panel.pos}
-          $width={PANEL_WIDTH}
+          pos={panel.pos}
+          width={PANEL_WIDTH}
           data-testid={SECTION_MENU_IDS.panel(sectionId)}
         >
           <SectionMenuActions

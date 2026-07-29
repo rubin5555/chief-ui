@@ -60,7 +60,7 @@ export const ApproverSignaturePicker = ({
           נקה חתימה
         </SignatureActionBtn>
         {panel.open && panel.pos && (
-          <FloatingPanel ref={panel.panelRef} $pos={panel.pos} $width={PANEL_WIDTH}>
+          <FloatingPanel ref={panel.panelRef} pos={panel.pos} width={PANEL_WIDTH}>
             {options.map((option) => (
               <SignatureActionBtn
                 key={option.id}

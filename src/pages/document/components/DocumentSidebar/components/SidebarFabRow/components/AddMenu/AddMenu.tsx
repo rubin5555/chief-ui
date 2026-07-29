@@ -49,8 +49,8 @@ export const AddMenu = ({ onSelect }: AddMenuProps) => {
       {panel.open && panel.pos && (
         <FloatingPanel
           ref={panel.panelRef}
-          $pos={panel.pos}
-          $width={PANEL_WIDTH}
+          pos={panel.pos}
+          width={PANEL_WIDTH}
           dir="rtl"
           data-testid={ADD_MENU_IDS.panel}
         >

@@ -31,12 +31,7 @@ export const NotificationsPanel = ({
   width,
   onMarkAllRead,
 }: NotificationsPanelProps) => (
-  <FloatingPanel
-    ref={panelRef}
-    data-testid={NOTIFICATIONS_MENU_IDS.panel}
-    $pos={pos}
-    $width={width}
-  >
+  <FloatingPanel ref={panelRef} data-testid={NOTIFICATIONS_MENU_IDS.panel} pos={pos} width={width}>
     <PanelHeader>
       <PanelTitle>התראות</PanelTitle>
       <MarkAllReadBtn

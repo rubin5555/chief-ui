@@ -25,7 +25,7 @@ export const TrainingOptionsPanel = ({
   onGuideClick,
   onCourseClick,
 }: TrainingOptionsPanelProps) => (
-  <FloatingPanel ref={panelRef} data-testid={TRAINING_MENU_IDS.panel} $pos={pos} $width={width}>
+  <FloatingPanel ref={panelRef} data-testid={TRAINING_MENU_IDS.panel} pos={pos} width={width}>
     <PanelBody>
       <PanelOption type="button" data-testid={TRAINING_MENU_IDS.guideOption} onClick={onGuideClick}>
         <BookOpen size={16} color={gray[500]} />

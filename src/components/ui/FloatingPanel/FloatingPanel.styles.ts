@@ -3,7 +3,7 @@ import type { Pos } from '@/hooks/useFloatingPanel';
 import { colors, radii, shadows } from '@/styles/theme';
 import { FLOATING_PANEL_IDS } from './FloatingPanel.testids';
 
-interface FloatingPanelProps {
+interface FloatingPanelRootProps {
   'data-testid'?: string;
   $pos?: Pos | null;
   $width?: number;
@@ -11,10 +11,13 @@ interface FloatingPanelProps {
 
 // $pos/$width land on the style attr (not CSS interpolation) so styled-components
 // doesn't mint a new class for every reposition.
-export const FloatingPanel = styled.div.attrs<FloatingPanelProps>((props) => ({
+//
+// Exported for the dropdowns that extend it with `styled(FloatingPanelRoot)`.
+// Rendering one directly skips the portal — reach for FloatingPanel instead.
+export const FloatingPanelRoot = styled.div.attrs<FloatingPanelRootProps>((props) => ({
   'data-testid': props['data-testid'] ?? FLOATING_PANEL_IDS.root,
   style: { ...props.$pos, width: props.$width },
-}))<FloatingPanelProps>`
+}))<FloatingPanelRootProps>`
   position: fixed;
   background: ${colors.surface};
   border-radius: ${radii['2xl']};

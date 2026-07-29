@@ -162,8 +162,8 @@ export const Select = ({
           id={`${base}-listbox`}
           data-testid={SELECT_IDS.dropdown}
           role="listbox"
-          $pos={dropPos}
-          $width={dropPos.width}
+          pos={dropPos}
+          width={dropPos.width}
         >
           {options.map((opt, index) => (
             <OptionBtn

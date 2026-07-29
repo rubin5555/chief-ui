@@ -101,8 +101,8 @@ export const ColorPickerButton = ({
       {panel.open && panel.pos && (
         <FloatingPanel
           ref={panel.panelRef}
-          $pos={panel.pos}
-          $width={MENU_WIDTH}
+          pos={panel.pos}
+          width={MENU_WIDTH}
           data-testid={DOC_TOOLBAR_IDS.colorMenu(id)}
         >
           <ColorPaletteMenu

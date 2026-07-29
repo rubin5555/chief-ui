@@ -61,8 +61,8 @@ export const FilterPanel = () => {
       {panel.open && panel.pos && (
         <FloatingPanel
           ref={panel.panelRef}
-          $pos={panel.pos}
-          $width={PANEL_WIDTH}
+          pos={panel.pos}
+          width={PANEL_WIDTH}
           dir="rtl"
           data-testid={FILTER_PANEL_IDS.panel}
         >

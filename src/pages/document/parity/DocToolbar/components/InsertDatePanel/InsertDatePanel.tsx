@@ -63,8 +63,8 @@ export const InsertDatePanel = ({ onInsert }: InsertDatePanelProps) => {
       {panel.open && panel.pos && (
         <FloatingPanel
           ref={panel.panelRef}
-          $pos={panel.pos}
-          $width={PANEL_WIDTH}
+          pos={panel.pos}
+          width={PANEL_WIDTH}
           data-testid={DOC_TOOLBAR_IDS.insertDatePanel}
         >
           <CalendarMonthGrid

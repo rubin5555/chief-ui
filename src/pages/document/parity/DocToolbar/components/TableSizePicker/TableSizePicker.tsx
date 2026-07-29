@@ -60,8 +60,8 @@ export const TableSizePicker = ({ onInsert }: TableSizePickerProps) => {
       {panel.open && panel.pos && (
         <FloatingPanel
           ref={panel.panelRef}
-          $pos={panel.pos}
-          $width={PICKER_WIDTH}
+          pos={panel.pos}
+          width={PICKER_WIDTH}
           data-testid={DOC_TOOLBAR_IDS.tableSizePicker}
         >
           <PickerBody>
