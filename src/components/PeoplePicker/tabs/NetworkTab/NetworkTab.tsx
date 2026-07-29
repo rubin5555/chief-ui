@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { NETWORK_PEOPLE_FALLBACK, useNetworkPeople } from '@/api/networkPeople';
+import type { DirectoryUser } from '@/api/users';
+import { useUserSearch } from '@/api/users';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
 import { PersonSearchField } from '../../components/PersonSearchField';
-import type { Member, NetworkFilter, NetworkPerson } from '../../PeoplePicker.constants';
+import type { Member, NetworkFilter } from '../../PeoplePicker.constants';
 import { NETWORK_FILTERS } from '../../PeoplePicker.constants';
 import { PlaceholderText } from '../../PeoplePicker.styles';
 import { SubTabBar, SubTabBtn, SubTabIndicator, TabRoot } from '../tabs.shared.styles';
@@ -26,8 +27,10 @@ export const NetworkTab = ({
   const { search, debouncedSearch, onSearchChange, onClearSearch } = useSearch(300, initialQuery);
   const [resultsOpen, setResultsOpen] = useState(Boolean(initialQuery.trim()));
 
-  const { data } = useNetworkPeople();
-  const peoplePool = data ?? NETWORK_PEOPLE_FALLBACK.networkPeople;
+  // The directory is asked, not fetched and sifted: it is the organisation's
+  // whole staff, and shipping it to the browser to run `.includes` over was only
+  // ever tenable while it was a mock of ten people.
+  const { data, loading } = useUserSearch({ query: debouncedSearch, network });
 
   const onNetworkChange = (val: NetworkFilter) => {
     setNetwork(val);
@@ -43,7 +46,7 @@ export const NetworkTab = ({
   const onFocus = () => setResultsOpen(true);
   const onBlur = () => setTimeout(() => setResultsOpen(false), 150);
 
-  const onSelectPerson = (person: NetworkPerson) => {
+  const onSelectPerson = (person: DirectoryUser) => {
     onAdd({
       id: person.id,
       name: person.name,
@@ -57,12 +60,14 @@ export const NetworkTab = ({
 
   const handleNetworkChange = (val: NetworkFilter) => () => onNetworkChange(val);
 
-  const pool = peoplePool.filter((p) => p.network === network);
-  const results = debouncedSearch.trim()
-    ? pool
-        .filter((p) => p.name.includes(debouncedSearch) || p.idNumber.includes(debouncedSearch))
-        .filter((p) => !addedMemberIds.has(p.id))
-    : [];
+  // Who is already picked is this dialog's business, not the directory's, so
+  // that stays a filter over the answer.
+  const results = (data ?? []).filter((person) => !addedMemberIds.has(person.id));
+
+  // Also "searching" between the last keystroke and the debounce firing, when
+  // the answer on hand belongs to a query the user has already moved past —
+  // otherwise the dropdown says "no results" about something nobody asked.
+  const isSearching = loading || search !== debouncedSearch;
 
   return (
     <TabRoot data-testid={NETWORK_TAB_IDS.root}>
@@ -83,6 +88,7 @@ export const NetworkTab = ({
           onBlur={onBlur}
           resultsOpen={resultsOpen}
           results={results}
+          loading={isSearching}
           onSelectResult={onSelectPerson}
           showManualAdd={network === 'sodi'}
           onManualAdd={onAdd}

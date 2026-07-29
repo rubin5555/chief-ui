@@ -1,5 +1,6 @@
+import type { DirectoryUser } from '@/api/users';
 import { gray } from '@/styles/theme';
-import type { Member, NetworkPerson } from '../../PeoplePicker.constants';
+import type { Member } from '../../PeoplePicker.constants';
 import { ManualAddPanel } from '../ManualAddPanel';
 import { ModalSearchInput } from '../ModalSearchInput';
 import {
@@ -20,8 +21,14 @@ interface PersonSearchFieldProps {
   onFocus: () => void;
   onBlur: () => void;
   resultsOpen: boolean;
-  results: NetworkPerson[];
-  onSelectResult: (person: NetworkPerson) => void;
+  results: DirectoryUser[];
+  /**
+   * Answering takes a round trip now, so there is a moment with neither results
+   * nor an absence of them to report — and saying "no results" during it is
+   * saying it about a question that hasn't been asked yet.
+   */
+  loading?: boolean;
+  onSelectResult: (person: DirectoryUser) => void;
   showManualAdd: boolean;
   onManualAdd?: (member: Member) => void;
   autoFocus?: boolean;
@@ -34,12 +41,13 @@ export const PersonSearchField = ({
   onBlur,
   resultsOpen,
   results,
+  loading = false,
   onSelectResult,
   showManualAdd,
   onManualAdd,
   autoFocus,
 }: PersonSearchFieldProps) => {
-  const handleSelectResult = (person: NetworkPerson) => () => onSelectResult(person);
+  const handleSelectResult = (person: DirectoryUser) => () => onSelectResult(person);
 
   return (
     <SearchFieldWrap>
@@ -57,7 +65,9 @@ export const PersonSearchField = ({
 
       {resultsOpen &&
         query.trim() &&
-        (results.length === 0 ? (
+        (loading ? (
+          <NoResults>מחפש...</NoResults>
+        ) : results.length === 0 ? (
           <NoResults>לא נמצאו תוצאות</NoResults>
         ) : (
           <SearchResultsDropdown>

@@ -1,22 +1,24 @@
 import { gql } from '@apollo/client';
+import type { NetworkFilter, NetworkPerson } from '@/components/PeoplePicker';
 import { useApiQuery } from './hooks';
 import { NETWORK_PEOPLE_FALLBACK } from './networkPeople';
 import { registerStub } from './stubLink';
 
-export interface DirectoryUser {
-  id: string;
-  name: string;
-  idNumber: string;
-  environment: string;
-}
+/**
+ * What the directory answers with. Structurally main's network person — the
+ * same people, reached by asking rather than by filtering a copy.
+ */
+export type DirectoryUser = NetworkPerson;
 
 export const SEARCH_USERS_QUERY = gql`
-  query SearchUsers($idNumbers: [String!]!) {
-    searchUsers(idNumbers: $idNumbers) {
+  query SearchUsers($idNumbers: [String!], $query: String, $network: String) {
+    searchUsers(idNumbers: $idNumbers, query: $query, network: $network) {
       id
       name
       idNumber
       environment
+      network
+      networkLabel
     }
   }
 `;
@@ -25,36 +27,61 @@ export interface SearchUsersResult {
   searchUsers: DirectoryUser[];
 }
 
+export interface UserSearchCriteria {
+  /** Exact personal numbers — what a spreadsheet import has to ask. */
+  idNumbers?: string[];
+  /** Free text over name and personal number — what a search box asks. */
+  query?: string;
+  /** Narrows either question to one network. */
+  network?: NetworkFilter;
+}
+
 /**
- * Look up people by personal number.
+ * Find people in the directory.
  *
- * A search, not a filter: the caller sends the numbers it has and the server
- * answers with the people it knows — so the directory never has to be shipped
- * to the browser to be matched against. Numbers it doesn't answer for belong to
- * nobody, which is a fact the caller reads off the gap rather than being told
- * separately.
+ * One operation for both ways of asking, because they are the same question put
+ * differently and the answer has the same shape either way. Two operations would
+ * have meant two resolvers to keep in step over what a user is.
  *
- * Idle while there is nothing to ask about (`skip`, since the hook still has to
- * be called).
+ * A search, not a filter: the directory stays on the server and only the answer
+ * crosses. Numbers it doesn't answer for belong to nobody, which the caller
+ * reads off the gap rather than being told separately.
+ *
+ * Idle while there is nothing to ask about — `skip`, since the hook still has to
+ * be called. Debouncing is the caller's, so that a search box asks once the
+ * typing settles rather than once per keystroke.
  */
-export const useUserSearch = (idNumbers: string[]) =>
-  useApiQuery(
+export const useUserSearch = ({ idNumbers, query, network }: UserSearchCriteria) => {
+  const numbers = idNumbers ?? [];
+  const text = query?.trim() ?? '';
+  return useApiQuery(
     SEARCH_USERS_QUERY,
     (result: SearchUsersResult) => result.searchUsers,
-    { idNumbers },
-    idNumbers.length === 0,
+    { idNumbers: numbers, query: text, network: network ?? null },
+    numbers.length === 0 && text === '',
+  );
+};
+
+// ponytail: no backend/resolver yet — answered from the same pool the network
+// directory is stubbed with. Delete this registration once SearchUsers has a
+// real resolver; call sites don't change.
+registerStub('SearchUsers', (variables): SearchUsersResult => {
+  const idNumbers = new Set((variables.idNumbers as string[] | undefined) ?? []);
+  const query = ((variables.query as string | undefined) ?? '').trim();
+  const network = variables.network as NetworkFilter | null | undefined;
+
+  const pool = NETWORK_PEOPLE_FALLBACK.networkPeople.filter(
+    (person) => !network || person.network === network,
   );
 
-// ponytail: no backend/resolver yet — answered from the same directory pool
-// NetworkTab filters in the browser today. Delete this registration once
-// SearchUsers has a real resolver; call sites don't change. NetworkTab could
-// move onto this hook too, which is the point of it taking a list rather than
-// being shaped around the spreadsheet that needed it first.
-registerStub('SearchUsers', (variables): SearchUsersResult => {
-  const wanted = new Set((variables.idNumbers as string[] | undefined) ?? []);
+  // Numbers win when both are given: they are an exact question, and a text
+  // match on top of them could only ever remove a row that was asked for by name.
+  if (idNumbers.size > 0) {
+    return { searchUsers: pool.filter((person) => idNumbers.has(person.idNumber)) };
+  }
   return {
-    searchUsers: NETWORK_PEOPLE_FALLBACK.networkPeople
-      .filter((person) => wanted.has(person.idNumber))
-      .map(({ id, name, idNumber, environment }) => ({ id, name, idNumber, environment })),
+    searchUsers: pool.filter(
+      (person) => person.name.includes(query) || person.idNumber.includes(query),
+    ),
   };
 });

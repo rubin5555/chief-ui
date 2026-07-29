@@ -142,3 +142,15 @@ test('uploading a sheet lists who was found, what failed, and grants only what i
   await expect(members).toContainText('שרה לוי');
   await expect(members).not.toContainText('אבי כהן');
 });
+
+test('the network search asks the directory instead of sifting a copy of it', async ({ page }) => {
+  await openPermissions(page);
+
+  await page.getByTestId(PEOPLE_PICKER_IDS.searchBar).getByRole('textbox').fill('אבי');
+
+  // A state that only exists because the answer is a round trip away — before
+  // this the whole directory was in the browser and results were instant.
+  // It must not read "no results" while the question is still in flight.
+  await expect(page.getByText('מחפש...')).toBeVisible();
+  await expect(page.getByRole('button', { name: /אבי כהן/ })).toBeVisible();
+});

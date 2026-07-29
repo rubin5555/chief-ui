@@ -271,8 +271,9 @@ you'd rather they weren't:
   the sheet is read **in the browser** (`src/utils/parseXlsx` — an .xlsx is a ZIP
   of XML, and `DecompressionStream` means that needs no dependency; a parser
   package would have cost a few hundred KB on a bundle already over its limit).
-  Only the numbers leave, to `SearchUsers` (`src/api/users.ts`, stubbed against
-  the same directory `NetworkTab` filters today) — the file itself goes nowhere.
+  Only the numbers leave, to `SearchUsers` (`src/api/users.ts`) — the file
+  itself goes nowhere. `NetworkTab`'s search box asks the same operation, so the
+  directory is no longer fetched whole and sifted in the browser.
   The example is then replaced by two lists: the people the numbers resolved to,
   all ticked, and the cells that resolved to nobody with the reason why, over an
   `הוסף לרשימה` bar that adds the first list on a word from the user. `.xls` is

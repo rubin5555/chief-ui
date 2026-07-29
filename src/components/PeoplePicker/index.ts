@@ -14,6 +14,7 @@ export type {
   ImportTabId,
   Member,
   MirageGroup,
+  NetworkFilter,
   NetworkPerson,
   PersonalList,
   PersonMember,

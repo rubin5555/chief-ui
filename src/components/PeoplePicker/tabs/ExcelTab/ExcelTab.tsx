@@ -52,7 +52,7 @@ export const ExcelTab = ({ addedIdNumbers, onImport }: ExcelTabProps) => {
   const [excludedIdNumbers, setExcludedIdNumbers] = useState<Set<string>>(new Set());
 
   const askedFor = cellValues.filter(isPersonalNumber);
-  const { data, loading } = useUserSearch(askedFor);
+  const { data, loading } = useUserSearch({ idNumbers: askedFor });
   const found = data ?? [];
 
   const foundIdNumbers = new Set(found.map((person) => person.idNumber));
