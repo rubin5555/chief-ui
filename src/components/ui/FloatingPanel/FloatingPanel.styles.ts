@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import type { Pos } from '@/hooks/useFloatingPanel';
+import { subtleScrollbar } from '@/styles/mixins';
 import { colors, radii, shadows } from '@/styles/theme';
 import { FLOATING_PANEL_IDS } from './FloatingPanel.testids';
 
@@ -32,4 +33,7 @@ export const FloatingPanelRoot = styled.div.attrs<FloatingPanelRootProps>((props
      the rounded corners keep their shape. */
   overflow-x: hidden;
   overflow-y: auto;
+  /* The platform scrollbar is 16px wide, which on a 180px menu is a grey gutter
+     down one side, drawn over the 16px rounded corner it sits inside. */
+  ${subtleScrollbar}
 `;

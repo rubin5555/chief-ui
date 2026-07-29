@@ -261,6 +261,13 @@ you'd rather they weren't:
   while its section is scrolled out of view. It is the one popover on this page
   that is not on `useFloatingPanel` — it stays open through clicks in the paper,
   because marking a passage to quote *is* a click in the paper.
+- **The restore dialog previews real content.** It is main's two-column browser
+  (`Edit.tsx:171`) — deleted sections down a 260px list, their text beside it,
+  the confirm button under the list naming what it will do. main's preview reads
+  from a `DELETED_SECTIONS` fixture; this reads the section snapshot the delete
+  actually took, so what you see is what comes back. Sub-sections are listed but
+  not separately selectable: they were deleted with their section and return with
+  it, where main lets you tick a child on its own with nothing behind it.
 - **No in-app link to a document.** main opens one from its catalog page, which
   dev doesn't have; inventing a navbar link would put an element on *every* page
   that main has nowhere. The brand is a real link home, and the document is

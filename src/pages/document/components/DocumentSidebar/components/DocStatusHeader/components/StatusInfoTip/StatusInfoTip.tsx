@@ -1,5 +1,6 @@
 import type { FocusEvent, MouseEvent } from 'react';
 import { useId, useState } from 'react';
+import { ModalPortal } from '@/components/ui/ModalPortal';
 import { Tip, TipBadge } from './StatusInfoTip.styles';
 import { STATUS_INFO_TIP_IDS } from './StatusInfoTip.testids';
 
@@ -47,17 +48,22 @@ export const StatusInfoTip = ({ text }: StatusInfoTipProps) => {
         !
       </TipBadge>
 
+      {/* On the body for the same reason the floating panels are: the tip is
+          placed in viewport coordinates, and any ancestor with a transform or a
+          zoom quietly redefines what those mean. */}
       {anchor && (
-        <Tip
-          id={tipId}
-          role="tooltip"
-          dir="rtl"
-          $top={anchor.top}
-          $right={anchor.right}
-          data-testid={STATUS_INFO_TIP_IDS.tip}
-        >
-          {text}
-        </Tip>
+        <ModalPortal>
+          <Tip
+            id={tipId}
+            role="tooltip"
+            dir="rtl"
+            $top={anchor.top}
+            $right={anchor.right}
+            data-testid={STATUS_INFO_TIP_IDS.tip}
+          >
+            {text}
+          </Tip>
+        </ModalPortal>
       )}
     </>
   );

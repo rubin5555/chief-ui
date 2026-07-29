@@ -4,13 +4,16 @@ import type { Member } from '@/components/PeoplePicker';
 import type { Subject } from '../../../../types';
 import { DOC_PERMISSIONS_MODAL_IDS } from '../../DocPermissionsModal.testids';
 import {
-  AssignedId,
+  AssignedCell,
+  AssignedHeadCell,
   AssignedList,
-  AssignedName,
   AssignedRow,
+  AssignedTable,
   Chevron,
   ClearButton,
+  CountChevron,
   RemoveButton,
+  RemoveCell,
   SectionCount,
   SectionIndex,
   SectionList,
@@ -142,30 +145,49 @@ export const SectionAssignmentTree = ({
                               as="span"
                               role="button"
                               tabIndex={0}
+                              aria-expanded={isListOpen}
                               $open={isListOpen}
                               data-testid={DOC_PERMISSIONS_MODAL_IDS.sectionMemberCount(section.id)}
                               onClick={handleCountClick(section.id)}
                             >
                               {assigned.length}
+                              <CountChevron size={10} $open={isListOpen} aria-hidden="true" />
                             </SectionCount>
                           )}
                         </SectionRow>
 
                         {isListOpen && assigned.length > 0 && (
                           <AssignedList>
-                            {assigned.map((member) => (
-                              <AssignedRow key={member.id}>
-                                <AssignedName>{member.name}</AssignedName>
-                                <AssignedId>{member.idNumber}</AssignedId>
-                                <RemoveButton
-                                  type="button"
-                                  aria-label={`הסרת ${member.name} מהסעיף`}
-                                  onClick={handleUnassign(member.id, section.id)}
-                                >
-                                  <X size={12} />
-                                </RemoveButton>
-                              </AssignedRow>
-                            ))}
+                            <AssignedTable dir="rtl">
+                              <thead>
+                                <tr>
+                                  <AssignedHeadCell scope="col">שם מלא</AssignedHeadCell>
+                                  <AssignedHeadCell scope="col">תעודת זהות</AssignedHeadCell>
+                                  <AssignedHeadCell scope="col">ארגון</AssignedHeadCell>
+                                  <AssignedHeadCell scope="col" $narrow aria-label="הסרה" />
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {assigned.map((member) => (
+                                  <AssignedRow key={member.id}>
+                                    <AssignedCell>{member.name}</AssignedCell>
+                                    <AssignedCell $muted $tabular>
+                                      {member.idNumber}
+                                    </AssignedCell>
+                                    <AssignedCell $muted>{member.environment}</AssignedCell>
+                                    <RemoveCell>
+                                      <RemoveButton
+                                        type="button"
+                                        aria-label={`הסרת ${member.name} מהסעיף`}
+                                        onClick={handleUnassign(member.id, section.id)}
+                                      >
+                                        <X size={12} />
+                                      </RemoveButton>
+                                    </RemoveCell>
+                                  </AssignedRow>
+                                ))}
+                              </tbody>
+                            </AssignedTable>
                           </AssignedList>
                         )}
                       </div>

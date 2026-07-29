@@ -16,7 +16,18 @@ export const useDocumentTrash = (tree: ReturnType<typeof useDocumentTree>) => {
   const [entries, setEntries] = useState<DeletedSectionEntry[]>([]);
 
   const remove = (subjectId: string, section: Section) => {
-    setEntries((prev) => [...prev, { subjectId, section }]);
+    // Numbered now, while the tree still holds it. Once removed there is nothing
+    // left to work the number out from, and "2.3" is how the restore list names
+    // a section people will recognise by where it used to be.
+    const subjectIndex = tree.subjects.findIndex((subject) => subject.id === subjectId);
+    const sectionIndex =
+      tree.subjects[subjectIndex]?.sections.findIndex((candidate) => candidate.id === section.id) ??
+      -1;
+
+    setEntries((prev) => [
+      ...prev,
+      { subjectId, label: `${subjectIndex + 1}.${sectionIndex + 1}`, section },
+    ]);
     tree.removeSection(subjectId, section.id);
   };
 

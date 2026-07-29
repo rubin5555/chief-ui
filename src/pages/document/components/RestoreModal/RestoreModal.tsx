@@ -1,16 +1,14 @@
-import type { FormEvent } from 'react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { useRef, useState } from 'react';
+import type { ModalHandle } from '@/components/ui/Modal';
 import { Modal } from '@/components/ui/Modal';
-import type { Section } from '../../types';
+import { DeletedSectionList } from './components/DeletedSectionList';
+import { DeletedSectionPreview } from './components/DeletedSectionPreview';
 import { useRestoreModalAnalytics } from './RestoreModal.analytics';
-import { Body, EmptyState, List, Row } from './RestoreModal.styles';
+import { RestoreBody } from './RestoreModal.styles';
 import { RESTORE_MODAL_IDS } from './RestoreModal.testids';
+import type { DeletedSectionEntry } from './RestoreModal.types';
 
-export interface DeletedSectionEntry {
-  subjectId: string;
-  section: Section;
-}
+export type { DeletedSectionEntry };
 
 export interface RestoreModalProps {
   deletedSections: DeletedSectionEntry[];
@@ -18,25 +16,32 @@ export interface RestoreModalProps {
   onRestore: (entries: DeletedSectionEntry[]) => void;
 }
 
-const FORM_ID = 'restore-modal-form';
+/** main's dialog is 88vw × 82vh, capped at 1200 (Edit.tsx:193). */
+const WIDTH = 1200;
 
-// Unlike main's RestoreModal (a disconnected DELETED_SECTIONS mock),
-// `deletedSections` here is the real trash DocumentCanvas accumulates from
-// actual delete actions this session (see DocumentCanvas's `handleRemoveSection`)
-// -- restoring genuinely reinserts the section into its original subject via
-// useDocumentTree's `reset`. Sub-section deletes aren't trashed (a scoped
-// simplification; only top-level section deletes are restorable today).
+/**
+ * What was deleted, and what it said — main's two-column restore (Edit.tsx:171):
+ * a list of the deleted sections on one side, their text on the other, and the
+ * confirm button under the list rather than in the dialog's own footer, so the
+ * count it names sits with the things being counted.
+ *
+ * Unlike main's (a disconnected `DELETED_SECTIONS` fixture), `deletedSections` is
+ * the real trash `DocumentCanvas` accumulates from actual deletes this session,
+ * so the preview shows the content that will genuinely come back. Sub-sections
+ * are not separately restorable: they were deleted with their section and return
+ * with it, which is why they are listed but not selectable.
+ */
 export const RestoreModal = ({ deletedSections, onClose, onRestore }: RestoreModalProps) => {
+  const modalRef = useRef<ModalHandle>(null);
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const { trackRestoreSubmitted } = useRestoreModalAnalytics();
 
-  const handleToggle = (sectionId: string) => () =>
+  const onToggle = (sectionId: string) =>
     setCheckedIds((prev) =>
       prev.includes(sectionId) ? prev.filter((id) => id !== sectionId) : [...prev, sectionId],
     );
 
-  const onSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleRestore = () => {
     const restored = deletedSections.filter((entry) => checkedIds.includes(entry.section.id));
     trackRestoreSubmitted(restored.length);
     onRestore(restored);
@@ -44,45 +49,28 @@ export const RestoreModal = ({ deletedSections, onClose, onRestore }: RestoreMod
 
   return (
     <Modal
-      title="שחזור סעיפים שנמחקו"
+      ref={modalRef}
+      title="שחזור סעיפים"
       onClose={onClose}
-      width={420}
+      width={WIDTH}
+      maxWidth="88vw"
+      height="82vh"
+      noBodyPadding
       data-testid={RESTORE_MODAL_IDS.root}
-      footer={
-        <>
-          <Button type="button" variant="secondary" onClick={onClose}>
-            ביטול
-          </Button>
-          <Button
-            type="submit"
-            form={FORM_ID}
-            disabled={checkedIds.length === 0}
-            data-testid={RESTORE_MODAL_IDS.restoreBtn}
-          >
-            שחזור ({checkedIds.length})
-          </Button>
-        </>
-      }
     >
-      <Body id={FORM_ID} onSubmit={onSubmit}>
-        {deletedSections.length === 0 ? (
-          <EmptyState data-testid={RESTORE_MODAL_IDS.emptyState}>אין סעיפים מחוקים</EmptyState>
-        ) : (
-          <List>
-            {deletedSections.map((entry) => (
-              <Row key={entry.section.id} data-testid={RESTORE_MODAL_IDS.row(entry.section.id)}>
-                <input
-                  type="checkbox"
-                  checked={checkedIds.includes(entry.section.id)}
-                  onChange={handleToggle(entry.section.id)}
-                  data-testid={RESTORE_MODAL_IDS.checkbox(entry.section.id)}
-                />
-                {entry.section.title || 'סעיף ללא שם'}
-              </Row>
-            ))}
-          </List>
-        )}
-      </Body>
+      <RestoreBody>
+        <DeletedSectionList
+          entries={deletedSections}
+          checkedIds={checkedIds}
+          onToggle={onToggle}
+          onRestore={handleRestore}
+        />
+        <DeletedSectionPreview
+          entries={deletedSections}
+          checkedIds={checkedIds}
+          onToggle={onToggle}
+        />
+      </RestoreBody>
     </Modal>
   );
 };

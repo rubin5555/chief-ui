@@ -1,7 +1,15 @@
 import { ChevronLeft } from 'lucide-react';
 import styled from 'styled-components';
-import { ellipsis, flexBetween } from '@/styles/mixins';
-import { colors, docColors, gray, radii } from '@/styles/theme';
+import { ellipsis, flexBetween, subtleScrollbar } from '@/styles/mixins';
+import { colors, gray, radii, shadows } from '@/styles/theme';
+
+// main writes this column's tints as 8-digit hex — `#1B3A6B14` on a chosen
+// section, `#1B3A6B1f` on an open count — where the last byte is an alpha out of
+// 255. The percentages below are those bytes converted (20/255, 31/255). They
+// had been `docColors.selectionBg` (`#dbeafe`), a flat pale blue reading as a
+// different colour family from the navy everything else here is tinted with.
+const CHOSEN_TINT = `color-mix(in srgb, ${colors.primary} 7.8%, transparent)`;
+const OPEN_COUNT_TINT = `color-mix(in srgb, ${colors.primary} 12.2%, transparent)`;
 
 export const TreeRoot = styled.div`
   display: flex;
@@ -37,6 +45,7 @@ export const TreeBody = styled.div`
   gap: 2px;
   padding: 12px;
   overflow-y: auto;
+  ${subtleScrollbar}
 `;
 
 export const SubjectRow = styled.button`
@@ -78,6 +87,9 @@ export const SectionList = styled.div`
   padding-right: 30px;
 `;
 
+// A chosen section lifts rather than brightens — main gives it a shadow and
+// takes its hover away, so the row stops behaving like something you are about
+// to pick and starts looking like something already picked.
 export const SectionRow = styled.button<{ $selected: boolean }>`
   display: flex;
   align-items: center;
@@ -87,9 +99,10 @@ export const SectionRow = styled.button<{ $selected: boolean }>`
   border-radius: ${radii.xl};
   text-align: right;
   transition: background-color 0.15s;
-  background: ${({ $selected }) => ($selected ? docColors.selectionBg : 'transparent')};
+  background: ${({ $selected }) => ($selected ? CHOSEN_TINT : 'transparent')};
+  box-shadow: ${({ $selected }) => ($selected ? shadows.sm : 'none')};
   &:hover {
-    background: ${({ $selected }) => ($selected ? docColors.selectionBg : colors.surface)};
+    background: ${({ $selected }) => ($selected ? CHOSEN_TINT : colors.surface)};
   }
 `;
 
@@ -120,8 +133,30 @@ export const SectionCount = styled.span<{ $open: boolean }>`
   border-radius: ${radii.full};
   font-size: 10px;
   font-weight: 600;
-  background: ${({ $open }) => ($open ? docColors.selectionBg : gray[100])};
+  cursor: pointer;
+  transition: background-color 0.15s;
+  background: ${({ $open }) => ($open ? OPEN_COUNT_TINT : gray[100])};
   color: ${({ $open }) => ($open ? colors.primary : gray[400])};
+
+  &:hover {
+    background: ${({ $open }) => ($open ? OPEN_COUNT_TINT : gray[200])};
+  }
+`;
+
+export const CountChevron = styled(ChevronLeft)<{ $open: boolean }>`
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  transform: rotate(${({ $open }) => ($open ? '-90deg' : '0deg')});
+`;
+
+// The people holding the permission on this section, as a table rather than a
+// pair of stacked labels: three facts about each of them line up down the
+// column, which is the difference between reading the list and reading a row.
+export const AssignedTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: right;
 `;
 
 export const AssignedList = styled.div`
@@ -132,36 +167,62 @@ export const AssignedList = styled.div`
   background: ${colors.surface};
 `;
 
-export const AssignedRow = styled.div`
-  ${flexBetween}
-  gap: 8px;
+export const AssignedHeadCell = styled.th<{ $narrow?: boolean }>`
   padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  color: ${gray[400]};
+  text-align: right;
+  background: color-mix(in srgb, ${gray[50]} 80%, transparent);
+  border-bottom: 1px solid ${gray[100]};
+  ${({ $narrow }) => ($narrow ? 'width: 24px;' : '')}
+`;
+
+// The remove button appears on hover, so a list of eight people isn't eight
+// invitations to remove someone. It stays for keyboard users, who have no hover
+// to reveal it with.
+export const AssignedRow = styled.tr`
   border-bottom: 1px solid ${gray[50]};
+  transition: background-color 0.15s;
+
   &:last-child {
     border-bottom: none;
   }
+
+  &:hover {
+    background: color-mix(in srgb, ${gray[50]} 60%, transparent);
+  }
 `;
 
-export const AssignedName = styled.span`
+export const AssignedCell = styled.td<{ $muted?: boolean; $tabular?: boolean }>`
+  padding: 6px 12px;
   font-size: 11px;
-  font-weight: 500;
-  color: ${gray[700]};
+  font-weight: ${({ $muted }) => ($muted ? 400 : 500)};
+  color: ${({ $muted }) => ($muted ? gray[400] : gray[700])};
+  ${({ $tabular }) => ($tabular ? 'font-variant-numeric: tabular-nums;' : '')}
   ${ellipsis}
 `;
 
-export const AssignedId = styled.span`
-  font-size: 11px;
-  color: ${gray[400]};
-  font-variant-numeric: tabular-nums;
+export const RemoveCell = styled.td`
+  width: 24px;
+  padding: 6px 6px 6px 12px;
 `;
 
 export const RemoveButton = styled.button`
   display: flex;
-  flex-shrink: 0;
   padding: 2px;
-  border-radius: ${radii.md};
+  border-radius: ${radii.sm};
   color: ${gray[400]};
+  opacity: 0;
+  transition: opacity 0.15s, background-color 0.15s, color 0.15s;
+
+  ${AssignedRow}:hover &,
+  &:focus-visible {
+    opacity: 1;
+  }
+
   &:hover {
+    background: ${colors.dangerLight};
     color: ${colors.danger};
   }
 `;

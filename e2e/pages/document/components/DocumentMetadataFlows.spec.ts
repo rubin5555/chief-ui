@@ -71,8 +71,19 @@ test('deleting a section trashes it, and restoring brings it back', async ({ pag
   await expect(page.getByTestId(RESTORE_MODAL_IDS.root)).toBeVisible();
   await expect(page.getByTestId(RESTORE_MODAL_IDS.emptyState)).not.toBeVisible();
 
-  await page.getByTestId(RESTORE_MODAL_IDS.checkbox('s1-1')).click();
-  await page.getByTestId(RESTORE_MODAL_IDS.restoreBtn).click();
+  // The preview shows what each deleted section said, so it can be recognised
+  // before it is chosen — and choosing is possible from either column.
+  await expect(page.getByTestId(RESTORE_MODAL_IDS.previewRow('s1-1'))).toBeVisible();
+
+  // Nothing is chosen yet, so the button says what to do rather than offering to
+  // do nothing.
+  const confirm = page.getByTestId(RESTORE_MODAL_IDS.restoreBtn);
+  await expect(confirm).toHaveText('בחר סעיפים');
+  await expect(confirm).toBeDisabled();
+
+  await page.getByTestId(RESTORE_MODAL_IDS.row('s1-1')).click();
+  await expect(confirm).toHaveText('שחזר סעיף');
+  await confirm.click();
 
   await expect(page.getByTestId(RESTORE_MODAL_IDS.root)).not.toBeVisible();
   await expect(sectionBody).toBeVisible();

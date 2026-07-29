@@ -1,5 +1,6 @@
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { useRef, useState } from 'react';
+import { ModalPortal } from '@/components/ui/ModalPortal';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { CalendarPanel } from './components/CalendarPanel';
 import { CalendarIcon, Trigger, TriggerText } from './DateTimePicker.styles';
@@ -132,29 +133,39 @@ export const DateTimePicker = ({
         </TriggerText>
       </Trigger>
 
+      {/* On the body, like every other panel that places itself in viewport
+          coordinates. `position: fixed` means "against the viewport" only while
+          no ancestor has taken over as its containing block, and `transform`,
+          `filter`, `contain` and `zoom` all silently do — this picker's usual
+          home is a field inside a dialog, and a dialog's closing animation is a
+          transform, so the calendar rode the dialog out instead of staying put.
+          Clicks still reach useClickOutside: a portal moves the DOM node, not
+          the React tree events bubble through. */}
       {isOpen && dropPos && (
-        <CalendarPanel
-          dropRef={dropRef}
-          dropPos={dropPos}
-          calendarNav={{
-            viewMonth,
-            days,
-            selectedDate,
-            onPrevMonth,
-            onNextMonth,
-            onSelectDay,
-          }}
-          timeInputs={{
-            hourInput,
-            minuteInput,
-            onHourChange,
-            onHourBlur,
-            onMinuteChange,
-            onMinuteBlur,
-            onTimeInputKeyDown,
-          }}
-          actions={{ onClear, onNow, onApply: closeDropdown }}
-        />
+        <ModalPortal>
+          <CalendarPanel
+            dropRef={dropRef}
+            dropPos={dropPos}
+            calendarNav={{
+              viewMonth,
+              days,
+              selectedDate,
+              onPrevMonth,
+              onNextMonth,
+              onSelectDay,
+            }}
+            timeInputs={{
+              hourInput,
+              minuteInput,
+              onHourChange,
+              onHourBlur,
+              onMinuteChange,
+              onMinuteBlur,
+              onTimeInputKeyDown,
+            }}
+            actions={{ onClear, onNow, onApply: closeDropdown }}
+          />
+        </ModalPortal>
       )}
     </>
   );
