@@ -280,6 +280,16 @@ you'd rather they weren't:
   than no control. Going back to the list clears the picks — main keeps them,
   which arms its import button over sections belonging to a document you are no
   longer looking at.
+- **The sheet holds only the topics in view.** main renders every topic always;
+  `PaperSubjectList` renders them through `@tanstack/react-virtual`, a topic at a
+  time, because a section is expensive — a rich-text editor, a comment thread, an
+  action row — and a long document is mostly sections nobody is looking at. The
+  sheet keeps its full height, so the page-break lines and the scrollbar are
+  unchanged. Two topics never leave: `חתימות`, whose mounting *is* the approval
+  gate, and whichever one holds focus, since unmounting an editor mid-edit throws
+  away the caret and anything typed since the last commit. Printing renders the
+  lot — `beforeprint` flips it out of virtualization inside a `flushSync`, so the
+  printer gets the document rather than the window.
 - **No in-app link to a document.** main opens one from its catalog page, which
   dev doesn't have; inventing a navbar link would put an element on *every* page
   that main has nowhere. The brand is a real link home, and the document is

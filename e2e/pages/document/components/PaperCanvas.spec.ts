@@ -4,6 +4,8 @@ import { ADD_MENU_IDS } from '../../../../src/pages/document/components/Document
 import { EMPHASIS_BLOCK_IDS } from '../../../../src/pages/document/components/EmphasisBlock/EmphasisBlock.testids';
 import { DOC_LETTERHEAD_FIELD_IDS } from '../../../../src/pages/document/components/PaperCanvas/components/DocLetterhead/components/DocLetterheadField/DocLetterheadField.testids';
 import { DOC_LETTERHEAD_IDS } from '../../../../src/pages/document/components/PaperCanvas/components/DocLetterhead/DocLetterhead.testids';
+import { PAPER_SUBJECT_LIST_IDS } from '../../../../src/pages/document/components/PaperCanvas/components/PaperSubjectList/PaperSubjectList.testids';
+import { PAPER_CANVAS_IDS } from '../../../../src/pages/document/components/PaperCanvas/PaperCanvas.testids';
 import { SECTION_BLOCK_IDS } from '../../../../src/pages/document/components/SectionBlock/SectionBlock.testids';
 import { SOURCE_SYSTEMS_MODAL_IDS } from '../../../../src/pages/document/components/SourceSystemsModal/SourceSystemsModal.testids';
 import { SOURCE_SYSTEMS_NOTICE_IDS } from '../../../../src/pages/document/components/SourceSystemsNotice/SourceSystemsNotice.testids';
@@ -99,6 +101,61 @@ test('searching the document outlines the nodes that match', async ({ page }) =>
 
   await page.getByTestId(DOC_ACTION_TOOLBAR_IDS.searchClose).click();
   await expect(section).toHaveCSS('outline-style', 'none');
+});
+
+test('the sheet places its topics in order and stays as long as the whole document', async ({
+  page,
+}) => {
+  await page.goto('/document/d1');
+  await expect(page.getByTestId(PAPER_SUBJECT_LIST_IDS.root)).toBeVisible();
+
+  const geometry = await page.getByTestId(PAPER_SUBJECT_LIST_IDS.root).evaluate((list) => {
+    const rows = [...list.querySelectorAll('[data-index]')];
+    return {
+      listHeight: list.getBoundingClientRect().height,
+      listTop: list.getBoundingClientRect().top,
+      rows: rows.map((row) => ({
+        index: Number(row.getAttribute('data-index')),
+        top: row.getBoundingClientRect().top,
+        bottom: row.getBoundingClientRect().bottom,
+      })),
+    };
+  });
+
+  expect(geometry.rows.length).toBeGreaterThan(0);
+
+  // Rendered in document order, and no two topics on top of each other — the
+  // failure mode of getting the two coordinate spaces (the scroll container's
+  // and the zoomed sheet's) mixed up.
+  const indexes = geometry.rows.map((row) => row.index);
+  expect(indexes).toEqual([...indexes].sort((a, b) => a - b));
+  for (let i = 1; i < geometry.rows.length; i++) {
+    expect(geometry.rows[i].top).toBeGreaterThanOrEqual(geometry.rows[i - 1].bottom - 1);
+  }
+
+  // The spacer reserves every topic's height, rendered or not, so the sheet is
+  // the document's length rather than the window's — which is what the page-break
+  // lines and the scrollbar are drawn against.
+  const lastBottom = Math.max(...geometry.rows.map((row) => row.bottom));
+  expect(geometry.listHeight).toBeGreaterThanOrEqual(lastBottom - geometry.listTop - 1);
+});
+
+test('a topic being edited survives scrolling away from it', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  // A section title in the first topic, focused and half-typed: exactly the
+  // state that unmounting the topic would throw away.
+  const title = page.getByTestId(SUBJECT_BLOCK_IDS.root('s1')).getByRole('textbox', {
+    name: 'שם הסעיף',
+  });
+  await title.first().fill('מטרת המסמך המעודכנת');
+
+  await page
+    .getByTestId(PAPER_CANVAS_IDS.root)
+    .evaluate((scroll) => scroll.scrollTo(0, scroll.scrollHeight));
+
+  await expect(title.first()).toBeFocused();
+  await expect(title.first()).toHaveValue('מטרת המסמך המעודכנת');
 });
 
 test('a bookmarked search arrives with the match already outlined', async ({ page }) => {

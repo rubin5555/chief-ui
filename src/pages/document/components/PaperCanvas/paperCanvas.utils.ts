@@ -42,7 +42,12 @@ export const collectSearchMatchIds = (subjects: Subject[], query: string): Set<s
  * topic read `3.` and `4.`, not `1.3` and `2.1`. A subject can't derive that from
  * its own position, so it is computed once here.
  */
-export const numberSubjects = (subjects: Subject[]) => {
+export interface NumberedSubject {
+  subject: Subject;
+  firstSectionNumber: number;
+}
+
+export const numberSubjects = (subjects: Subject[]): NumberedSubject[] => {
   let nextNumber = 1;
   return subjects.map((subject) => {
     const firstSectionNumber = nextNumber;
