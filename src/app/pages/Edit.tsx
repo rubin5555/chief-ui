@@ -3101,12 +3101,6 @@ export function ShareDocModal({ docName, onClose, onSend, title }: { docName: st
 
         {/* Body */}
         <div className="flex flex-1 overflow-hidden" style={{ minHeight: 260 }}>
-          {/* Logo column */}
-          <div className="flex flex-col items-center justify-center px-5 py-4 flex-shrink-0" style={{ width: 110 }}>
-            <img src="/Chief.svg" alt="לוגו המערכת" style={{ width: 72, height: 72, objectFit: 'contain' }} />
-          </div>
-          {/* Vertical separator */}
-          <div className="w-px self-stretch bg-gray-200 flex-shrink-0" />
           {/* Email text */}
           <textarea
             value={body}
@@ -3115,6 +3109,14 @@ export function ShareDocModal({ docName, onClose, onSend, title }: { docName: st
             className="flex-1 px-5 py-4 text-sm text-gray-700 resize-none outline-none leading-relaxed"
             style={{ fontFamily: 'inherit' }}
           />
+        </div>
+
+        {/* Note */}
+        <div className="px-5 py-3 border-t border-gray-100 flex-shrink-0"
+          style={{ background: '#F4F6FB' }}>
+          <p className="text-xs text-gray-600 leading-relaxed" dir="rtl">
+            <span className="font-semibold">לתשומת לבך:</span> בפקודה זו מכותבים משתמשים מחוץ לרשת TS, יישלח להם אוטומטית PDF של הפקודה בOutlook.
+          </p>
         </div>
 
         {/* Footer */}
