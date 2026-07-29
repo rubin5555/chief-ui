@@ -115,6 +115,11 @@ export const shadows = {
   // behind it — at `md`'s spread it reads as a stain on the page rather than a
   // card above it.
   bubble: '0 4px 16px rgba(0,0,0,0.12)',
+  // A hairline ring plus a shallow drop, for a card that sits *on* a surface
+  // rather than floating above it — main's document-picker table (Edit.tsx:1911).
+  // `md` carries no ring, so a white card on a white dialog loses its edge
+  // entirely at this elevation.
+  card: '0 1px 6px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)',
 } as const;
 
 export const radii = {

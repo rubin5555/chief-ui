@@ -1,93 +1,48 @@
 import styled from 'styled-components';
-import { colors, gray, radii } from '@/styles/theme';
+import { gray } from '@/styles/theme';
 
-export const Layout = styled.div`
+/** main splits the dialog in two once a document is chosen (Edit.tsx:1951). */
+export const SplitBody = styled.div`
 	display: flex;
-	gap: 16px;
-	height: 360px;
+	flex: 1;
+	overflow: hidden;
 `;
 
-export const DocListColumn = styled.div`
-	width: 240px;
-	flex-shrink: 0;
+/**
+ * Replaces the dialog's title while a document is open, because the way back to
+ * the list is the thing you need there — the title only tells you what you
+ * already know you are doing.
+ */
+export const BackNav = styled.div`
 	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	border-left: 1px solid ${colors.border};
-	padding-left: 16px;
+	align-items: center;
+	gap: 12px;
 `;
 
-export const DocRow = styled.button<{ $active: boolean }>`
+export const BackButton = styled.button`
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	padding: 8px 10px;
-	border: none;
-	border-radius: ${radii.lg};
-	text-align: right;
-	cursor: pointer;
-	background-color: ${(props) => (props.$active ? gray[100] : 'transparent')};
+	align-items: center;
+	gap: 6px;
+	font-size: 14px;
+	color: ${gray[500]};
+	transition: color 0.15s;
 
 	&:hover {
-		background-color: ${gray[50]};
+		color: ${gray[800]};
 	}
 `;
 
-export const DocName = styled.span`
-	font-size: 13px;
+export const BackDivider = styled.span`
+	color: ${gray[300]};
+`;
+
+export const OpenDocName = styled.span`
+	font-size: 14px;
 	font-weight: 600;
 	color: ${gray[800]};
 `;
 
-export const DocMeta = styled.span`
-	font-size: 11px;
-	color: ${gray[500]};
-`;
-
-export const PreviewColumn = styled.div`
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	overflow-y: auto;
-`;
-
-export const SectionRow = styled.label`
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 10px;
-	border-radius: ${radii.lg};
-	font-size: 13px;
-	color: ${gray[700]};
-	cursor: pointer;
-
-	&:hover {
-		background-color: ${gray[50]};
-	}
-`;
-
-export const SectionLabel = styled.span`
-	font-size: 11px;
-	font-weight: 700;
+export const OpenDocMeta = styled.span`
+	font-size: 12px;
 	color: ${gray[400]};
-	flex-shrink: 0;
-`;
-
-export const SectionTitle = styled.span`
-	flex: 1;
-	min-width: 0;
-`;
-
-export const EmptyState = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: 100%;
-	color: ${gray[400]};
-	font-size: 13px;
-`;
-
-export const Body = styled.form`
-	display: contents;
 `;

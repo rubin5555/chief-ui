@@ -8,11 +8,13 @@ const ACTIONS = {
 } as const;
 
 export const useImportDocModalAnalytics = () => {
-  const trackSourcePicked = (docName: string) => {
+  // The document's id, not its name: which source people actually reach for is
+  // the answerable question, and an id answers it without carrying a title.
+  const trackSourcePicked = (docId: string) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,
       action: ACTIONS.SOURCE_PICKED,
-      label: docName,
+      label: docId,
     });
   };
 

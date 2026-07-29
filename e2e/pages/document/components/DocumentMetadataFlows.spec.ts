@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
+import { SEARCH_BAR_IDS } from '../../../../src/components/ui/SearchBar/SearchBar.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
 import { ADD_MENU_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/components/AddMenu/AddMenu.testids';
 import { SIDEBAR_FAB_ROW_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/SidebarFabRow.testids';
@@ -40,10 +41,14 @@ test('importing sections from another document adds them to the tree', async ({ 
   await page.getByTestId(ADD_MENU_IDS.action('import')).click();
   await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.root)).toBeVisible();
 
+  // Opening a document swaps the whole dialog for its contents, so the way back
+  // to the list has to be there before anything else is.
   await page.getByTestId(IMPORT_DOC_MODAL_IDS.docRow('id1')).click();
-  // Checkboxes are keyed by section id, and the offered sections are main's
+  await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.back)).toBeVisible();
+
+  // Rows are keyed by section id, and the offered sections are main's
   // IMPORT_DOC_SECTIONS (is1..is5) — so `is1` is "מטרה ורקע".
-  await page.getByTestId(IMPORT_DOC_MODAL_IDS.sectionCheckbox('is1')).click();
+  await page.getByTestId(IMPORT_DOC_MODAL_IDS.sectionRow('is1')).click();
   await page.getByTestId(IMPORT_DOC_MODAL_IDS.importBtn).click();
 
   await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.root)).not.toBeVisible();
@@ -55,6 +60,40 @@ test('importing sections from another document adds them to the tree', async ({ 
     .getByTestId(SUBJECT_BLOCK_IDS.root('s1'))
     .getByRole('textbox', { name: 'שם הסעיף' });
   await expect(s1SectionTitles.last()).toHaveValue('מטרה ורקע');
+});
+
+test('the source picker searches its list and takes a pick from either column', async ({
+  page,
+}) => {
+  await page.goto('/document/d1');
+  await page.getByTestId(ADD_MENU_IDS.trigger).click();
+  await page.getByTestId(ADD_MENU_IDS.action('import')).click();
+
+  const search = page.getByTestId(SEARCH_BAR_IDS.input);
+
+  // Searching narrows the table to what matches...
+  await search.fill('רכש');
+  await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.docRow('id4'))).toBeVisible();
+  await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.docRow('id1'))).toHaveCount(0);
+
+  // ...and a term nothing matches says so, rather than leaving a blank table to
+  // be read as a loading failure.
+  await search.fill('אין כזה מסמך');
+  await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.noDocs)).toBeVisible();
+
+  await search.fill('');
+  await page.getByTestId(IMPORT_DOC_MODAL_IDS.docRow('id1')).click();
+
+  // The rendered document is the second way to choose: ticking a heading there
+  // arms the import button over in the picker column.
+  await page.getByTestId(IMPORT_DOC_MODAL_IDS.previewRow('is2')).click();
+  await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.importBtn)).toHaveText('ייבא סעיף');
+
+  // Going back drops the picks — another document has other sections, so
+  // carrying a selection across would arm the button over the wrong ones.
+  await page.getByTestId(IMPORT_DOC_MODAL_IDS.back).click();
+  await page.getByTestId(IMPORT_DOC_MODAL_IDS.docRow('id2')).click();
+  await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.importBtn)).toHaveText('בחר סעיפים');
 });
 
 test('deleting a section trashes it, and restoring brings it back', async ({ page }) => {

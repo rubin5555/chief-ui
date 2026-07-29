@@ -268,6 +268,18 @@ you'd rather they weren't:
   actually took, so what you see is what comes back. Sub-sections are listed but
   not separately selectable: they were deleted with their section and return with
   it, where main lets you tick a child on its own with nothing behind it.
+- **The source picker is main's two-step browser, on this app's table and search.**
+  `ImportDocModal` is main's full-width dialog (`Edit.tsx:1816`): tabs, a search,
+  and a table of documents, then — once one is opened — its sections down a 260px
+  picker beside the document rendered in full, selectable from either column.
+  Three details are the design system's rather than main's: the table is
+  `ui/GridTable`, so its header is `gray[200]` where main writes `#EBEBEB` and its
+  rows carry the app's selected-row rule; the search is `ui/SearchBar` rather than
+  main's pill; and main's `SlidersHorizontal` button beside that pill is dropped,
+  because it has no `onClick` in main and a control that does nothing is worse
+  than no control. Going back to the list clears the picks — main keeps them,
+  which arms its import button over sections belonging to a document you are no
+  longer looking at.
 - **No in-app link to a document.** main opens one from its catalog page, which
   dev doesn't have; inventing a navbar link would put an element on *every* page
   that main has nowhere. The brand is a real link home, and the document is

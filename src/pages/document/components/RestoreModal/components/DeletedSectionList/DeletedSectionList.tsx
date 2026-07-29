@@ -1,6 +1,6 @@
+import { SelectionMarker } from '../../../SelectionMarker';
 import { RESTORE_MODAL_IDS } from '../../RestoreModal.testids';
 import type { DeletedSectionEntry } from '../../RestoreModal.types';
-import { SelectionCircle } from '../SelectionCircle';
 import {
   ListFooter,
   ListHeader,
@@ -57,7 +57,7 @@ export const DeletedSectionList = ({
                 data-testid={RESTORE_MODAL_IDS.row(section.id)}
                 onClick={handleToggle(section.id)}
               >
-                <SelectionCircle checked={isChecked} />
+                <SelectionMarker checked={isChecked} />
                 <RowLabel>
                   <RowIndex $strong>{label}</RowIndex>
                   <RowTitle $checked={isChecked}>{section.title || 'סעיף ללא שם'}</RowTitle>
@@ -66,7 +66,7 @@ export const DeletedSectionList = ({
 
               {section.subSections.map((subSection, index) => (
                 <SubSectionRow key={subSection.id} $checked={isChecked}>
-                  <SelectionCircle checked={isChecked} />
+                  <SelectionMarker checked={isChecked} />
                   <RowLabel>
                     <RowIndex>
                       {label}.{index + 1}

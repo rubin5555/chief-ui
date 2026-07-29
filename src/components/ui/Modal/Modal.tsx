@@ -43,6 +43,12 @@ interface ModalProps {
   // Everything else — focus trap, Escape, overlay click, animation — is
   // unchanged, and 'default' is untouched.
   variant?: 'default' | 'confirm';
+  // Rendered in the header where the title text would go. For a dialog that
+  // drills into something and needs a way back out — without it, the only exit
+  // from the inner view is the X, which closes the whole dialog. `title` still
+  // names the dialog for assistive tech, so the accessible name doesn't change
+  // as the user moves around inside it.
+  headerSlot?: ReactNode;
   footer?: ReactNode;
   footerAlign?: 'end' | 'between';
   width?: number;
@@ -62,6 +68,7 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
       onClose,
       onRequestClose,
       variant = 'default',
+      headerSlot,
       footer,
       footerAlign = 'end',
       width,
@@ -154,7 +161,7 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
               <ModalHeader data-testid={`${base}-header`}>
                 <ModalHeaderLeft>
                   {icon && <ModalHeaderIcon>{icon}</ModalHeaderIcon>}
-                  <ModalTitle>{title}</ModalTitle>
+                  {headerSlot ?? <ModalTitle>{title}</ModalTitle>}
                 </ModalHeaderLeft>
                 <CloseButton data-testid={`${base}-close`} onClick={onChromeClose}>
                   <X size={20} />

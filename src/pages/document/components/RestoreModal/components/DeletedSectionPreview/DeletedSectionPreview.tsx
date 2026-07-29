@@ -1,6 +1,6 @@
+import { SelectionMarker } from '../../../SelectionMarker';
 import { RESTORE_MODAL_IDS } from '../../RestoreModal.testids';
 import type { DeletedSectionEntry } from '../../RestoreModal.types';
-import { SelectionCircle } from '../SelectionCircle';
 import {
   EmptyState,
   HeadingIndex,
@@ -67,7 +67,7 @@ export const DeletedSectionPreview = ({
               <HeadingTitle>{section.title || 'סעיף ללא שם'}</HeadingTitle>
               <HeadingRule aria-hidden="true" />
               <HeadingMarker $checked={isChecked}>
-                <SelectionCircle checked={isChecked} />
+                <SelectionMarker checked={isChecked} />
               </HeadingMarker>
             </HeadingRow>
 
