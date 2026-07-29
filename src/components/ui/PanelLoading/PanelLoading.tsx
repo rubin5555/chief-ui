@@ -1,7 +1,7 @@
 import { ItemListCard, ItemListScroll } from '@/components/ui/ItemList/ItemList.styles';
+import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import {
   LoadingRoot,
-  SkeletonBar,
   SkeletonRow,
   SkeletonRowActions,
   SkeletonRowLeft,

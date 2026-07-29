@@ -4,6 +4,7 @@ import { DOC_PERMISSIONS_MODAL_IDS } from '../../../src/pages/document/component
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
 import { OUTLINE_SECTION_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSectionRow/OutlineSectionRow.testids';
 import { OUTLINE_SUBJECT_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubjectRow/OutlineSubjectRow.testids';
+import { DOCUMENT_PAGE_SKELETON_IDS } from '../../../src/pages/document/components/DocumentPageSkeleton/DocumentPageSkeleton.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
 import { PAPER_CANVAS_IDS } from '../../../src/pages/document/components/PaperCanvas/PaperCanvas.testids';
 import { SECTION_CHAT_IDS } from '../../../src/pages/document/components/SectionChat/SectionChat.testids';
@@ -241,4 +242,25 @@ test('a section menu that fits does not scroll', async ({ page }) => {
     .getByTestId(SECTION_MENU_IDS.panel('s1-1'))
     .evaluate((panel) => panel.scrollHeight - panel.clientHeight);
   expect(overflow).toBe(0);
+});
+
+test('the loading state is shaped like the document, not like a list panel', async ({ page }) => {
+  // Visible at all only because stubLink answers on a deliberate half-second
+  // delay (src/api/stubLink.ts). There is no request to stall — the stub
+  // resolves in memory, so page.route would never see it.
+  await page.goto('/document/d1');
+
+  const skeleton = page.getByTestId(DOCUMENT_PAGE_SKELETON_IDS.root);
+  await expect(skeleton).toBeVisible();
+
+  // The sheet it holds the place of is the real one's width, so the page does
+  // not rearrange itself when the document lands.
+  const paper = page.getByTestId(DOCUMENT_PAGE_SKELETON_IDS.paper);
+  const skeletonWidth = (await paper.boundingBox())?.width;
+
+  await expect(page.getByTestId(PAPER_CANVAS_IDS.paper)).toBeVisible();
+  await expect(skeleton).toHaveCount(0);
+  const loadedWidth = (await page.getByTestId(PAPER_CANVAS_IDS.paper).boundingBox())?.width;
+
+  expect(skeletonWidth).toBe(loadedWidth);
 });

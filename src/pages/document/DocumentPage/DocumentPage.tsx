@@ -1,8 +1,8 @@
 import { getRouteApi } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useDocument } from '@/api/docs';
-import { PanelLoading } from '@/components/ui/PanelLoading';
 import { DocumentCanvas } from '../components/DocumentCanvas';
+import { DocumentPageSkeleton } from '../components/DocumentPageSkeleton';
 import { useDocumentPageAnalytics } from './DocumentPage.analytics';
 import { PageRoot } from './DocumentPage.styles';
 import { DOCUMENT_PAGE_IDS } from './DocumentPage.testids';
@@ -29,7 +29,7 @@ export const DocumentPage = () => {
 
   return (
     <PageRoot dir="rtl" data-testid={DOCUMENT_PAGE_IDS.root}>
-      {loading || !data ? <PanelLoading /> : <DocumentCanvas data={data} />}
+      {loading || !data ? <DocumentPageSkeleton /> : <DocumentCanvas data={data} />}
     </PageRoot>
   );
 };

@@ -35,6 +35,21 @@ export const BarRow = styled.div`
 `;
 
 /**
+ * The row below those bars: sidebar plus editor, filling what is left of the
+ * viewport. `overflow: hidden` is what confines scrolling to the editor column —
+ * without it the whole page scrolls and the sticky toolbar has nothing to stick
+ * to.
+ *
+ * The sidebar is this row's *first* child and the page is `dir="rtl"`, which is
+ * what puts it on the right.
+ */
+export const BodyRow = styled.div`
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+`;
+
+/**
  * A topic block inside the paper (main's Edit.tsx:4219). The generous 10mm gap
  * below is what separates topics on a printed page — sections inside one topic
  * sit half that far apart.

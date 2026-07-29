@@ -8,7 +8,7 @@ import { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import type { DocumentDto } from '../../types';
 import { ComparisonBar } from '../ComparisonBar';
-import { BarRow } from '../components.shared.styles';
+import { BarRow, BodyRow } from '../components.shared.styles';
 import { DocPermissionsProvider } from '../DocPermissionsModal';
 import { DocumentActionsSlot } from '../DocumentActionsSlot';
 import { DocumentMetadataPill } from '../DocumentMetadataPill';
@@ -16,7 +16,6 @@ import { DocumentSidebar } from '../DocumentSidebar';
 import { PaperCanvas } from '../PaperCanvas';
 import { SignatureGateProvider } from '../SignaturesSection';
 import { SourceSystemsNotice } from '../SourceSystemsNotice';
-import { BodyRow } from './DocumentCanvas.styles';
 import { DOCUMENT_CANVAS_IDS } from './DocumentCanvas.testids';
 
 export interface DocumentCanvasProps {
