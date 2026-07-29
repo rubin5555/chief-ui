@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import { colors, gray, radii, transitions } from '@/styles/theme';
-import { SECTION_LIST_INDENT } from '../../DocumentOutlineTree.constants';
 import {
   DragHandle,
   InlineRenameInput,
@@ -55,12 +54,4 @@ export const SubjectRenameInput = styled(InlineRenameInput)`
   font-size: 14px;
   font-weight: 600;
   color: ${gray[800]};
-`;
-
-export const SectionList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 4px;
-  padding-inline-start: ${SECTION_LIST_INDENT}px;
 `;

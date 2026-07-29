@@ -1,20 +1,16 @@
 import { GripHorizontal } from 'lucide-react';
 import type { FocusEvent, KeyboardEvent } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
-import { HE_ALPHA, SECTION_STATUS_COLOR } from '../../../../document.constants';
+import { SECTION_STATUS_COLOR } from '../../../../document.constants';
 import type { Section, SectionMetaMap } from '../../../../types';
 import { DragHandle, DropZone, StatusDot } from '../../DocumentOutlineTree.shared.styles';
 import type { DropEdge, OutlineDragApi, OutlineEditingApi } from '../../DocumentOutlineTree.types';
-import { getDropEdge } from '../../documentOutlineTree.utils';
-import { AddNodeLink } from '../AddNodeLink';
 import { OutlineRowMenu } from '../OutlineRowMenu';
-import { OutlineSubSectionRow } from '../OutlineSubSectionRow';
 import {
   SectionIndex,
   SectionRenameInput,
   SectionRow,
   SectionTitle,
-  SubSectionList,
 } from './OutlineSectionRow.styles';
 import { OUTLINE_SECTION_ROW_IDS } from './OutlineSectionRow.testids';
 
@@ -36,11 +32,10 @@ export interface OutlineSectionRowProps {
   isDistributed: boolean;
 }
 
-// A section in the outline, plus everything under it: its sub-sections and the
-// link that adds another one.
-//
-// Sub-sections are always listed when the topic is open. main renders them the
-// same way — there is no second collapse level, only the topic's.
+// A section's own row. Its sub-sections follow it as rows of their own — the
+// outline is flattened so it can be virtualized — and there is no second
+// collapse level to hide them behind, only the topic's, which is main's design
+// too.
 export const OutlineSectionRow = ({
   subjectId,
   section,
@@ -55,7 +50,6 @@ export const OutlineSectionRow = ({
   isDistributed,
 }: OutlineSectionRowProps) => {
   const isRenaming = editing.renamingId === section.id;
-  const subSectionIds = section.subSections.map((subSection) => subSection.id);
 
   const commitRename = (event: FocusEvent<HTMLInputElement>) => {
     tree.updateSectionTitle(subjectId, section.id, event.target.value || section.title);
@@ -73,18 +67,6 @@ export const OutlineSectionRow = ({
       level: 'section',
       onConfirm: () => tree.removeSection(subjectId, section.id),
     });
-
-  // main names a new sub-section for the letter it will render under
-  // (Edit.tsx:4048), so it reads as `תת סעיף ג׳` from the moment it exists rather
-  // than as an empty row waiting to be filled in.
-  const handleAddSubSection = () => {
-    tree.addSubSection(
-      subjectId,
-      section.id,
-      `תת סעיף ${HE_ALPHA[section.subSections.length] ?? section.subSections.length + 1}`,
-    );
-    editing.onNodeAdded('subSection');
-  };
 
   const status = sectionMeta[section.id]?.status ?? 'idle';
 
@@ -138,28 +120,6 @@ export const OutlineSectionRow = ({
           />
         )}
       </SectionRow>
-
-      <SubSectionList>
-        {section.subSections.map((subSection, subIndex) => (
-          <OutlineSubSectionRow
-            key={subSection.id}
-            subjectId={subjectId}
-            sectionId={section.id}
-            subSection={subSection}
-            index={subIndex}
-            dropEdge={getDropEdge(subSectionIds, drag.subSections, subSection.id)}
-            isDragging={drag.subSections.draggedId === subSection.id}
-            tree={tree}
-            editing={editing}
-            drag={drag}
-            readOnly={readOnly}
-          />
-        ))}
-      </SubSectionList>
-
-      {!readOnly && (
-        <AddNodeLink variant="subSection" parentId={section.id} onClick={handleAddSubSection} />
-      )}
     </DropZone>
   );
 };

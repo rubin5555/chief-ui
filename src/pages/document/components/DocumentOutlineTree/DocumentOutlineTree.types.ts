@@ -1,4 +1,5 @@
 import type { useDragReorder } from '@/hooks/useDragReorder';
+import type { Section, Subject, SubSection } from '../../types';
 
 /**
  * Which edge of a hovered row a drop would land against, or `null` when this row
@@ -6,6 +7,35 @@ import type { useDragReorder } from '@/hooks/useDragReorder';
  * styles can both name it without importing each other.
  */
 export type DropEdge = 'top' | 'bottom' | null;
+
+/**
+ * One line of the outline, whatever level it belongs to — see `flattenOutline`.
+ *
+ * `siblingIds` rides along because the drop rule is worked out from a node's
+ * position among its own siblings, which a flattened row can no longer see.
+ */
+export type OutlineRow =
+  | { kind: 'subject'; key: string; subject: Subject }
+  | {
+      kind: 'section';
+      key: string;
+      subjectId: string;
+      section: Section;
+      index: number;
+      siblingIds: string[];
+    }
+  | {
+      kind: 'subSection';
+      key: string;
+      subjectId: string;
+      sectionId: string;
+      subSection: SubSection;
+      /** Position within its section, which is what turns into a Hebrew letter. */
+      index: number;
+      siblingIds: string[];
+    }
+  | { kind: 'addSection'; key: string; subjectId: string }
+  | { kind: 'addSubSection'; key: string; subjectId: string; sectionId: string };
 
 /**
  * The rename/delete state of the whole tree, passed down whole.

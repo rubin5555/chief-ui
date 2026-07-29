@@ -41,9 +41,3 @@ export const SectionRenameInput = styled(InlineRenameInput)`
   font-size: 12px;
   color: ${gray[800]};
 `;
-
-export const SubSectionList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;

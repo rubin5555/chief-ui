@@ -1,4 +1,51 @@
 import type { Locator, Page } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { DOCUMENT_OUTLINE_TREE_IDS } from '../../src/pages/document/components/DocumentOutlineTree/DocumentOutlineTree.testids';
+
+/**
+ * Scroll the sidebar outline until a row exists, then leave it there.
+ *
+ * The outline is virtualized: a row that hasn't been scrolled to is not in the
+ * DOM at all, so a locator for one can't simply be awaited. This walks the
+ * column half a viewport at a time, the way a reader would, and stops as soon as
+ * the row is mounted. Polling rather than one big scroll because the rendered
+ * window only widens after React has responded to the scroll.
+ */
+export const revealOutlineRow = async (page: Page, rowTestId: string) => {
+  const tree = page.getByTestId(DOCUMENT_OUTLINE_TREE_IDS.root);
+  const row = page.getByTestId(rowTestId);
+
+  await expect
+    .poll(async () => {
+      if (await row.count()) return true;
+      await tree.evaluate((el) => {
+        el.scrollTop = Math.min(el.scrollTop + el.clientHeight / 2, el.scrollHeight);
+      });
+      return false;
+    })
+    .toBe(true);
+};
+
+/**
+ * The foot of the virtualized outline, where a newly added topic lands.
+ *
+ * One scroll isn't enough: the column's height is an estimate until its rows are
+ * measured, so landing at what was the bottom reveals rows that make it taller.
+ * Repeats until scrolling to the bottom stops moving anything.
+ */
+export const scrollOutlineToEnd = async (page: Page) => {
+  const tree = page.getByTestId(DOCUMENT_OUTLINE_TREE_IDS.root);
+
+  await expect
+    .poll(async () =>
+      tree.evaluate((el) => {
+        const before = el.scrollTop;
+        el.scrollTop = el.scrollHeight;
+        return el.scrollTop === before;
+      }),
+    )
+    .toBe(true);
+};
 
 /**
  * Click a control after centring it in the viewport and letting the scroll settle.

@@ -1,5 +1,6 @@
 import type { useDragReorder } from '@/hooks/useDragReorder';
-import type { DropEdge } from './DocumentOutlineTree.types';
+import type { Section, Subject, SubSection } from '../../types';
+import type { DropEdge, OutlineRow } from './DocumentOutlineTree.types';
 
 /**
  * Which edge of `id`'s row should show the drop rule.
@@ -21,4 +22,74 @@ export const getDropEdge = (
   // promise nothing.
   if (from === -1 || to === -1) return null;
   return from > to ? 'top' : 'bottom';
+};
+
+/**
+ * The outline as one list of rows, deepest level and all.
+ *
+ * The tree is drawn as a flat list because that is what can be virtualized: a
+ * row list has one scroll offset per row, where a nest of three levels has a
+ * position that only exists relative to whatever is above it. Nesting survives
+ * as an indent on the row rather than as a container around it.
+ *
+ * Order matches what the nested version rendered: a topic, then each of its
+ * sections with its sub-sections and its `+ תת סעיף` link, then the topic's
+ * `+ הוספת סעיף`. A collapsed topic contributes its own row and nothing else,
+ * which is what makes collapsing cheap — the rows simply aren't there.
+ */
+export const flattenOutline = (
+  subjects: Subject[],
+  isExpanded: (subjectId: string) => boolean,
+  readOnly: boolean,
+): OutlineRow[] => {
+  const rows: OutlineRow[] = [];
+
+  const pushSection = (subject: Subject, section: Section, index: number, siblingIds: string[]) => {
+    rows.push({
+      kind: 'section',
+      key: section.id,
+      subjectId: subject.id,
+      section,
+      index,
+      siblingIds,
+    });
+
+    const subSiblingIds = section.subSections.map((subSection: SubSection) => subSection.id);
+    section.subSections.forEach((subSection, subIndex) => {
+      rows.push({
+        kind: 'subSection',
+        key: subSection.id,
+        subjectId: subject.id,
+        sectionId: section.id,
+        subSection,
+        index: subIndex,
+        siblingIds: subSiblingIds,
+      });
+    });
+
+    if (!readOnly) {
+      rows.push({
+        kind: 'addSubSection',
+        key: `add-sub-section-${section.id}`,
+        subjectId: subject.id,
+        sectionId: section.id,
+      });
+    }
+  };
+
+  for (const subject of subjects) {
+    rows.push({ kind: 'subject', key: subject.id, subject });
+    if (!isExpanded(subject.id)) continue;
+
+    const siblingIds = subject.sections.map((section) => section.id);
+    subject.sections.forEach((section, index) => {
+      pushSection(subject, section, index, siblingIds);
+    });
+
+    if (!readOnly) {
+      rows.push({ kind: 'addSection', key: `add-section-${subject.id}`, subjectId: subject.id });
+    }
+  }
+
+  return rows;
 };

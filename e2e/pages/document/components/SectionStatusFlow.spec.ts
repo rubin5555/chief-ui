@@ -7,7 +7,7 @@ import { SECTION_CHAT_IDS } from '../../../../src/pages/document/components/Sect
 import { SECTION_INSTRUCTIONS_MODAL_IDS } from '../../../../src/pages/document/components/SectionMenu/components/SectionInstructionsModal/SectionInstructionsModal.testids';
 import { SECTION_MENU_IDS } from '../../../../src/pages/document/components/SectionMenu/SectionMenu.testids';
 import { SECTION_STATUS_LABEL_IDS } from '../../../../src/pages/document/components/SectionStatusLabel/SectionStatusLabel.testids';
-import { clickCentred } from '../../../support/interactions';
+import { clickCentred, revealOutlineRow } from '../../../support/interactions';
 
 // A section's own lifecycle: submitting it, approving it, sending it back with a
 // reason, and the notes and instructions that hang off it.
@@ -54,6 +54,10 @@ test('sending a section back moves it only once the reason is written', async ({
   await page.getByTestId(SECTION_CHAT_IDS.sendBtn).click();
 
   await expect(page.getByTestId(SECTION_STATUS_LABEL_IDS.root(PENDING))).toHaveText('דרוש תיקון');
+
+  // s4-1 sits below the fold of the virtualized outline, so its row has to be
+  // scrolled to before it exists to be asserted on.
+  await revealOutlineRow(page, OUTLINE_SECTION_ROW_IDS.statusDot(PENDING));
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.statusDot(PENDING))).toHaveCSS(
     'background-color',
     'rgb(220, 38, 38)',

@@ -6,7 +6,7 @@ import { OUTLINE_SECTION_ROW_IDS } from '../../../../src/pages/document/componen
 import { OUTLINE_SUBJECT_ROW_IDS } from '../../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubjectRow/OutlineSubjectRow.testids';
 import { ADD_MENU_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/components/AddMenu/AddMenu.testids';
 import { SUBJECT_BLOCK_IDS } from '../../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
-import { dragOnto } from '../../../support/interactions';
+import { dragOnto, scrollOutlineToEnd } from '../../../support/interactions';
 
 // The sidebar outline is editable in its own right — rename, add, delete and
 // reorder at three levels — and everything it changes shows up in the paper,
@@ -155,12 +155,17 @@ test('appendices are named with successive Hebrew letters', async ({ page }) => 
 
   await page.getByTestId(ADD_MENU_IDS.trigger).click();
   await page.getByTestId(ADD_MENU_IDS.action('appendix')).click();
+  // An appendix arrives already named, so nothing pulls the outline down to it —
+  // and the outline is virtualized, so the foot of it has to be scrolled to
+  // before the new row is there to read.
+  await scrollOutlineToEnd(page);
   // `נספחים` is already in the seed tree and its title starts with `נספח`, so it
   // counts — main matches appendices by prefix, which makes the first added one ב׳.
   await expect(topicRows.last()).toContainText('נספח ב׳');
 
   await page.getByTestId(ADD_MENU_IDS.trigger).click();
   await page.getByTestId(ADD_MENU_IDS.action('appendix')).click();
+  await scrollOutlineToEnd(page);
   await expect(topicRows.last()).toContainText('נספח ג׳');
 });
 
@@ -181,6 +186,21 @@ test('dragging a section onto its sibling reorders both the outline and the pape
   await expect(s1SectionTitles.first()).toHaveValue('היסטוריית גרסאות');
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-2'))).toContainText('1.');
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-1'))).toContainText('2.');
+});
+
+test('the outline holds the rows in the column and reaches the rest by scrolling', async ({
+  page,
+}) => {
+  await page.goto('/document/d1');
+  await expect(page.getByTestId(OUTLINE_SUBJECT_ROW_IDS.toggle('s1'))).toBeVisible();
+
+  // The outline is one flat, virtualized list of every level, so the last of six
+  // topics is not merely off screen — it is not in the page at all.
+  const lastTopic = page.getByTestId(OUTLINE_SUBJECT_ROW_IDS.root('s6'));
+  await expect(lastTopic).toHaveCount(0);
+
+  await scrollOutlineToEnd(page);
+  await expect(lastTopic).toBeVisible();
 });
 
 test('each section row carries the status dot its seeded status calls for', async ({ page }) => {

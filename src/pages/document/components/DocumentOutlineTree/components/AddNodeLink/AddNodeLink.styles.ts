@@ -2,9 +2,11 @@ import styled from 'styled-components';
 import { resetButton } from '@/styles/mixins';
 import { colors, docColors, gray, transitions } from '@/styles/theme';
 
+// No bottom padding of its own: the wrapper that positions every line of the
+// outline already spaces them apart, and a second 4px here would set an add link
+// further from its list than the rows are from each other.
 export const LinkRow = styled.div<{ $indent: number }>`
   padding-inline-start: ${(props) => props.$indent}px;
-  padding-bottom: 4px;
 `;
 
 const Link = styled.button`

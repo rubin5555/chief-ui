@@ -1,10 +1,12 @@
-import { lazy, Suspense, useState } from 'react';
+import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual';
+import { lazy, Suspense, useRef, useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import { useDragReorder } from '@/hooks/useDragReorder';
 import type { SectionMetaMap, Subject } from '../../types';
-import { OutlineSubjectRow } from './components/OutlineSubjectRow';
+import { OutlineRow } from './components/OutlineRow';
 import { useDocumentOutlineTreeAnalytics } from './DocumentOutlineTree.analytics';
-import { SubjectList, TreeRoot } from './DocumentOutlineTree.styles';
+import { ESTIMATED_ROW_HEIGHT, ROW_OVERSCAN } from './DocumentOutlineTree.constants';
+import { TreeRoot, VirtualList, VirtualRow } from './DocumentOutlineTree.styles';
 import { DOCUMENT_OUTLINE_TREE_IDS } from './DocumentOutlineTree.testids';
 import type {
   OutlineDeleteTarget,
@@ -12,7 +14,7 @@ import type {
   OutlineEditingApi,
   OutlineExpandApi,
 } from './DocumentOutlineTree.types';
-import { getDropEdge } from './documentOutlineTree.utils';
+import { flattenOutline } from './documentOutlineTree.utils';
 
 const ConfirmDeleteModal = lazy(() =>
   import('./components/ConfirmDeleteModal').then((m) => ({ default: m.ConfirmDeleteModal })),
@@ -38,6 +40,10 @@ const collectSubjectIds = (subjects: Subject[]) => subjects.map((subject) => sub
 // main's editable outline (Edit.tsx:3885): three levels, each row draggable,
 // renameable and deletable.
 //
+// Drawn as one flat list of rows rather than three levels of nested lists, so it
+// can be virtualized — see flattenOutline. Nesting survives as an indent on the
+// row; what a row no longer does is render the level below it.
+//
 // Every piece of editing state lives here rather than in the rows, because every
 // piece of it is single-valued — one row renames at a time, one delete is pending
 // at a time — and a row can't know whether some other row is mid-edit. The rows
@@ -60,6 +66,7 @@ export const DocumentOutlineTree = ({
     () => new Set(collectSubjectIds(tree.subjects)),
   );
   const [renamingId, setRenamingId] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLElement>(null);
   const [pendingDelete, setPendingDelete] = useState<OutlineDeleteTarget | null>(null);
   const { trackNodeAdded, trackNodeDeleted, trackNodesReordered, trackRenameStarted } =
     useDocumentOutlineTreeAnalytics();
@@ -112,27 +119,53 @@ export const DocumentOutlineTree = ({
 
   const handleCloseDelete = () => setPendingDelete(null);
 
-  const subjectIds = collectSubjectIds(tree.subjects);
+  const rows = flattenOutline(tree.subjects, expand.isExpanded, readOnly);
+
+  // A row asked to rename opens an autofocusing input, and an input can only take
+  // focus if it is mounted — so the row being edited is kept in the rendered
+  // window wherever it sits. A topic added at the foot of a long outline is
+  // exactly the row that would otherwise be off it. Focusing scrolls it into
+  // view on its own, so nothing else has to.
+  const editingId = newSubjectId ?? renamingId;
+  const editingIndex = editingId ? rows.findIndex((row) => row.key === editingId) : -1;
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => scrollRef.current,
+    getItemKey: (index) => rows[index].key,
+    estimateSize: () => ESTIMATED_ROW_HEIGHT,
+    overscan: ROW_OVERSCAN,
+    rangeExtractor: (range) => {
+      const visible = defaultRangeExtractor(range);
+      if (editingIndex < 0 || visible.includes(editingIndex)) return visible;
+      return [...visible, editingIndex].sort((a, b) => a - b);
+    },
+  });
 
   return (
-    <TreeRoot data-testid={DOCUMENT_OUTLINE_TREE_IDS.root}>
-      <SubjectList>
-        {tree.subjects.map((subject) => (
-          <OutlineSubjectRow
-            key={subject.id}
-            subject={subject}
-            dropEdge={getDropEdge(subjectIds, drag.subjects, subject.id)}
-            isDragging={drag.subjects.draggedId === subject.id}
-            tree={tree}
-            sectionMeta={sectionMeta}
-            expand={expand}
-            editing={editing}
-            drag={drag}
-            readOnly={readOnly}
-            isDistributed={isDistributed}
-          />
+    <TreeRoot ref={scrollRef} data-testid={DOCUMENT_OUTLINE_TREE_IDS.root}>
+      <VirtualList $height={virtualizer.getTotalSize()}>
+        {virtualizer.getVirtualItems().map((item) => (
+          <VirtualRow
+            key={item.key}
+            data-index={item.index}
+            ref={virtualizer.measureElement}
+            $top={item.start}
+            $indented={rows[item.index].kind !== 'subject'}
+          >
+            <OutlineRow
+              row={rows[item.index]}
+              tree={tree}
+              sectionMeta={sectionMeta}
+              expand={expand}
+              editing={editing}
+              drag={drag}
+              readOnly={readOnly}
+              isDistributed={isDistributed}
+            />
+          </VirtualRow>
         ))}
-      </SubjectList>
+      </VirtualList>
 
       <Suspense fallback={null}>
         {pendingDelete && (

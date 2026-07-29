@@ -290,6 +290,16 @@ you'd rather they weren't:
   away the caret and anything typed since the last commit. Printing renders the
   lot — `beforeprint` flips it out of virtualization inside a `flushSync`, so the
   printer gets the document rather than the window.
+- **The sidebar outline is one flat list, not three nested ones.** It looks
+  identical — nesting survives as an indent on the row rather than as a container
+  around it — but a topic's row no longer renders its sections, and a section's
+  no longer renders its sub-sections. That is what makes the column
+  virtualizable: a row list has one offset per row, where a nest of three levels
+  has positions that only exist relative to whatever is above them. The
+  consequence to know about is that a row you haven't scrolled to is not in the
+  page at all; the e2e helpers `revealOutlineRow` and `scrollOutlineToEnd` exist
+  because of it. The row being renamed is pinned into the rendered window
+  wherever it sits, since its input can only take focus if it is mounted.
 - **No in-app link to a document.** main opens one from its catalog page, which
   dev doesn't have; inventing a navbar link would put an element on *every* page
   that main has nowhere. The brand is a real link home, and the document is
