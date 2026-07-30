@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
-import { HE_ALPHA } from '../../document.constants';
+import { HE_ALPHA, OUTLINE_NODE_ATTR } from '../../document.constants';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import {
   type AttachmentFile,
@@ -14,6 +14,7 @@ import { NodeActionRow } from '../NodeActionRow';
 import { NodeTitleField } from '../NodeTitleField';
 import { SectionChat } from '../SectionChat';
 import { SectionMenu } from '../SectionMenu';
+import { useSectionNavigation } from '../SectionNavigation';
 import { SubSectionHeaderRow, SubSectionMarker, SubSectionRoot } from './SubSectionBlock.styles';
 import { SUB_SECTION_BLOCK_IDS } from './SubSectionBlock.testids';
 
@@ -41,6 +42,7 @@ export const SubSectionBlock = ({
   readOnly,
 }: SubSectionBlockProps) => {
   const meta = overrides.getMeta(subSection.id);
+  const nav = useSectionNavigation();
 
   // Whether the attachments dialog is open lives here rather than inside
   // AttachmentPicker, because the chips under the body open it too and they are
@@ -88,7 +90,11 @@ export const SubSectionBlock = ({
   const marker = HE_ALPHA[index] ?? String(index + 1);
 
   return (
-    <SubSectionRoot data-testid={SUB_SECTION_BLOCK_IDS.root(subSection.id)}>
+    <SubSectionRoot
+      $revealed={nav?.revealedNodeId === subSection.id}
+      {...{ [OUTLINE_NODE_ATTR]: subSection.id }}
+      data-testid={SUB_SECTION_BLOCK_IDS.root(subSection.id)}
+    >
       <SubSectionHeaderRow>
         <SubSectionMarker>{marker}.</SubSectionMarker>
         <NodeTitleField

@@ -35,6 +35,21 @@ export const DOC_NODE_ATTR = 'data-doc-node';
 export const docNodeSelector = (id: string) => `[${DOC_NODE_ATTR}="${id}"]`;
 
 /**
+ * Marks a node's whole block in the paper — heading, body and all — with the id
+ * the outline knows it by.
+ *
+ * Distinct from `DOC_NODE_ATTR` above, and deliberately not the same element.
+ * That one marks the *text* of a node, for finding a quoted passage inside it;
+ * this marks the *node*, for scrolling to it and for working out which one the
+ * reader is currently looking at. They differ where it matters: a hidden or
+ * classified section renders a notice instead of an editor and so has no text
+ * body at all, but it is still a row in the outline and still somewhere you can
+ * be sent.
+ */
+export const OUTLINE_NODE_ATTR = 'data-outline-node';
+export const outlineNodeSelector = (id: string) => `[${OUTLINE_NODE_ATTR}="${id}"]`;
+
+/**
  * The document's status progression (main's STATUS_FLOW, Edit.tsx:1697).
  * Order is meaningful: the sidebar's forward/back buttons step through this
  * array, so `מבצעית` is deliberately absent — it is a terminal state reached

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { gray } from '@/styles/theme';
+import { colors, gray, radii, transitions } from '@/styles/theme';
 
 /**
  * A sub-section (main's Edit.tsx:4638). Indented from its parent section by
@@ -7,9 +7,23 @@ import { gray } from '@/styles/theme';
  * Spacing is in px, not mm: sub-sections are a list within one section rather
  * than page-level structure.
  */
-export const SubSectionRoot = styled.div`
+export const SubSectionRoot = styled.div<{ $revealed: boolean }>`
   margin-bottom: 5px;
   padding-inline-end: 14px;
+  border-radius: ${radii.lg};
+
+  /* The same landing mark a section gets, at a sub-section's smaller bleed —
+     see SectionBlock.styles.ts for why it is a wash and not an outline. */
+  background-color: ${({ $revealed }) => ($revealed ? colors.primaryLight : 'transparent')};
+  box-shadow: ${({ $revealed }) =>
+    $revealed ? `0 0 0 4px ${colors.primaryLight}` : '0 0 0 4px transparent'};
+  transition:
+    background-color ${transitions.slow},
+    box-shadow ${transitions.slow};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 `;
 
 export const SubSectionHeaderRow = styled.div`

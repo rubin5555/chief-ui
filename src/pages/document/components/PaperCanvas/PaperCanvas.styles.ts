@@ -7,12 +7,20 @@ import {
   PAPER_SHADOW,
   PAPER_WIDTH,
 } from '../../document.measurements';
+import { REVEAL_SCROLL_PADDING } from '../SectionNavigation/SectionNavigation.constants';
 
 /** The scrolling editor area — main's `<main className="flex-1 overflow-y-auto">`. */
 export const EditorScroll = styled.main`
   flex: 1;
   min-width: 0;
   overflow-y: auto;
+
+  /* Where a scrollIntoView with block start stops short, so a section the
+     outline sent you to clears the sticky toolbar instead of hiding under it.
+     Set on the scroll container rather than as a scroll-margin on the sections:
+     the sections are laid out inside the paper's zoom, where this distance would
+     scale with it, and the toolbar it has to clear does not. */
+  scroll-padding-top: ${REVEAL_SCROLL_PADDING}px;
 `;
 
 export const Centered = styled.div`

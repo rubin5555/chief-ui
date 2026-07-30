@@ -7,6 +7,7 @@ import type { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import { ActiveFilterChips } from '../ActiveFilterChips';
 import { EmphasisBlock } from '../EmphasisBlock';
 import { SectionChatProvider } from '../SectionChat';
+import { useActiveSectionSpy } from '../SectionNavigation';
 import { DocLetterhead } from './components/DocLetterhead';
 import { PaperSubjectList } from './components/PaperSubjectList';
 import { Centered, EditorScroll, Paper, PaperInner, StickyToolbar } from './PaperCanvas.styles';
@@ -41,6 +42,11 @@ export const PaperCanvas = ({
 }: PaperCanvasProps) => {
   const { zoom, statuses, q } = routeApi.useSearch();
   const scrollRef = useRef<HTMLElement>(null);
+
+  // Reports which section the reader is on, for the outline to mark. It lives
+  // here because this is the component that owns the scrolling element — the
+  // thing the answer is read from.
+  useActiveSectionSpy(scrollRef);
 
   const getStatus = (id: string) => overrides.getMeta(id).status;
   const filteredNodeIds = collectFilteredNodeIds(tree.subjects, getStatus, statuses);

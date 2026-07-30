@@ -1,8 +1,9 @@
 import { GripHorizontal } from 'lucide-react';
-import type { FocusEvent, KeyboardEvent } from 'react';
+import type { FocusEvent, KeyboardEvent, MouseEvent } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import { SECTION_STATUS_COLOR } from '../../../../document.constants';
 import type { Section, SectionMetaMap } from '../../../../types';
+import { useSectionNavigation } from '../../../SectionNavigation';
 import { DragHandle, DropZone, StatusDot } from '../../DocumentOutlineTree.shared.styles';
 import type { DropEdge, OutlineDragApi, OutlineEditingApi } from '../../DocumentOutlineTree.types';
 import { OutlineRowMenu } from '../OutlineRowMenu';
@@ -50,6 +51,16 @@ export const OutlineSectionRow = ({
   isDistributed,
 }: OutlineSectionRowProps) => {
   const isRenaming = editing.renamingId === section.id;
+  const nav = useSectionNavigation();
+
+  // The row already draws itself as a click target — pointer cursor, hover fill —
+  // so the whole row navigates rather than just the title. Controls inside it opt
+  // out in one line: the menu opens a panel, the rename input takes a caret, and
+  // neither is a request to go anywhere.
+  const handleRowClick = (event: MouseEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest('button, input')) return;
+    nav?.revealNode(section.id);
+  };
 
   const commitRename = (event: FocusEvent<HTMLInputElement>) => {
     tree.updateSectionTitle(subjectId, section.id, event.target.value || section.title);
@@ -79,7 +90,10 @@ export const OutlineSectionRow = ({
     >
       <SectionRow
         dir="rtl"
+        $active={nav?.activeNodeId === section.id}
+        {...(nav?.activeNodeId === section.id ? { 'aria-current': 'location' as const } : {})}
         data-testid={OUTLINE_SECTION_ROW_IDS.root(section.id)}
+        onClick={handleRowClick}
         {...(readOnly ? {} : drag.sections.getDragHandleProps(section.id))}
       >
         {!readOnly && (

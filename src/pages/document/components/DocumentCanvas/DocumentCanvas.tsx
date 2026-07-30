@@ -14,6 +14,7 @@ import { DocumentActionsSlot } from '../DocumentActionsSlot';
 import { DocumentMetadataPill } from '../DocumentMetadataPill';
 import { DocumentSidebar } from '../DocumentSidebar';
 import { PaperCanvas } from '../PaperCanvas';
+import { SectionNavigationProvider } from '../SectionNavigation';
 import { SignatureGateProvider } from '../SignaturesSection';
 import { SourceSystemsNotice } from '../SourceSystemsNotice';
 import { DOCUMENT_CANVAS_IDS } from './DocumentCanvas.testids';
@@ -86,30 +87,33 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
           <ComparisonBar />
         </BarRow>
 
-        {/* This provider wraps both columns because that is the span of what it
-            connects: the approval flow that asks whether the document has been
-            signed is in the sidebar, and the signatures it asks about are three
-            levels inside the paper. */}
-        <SignatureGateProvider>
-          <BodyRow data-testid={DOCUMENT_CANVAS_IDS.root}>
-            <DocumentSidebar
-              tree={tree}
-              trash={trash}
-              overrides={overrides}
-              readOnly={readOnly}
-              isDistributed={isDistributed}
-              onAddEmphasis={handleAddEmphasis}
-            />
-            <PaperCanvas
-              tree={tree}
-              overrides={overrides}
-              trash={trash}
-              readOnly={readOnly}
-              isDistributed={isDistributed}
-              showEmphasis={showEmphasis}
-            />
-          </BodyRow>
-        </SignatureGateProvider>
+        {/* Both of these wrap both columns, because both connect them: the
+            outline row that sends you to a section is in the sidebar and the
+            section is three levels inside the paper, and the approval flow that
+            asks whether the document has been signed is in the sidebar while the
+            signatures it asks about are three levels inside the paper. */}
+        <SectionNavigationProvider>
+          <SignatureGateProvider>
+            <BodyRow data-testid={DOCUMENT_CANVAS_IDS.root}>
+              <DocumentSidebar
+                tree={tree}
+                trash={trash}
+                overrides={overrides}
+                readOnly={readOnly}
+                isDistributed={isDistributed}
+                onAddEmphasis={handleAddEmphasis}
+              />
+              <PaperCanvas
+                tree={tree}
+                overrides={overrides}
+                trash={trash}
+                readOnly={readOnly}
+                isDistributed={isDistributed}
+                showEmphasis={showEmphasis}
+              />
+            </BodyRow>
+          </SignatureGateProvider>
+        </SectionNavigationProvider>
       </DocPermissionsProvider>
     </ContentEditorProvider>
   );

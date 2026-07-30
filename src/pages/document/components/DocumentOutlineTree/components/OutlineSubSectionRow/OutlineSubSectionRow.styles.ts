@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 import { SUB_SECTION_INDENT } from '../../DocumentOutlineTree.constants';
 import {
@@ -8,7 +8,8 @@ import {
   RowTitle,
 } from '../../DocumentOutlineTree.shared.styles';
 
-export const SubSectionRow = styled.div`
+/** The same "you are here" tint a section row takes — see OutlineSectionRow.styles.ts. */
+export const SubSectionRow = styled.div<{ $active: boolean }>`
   display: flex;
   align-items: center;
   gap: 6px;
@@ -16,7 +17,16 @@ export const SubSectionRow = styled.div`
   padding-inline-start: ${SUB_SECTION_INDENT}px;
   border-radius: ${radii.xl};
   cursor: pointer;
-  transition: background-color ${transitions.normal};
+  transition:
+    background-color ${transitions.normal},
+    box-shadow ${transitions.normal};
+
+  ${({ $active }) =>
+    $active &&
+    css`
+      background-color: ${colors.primaryLight};
+      box-shadow: inset -2px 0 0 0 ${colors.primary};
+    `}
 
   &:hover {
     background-color: ${colors.surface};

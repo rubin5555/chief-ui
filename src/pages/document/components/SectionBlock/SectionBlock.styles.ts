@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, docColors, radii } from '@/styles/theme';
+import { colors, docColors, radii, transitions } from '@/styles/theme';
 
 /**
  * A section inside a topic (main's Edit.tsx:4394) — half a topic's bottom gap.
@@ -7,11 +7,27 @@ import { colors, docColors, radii } from '@/styles/theme';
  * The search outline sits 2px out rather than the topic's 4px, so a matching
  * section inside a matching topic reads as nested instead of as one thick band.
  */
-export const SectionRoot = styled.div<{ $highlighted: boolean }>`
+export const SectionRoot = styled.div<{ $highlighted: boolean; $revealed: boolean }>`
   margin-bottom: 5mm;
   border-radius: ${radii.lg};
   outline: ${({ $highlighted }) => ($highlighted ? `2px solid ${docColors.searchHit}` : 'none')};
   outline-offset: 2px;
+
+  /* The mark left after the outline sends you here. A wash rather than an
+     outline, so it can't be mistaken for a search hit, and it fades on its own
+     — this says "here" for a moment and then stops saying anything. A transition
+     rather than a keyframe: the colour is applied on arrival and removed a
+     moment later, and a transition already describes both halves of that. */
+  background-color: ${({ $revealed }) => ($revealed ? colors.primaryLight : 'transparent')};
+  box-shadow: ${({ $revealed }) =>
+    $revealed ? `0 0 0 6px ${colors.primaryLight}` : '0 0 0 6px transparent'};
+  transition:
+    background-color ${transitions.slow},
+    box-shadow ${transitions.slow};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 `;
 
 /**

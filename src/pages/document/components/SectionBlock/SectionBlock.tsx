@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
+import { OUTLINE_NODE_ATTR } from '../../document.constants';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import {
@@ -11,6 +12,7 @@ import {
 } from '../../types';
 import { EditableSectionBody } from '../EditableSectionBody';
 import { useSectionChatCoordination } from '../SectionChat';
+import { useSectionNavigation } from '../SectionNavigation';
 import { SubSectionBlock } from '../SubSectionBlock';
 import { SectionHeader } from './components/SectionHeader';
 import { SectionStatusActions } from './components/SectionStatusActions';
@@ -49,6 +51,7 @@ export const SectionBlock = ({
   isDistributed,
 }: SectionBlockProps) => {
   const meta = overrides.getMeta(section.id);
+  const nav = useSectionNavigation();
 
   // Owned here rather than inside AttachmentPicker because the chips under the
   // body open the same dialog, and they are rendered by a different child.
@@ -127,6 +130,8 @@ export const SectionBlock = ({
   return (
     <SectionRoot
       $highlighted={searchMatchIds.has(section.id)}
+      $revealed={nav?.revealedNodeId === section.id}
+      {...{ [OUTLINE_NODE_ATTR]: section.id }}
       data-testid={SECTION_BLOCK_IDS.root(section.id)}
     >
       <SectionHeader

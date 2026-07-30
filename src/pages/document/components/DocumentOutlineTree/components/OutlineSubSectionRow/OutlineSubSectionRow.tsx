@@ -1,8 +1,9 @@
 import { GripHorizontal } from 'lucide-react';
-import type { FocusEvent, KeyboardEvent } from 'react';
+import type { FocusEvent, KeyboardEvent, MouseEvent } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import { HE_ALPHA } from '../../../../document.constants';
 import type { SubSection } from '../../../../types';
+import { useSectionNavigation } from '../../../SectionNavigation';
 import { DragHandle, DropZone } from '../../DocumentOutlineTree.shared.styles';
 import type { DropEdge, OutlineDragApi, OutlineEditingApi } from '../../DocumentOutlineTree.types';
 import { OutlineRowMenu } from '../OutlineRowMenu';
@@ -48,6 +49,14 @@ export const OutlineSubSectionRow = ({
   readOnly,
 }: OutlineSubSectionRowProps) => {
   const isRenaming = editing.renamingId === subSection.id;
+  const nav = useSectionNavigation();
+
+  // Same rule as the section row above it: the row navigates, its own controls
+  // don't. See OutlineSectionRow.
+  const handleRowClick = (event: MouseEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest('button, input')) return;
+    nav?.revealNode(subSection.id);
+  };
 
   const commitRename = (event: FocusEvent<HTMLInputElement>) => {
     // An emptied field keeps the old title rather than leaving an unnamed row —
@@ -84,7 +93,10 @@ export const OutlineSubSectionRow = ({
     >
       <SubSectionRow
         dir="rtl"
+        $active={nav?.activeNodeId === subSection.id}
+        {...(nav?.activeNodeId === subSection.id ? { 'aria-current': 'location' as const } : {})}
         data-testid={OUTLINE_SUB_SECTION_ROW_IDS.root(subSection.id)}
+        onClick={handleRowClick}
         {...(readOnly ? {} : drag.subSections.getDragHandleProps(subSection.id))}
       >
         {!readOnly && (

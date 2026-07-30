@@ -1,8 +1,14 @@
 import type { FocusEvent, RefObject } from 'react';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
+import { outlineNodeSelector } from '../../../../document.constants';
 import type { useDocumentOverrides } from '../../../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../../../hooks/useDocumentTrash';
+import {
+  findSubjectIndexForNode,
+  revealNodeInPaper,
+  useSectionNavigation,
+} from '../../../SectionNavigation';
 import { SIGNATURES_TOPIC_TITLE, SignaturesSection } from '../../../SignaturesSection';
 import { SubjectBlock } from '../../../SubjectBlock';
 import type { NumberedSubject } from '../../paperCanvas.utils';
@@ -69,7 +75,22 @@ export const PaperSubjectList = ({
   const signaturesIndex = subjects.findIndex(
     ({ subject }) => subject.title === SIGNATURES_TOPIC_TITLE,
   );
-  const pinnedIndexes = [signaturesIndex, focusedIndex].filter((index) => index >= 0);
+
+  // A node the outline has asked to be taken to. Its topic is pinned rather than
+  // scrolled to: the element has to exist before anything can scroll to it, and
+  // pinning is the mechanism that already mounts a topic the view hasn't reached.
+  // Scrolling first would be aiming at an estimate — the virtualizer's guess at
+  // where an unmeasured topic starts — and then correcting.
+  const nav = useSectionNavigation();
+  const pendingRevealId = nav?.pendingRevealId ?? null;
+  const revealIndex = pendingRevealId
+    ? findSubjectIndexForNode(
+        subjects.map(({ subject }) => subject),
+        pendingRevealId,
+      )
+    : -1;
+
+  const pinnedIndexes = [signaturesIndex, focusedIndex, revealIndex].filter((index) => index >= 0);
 
   const { measureElement, listHeight, items } = usePaperSubjectVirtualizer({
     ids: subjects.map(({ subject }) => subject.id),
@@ -78,6 +99,32 @@ export const PaperSubjectList = ({
     zoomFactor: zoom / 100,
     pinnedIndexes,
   });
+
+  // Runs twice for a topic that wasn't mounted: once when the request arrives and
+  // the element still isn't there, and again once pinning has put it there —
+  // which is what `isRevealMounted` is for, since `pendingRevealId` alone doesn't
+  // change between those two renders.
+  //
+  // `block: 'start'`, landing where EditorScroll's `scroll-padding-top` says —
+  // which is deliberately just above the line the spy calls "you are here", so
+  // the section you were sent to is the one the outline then marks. Centring
+  // instead would land it below that line and mark the section before it.
+  const isRevealMounted = revealIndex >= 0 && items.some((item) => item.index === revealIndex);
+  const clearPendingReveal = nav?.clearPendingReveal;
+
+  // `isRevealMounted` is a re-run trigger, not an input — the body never reads it,
+  // but it is what turns true when pinning puts the target in the DOM, and that is
+  // the render this effect has to run on. Same shape as the re-measure triggers in
+  // usePaperSubjectVirtualizer.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-run trigger, see above
+  useLayoutEffect(() => {
+    if (!pendingRevealId || !clearPendingReveal) return;
+    const container = scrollRef.current;
+    const target = document.querySelector(outlineNodeSelector(pendingRevealId));
+    if (!container || !target) return;
+    revealNodeInPaper(target, container);
+    clearPendingReveal();
+  }, [pendingRevealId, isRevealMounted, clearPendingReveal, scrollRef]);
 
   const renderSubject = ({ subject, firstSectionNumber }: NumberedSubject) =>
     // `חתימות` is drawn by SignaturesSection instead of the generic topic path —
