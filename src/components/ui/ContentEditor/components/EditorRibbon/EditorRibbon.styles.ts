@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, gray } from '@/styles/theme';
+import { colors, gray, shadows } from '@/styles/theme';
 
 export const ToolbarRoot = styled.div<{ $flush: boolean }>`
   display: flex;
@@ -9,7 +9,7 @@ export const ToolbarRoot = styled.div<{ $flush: boolean }>`
   background: ${({ $flush }) => ($flush ? gray[50] : colors.surface)};
   border-top: ${({ $flush }) => ($flush ? 'none' : `1px solid ${gray[200]}`)};
   border-bottom: 1px solid ${({ $flush }) => ($flush ? gray[100] : gray[200])};
-  box-shadow: ${({ $flush }) => ($flush ? 'none' : '0 2px 6px rgba(0, 0, 0, 0.06)')};
+  box-shadow: ${({ $flush }) => ($flush ? 'none' : shadows.tooltip)};
   direction: rtl;
   flex-wrap: nowrap;
   overflow: visible;

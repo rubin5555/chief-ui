@@ -1,8 +1,8 @@
 import { ChevronDown, Table2 } from 'lucide-react';
-import type { MouseEvent } from 'react';
 import { useState } from 'react';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
+import { keepSelection } from '../../../../utils/keepSelection';
 import { RIBBON_MARKER_ATTR, TOOLBAR_ICON_SIZE } from '../../EditorRibbon.constants';
 import { EDITOR_RIBBON_IDS } from '../../EditorRibbon.testids';
 import { EMPTY_LABEL, GRID_SIDE, PICKER_WIDTH } from './TableSizePicker.constants';
@@ -12,8 +12,6 @@ export interface TableSizePickerProps {
   disabled: boolean;
   onInsert: (rows: number, cols: number) => void;
 }
-
-const keepSelection = (event: MouseEvent<HTMLButtonElement>) => event.preventDefault();
 
 export const TableSizePicker = ({ disabled, onInsert }: TableSizePickerProps) => {
   const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });

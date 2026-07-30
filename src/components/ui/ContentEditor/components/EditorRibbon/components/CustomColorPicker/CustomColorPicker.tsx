@@ -51,7 +51,8 @@ export const CustomColorPicker = ({
 
   return (
     <PickerCard
-      style={{ top: position.top, right: position.right }}
+      $top={position.top}
+      $right={position.right}
       {...{ [RIBBON_MARKER_ATTR]: '' }}
       data-testid={EDITOR_RIBBON_IDS.customColorPicker}
     >

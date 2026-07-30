@@ -2,8 +2,10 @@ import styled from 'styled-components';
 import { flexGap } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
-export const PickerCard = styled.div`
+export const PickerCard = styled.div<{ $top: number; $right: number }>`
   position: fixed;
+  top: ${({ $top }) => $top}px;
+  right: ${({ $right }) => $right}px;
   z-index: 99999;
   width: 272px;
   padding: 14px;

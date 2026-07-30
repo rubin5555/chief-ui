@@ -1,9 +1,10 @@
 import { ChevronDown } from 'lucide-react';
-import type { MouseEvent, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import { gray } from '@/styles/theme';
+import { keepSelection } from '../../../../utils/keepSelection';
 import { RIBBON_MARKER_ATTR, TOOLBAR_ICON_SIZE, WHITE } from '../../EditorRibbon.constants';
 import { EDITOR_RIBBON_IDS } from '../../EditorRibbon.testids';
 import { CustomColorPicker } from '../CustomColorPicker';
@@ -31,8 +32,6 @@ export interface ColorPickerButtonProps {
   onApply: (color: string) => void;
   icon?: ReactNode;
 }
-
-const keepSelection = (event: MouseEvent<HTMLButtonElement>) => event.preventDefault();
 
 export const ColorPickerButton = ({
   id,

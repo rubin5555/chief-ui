@@ -10,8 +10,8 @@ import { ThemeToggle } from '@/components/layout/TopNavbar/components/ThemeToggl
 import { TrainingMenu } from '@/components/layout/TopNavbar/components/TrainingMenu';
 import { IconButton } from '@/components/ui/IconButton';
 import { NavToolbarSlotProvider } from '@/context/NavToolbarSlotContext';
-import { useOverflowTitles } from '@/hooks/useOverflowTitles';
 import { BrandLink, NavToolbarHost } from './AppLayout.styles';
+import { useOverflowTitles } from './useOverflowTitles';
 
 export const AppLayout = () => {
   const [navToolbarNode, setNavToolbarNode] = useState<HTMLDivElement | null>(null);

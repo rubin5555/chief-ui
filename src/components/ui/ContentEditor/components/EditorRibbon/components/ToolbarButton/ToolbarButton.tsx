@@ -1,4 +1,5 @@
-import type { MouseEvent, ReactNode, Ref } from 'react';
+import type { ReactNode, Ref } from 'react';
+import { keepSelection } from '../../../../utils/keepSelection';
 import { ToolbarButtonRoot } from './ToolbarButton.styles';
 
 export interface ToolbarButtonProps {
@@ -10,8 +11,6 @@ export interface ToolbarButtonProps {
   ref?: Ref<HTMLButtonElement>;
   'data-testid'?: string;
 }
-
-const keepSelection = (event: MouseEvent<HTMLButtonElement>) => event.preventDefault();
 
 export const ToolbarButton = ({
   title,

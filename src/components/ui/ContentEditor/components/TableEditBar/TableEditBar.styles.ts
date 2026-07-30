@@ -1,9 +1,12 @@
 import styled from 'styled-components';
-import { flexCenter, resetButton } from '@/styles/mixins';
-import { colors, gray, radii, transitions } from '@/styles/theme';
+import { colors, gray, radii, shadows } from '@/styles/theme';
+import { squareToolButton } from '../components.shared.styles';
 
-export const BarRoot = styled.div`
+export const BarRoot = styled.div<{ $top: number; $left: number; $width: number }>`
   position: fixed;
+  top: ${({ $top }) => $top}px;
+  left: ${({ $left }) => $left}px;
+  width: ${({ $width }) => $width}px;
   z-index: 9990;
   display: flex;
   align-items: center;
@@ -14,7 +17,7 @@ export const BarRoot = styled.div`
   background: ${colors.surface};
   border: 1px solid ${gray[200]};
   border-radius: ${radii.lg};
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: ${shadows.bubble};
 `;
 
 export const BarArrow = styled.span`
@@ -39,23 +42,11 @@ export const BarArrow = styled.span`
 `;
 
 export const BarAction = styled.button<{ $danger?: boolean }>`
-  ${resetButton}
-  ${flexCenter}
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  flex-shrink: 0;
-  border-radius: ${radii.sm};
+  ${squareToolButton}
   color: ${({ $danger }) => ($danger ? colors.danger : gray[600])};
-  transition: background ${transitions.normal}, color ${transitions.normal};
 
   &:hover:not(:disabled) {
     background: ${({ $danger }) => ($danger ? colors.dangerLight : gray[100])};
-  }
-
-  &:disabled {
-    color: ${gray[300]};
-    cursor: not-allowed;
   }
 `;
 

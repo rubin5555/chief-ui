@@ -1,7 +1,7 @@
 import { Settings, Settings2, TableCellsMerge, TableCellsSplit, Trash2 } from 'lucide-react';
-import type { MouseEvent } from 'react';
 import { ModalPortal } from '@/components/ui/ModalPortal';
 import type { TinyMceEditor } from '../../ContentEditor.types';
+import { keepSelection } from '../../utils/keepSelection';
 import { RIBBON_MARKER_ATTR } from '../EditorRibbon/EditorRibbon.constants';
 import { TableGridIcon } from './components/TableGridIcon';
 import {
@@ -18,8 +18,6 @@ import { useTableAnchor } from './useTableAnchor';
 export interface TableEditBarProps {
   editor: TinyMceEditor | null;
 }
-
-const keepSelection = (event: MouseEvent) => event.preventDefault();
 
 export const TableEditBar = ({ editor }: TableEditBarProps) => {
   const table = useActiveTable(editor);
@@ -47,7 +45,9 @@ export const TableEditBar = ({ editor }: TableEditBarProps) => {
   return (
     <ModalPortal>
       <BarRoot
-        style={{ top: anchor.top, left: anchor.left, width: anchor.width }}
+        $top={anchor.top}
+        $left={anchor.left}
+        $width={anchor.width}
         {...{ [RIBBON_MARKER_ATTR]: '' }}
         data-testid={TABLE_EDIT_BAR_IDS.root}
       >
