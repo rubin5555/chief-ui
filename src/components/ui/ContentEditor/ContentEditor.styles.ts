@@ -151,28 +151,6 @@ export const PreviewWrapper = styled.div`
 	position: relative;
 `;
 
-export const CursorBar = styled.div`
-	position: absolute;
-	width: 2px;
-	background: ${colors.accent};
-	pointer-events: none;
-	z-index: 2;
-`;
-
-export const CursorLabel = styled.span`
-	position: absolute;
-	top: -18px;
-	right: -2px;
-	background: ${colors.accent};
-	color: ${colors.surface};
-	font-size: 10px;
-	font-weight: 600;
-	padding: 1px 6px;
-	border-radius: ${radii.lg};
-	white-space: nowrap;
-	pointer-events: none;
-`;
-
 export const LockBadge = styled.div`
 	position: absolute;
 	top: 6px;

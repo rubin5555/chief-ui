@@ -1,14 +1,14 @@
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { useRef, useState } from 'react';
 import { ZOOM_STEP } from '../../DocActionToolbar.constants';
+import { DOC_ACTION_TOOLBAR_IDS } from '../../DocActionToolbar.testids';
 import {
   ZoomButton,
   ZoomControlRoot,
   ZoomField,
   ZoomUnit,
   ZoomValueGroup,
-} from '../../DocActionToolbar.styles';
-import { DOC_ACTION_TOOLBAR_IDS } from '../../DocActionToolbar.testids';
+} from '../controls.shared.styles';
 
 interface ZoomControlProps {
   value: number;

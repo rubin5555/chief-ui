@@ -5,8 +5,8 @@ import { NodeTitleField } from '../../../NodeTitleField';
 import { SectionChat } from '../../../SectionChat';
 import { SectionMenu } from '../../../SectionMenu';
 import { SectionStatusLabel } from '../../../SectionStatusLabel';
-import { SectionHeaderRow, SectionNumber, TitleSlot } from '../../SectionBlock.styles';
 import { SectionInstructionsTip } from '../SectionInstructionsTip';
+import { SectionHeaderRow, SectionNumber, TitleSlot } from './SectionHeader.styles';
 
 export interface SectionHeaderProps {
   sectionId: string;

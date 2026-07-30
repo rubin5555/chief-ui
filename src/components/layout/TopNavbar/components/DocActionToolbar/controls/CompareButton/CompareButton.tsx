@@ -1,6 +1,6 @@
 import { GitCompare } from 'lucide-react';
-import { IconAction } from '../../DocActionToolbar.styles';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../DocActionToolbar.testids';
+import { IconAction } from '../controls.shared.styles';
 
 interface CompareButtonProps {
   onClick: () => void;

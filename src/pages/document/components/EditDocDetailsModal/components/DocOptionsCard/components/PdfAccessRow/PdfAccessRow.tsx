@@ -1,7 +1,7 @@
 import type { PdfAccess } from '../../../../../../types';
 import { PDF_ACCESS_OPTIONS } from '../../../../EditDocDetailsModal.constants';
 import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../EditDocDetailsModal.testids';
-import { OptionLabel, OptionRow } from '../../DocOptionsCard.styles';
+import { OptionLabel, OptionRow } from '../components.shared.styles';
 import { Segment, Segments } from './PdfAccessRow.styles';
 
 export interface PdfAccessRowProps {

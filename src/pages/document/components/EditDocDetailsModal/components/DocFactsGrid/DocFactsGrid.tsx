@@ -1,5 +1,5 @@
-import { Field, ReadOnlyLabel, ReadOnlyValue } from '../../EditDocDetailsModal.styles';
 import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../EditDocDetailsModal.testids';
+import { Field, ReadOnlyLabel, ReadOnlyValue } from '../components.shared.styles';
 import { FactsGrid } from './DocFactsGrid.styles';
 
 export interface DocFactsGridProps {

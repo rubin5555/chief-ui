@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { FileUploadField } from '@/components/ui/FileUploadField';
-import { FieldGroup, FieldLabel } from '../../EnvironmentRequestModal.styles';
 import { ENV_REQUEST_MODAL_IDS } from '../../EnvironmentRequestModal.testids';
+import { FieldGroup, FieldLabel } from '../components.shared.styles';
 
 interface LogoFieldProps {
   previewUrl: string;

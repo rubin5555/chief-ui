@@ -5,7 +5,7 @@ import { SearchSlotProvider } from '@/context/SearchSlotContext';
 import { useImportSource } from '../../hooks/useImportSource';
 import type { ImportTabId, Member } from '../../PeoplePicker.constants';
 import { IMPORT_TABS } from '../../PeoplePicker.constants';
-import { PlaceholderText, SearchRow, TabBar, TabContent } from '../../PeoplePicker.styles';
+import { PlaceholderText, SearchRow, TabBar, TabContent } from '../../PeoplePicker.shared.styles';
 import { PEOPLE_PICKER_IDS } from '../../PeoplePicker.testids';
 import { DocTab } from '../../tabs/DocTab';
 import { ExcelTab } from '../../tabs/ExcelTab';

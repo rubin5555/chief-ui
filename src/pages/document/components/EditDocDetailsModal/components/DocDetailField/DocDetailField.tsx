@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { EMPTY_VALUE } from '../../EditDocDetailsModal.constants';
-import { Field, FieldLabel, ReadOnlyLabel, ReadOnlyValue } from '../../EditDocDetailsModal.styles';
 import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../EditDocDetailsModal.testids';
+import { Field, FieldLabel, ReadOnlyLabel, ReadOnlyValue } from '../components.shared.styles';
 
 export interface DocDetailFieldProps {
   name: string;

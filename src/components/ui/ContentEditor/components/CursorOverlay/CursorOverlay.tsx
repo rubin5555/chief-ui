@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { CursorPath } from '@/collab/types';
-import { CursorBar, CursorLabel } from '../../ContentEditor.styles';
 import { resolveCursorPath } from '../../utils/nodePath';
+import { CursorBar, CursorLabel } from './CursorOverlay.styles';
 
 interface CursorRect {
   top: number;
@@ -41,7 +41,7 @@ export const CursorOverlay = ({ containerRef, path, label }: CursorOverlayProps)
   if (!rect) return null;
 
   return (
-    <CursorBar style={{ top: rect.top, left: rect.left, height: rect.height }}>
+    <CursorBar $top={rect.top} $left={rect.left} $height={rect.height}>
       <CursorLabel>{label}</CursorLabel>
     </CursorBar>
   );

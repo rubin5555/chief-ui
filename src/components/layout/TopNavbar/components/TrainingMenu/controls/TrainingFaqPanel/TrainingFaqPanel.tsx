@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import type { Pos } from '@/hooks/useFloatingPanel';
 import { gray } from '@/styles/theme';
-import { FAQ_ENTRIES } from '../TrainingMenu.constants';
+import { FAQ_ENTRIES } from '../../TrainingMenu.constants';
+import { TRAINING_MENU_IDS } from '../../TrainingMenu.testids';
 import {
   FaqAnswer,
   FaqBackButton,
@@ -15,8 +16,7 @@ import {
   FaqQuestion,
   FaqQuestionLabel,
   FaqTitle,
-} from '../TrainingMenu.styles';
-import { TRAINING_MENU_IDS } from '../TrainingMenu.testids';
+} from './TrainingFaqPanel.styles';
 
 interface TrainingFaqPanelProps {
   panelRef: RefObject<HTMLDivElement | null>;

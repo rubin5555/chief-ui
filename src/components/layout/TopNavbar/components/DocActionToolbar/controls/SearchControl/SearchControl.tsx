@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react';
 import { useState } from 'react';
-import { IconAction } from '../../DocActionToolbar.styles';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../DocActionToolbar.testids';
+import { IconAction } from '../controls.shared.styles';
 import { DocSearchField } from '../DocSearchField';
 
 const noop = () => {};

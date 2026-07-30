@@ -54,7 +54,9 @@ export const TableFloatingToolbar = ({
 
   return (
     <ToolbarRoot
-      style={{ top: anchor.top, left: anchor.left, width: anchor.width }}
+      $top={anchor.top}
+      $left={anchor.left}
+      $width={anchor.width}
       onMouseDown={handleMouseDown}
       data-testid={SECTION_TABLE_VIEW_IDS.toolbar}
     >

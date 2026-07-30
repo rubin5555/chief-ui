@@ -7,15 +7,15 @@ import {
   DUPLICATE_NAME_HINT,
   FOLDER_OPTIONS,
 } from '../../EditDocDetailsModal.constants';
+import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../EditDocDetailsModal.testids';
+import type { DocDetailsForm } from '../../useDocDetailsForm';
 import {
   FieldGrid,
   FieldHint,
   FullWidthField,
   LabelRow,
   NameInput,
-} from '../../EditDocDetailsModal.styles';
-import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../EditDocDetailsModal.testids';
-import type { DocDetailsForm } from '../../useDocDetailsForm';
+} from '../components.shared.styles';
 import { DocDetailField } from '../DocDetailField';
 import { EntitySelector } from '../EntitySelector';
 

@@ -3,7 +3,8 @@ import type { RefObject } from 'react';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import type { Pos } from '@/hooks/useFloatingPanel';
 import { colors } from '@/styles/theme';
-import { NOTIFICATION_ICONS, NOTIFICATIONS } from '../NotificationsMenu.constants';
+import { NOTIFICATION_ICONS, NOTIFICATIONS } from '../../NotificationsMenu.constants';
+import { NOTIFICATIONS_MENU_IDS } from '../../NotificationsMenu.testids';
 import {
   EmptyState,
   MarkAllReadBtn,
@@ -15,8 +16,7 @@ import {
   NotificationTime,
   PanelHeader,
   PanelTitle,
-} from '../NotificationsMenu.styles';
-import { NOTIFICATIONS_MENU_IDS } from '../NotificationsMenu.testids';
+} from './NotificationsPanel.styles';
 
 interface NotificationsPanelProps {
   panelRef: RefObject<HTMLDivElement | null>;

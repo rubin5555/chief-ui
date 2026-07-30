@@ -7,7 +7,7 @@ import {
   RULE_OPERATOR_FROM_LABEL,
   RULE_OPERATOR_LABELS,
 } from '@/modals/DataImportModal/utils/tableDesignOptions';
-import { TextInput } from '../../TableDesignModal.styles';
+import { TextInput } from '../../TableDesignModal.shared.styles';
 import { CellStyleFields } from '../CellStyleFields';
 import {
   AddRuleBtn,

@@ -3,8 +3,8 @@ import { type ChangeEvent, type KeyboardEvent, useEffect, useState } from 'react
 import { useDebounce } from '@/hooks/useDebounce';
 import { gray } from '@/styles/theme';
 import { SEARCH_DEBOUNCE_MS } from '../../DocActionToolbar.constants';
-import { SearchCloseButton, SearchField, SearchFieldInput } from '../../DocActionToolbar.styles';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../DocActionToolbar.testids';
+import { SearchCloseButton, SearchField, SearchFieldInput } from '../controls.shared.styles';
 
 interface DocSearchFieldProps {
   initialValue: string;

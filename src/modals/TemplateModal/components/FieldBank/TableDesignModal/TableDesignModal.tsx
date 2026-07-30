@@ -20,17 +20,14 @@ import {
 import { CellStyleFields } from './components/CellStyleFields';
 import { ColumnStyleList } from './components/ColumnStyleList';
 import { StyleRuleList } from './components/StyleRuleList';
+import { FieldLabel, FieldRow, TextInput, ToggleRow } from './TableDesignModal.shared.styles';
 import {
   Body,
-  FieldLabel,
-  FieldRow,
   HintText,
   LabelColumnName,
   LabelRow,
   LabelsList,
   SectionDivider,
-  TextInput,
-  ToggleRow,
 } from './TableDesignModal.styles';
 import { TABLE_DESIGN_MODAL_IDS } from './TableDesignModal.testids';
 

@@ -12,8 +12,8 @@ import {
   ExpandChevron,
   NameCell,
 } from '../../../tabs.shared.styles';
-import { IconActionBtn } from '../../HamalTab.styles';
 import { HAMAL_TAB_IDS } from '../../HamalTab.testids';
+import { IconActionBtn } from './HamalGroupRow.styles';
 
 interface HamalGroupRowProps {
   group: HamalGroup;

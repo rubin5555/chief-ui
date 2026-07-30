@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { ModalPortal } from '@/components/ui/ModalPortal';
 import { useDialogClose } from '@/hooks/useDialogClose';
@@ -97,6 +97,8 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
       return () => document.removeEventListener('keydown', onKeyDown);
     }, []);
 
+    const onCardClick = (e: MouseEvent<HTMLDivElement>) => e.stopPropagation();
+
     const onTrapFocus = (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key !== 'Tab') return;
       const card = cardRef.current;
@@ -121,7 +123,7 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
           <ModalCard
             ref={cardRef}
             data-testid={base}
-            onClick={(e) => e.stopPropagation()}
+            onClick={onCardClick}
             onKeyDown={onTrapFocus}
             role="dialog"
             aria-modal="true"

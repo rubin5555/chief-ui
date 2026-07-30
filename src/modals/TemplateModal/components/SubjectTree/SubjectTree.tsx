@@ -1,7 +1,12 @@
 import { GripVertical, Plus, Trash2 } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import { useDragReorder } from '@/hooks/useDragReorder';
-import type { DocumentTreeApi, PermissionsTarget, SubSection } from '../../TemplateModal.constants';
+import type {
+  DocumentTreeApi,
+  PermissionsTarget,
+  Section,
+  SubSection,
+} from '../../TemplateModal.constants';
 import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
 import {
   AddChildLink,
@@ -48,6 +53,31 @@ export const SubjectTree = ({
     tree.updateSubjectTitle(subjectId, e.target.value);
 
   const handleRemoveSubject = (subjectId: string) => () => tree.removeSubject(subjectId);
+
+  const handleSectionTitleChange =
+    (subjectId: string, sectionId: string) => (e: ChangeEvent<HTMLInputElement>) =>
+      tree.updateSectionTitle(subjectId, sectionId, e.target.value);
+
+  const handleRemoveSection = (subjectId: string, sectionId: string) => () =>
+    tree.removeSection(subjectId, sectionId);
+
+  const handleSectionPermissions =
+    (subjectId: string, section: Section, sectionIndex: number) => () =>
+      onTogglePermissions({
+        id: section.id,
+        label: `הרשאות סעיף ${sectionIndex + 1}`,
+        permissions: section.permissions,
+        onChangeApprovers: (approvers: string[]) =>
+          tree.updateSectionPermissions(subjectId, section.id, {
+            ...section.permissions,
+            approvers,
+          }),
+        onChangeEditors: (editors: string[]) =>
+          tree.updateSectionPermissions(subjectId, section.id, {
+            ...section.permissions,
+            editors,
+          }),
+      });
 
   return (
     <>
@@ -124,27 +154,9 @@ export const SubjectTree = ({
                   activePermissionsId={activePermissionsId}
                   sectionDrag={sectionDrag}
                   subSectionDrag={subSectionDrag}
-                  onTitleChange={(e) =>
-                    tree.updateSectionTitle(subject.id, section.id, e.target.value)
-                  }
-                  onRemove={() => tree.removeSection(subject.id, section.id)}
-                  onTogglePermissions={() =>
-                    onTogglePermissions({
-                      id: section.id,
-                      label: `הרשאות סעיף ${sectionIndex + 1}`,
-                      permissions: section.permissions,
-                      onChangeApprovers: (v) =>
-                        tree.updateSectionPermissions(subject.id, section.id, {
-                          ...section.permissions,
-                          approvers: v,
-                        }),
-                      onChangeEditors: (v) =>
-                        tree.updateSectionPermissions(subject.id, section.id, {
-                          ...section.permissions,
-                          editors: v,
-                        }),
-                    })
-                  }
+                  onTitleChange={handleSectionTitleChange(subject.id, section.id)}
+                  onRemove={handleRemoveSection(subject.id, section.id)}
+                  onTogglePermissions={handleSectionPermissions(subject.id, section, sectionIndex)}
                   onAddSubSection={onSubSectionAdd(section.id)}
                   onSubSectionTitleChange={onSubSectionTitleChange(section.id)}
                   onRemoveSubSection={onRemoveSubSection(section.id)}

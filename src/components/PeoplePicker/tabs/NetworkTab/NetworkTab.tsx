@@ -6,7 +6,7 @@ import { useSearch } from '@/hooks/useSearch';
 import { PersonSearchField } from '../../components/PersonSearchField';
 import type { Member, NetworkFilter } from '../../PeoplePicker.constants';
 import { NETWORK_FILTERS } from '../../PeoplePicker.constants';
-import { PlaceholderText } from '../../PeoplePicker.styles';
+import { PlaceholderText } from '../../PeoplePicker.shared.styles';
 import { SubTabBar, SubTabBtn, SubTabIndicator, TabRoot } from '../tabs.shared.styles';
 import { NETWORK_TAB_IDS } from './NetworkTab.testids';
 

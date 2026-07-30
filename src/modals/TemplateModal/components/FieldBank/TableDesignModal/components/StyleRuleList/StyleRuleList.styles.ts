@@ -1,12 +1,12 @@
 import styled from 'styled-components';
 import { dashedActionButton, flexFill, flexGap } from '@/styles/mixins';
-import { DesignBlockHeader } from '../../TableDesignModal.styles';
+import { DesignBlockHeader } from '../../TableDesignModal.shared.styles';
 
 export {
   DesignBlock as Block,
   DesignListWrap as ListWrap,
   DesignRemoveBtn as RemoveBtn,
-} from '../../TableDesignModal.styles';
+} from '../../TableDesignModal.shared.styles';
 
 export const BlockHeader = styled(DesignBlockHeader)`
   align-items: flex-start;

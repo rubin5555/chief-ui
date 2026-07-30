@@ -2,8 +2,11 @@ import styled from 'styled-components';
 import { flexCenter, resetButton } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-export const ToolbarRoot = styled.div`
+export const ToolbarRoot = styled.div<{ $top: number; $left: number; $width: number }>`
   position: fixed;
+  top: ${({ $top }) => $top}px;
+  left: ${({ $left }) => $left}px;
+  width: ${({ $width }) => $width}px;
   z-index: 9990;
   display: flex;
   align-items: center;

@@ -3,6 +3,7 @@ import { Fragment, type RefObject } from 'react';
 import { colors } from '@/styles/theme';
 import { CheckBox } from '../../../../components/SelectionCheckbox/SelectionCheckbox.styles';
 import type { DocItem } from '../../../../PeoplePicker.constants';
+import type { DocFilters } from '../../hooks/useDocFilters';
 import {
   ClearFiltersBtn,
   DateFilterSection,
@@ -13,8 +14,7 @@ import {
   FilterDropdown,
   FilterOption,
   FilterSectionTitle,
-} from '../../DocTab.styles';
-import type { DocFilters } from '../../hooks/useDocFilters';
+} from '../components.shared.styles';
 
 interface DocFilterPanelProps {
   docs: DocItem[];

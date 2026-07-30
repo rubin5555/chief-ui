@@ -13,7 +13,7 @@ import {
   SwatchBtn,
   SwatchRow,
   ToggleRow,
-} from '../../TableDesignModal.styles';
+} from '../../TableDesignModal.shared.styles';
 import { CELL_STYLE_FIELDS_IDS } from './CellStyleFields.testids';
 
 interface CellStyleFieldsProps {

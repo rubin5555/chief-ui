@@ -13,8 +13,8 @@ import {
   ExpandChevron,
   NameCell,
 } from '../../../tabs.shared.styles';
-import { ColCenter, SubCell, SubNameCell } from '../../DocTab.styles';
 import { DOC_TAB_IDS } from '../../DocTab.testids';
+import { ColCenter, SubCell, SubNameCell } from '../components.shared.styles';
 
 interface DocRowProps {
   doc: DocItem;

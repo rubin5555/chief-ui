@@ -2,6 +2,7 @@ import { Check } from 'lucide-react';
 import { useState } from 'react';
 import { FILTER_STATUSES, SECTION_STATUS_COLOR } from '../../../../document.constants';
 import type { SectionStatus } from '../../../../types';
+import { FILTER_PANEL_IDS } from '../../FilterPanel.testids';
 import {
   ApplyButton,
   CheckBox,
@@ -11,8 +12,7 @@ import {
   OptionList,
   OptionRow,
   StatusDot,
-} from '../../FilterPanel.styles';
-import { FILTER_PANEL_IDS } from '../../FilterPanel.testids';
+} from './StatusFilterList.styles';
 
 export interface StatusFilterListProps {
   applied: SectionStatus[];

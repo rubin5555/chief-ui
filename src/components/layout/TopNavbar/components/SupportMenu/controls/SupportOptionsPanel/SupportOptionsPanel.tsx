@@ -8,7 +8,7 @@ import {
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import type { Pos } from '@/hooks/useFloatingPanel';
 import { gray } from '@/styles/theme';
-import { SUPPORT_MENU_IDS } from '../SupportMenu.testids';
+import { SUPPORT_MENU_IDS } from '../../SupportMenu.testids';
 
 interface SupportOptionsPanelProps {
   panelRef: RefObject<HTMLDivElement | null>;

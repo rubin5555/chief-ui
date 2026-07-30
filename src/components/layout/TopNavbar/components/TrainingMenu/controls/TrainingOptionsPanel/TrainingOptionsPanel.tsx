@@ -8,7 +8,7 @@ import {
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import type { Pos } from '@/hooks/useFloatingPanel';
 import { gray } from '@/styles/theme';
-import { TRAINING_MENU_IDS } from '../TrainingMenu.testids';
+import { TRAINING_MENU_IDS } from '../../TrainingMenu.testids';
 
 interface TrainingOptionsPanelProps {
   panelRef: RefObject<HTMLDivElement | null>;

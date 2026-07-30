@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { IconAction, SpinningLoader } from '../../DocActionToolbar.styles';
+import { IconAction, SpinningLoader } from '../controls.shared.styles';
 
 interface ExportButtonProps {
   title: string;

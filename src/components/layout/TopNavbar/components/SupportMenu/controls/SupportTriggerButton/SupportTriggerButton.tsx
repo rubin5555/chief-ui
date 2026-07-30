@@ -1,7 +1,7 @@
 import { MessageCircle } from 'lucide-react';
 import { forwardRef } from 'react';
 import { IconButtonRoot } from '@/components/ui/IconButton';
-import { SUPPORT_MENU_IDS } from '../SupportMenu.testids';
+import { SUPPORT_MENU_IDS } from '../../SupportMenu.testids';
 
 interface SupportTriggerButtonProps {
   isOpen: boolean;

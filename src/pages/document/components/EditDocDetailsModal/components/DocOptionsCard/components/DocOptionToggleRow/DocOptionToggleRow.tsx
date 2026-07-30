@@ -1,6 +1,6 @@
 import { Toggle } from '@/components/ui/Toggle';
 import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../EditDocDetailsModal.testids';
-import { OptionLabel, OptionRow } from '../../DocOptionsCard.styles';
+import { OptionLabel, OptionRow } from '../components.shared.styles';
 
 export interface DocOptionToggleRowProps {
   field: string;
