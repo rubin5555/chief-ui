@@ -1,6 +1,5 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { DOC_TOOLBAR_IDS } from '../../../../src/pages/document/parity/DocToolbar/DocToolbar.testids';
 import { DOCUMENT_HISTORY_IDS } from '../../../../src/pages/document/parity/DocumentHistory/DocumentHistory.testids';
 import { OUTLINE_SECTION_ITEM_IDS } from '../../../../src/pages/document/parity/OutlineSectionItem/OutlineSectionItem.testids';
 import { PARITY_GALLERY_IDS } from '../../../../src/pages/document/parity/ParityGallery/ParityGallery.testids';
@@ -12,7 +11,6 @@ import { VIDUY_KABALAH_MODAL_IDS } from '../../../../src/pages/document/parity/V
 // enough that "ported, not shipped" stays an honest claim.
 
 const SPECIMENS = [
-  'doc-toolbar',
   'section-table',
   'viduy-kabalah',
   'document-history',
@@ -35,23 +33,6 @@ const openGallery = async (page: Page) => {
   await settleLayout(page);
 };
 
-/**
- * Scrolls a control into view and lets the scroll land *before* pressing it.
- *
- * Every popover here uses `useFloatingPanel`, which closes on scroll — because a
- * fixed panel whose trigger has scrolled away is left floating detached. Browsers
- * dispatch scroll events asynchronously, so Playwright's own scroll-into-view can
- * arrive one frame *after* the click it was preparing for, opening a panel and
- * shutting it again. A real user never scrolls the page by pressing a button, so
- * this is a harness artifact rather than something to fix in the component.
- */
-const pressAfterScroll = async (page: Page, testId: string) => {
-  const control = page.getByTestId(testId);
-  await control.scrollIntoViewIfNeeded();
-  await settleLayout(page);
-  await control.click();
-};
-
 test('the gallery renders every parked component', async ({ page }) => {
   await openGallery(page);
 
@@ -59,62 +40,6 @@ test('the gallery renders every parked component', async ({ page }) => {
   for (const id of SPECIMENS) {
     await expect(page.getByTestId(PARITY_GALLERY_IDS.specimen(id))).toBeVisible();
   }
-});
-
-test('the ribbon toggles a format, and alignment options cancel each other', async ({ page }) => {
-  await openGallery(page);
-
-  const bold = page.getByTestId(DOC_TOOLBAR_IDS.toggle('bold'));
-  await bold.click();
-  await expect(bold).toHaveAttribute('aria-pressed', 'true');
-
-  // A paragraph has one alignment, so picking a second drops the first.
-  const alignRight = page.getByTestId(DOC_TOOLBAR_IDS.toggle('align-right'));
-  const alignCenter = page.getByTestId(DOC_TOOLBAR_IDS.toggle('align-center'));
-  await alignRight.click();
-  await expect(alignRight).toHaveAttribute('aria-pressed', 'true');
-  await alignCenter.click();
-  await expect(alignCenter).toHaveAttribute('aria-pressed', 'true');
-  await expect(alignRight).toHaveAttribute('aria-pressed', 'false');
-
-  // Bold is in no exclusive group and is untouched by either.
-  await expect(bold).toHaveAttribute('aria-pressed', 'true');
-});
-
-test('the colour menu picks a swatch, and the table picker reports a size', async ({ page }) => {
-  await openGallery(page);
-
-  await pressAfterScroll(page, DOC_TOOLBAR_IDS.colorChevron('text'));
-  await expect(page.getByTestId(DOC_TOOLBAR_IDS.colorMenu('text'))).toBeVisible();
-  await page.getByTestId(DOC_TOOLBAR_IDS.colorSwatch('text', '#dc2626')).click();
-  await expect(page.getByTestId(DOC_TOOLBAR_IDS.colorMenu('text'))).toBeHidden();
-
-  await pressAfterScroll(page, DOC_TOOLBAR_IDS.tableTrigger);
-  await page.getByTestId(DOC_TOOLBAR_IDS.tableSizeCell(3, 4)).click();
-  await expect(page.getByTestId(PARITY_GALLERY_IDS.lastAction('doc-toolbar'))).toHaveText(
-    'הוספת טבלה 3 × 4',
-  );
-});
-
-test('the custom colour picker opens from the palette and writes back a typed hex', async ({
-  page,
-}) => {
-  await openGallery(page);
-
-  await pressAfterScroll(page, DOC_TOOLBAR_IDS.colorChevron('highlight'));
-  await page.getByTestId(DOC_TOOLBAR_IDS.customColorTrigger('highlight')).click();
-
-  const picker = page.getByTestId(DOC_TOOLBAR_IDS.customColorPicker);
-  await expect(picker).toBeVisible();
-
-  // Six digits is what turns a draft into a colour, so the preview only follows
-  // once the whole value is in.
-  await picker.getByLabel('ערך הקסדצימלי').fill('00ff00');
-  await expect(picker.getByLabel('א')).toHaveValue('0');
-  await expect(picker.getByLabel('B')).toHaveValue('0');
-
-  await picker.getByRole('button', { name: 'אישור' }).click();
-  await expect(picker).toBeHidden();
 });
 
 test('the table adds a row from the floating toolbar and refuses to empty itself', async ({

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { EDITOR_RIBBON_IDS } from '../../../src/components/ui/ContentEditor/components/EditorRibbon/EditorRibbon.testids';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from '../../../src/pages/document/components/ClassifiedViewersModal/ClassifiedViewersModal.testids';
 import { DOC_PERMISSIONS_MODAL_IDS } from '../../../src/pages/document/components/DocPermissionsModal/DocPermissionsModal.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
@@ -61,13 +62,14 @@ test('activating a section mounts a real, focusable TinyMCE editor', async ({ pa
   await expect(editable).toBeFocused();
 });
 
-test('inserting a table via the TinyMCE toolbar produces real table HTML, undoable with Ctrl+Z', async ({
+test('inserting a table from the ribbon produces real table HTML, undoable with Ctrl+Z', async ({
   page,
 }) => {
-  // Phase 3: in-document tables ride entirely on ContentEditor's already-registered
-  // TinyMCE table plugin/toolbar button — no SectionTableView-style custom state to
-  // wire up. Table-menu clicks (unlike raw typing) trigger TinyMCE's non-typing
-  // AddUndo path immediately, so no debounce/flush-timing wait is needed here.
+  // In-document tables ride on ContentEditor's TinyMCE table plugin. What changed
+  // is who asks for one: the ribbon's own 8×8 size grid rather than TinyMCE's
+  // menu, running the same `mceInsertTable` command underneath. Command clicks
+  // (unlike raw typing) trigger the non-typing AddUndo path immediately, so no
+  // debounce wait is needed here.
   await page.goto('/document/d1');
 
   const sectionContent = page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'));
@@ -76,9 +78,8 @@ test('inserting a table via the TinyMCE toolbar produces real table HTML, undoab
   const editable = sectionContent.locator('[contenteditable="true"]');
   await expect(editable).toBeVisible();
 
-  await page.getByRole('button', { name: 'Table' }).click();
-  await page.getByRole('menuitem', { name: 'Table', exact: true }).click();
-  await page.locator('[aria-label="2 columns, 2 rows"]').click();
+  await page.getByTestId(EDITOR_RIBBON_IDS.tableTrigger).click();
+  await page.getByTestId(EDITOR_RIBBON_IDS.tableSizeCell(2, 2)).click();
 
   await expect(editable.locator('table')).toBeVisible();
   await expect(editable.locator('td')).toHaveCount(4);

@@ -47,7 +47,7 @@ export const PaperCanvas = ({
   // Reports which section the reader is on, for the outline to mark. It lives
   // here because this is the component that owns the scrolling element — the
   // thing the answer is read from.
-  useActiveSectionSpy(scrollRef);
+  useActiveSectionSpy(scrollRef, zoom);
 
   const getStatus = (id: string) => overrides.getMeta(id).status;
   const filteredNodeIds = collectFilteredNodeIds(tree.subjects, getStatus, statuses);
@@ -62,9 +62,9 @@ export const PaperCanvas = ({
     // they share one spot in the left margin — so opening one has to close the
     // rest. This is the only ancestor all of them have.
     <SectionChatProvider>
-      <EditorScroll ref={scrollRef} data-testid={PAPER_CANVAS_IDS.root}>
+      <EditorScroll ref={scrollRef} $zoom={zoom} data-testid={PAPER_CANVAS_IDS.root}>
         <Centered>
-          <StickyToolbar>
+          <StickyToolbar $zoom={zoom}>
             <ActiveFilterChips />
             {/* A locked document has nothing to format, so main drops the ribbon
               rather than disabling it (Edit.tsx:4130). */}

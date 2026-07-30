@@ -1,9 +1,17 @@
 # `parity/` — ported out of `Edit.tsx`, deliberately not in the live page
 
-Six things from main's `Edit.tsx` that the migrated document page does not use.
+Five things from main's `Edit.tsx` that the migrated document page does not use.
 They are here rather than deleted because "we didn't port that" and "we ported it
 and chose not to ship it" are different statements, and only the second one can be
 reviewed.
+
+A sixth used to be: **`DocToolbar/` has left this folder.** It is now
+`src/components/ui/ContentEditor/components/EditorRibbon/`, and it is the toolbar
+the live page renders. What changed was not the drawing — that is still main's,
+button for button — but what sits underneath it: every control runs a TinyMCE
+command, and which buttons are lit is read back off the caret. The reason it was
+parked ("45 pieces of state, of which none reaches the document") is the reason it
+no longer is.
 
 Everything here is built to the same rules as the rest of the feature — styled
 components, tokens instead of literal colours, one component per file, `.testids.ts`
@@ -25,36 +33,6 @@ address.
 ---
 
 ## What is here, and why it isn't live
-
-### `DocToolbar/` — the Word-style ribbon
-**main:** `Edit.tsx:1122-1688` (plus `TB` at 49, `Sep` at 45, `ColorSwatch` at 59,
-`CustomColorPicker` at 605-747, the two palettes at 749-759)
-
-**Why it isn't live:** none of its 45 pieces of state reaches the document. Bold
-lights up a button and changes nothing; the table picker and the footnote button
-dispatch global `CustomEvent`s; find-and-replace neither finds nor replaces. The
-live page's editing surface is `ui/ContentEditor` (TinyMCE), whose own toolbar does
-the real work — shipping a second, inert ribbon above it would be two toolbars
-where one of them lies.
-
-**What changed in the port:**
-- main writes the colour picker **three times** — text, highlight, fill — as three
-  60-line blocks differing only in title, palette and setter. Here it is one
-  `ColorPickerButton` used three times.
-- `CustomColorPicker` held hue, saturation, value, an RGB triple and a hex string
-  as five pieces of state kept in step by hand. It holds one HSV triple and derives
-  the rest; the hex *input* stays its own state, because a half-typed `#1B3` is a
-  string being edited, not a colour.
-- The two colour drags used hand-managed `document` mousemove/mouseup listeners.
-  They use pointer capture, which is the primitive for exactly this and needs no
-  cleanup.
-- The popovers use `useFloatingPanel`, so they get outside-click, Escape and
-  viewport flipping that main's manual `getBoundingClientRect` maths didn't have.
-- `ColorSwatch` (`Edit.tsx:59-68`) is **not** ported: it is defined in main and
-  never rendered, and its two branches produce the same letter either way.
-- **Preserved quirks:** the RGB boxes are still labelled `א`, `י`, `B` — a
-  half-finished translation of R/G/B; and text direction RTL/LTR can still both be
-  lit at once, because main leaves that pair out of its exclusivity table.
 
 ### `SectionTableView/` — a table inside a section
 **main:** `Edit.tsx:901-1120`, with the properties dialog at `785-898` and the
@@ -133,14 +111,7 @@ absence — the page pegged a core and every click on the route timed out.
 
 ---
 
-## Two rules this folder bends, on purpose
-
-**Literal hex.** `DocToolbar.constants.ts` holds `TEXT_COLORS`, `HIGHLIGHT_COLORS`
-and the three defaults as raw hex; `HueSlider` writes the six-stop hue ramp inline
-and `SaturationCanvas` the black it fades to. These are the only literal colours in
-`src/pages/document/`. A swatch's colour *is* the value the button applies, and the
-two ramps *are* the colour space being pointed at — a themed token would make the
-picker offer one colour in dark mode and write a different one into the document.
+## One rule this folder bends, on purpose
 
 **No `.analytics.ts`.** Nothing here reports events. Per
 `.claude/skills/analytics-component.md` analytics measure what users do in the

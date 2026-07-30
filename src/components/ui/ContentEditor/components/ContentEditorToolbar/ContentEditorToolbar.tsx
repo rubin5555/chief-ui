@@ -1,53 +1,32 @@
-import { Editor } from '@tinymce/tinymce-react';
-import styled from 'styled-components';
-import 'tinymce/tinymce';
-import 'tinymce/icons/default';
-import 'tinymce/themes/silver';
-import 'tinymce/models/dom';
-import 'tinymce/plugins/lists/plugin';
-import 'tinymce/plugins/table/plugin';
-import 'tinymce/plugins/directionality/plugin';
-import 'tinymce/plugins/link/plugin';
-import 'tinymce/plugins/image/plugin';
-import 'tinymce/skins/ui/oxide/skin.min.css';
-import 'tinymce/skins/ui/oxide/content.inline.min.css';
-
 import { useContentEditorContext } from '@/context/ContentEditorContext';
-import { TINYMCE_INIT, TINYMCE_LICENSE_KEY } from '../../ContentEditor.constants';
-import { ToolbarContainer } from '../../ContentEditor.styles';
-import { CONTENT_EDITOR_IDS } from '../../ContentEditor.testids';
+import { EditorRibbon } from '../EditorRibbon';
+import { TableEditBar } from '../TableEditBar';
 
-const GhostEditorHost = styled.div`
-  position: fixed;
-  top: -2000px;
-  left: -2000px;
-  width: 300px;
-  height: 60px;
-  pointer-events: none;
-`;
-
+/**
+ * The one ribbon a page of fields shares, rendered wherever the page wants it —
+ * the document's sticky toolbar above the sheet, the share dialog's message box.
+ *
+ * It points at whichever field is currently open, and at nothing when none is
+ * (ContentEditorContext's `activeEditor`), which is the whole of its logic.
+ *
+ * It used to be something else entirely: a container div that TinyMCE was told to
+ * render its own toolbar into, plus a hidden, disabled editor mounted off-screen
+ * for the sole purpose of having a toolbar to look at while no real field was
+ * open. Both are gone. The ribbon is ours now, so an empty one is just a row of
+ * disabled buttons — no second editor required to draw it.
+ */
 export const ContentEditorToolbar = () => {
   const ctx = useContentEditorContext();
   if (!ctx) return null;
 
   return (
     <>
-      <ToolbarContainer id={ctx.toolbarId} data-testid={CONTENT_EDITOR_IDS.toolbar} />
-      {ctx.activeId === null && (
-        <GhostEditorHost>
-          <Editor
-            inline
-            disabled
-            value=""
-            licenseKey={TINYMCE_LICENSE_KEY}
-            onEditorChange={() => {}}
-            init={{
-              ...TINYMCE_INIT,
-              fixed_toolbar_container: `#${ctx.toolbarId}`,
-            }}
-          />
-        </GhostEditorHost>
-      )}
+      <EditorRibbon id={ctx.toolbarId} editor={ctx.activeEditor} />
+      {/* Not part of the ribbon: it hangs under whichever table the caret is in,
+          wherever on the sheet that happens to be. It is here because this is
+          where the active editor is known — it renders into a portal, so it costs
+          the toolbar's own layout nothing. */}
+      <TableEditBar editor={ctx.activeEditor} />
     </>
   );
 };

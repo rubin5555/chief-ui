@@ -10,17 +10,18 @@ import {
 import { REVEAL_SCROLL_PADDING } from '../SectionNavigation/SectionNavigation.constants';
 
 /** The scrolling editor area — main's `<main className="flex-1 overflow-y-auto">`. */
-export const EditorScroll = styled.main`
+export const EditorScroll = styled.main<{ $zoom: number }>`
   flex: 1;
   min-width: 0;
   overflow-y: auto;
 
   /* Where a scrollIntoView with block start stops short, so a section the
      outline sent you to clears the sticky toolbar instead of hiding under it.
-     Set on the scroll container rather than as a scroll-margin on the sections:
-     the sections are laid out inside the paper's zoom, where this distance would
-     scale with it, and the toolbar it has to clear does not. */
-  scroll-padding-top: ${REVEAL_SCROLL_PADDING}px;
+     Set on the scroll container rather than as a scroll-margin on the sections,
+     because the sections are laid out inside the zoom and would scale this
+     distance twice — and multiplied by the zoom here, because the toolbar it has
+     to clear is zoomed and this container is not. */
+  scroll-padding-top: ${({ $zoom }) => (REVEAL_SCROLL_PADDING * $zoom) / 100}px;
 `;
 
 export const Centered = styled.div`
@@ -34,13 +35,24 @@ export const Centered = styled.div`
  * Sticks to the top of the scroll area so the editor toolbar and the active
  * filter chips stay reachable while the paper scrolls under them. Matches the
  * paper's width exactly (not the wider chrome bars) — it belongs to the sheet.
+ *
+ * Which is why it takes the sheet's zoom as well. main leaves the toolbar at 100%
+ * (Edit.tsx:4105 puts `zoom` on the paper alone), and the two then disagree about
+ * how wide the sheet is: at 150% the ribbon stops well short of the paper's edge,
+ * at 50% it hangs over it. A bar that belongs to the page has to be as wide as
+ * the page.
  */
-export const StickyToolbar = styled.div`
+export const StickyToolbar = styled.div<{ $zoom: number }>`
   position: sticky;
   top: 0;
   z-index: 2;
   width: ${PAPER_WIDTH};
   overflow: hidden;
+  zoom: ${({ $zoom }) => $zoom / 100};
+
+  @media print {
+    zoom: 1;
+  }
 `;
 
 /**

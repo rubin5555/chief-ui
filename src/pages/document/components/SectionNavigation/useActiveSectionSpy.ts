@@ -17,7 +17,7 @@ import { useSectionNavigation } from './SectionNavigationContext';
  * An effect is the right tool: this is an external event source with cleanup, not
  * state derived from props.
  */
-export const useActiveSectionSpy = (scrollRef: RefObject<HTMLElement | null>) => {
+export const useActiveSectionSpy = (scrollRef: RefObject<HTMLElement | null>, zoom: number) => {
   const nav = useSectionNavigation();
   const setActiveNodeId = nav?.setActiveNodeId;
 
@@ -32,7 +32,10 @@ export const useActiveSectionSpy = (scrollRef: RefObject<HTMLElement | null>) =>
     const measure = () => {
       frame = 0;
       const box = container.getBoundingClientRect();
-      const line = box.top + ACTIVE_LINE_OFFSET;
+      // Scaled, because the line is meant to sit just under the sticky toolbar and
+      // the toolbar is zoomed with the sheet. Every rect below is in viewport
+      // pixels — zoom is already baked into them — so the offset has to be too.
+      const line = box.top + (ACTIVE_LINE_OFFSET * zoom) / 100;
       const nodes = container.querySelectorAll<HTMLElement>(`[${OUTLINE_NODE_ATTR}]`);
 
       // Only what is actually on screen counts. Mounted is not the same as
@@ -84,5 +87,5 @@ export const useActiveSectionSpy = (scrollRef: RefObject<HTMLElement | null>) =>
       container.removeEventListener('scroll', schedule);
       observer?.disconnect();
     };
-  }, [scrollRef, setActiveNodeId]);
+  }, [scrollRef, setActiveNodeId, zoom]);
 };

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import type { CursorPath } from '@/collab/types';
+import type { TinyMceEditor } from '@/components/ui/ContentEditor/ContentEditor.types';
 import { type LockInfo, useCollabContext } from './CollabContext';
 
 // Cap per-field history so a long editing session on a large list can't grow unbounded.
@@ -18,6 +19,16 @@ export interface ContentEditorContextValue {
   toolbarId: string;
   activeId: string | null;
   setActive: (id: string | null) => void;
+  /**
+   * The open field's TinyMCE instance, which is what the shared ribbon acts on.
+   *
+   * `activeId` says *which* field is open; this is the object you can send a
+   * command to. They are set and cleared together, but kept apart because the id
+   * is the editor's identity — used for locking and for history — while this is a
+   * handle that only exists between `onInit` and unmount.
+   */
+  activeEditor: TinyMceEditor | null;
+  setActiveEditor: (editor: TinyMceEditor | null) => void;
   // Requests the lock for `fieldId` (the stable domain id — see
   // ContentEditor's `id` prop) then, on grant, activates `instanceId` (the
   // editor's own per-mount id — see ContentEditor's `myId`). The two are
@@ -42,6 +53,7 @@ const ContentEditorContext = createContext<ContentEditorContextValue | null>(nul
 export const ContentEditorProvider = ({ children }: { children: ReactNode }) => {
   const toolbarId = useRef(`ce-shared-tb-${self.crypto.randomUUID()}`);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeEditor, setActiveEditor] = useState<TinyMceEditor | null>(null);
   const historyRef = useRef(new Map<string, HistoryEntry>());
   const collab = useCollabContext();
 
@@ -113,6 +125,8 @@ export const ContentEditorProvider = ({ children }: { children: ReactNode }) => 
       toolbarId: toolbarId.current,
       activeId,
       setActive: setActiveId,
+      activeEditor,
+      setActiveEditor,
       requestActivate,
       lockState: collab?.lockState ?? EMPTY_LOCK_STATE,
       remoteCursors: collab?.remoteCursors ?? EMPTY_CURSORS,
@@ -123,6 +137,7 @@ export const ContentEditorProvider = ({ children }: { children: ReactNode }) => 
     }),
     [
       activeId,
+      activeEditor,
       collab,
       requestActivate,
       getHistoryValue,

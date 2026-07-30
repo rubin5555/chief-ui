@@ -9,6 +9,10 @@ import 'tinymce/plugins/table/plugin';
 import 'tinymce/plugins/directionality/plugin';
 import 'tinymce/plugins/link/plugin';
 import 'tinymce/plugins/image/plugin';
+// Naming a plugin in TINYMCE_PLUGINS is not enough to load one — TinyMCE is
+// bundled here rather than served, so a plugin nobody imports is a name it looks
+// for at a URL that doesn't exist, and fails to find without saying so.
+import 'tinymce/plugins/searchreplace/plugin';
 import 'tinymce/skins/ui/oxide/skin.min.css';
 import 'tinymce/skins/ui/oxide/content.inline.min.css';
 
@@ -20,11 +24,13 @@ import {
   LockBadge,
   PreviewContent,
   PreviewWrapper,
-  ToolbarContainer,
 } from './ContentEditor.styles';
 import { CONTENT_EDITOR_IDS } from './ContentEditor.testids';
 import type { TinyMceEditor } from './ContentEditor.types';
 import { CursorOverlay } from './components/CursorOverlay';
+import { EditorRibbon } from './components/EditorRibbon';
+import { RIBBON_MARKER_ATTR } from './components/EditorRibbon/EditorRibbon.constants';
+import { TableEditBar } from './components/TableEditBar';
 import { useContentEditorCollab } from './hooks/useContentEditorCollab';
 import { usePreviewActivation } from './hooks/usePreviewActivation';
 import { useTinyMceSetup } from './hooks/useTinyMceSetup';
@@ -75,6 +81,10 @@ export const ContentEditor = ({
   const onChangeRef = useRef(onChange);
 
   const [editorReady, setEditorReady] = useState(false);
+  // Standalone only: with no provider above, this field owns its own ribbon and so
+  // has to hold its own editor handle. In shared mode the same handle goes into the
+  // context instead, because the toolbar up there is the one that needs it.
+  const [localEditor, setLocalEditor] = useState<TinyMceEditor | null>(null);
 
   const { ctx, collab, remoteLock, isLockHolderRef, lockedByOther, remoteCursorPath } =
     useContentEditorCollab(id, onChangeRef);
@@ -82,7 +92,6 @@ export const ContentEditor = ({
   // Standalone: TinyMCE always mounted, always "active".
   // Shared: active only when this instance owns the context focus.
   const isActive = !ctx || ctx.activeId === myId.current;
-  const toolbarContainerId = ctx ? ctx.toolbarId : localToolbarId.current;
 
   const {
     previewRef,
@@ -110,6 +119,7 @@ export const ContentEditor = ({
   const deactivate = () => {
     if (!ctx) return;
     ctx.setActive(null);
+    ctx.setActiveEditor(null);
     setEditorReady(false);
     collab?.releaseLock(id);
   };
@@ -118,7 +128,14 @@ export const ContentEditor = ({
     setEditorReady(true);
 
     // Standalone: user clicks directly into the contenteditable — no auto-focus needed.
-    if (!ctx) return;
+    if (!ctx) {
+      setLocalEditor(editor);
+      return;
+    }
+
+    // The ribbon above is pointed at this field from here on: it is the first
+    // moment there is an editor to point it at.
+    ctx.setActiveEditor(editor);
 
     // Seed this field's undo/redo history on first mount; a no-op if it already
     // exists from a prior mount (e.g. scrolling back into a virtualised list).
@@ -132,7 +149,11 @@ export const ContentEditor = ({
     const next = e.relatedTarget as Element | null;
     if (next && wrapperRef.current?.contains(next)) return;
     if (next?.closest('.tox-tinymce-aux, .tox-dialog, .tox-pop')) return;
-    if (ctx && next?.closest(`#${ctx.toolbarId}`)) return;
+    // Using the toolbar is not leaving the field. That covers the ribbon itself
+    // and everything it opens: its palettes and panels are portalled onto the
+    // body, so they are nowhere near this element in the DOM and only the marker
+    // identifies them.
+    if (next?.closest(`[${RIBBON_MARKER_ATTR}]`)) return;
     // Ignore stale focusout events fired when TinyMCE's contenteditable is removed
     // from the DOM after another editor has already become active.
     if (ctx && ctx.activeId !== myId.current) return;
@@ -146,9 +167,13 @@ export const ContentEditor = ({
       data-testid={CONTENT_EDITOR_IDS.root}
       onBlur={handleBlur}
     >
-      {/* Standalone: toolbar is always visible, not gated by active state */}
+      {/* Standalone: the field brings its own ribbon, always visible. In shared
+          mode the page renders one ContentEditorToolbar for all of them. */}
       {!ctx && (
-        <ToolbarContainer id={localToolbarId.current} data-testid={CONTENT_EDITOR_IDS.toolbar} />
+        <>
+          <EditorRibbon flush id={localToolbarId.current} editor={localEditor} />
+          <TableEditBar editor={localEditor} />
+        </>
       )}
 
       {/* Editor body: always mounted in standalone, only when active in shared */}
@@ -165,7 +190,6 @@ export const ContentEditor = ({
               init={{
                 ...TINYMCE_INIT,
                 placeholder,
-                fixed_toolbar_container: `#${toolbarContainerId}`,
                 setup: handleEditorSetup,
               }}
             />

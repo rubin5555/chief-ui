@@ -33,14 +33,13 @@ export interface DistributeDocProps {
  * is settled by the approval round's חמ״ל groups, not chosen again here. An
  * earlier port added a picker; it asked a question the flow had already answered.
  *
- * The ribbon is main's `<DocToolbar />`, except real. That component is parked in
- * `parity/` for being inert, and a second inert ribbon here would be the same lie
- * in a smaller box — so the body is a `ContentEditor` and the strip above it is
- * that editor's own toolbar, which formats what it points at.
+ * The ribbon is main's, and it formats what it points at — see
+ * `ui/ContentEditor/components/EditorRibbon`.
  *
- * It brings its own `ContentEditorProvider`, shadowing the document page's: this
- * dialog opens from inside the canvas, and without one the message's toolbar
- * would portal itself into the sheet's sticky toolbar behind the overlay.
+ * This dialog brings its own `ContentEditorProvider`, shadowing the document
+ * page's: it opens from inside the canvas, and sharing that provider would have
+ * the ribbon here and the sheet's own ribbon both pointed at whichever field was
+ * touched last.
  */
 export const DistributeDoc = ({ docName, onClose, onSend }: DistributeDocProps) => {
   const [body, setBody] = useState(() => buildDefaultBody(docName));

@@ -2,13 +2,12 @@ import { HistorySpecimen } from './components/HistorySpecimen';
 import { OutlineItemSpecimen } from './components/OutlineItemSpecimen';
 import { PageBreaksSpecimen } from './components/PageBreaksSpecimen';
 import { TableViewSpecimen } from './components/TableViewSpecimen';
-import { ToolbarSpecimen } from './components/ToolbarSpecimen';
 import { ViduyKabalahSpecimen } from './components/ViduyKabalahSpecimen';
 import { GalleryHeader, GalleryIntro, GalleryRoot, GalleryTitle } from './ParityGallery.styles';
 import { PARITY_GALLERY_IDS } from './ParityGallery.testids';
 
 const INTRO =
-  'ששת הרכיבים שהועברו מ-Edit.tsx אך אינם חלק מהעמוד החי. כולם נבנו מחדש לפי אותן ' +
+  'חמשת הרכיבים שהועברו מ-Edit.tsx אך אינם חלק מהעמוד החי. כולם נבנו מחדש לפי אותן ' +
   'המוסכמות כמו שאר העמוד — styled-components, טוקנים במקום צבעים קשיחים, רכיב אחד לקובץ — ' +
   'ואף אחד מהם אינו מיובא לשום מקום מלבד המסך הזה. ההסבר המלא נמצא ב-parity/README.md.';
 
@@ -22,7 +21,6 @@ export const ParityGallery = () => (
       <GalleryIntro>{INTRO}</GalleryIntro>
     </GalleryHeader>
 
-    <ToolbarSpecimen />
     <TableViewSpecimen />
     <ViduyKabalahSpecimen />
     <HistorySpecimen />

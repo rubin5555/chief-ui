@@ -1,11 +1,11 @@
 import type { InitOptions } from '@tinymce/tinymce-react/lib/cjs/main/ts/components/Editor';
 
-export const TINYMCE_TOOLBAR =
-  'bold italic underline strikethrough | forecolor backcolor | ' +
-  'bullist numlist | alignright aligncenter alignleft alignjustify | ' +
-  'outdent indent | ltr rtl | superscript | link image table | removeformat';
-
-export const TINYMCE_PLUGINS = 'lists table directionality link image';
+// `searchreplace` is loaded for its API, not its button: the ribbon's own
+// find-and-replace panel calls `editor.plugins.searchreplace` directly and its
+// dialog is never opened. Same for `table` and `directionality`, whose commands
+// the ribbon runs — a plugin here means "these commands exist", not "these
+// buttons appear", because no TinyMCE toolbar is rendered at all (see below).
+export const TINYMCE_PLUGINS = 'lists table directionality link image searchreplace';
 
 // No upload backend exists yet, so dropped/pasted/picked images are embedded as base64
 // data URLs directly in the field's HTML rather than uploaded — this is what makes
@@ -36,19 +36,21 @@ export const TINYMCE_INIT: InitOptions = {
   skin: false,
   content_css: false,
   menubar: false,
-  toolbar: TINYMCE_TOOLBAR,
+  // TinyMCE renders no toolbar of its own. The ribbon above the sheet is ours
+  // (see components/EditorRibbon), and it drives this editor through the same
+  // commands the silver theme's buttons would have run — so what is given up here
+  // is the drawing, not the behaviour.
+  toolbar: false,
+  // And no context toolbar over a table either — that one is ours as well (see
+  // components/TableEditBar). An empty string is how the table plugin is told not
+  // to register it; `false` is not a value it accepts.
+  table_toolbar: '',
   plugins: TINYMCE_PLUGINS,
   directionality: 'rtl',
   promotion: false,
   resize: false,
   statusbar: false,
   entity_encoding: 'raw',
-  toolbar_persist: true,
-  // The floating overflow ("...") drawer TinyMCE normally uses to hide toolbar groups
-  // that don't fit never renders when the toolbar is hosted in a custom
-  // fixed_toolbar_container — any group past the visible row silently disappears with
-  // no error. Wrapping onto a second line instead needs no floating drawer at all.
-  toolbar_mode: 'wrap',
   paste_data_images: true,
   automatic_uploads: true,
   images_upload_handler: imagesUploadHandler,
