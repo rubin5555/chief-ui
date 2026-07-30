@@ -50,7 +50,7 @@ export const ApprovalWorkflow = ({
   const [roundConfig, setRoundConfig] = useState<ApprovalRoundConfig | null>(null);
   // Not a step: the toast outlives the dialog that started it, and distribution
   // carries on while you go back to reading the document.
-  const [distributedTo, setDistributedTo] = useState<number | null>(null);
+  const [isDistributing, setIsDistributing] = useState(false);
   const { data } = useHmlGroups();
   const hmlGroups = data ?? HML_GROUPS_FALLBACK.hmlGroups;
   const gate = useSignatureGate();
@@ -111,12 +111,12 @@ export const ApprovalWorkflow = ({
   const handleConfirmDistribute = () => setStep('distribute');
 
   // The share dialog closes, and the toast takes over from it.
-  const handleSent = (recipients: string[]) => {
-    setDistributedTo(recipients.length);
+  const handleSent = () => {
+    setIsDistributing(true);
     setStep('idle');
   };
 
-  const handleCloseToast = () => setDistributedTo(null);
+  const handleCloseToast = () => setIsDistributing(false);
 
   const handleOpenAcceptance = () => setStep('acceptance');
   const handleClose = () => setStep('idle');
@@ -172,7 +172,7 @@ export const ApprovalWorkflow = ({
         status={status}
         hmlGroups={hmlGroups}
         roundConfig={roundConfig}
-        distributedTo={distributedTo}
+        isDistributing={isDistributing}
         onClose={handleClose}
         onSaveHeader={onHeaderChange}
         onReviewContinue={handleReviewContinue}

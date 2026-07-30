@@ -38,8 +38,8 @@ export interface ApprovalFlowModalsProps {
   status: string;
   hmlGroups: HmlGroupDto[];
   roundConfig: ApprovalRoundConfig | null;
-  /** Non-null while the toast is up — it outlives the step that started it. */
-  distributedTo: number | null;
+  /** True while the toast is up — it outlives the step that started it. */
+  isDistributing: boolean;
   onClose: () => void;
   onSaveHeader: (header: DocumentHeader) => void;
   onReviewContinue: (isDirty: boolean) => void;
@@ -50,7 +50,7 @@ export interface ApprovalFlowModalsProps {
   onApprove: (signature: ApproverSignature) => void;
   onDistributeFromRotation: () => void;
   onConfirmDistribute: () => void;
-  onSent: (recipients: string[]) => void;
+  onSent: () => void;
   onCloseToast: () => void;
 }
 
@@ -68,7 +68,7 @@ export const ApprovalFlowModals = ({
   status,
   hmlGroups,
   roundConfig,
-  distributedTo,
+  isDistributing,
   onClose,
   onSaveHeader,
   onReviewContinue,
@@ -130,8 +130,6 @@ export const ApprovalFlowModals = ({
 
     {/* Not keyed off the step: distribution carries on while you go back to
         reading the document, so the toast outlives the dialog that started it. */}
-    {distributedTo !== null && (
-      <DistributeProgressToast recipientCount={distributedTo} onClose={onCloseToast} />
-    )}
+    {isDistributing && <DistributeProgressToast onClose={onCloseToast} />}
   </Suspense>
 );

@@ -17,9 +17,15 @@ import { DISTRIBUTE_PROGRESS_TOAST_IDS } from './DistributeProgressToast.testids
 const STEP_PERCENT = 2;
 const STEP_MS = 60;
 
+/**
+ * main's figure, verbatim (Edit.tsx:5078) — and "לכ-", approximately, because it
+ * is one. Nothing in the flow counts recipients: a distributed document goes to
+ * whoever the approval round's חמ״ל groups cover, which this page never resolves
+ * to people. When it does, this line is what changes.
+ */
+const APPROX_RECIPIENTS = 156;
+
 export interface DistributeProgressToastProps {
-  /** How many people it went to, shown once it lands. */
-  recipientCount: number;
   onClose: () => void;
 }
 
@@ -31,10 +37,7 @@ export interface DistributeProgressToastProps {
 // No close button until it lands: there is nothing useful to do with a
 // half-distributed document, and dismissing the only indication that it is
 // happening would leave nothing to come back to.
-export const DistributeProgressToast = ({
-  recipientCount,
-  onClose,
-}: DistributeProgressToastProps) => {
+export const DistributeProgressToast = ({ onClose }: DistributeProgressToastProps) => {
   const [percent, setPercent] = useState(0);
 
   const isComplete = percent >= 100;
@@ -75,11 +78,9 @@ export const DistributeProgressToast = ({
         </Percent>
       </ProgressRow>
 
-      {/* main says "הופץ לכ- 156 משתמשים" from a hardcoded 156. This counts the
-          recipients actually picked, which is the number the sender chose. */}
       {isComplete && (
         <SuccessDetail data-testid={DISTRIBUTE_PROGRESS_TOAST_IDS.detail}>
-          הופץ ל{recipientCount} משתמשים
+          הופץ לכ- {APPROX_RECIPIENTS} משתמשים
         </SuccessDetail>
       )}
     </ToastRoot>

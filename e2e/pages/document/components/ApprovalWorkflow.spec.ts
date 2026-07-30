@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { SEARCHABLE_MULTI_SELECT_IDS } from '../../../../src/components/ui/SearchableMultiSelect/SearchableMultiSelect.testids';
 import { SELECT_IDS } from '../../../../src/components/ui/Select/Select.testids';
 import { ACCEPTENCE_VERIFICATION_IDS } from '../../../../src/pages/document/components/AcceptenceVerification/AcceptenceVerification.testids';
 import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/ApprovalDetailsModal/ApprovalDetailsModal.testids';
@@ -14,7 +13,6 @@ import { SIGNATURE_TEXTAREA_IDS } from '../../../../src/pages/document/component
 
 const RANK = 'סא״ל';
 const USER = 'כהן א.';
-const RECIPIENT = 'אבי כהן';
 
 // The sidebar states the status as a sentence — `מסמך טיוטה` — rather than as a
 // bare chip, which is main's wording (Edit.tsx:3800).
@@ -112,25 +110,24 @@ test('approving the only stage prompts to distribute, and distributing opens the
   await expect(page.getByTestId(DOC_STATUS_HEADER_IDS.title)).toHaveText(statusText('מבצעית'));
   await expect(page.getByTestId(DISTRIBUTE_DOC_IDS.root)).toBeVisible();
 
+  // main's dialog asks for nothing but the message — the document's own mark
+  // beside it, and the ribbon that formats it (Edit.tsx:3103).
+  await expect(page.getByTestId(DISTRIBUTE_DOC_IDS.logo)).toBeVisible();
+  await expect(page.getByTestId(DISTRIBUTE_DOC_IDS.body)).toContainText('מכותבים שלום,');
+
   const sendBtn = page.getByTestId(DISTRIBUTE_DOC_IDS.sendBtn);
-  await expect(sendBtn).toBeDisabled();
-
-  await page.getByTestId(DISTRIBUTE_DOC_IDS.recipientsSelect).click();
-  await page.getByTestId(SEARCHABLE_MULTI_SELECT_IDS.option(RECIPIENT)).click();
-  await page.getByRole('heading', { name: 'שיתוף המסמך' }).click();
-
-  await expect(sendBtn).toBeEnabled();
   await sendBtn.click();
   await expect(page.getByTestId(DISTRIBUTE_DOC_IDS.root)).not.toBeVisible();
 
   // The share dialog hands over to the corner toast, which ramps to 100% and then
-  // says how many people it reached — one, since one recipient was picked.
+  // reports roughly who it reached — main's own approximate figure, since nothing
+  // in the flow resolves חמ״ל groups down to people.
   const toast = page.getByTestId(DISTRIBUTE_PROGRESS_TOAST_IDS.root);
   await expect(toast).toContainText('הפצת המסמך מתבצעת');
   await expect(page.getByTestId(DISTRIBUTE_PROGRESS_TOAST_IDS.percent)).toHaveText('100%');
   await expect(toast).toContainText('המסמך הופץ בהצלחה');
   await expect(page.getByTestId(DISTRIBUTE_PROGRESS_TOAST_IDS.detail)).toHaveText(
-    'הופץ ל1 משתמשים',
+    'הופץ לכ- 156 משתמשים',
   );
 
   // Dismissable only once it has landed — there is nothing to do with a

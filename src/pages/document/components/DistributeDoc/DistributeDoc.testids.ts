@@ -1,6 +1,6 @@
 export const DISTRIBUTE_DOC_IDS = {
   root: 'distribute-doc-modal',
-  recipientsSelect: 'distribute-doc-recipients',
+  logo: 'distribute-doc-logo',
   body: 'distribute-doc-body',
   sendBtn: 'distribute-doc-send',
 };
