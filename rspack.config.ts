@@ -14,7 +14,16 @@ export default defineConfig({
   entry: { main: './src/index.tsx' },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].[contenthash:8].js',
+    // No content hash in development. A hot update asks the server for the asset
+    // name the running page was built with, and a content hash changes with the
+    // very edit that triggered the update — so the request 404s, historyApiFallback
+    // answers it with index.html, and the client dies on a stylesheet whose MIME
+    // type is text/html. The failed chunk aborts the whole update, which is why
+    // every edit needed a manual reload.
+    filename: isDev ? '[name].js' : '[name].[contenthash:8].js',
+    cssFilename: isDev ? '[name].css' : '[name].[contenthash:8].css',
+    chunkFilename: isDev ? '[name].chunk.js' : '[name].[contenthash:8].js',
+    cssChunkFilename: isDev ? '[name].chunk.css' : '[name].[contenthash:8].css',
     publicPath: '/',
     clean: true,
   },
@@ -65,7 +74,9 @@ export default defineConfig({
     }),
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     new rspack.HtmlRspackPlugin({ template: './public/index.html' }),
-    ...(isDev ? [new ReactRefreshRspackPlugin(), new rspack.HotModuleReplacementPlugin()] : []),
+    // No HotModuleReplacementPlugin here: `devServer.hot` applies it already, and
+    // registering it twice is what the dev server warns about on every start.
+    ...(isDev ? [new ReactRefreshRspackPlugin()] : []),
     new TsCheckerRspackPlugin({
       typescript: { tsgo: true },
     }),
