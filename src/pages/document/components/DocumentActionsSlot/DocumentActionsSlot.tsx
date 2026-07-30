@@ -13,6 +13,10 @@ const EditDocDetailsModal = lazy(() =>
   import('../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
 );
 
+const VersionPickerModal = lazy(() =>
+  import('./components/VersionPickerModal').then((m) => ({ default: m.VersionPickerModal })),
+);
+
 const routeApi = getRouteApi('/document/$id');
 
 export interface DocumentActionsSlotProps {
@@ -30,9 +34,11 @@ export interface DocumentActionsSlotProps {
 // either: DocActionToolbar and FilterPanel each track their own clicks, and a second
 // layer here would report every one of them twice.
 export const DocumentActionsSlot = ({ overrides }: DocumentActionsSlotProps) => {
+  const { id } = routeApi.useParams();
   const { zoom, q } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
   const [detailsMode, setDetailsMode] = useState<EditDocDetailsMode | null>(null);
+  const [showVersionPicker, setShowVersionPicker] = useState(false);
   // The permissions dialog is shared with the section menus, so it is the
   // provider's to render — this button only asks for it, with no level in mind.
   const { openDocPermissions } = useDocPermissions();
@@ -41,6 +47,15 @@ export const DocumentActionsSlot = ({ overrides }: DocumentActionsSlotProps) => 
   const handleOpenDuplicate = () => setDetailsMode('duplicate');
   const handleCloseDetails = () => setDetailsMode(null);
   const handleOpenPermissions = () => openDocPermissions();
+
+  // The picker is owned here, beside the icon that opens it, rather than by
+  // ComparisonBar: the bar only exists once a comparison is running, so it can't
+  // hold the control that starts one. Which version is being compared lives in
+  // the URL, which is how the bar hears about the pick.
+  const handleOpenVersionPicker = () => setShowVersionPicker(true);
+  const handleCloseVersionPicker = () => setShowVersionPicker(false);
+  const handlePickVersion = (label: string) =>
+    navigate({ search: (prev) => ({ ...prev, compareVersion: label }), replace: true });
 
   // Clamped here rather than in ZoomControl, and rather than left to the route
   // schema: zod's `.min()/.max()` with a `.catch()` fallback *rejects* an
@@ -71,6 +86,7 @@ export const DocumentActionsSlot = ({ overrides }: DocumentActionsSlotProps) => 
           onEditDocClick={handleOpenEdit}
           onDuplicateClick={handleOpenDuplicate}
           onPermissionsClick={handleOpenPermissions}
+          onCompareClick={handleOpenVersionPicker}
           onZoomChange={handleZoomChange}
           onSearchChange={handleSearchChange}
         />
@@ -84,6 +100,16 @@ export const DocumentActionsSlot = ({ overrides }: DocumentActionsSlotProps) => 
             docStatus={overrides.status}
             onClose={handleCloseDetails}
             onSave={handleSaveDetails}
+          />
+        )}
+      </Suspense>
+
+      <Suspense fallback={null}>
+        {showVersionPicker && (
+          <VersionPickerModal
+            docId={id}
+            onPick={handlePickVersion}
+            onClose={handleCloseVersionPicker}
           />
         )}
       </Suspense>

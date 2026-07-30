@@ -90,13 +90,26 @@ export const Select = ({
     // scrolling the trigger out from under the fixed-position dropdown leaves it floating
     // detached, so close immediately on any scroll that isn't inside the dropdown itself (e.g.
     // its own options list). No debounce and no refocus — both caused a visible delay/jump.
+    //
+    // Armed a frame late, because opening can *cause* a scroll: the same click focuses the
+    // trigger, and the browser scrolls a newly-focused element into view. That lands a few
+    // milliseconds after the dropdown mounts and used to close it again immediately — which
+    // made the control unopenable whenever its trigger sat near the edge of a scrolling
+    // container, such as a field low in a dialog's body. Nobody scrolls deliberately inside
+    // the frame they clicked in, so nothing real is missed.
+    let armed = false;
+    const arm = requestAnimationFrame(() => {
+      armed = true;
+    });
     const onScroll = (e: Event) => {
+      if (!armed) return;
       if (dropRef.current?.contains(e.target as Node)) return;
       setIsOpen(false);
     };
     window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', onScroll);
     return () => {
+      cancelAnimationFrame(arm);
       window.removeEventListener('scroll', onScroll, true);
       window.removeEventListener('resize', onScroll);
     };

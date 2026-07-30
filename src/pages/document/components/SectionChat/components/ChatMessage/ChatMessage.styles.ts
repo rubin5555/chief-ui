@@ -3,6 +3,11 @@ import { colors, docColors, gray, radii } from '@/styles/theme';
 
 export const MessageBubble = styled.div<{ $mine: boolean }>`
 	align-self: ${(props) => (props.$mine ? 'flex-start' : 'flex-end')};
+	/* \`overflow: hidden\` below zeroes this item's automatic minimum size, so
+	   without this the thread squashes its messages to fit the bubble instead of
+	   overflowing — and a list that never overflows never scrolls. main's messages
+	   sit in a block container, where the question doesn't arise. */
+	flex-shrink: 0;
 	max-width: 88%;
 	border-radius: ${radii.xl};
 	overflow: hidden;

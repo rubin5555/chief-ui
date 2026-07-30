@@ -19,10 +19,14 @@ export const BodyTextarea = styled.textarea`
 	padding: 12px 14px;
 	border-radius: ${radii.lg};
 	border: 1px solid ${colors.border};
-	font-size: 13px;
+	font-size: 14px;
 	line-height: 1.6;
-	color: ${gray[800]};
+	color: ${gray[700]};
 	resize: none;
+
+	&::placeholder {
+		color: ${gray[300]};
+	}
 
 	&:focus {
 		outline: none;

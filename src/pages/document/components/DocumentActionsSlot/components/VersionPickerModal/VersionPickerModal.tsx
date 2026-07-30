@@ -1,5 +1,6 @@
 import { DOC_VERSIONS_FALLBACK, useDocVersions } from '@/api/docs';
 import { Modal } from '@/components/ui/Modal';
+import { useVersionPickerModalAnalytics } from './VersionPickerModal.analytics';
 import {
   CurrentTag,
   VersionLabel,
@@ -17,7 +18,7 @@ export interface VersionPickerModalProps {
 }
 
 // Which earlier version to compare the document against (main's picker,
-// TopNavbar.tsx:1682).
+// TopNavbar.tsx:1682), opened by the navbar's compare icon.
 //
 // The query is inside this lazy component, so the version history is fetched when
 // someone asks to compare rather than on every document load.
@@ -28,8 +29,10 @@ export interface VersionPickerModalProps {
 export const VersionPickerModal = ({ docId, onPick, onClose }: VersionPickerModalProps) => {
   const { data } = useDocVersions(docId);
   const versions = data ?? DOC_VERSIONS_FALLBACK;
+  const { trackComparisonStarted } = useVersionPickerModalAnalytics();
 
   const handlePick = (label: string) => () => {
+    trackComparisonStarted(label);
     onPick(label);
     onClose();
   };

@@ -37,12 +37,45 @@ export const ZoomButton = styled.button`
   &:hover { background-color: ${gray[100]}; }
 `;
 
-export const ZoomValue = styled.span`
+/*
+ * The zoom readout, which is also how you set the zoom: main only offers −/+
+ * (TopNavbar.tsx:1314), so getting from 100% to 175% is eight presses.
+ *
+ * `direction: ltr` because "100%" is a number followed by its unit and has to
+ * stay in that order on this RTL page. The width is main's `w-10`, held on the
+ * group rather than the field so the −/+ buttons either side don't shift as the
+ * number grows a digit.
+ */
+export const ZoomValueGroup = styled.label`
+  ${flexCenter}
+  direction: ltr;
+  width: 40px;
+  border-radius: ${radii.sm};
+  &:focus-within {
+    outline: 2px solid ${colors.primary};
+    outline-offset: 1px;
+  }
+`;
+
+export const ZoomField = styled.input`
+  /* No border and no box of its own: this reads as the label it replaced, and
+     the group above is what answers focus. */
+  border: none;
+  background: transparent;
+  padding: 0;
+  width: 24px;
   font-size: 12px;
   color: ${gray[600]};
-  width: 40px;
-  text-align: center;
+  text-align: right;
   font-variant-numeric: tabular-nums;
+  &:focus {
+    outline: none;
+  }
+`;
+
+export const ZoomUnit = styled.span`
+  font-size: 12px;
+  color: ${gray[600]};
 `;
 
 /*
@@ -68,6 +101,10 @@ export const SearchField = styled.div`
 
 export const SearchFieldInput = styled.input`
   font-size: 12px;
+  /* An input keeps the browser's inset border unless it is told not to — main
+     never sees this because Tailwind's preflight zeroes it globally. Without it
+     there is a second, boxy edge drawn inside the pill. */
+  border: none;
   background: transparent;
   /* Focus is drawn by SearchField above, once, around the whole pill. */
   outline: none;

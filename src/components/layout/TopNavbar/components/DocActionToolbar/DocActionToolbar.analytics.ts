@@ -6,6 +6,7 @@ const ACTIONS = {
   EDIT_DOC_CLICKED: 'לחיצה על עריכת פרטי מסמך',
   DUPLICATE_CLICKED: 'לחיצה על שכפול',
   PERMISSIONS_CLICKED: 'לחיצה על הרשאות מסמך',
+  COMPARE_CLICKED: 'לחיצה על השוואת גרסאות',
   EXPORT_STARTED: 'ניסיון ייצוא מסמך',
   ZOOM_CHANGED: 'שינוי רמת זום',
   SEARCH_OPENED: 'פתיחת חיפוש במסמך',
@@ -23,6 +24,10 @@ export const useDocActionToolbarAnalytics = () => {
 
   const trackPermissionsClicked = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.PERMISSIONS_CLICKED });
+  };
+
+  const trackCompareClicked = () => {
+    analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.COMPARE_CLICKED });
   };
 
   const trackExportStarted = (type: 'word' | 'pdf') => {
@@ -52,6 +57,7 @@ export const useDocActionToolbarAnalytics = () => {
     trackEditDocClicked,
     trackDuplicateClicked,
     trackPermissionsClicked,
+    trackCompareClicked,
     trackExportStarted,
     trackZoomChanged,
     trackSearchToggled,

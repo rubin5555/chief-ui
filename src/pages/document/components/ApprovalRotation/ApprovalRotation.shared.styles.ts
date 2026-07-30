@@ -16,9 +16,13 @@ export const Notes = styled.textarea`
   padding: 10px 12px;
   border-radius: ${radii.lg};
   border: 1px solid ${colors.border};
-  font-size: 13px;
-  color: ${gray[800]};
+  font-size: 14px;
+  color: ${gray[700]};
   resize: none;
+
+  &::placeholder {
+    color: ${gray[300]};
+  }
 
   &:focus {
     outline: none;

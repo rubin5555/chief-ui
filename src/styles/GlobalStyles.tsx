@@ -22,7 +22,14 @@ export const GlobalStyles = createGlobalStyle`
     font-family: inherit;
   }
 
-  input {
+  /* A form control's font does not inherit — left alone, a textarea is drawn in
+     the browser's monospace default, which is why main sets fontFamily: inherit
+     by hand on the ones it writes outside a Tailwind class
+     (Edit.tsx:3111, 4377). Tailwind's preflight does this for it everywhere
+     else; this is that line. */
+  input,
+  textarea,
+  select {
     font-family: inherit;
   }
 

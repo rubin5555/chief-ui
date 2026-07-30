@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { resetButton } from '@/styles/mixins';
-import { colors, docColors, gray, radii, transitions } from '@/styles/theme';
+import { colors, docColors, radii, transitions } from '@/styles/theme';
 import { BAR_WIDTH } from '../../document.measurements';
 
 // main's comparison bar (Edit.tsx:3734): the same 230mm as the metadata pill and
@@ -101,20 +101,4 @@ export const NavCounter = styled.span`
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: ${colors.primary};
-`;
-
-/** What stands in for the bar when comparison is off — the way into it. */
-export const CompareTriggerBtn = styled.button`
-  ${resetButton}
-  padding: 4px 12px;
-  border: 1px solid ${gray[300]};
-  border-radius: ${radii.full};
-  font-size: 11px;
-  font-weight: 600;
-  color: ${gray[700]};
-  transition: background-color ${transitions.normal};
-
-  &:hover {
-    background-color: ${gray[50]};
-  }
 `;

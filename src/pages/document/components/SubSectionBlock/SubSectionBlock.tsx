@@ -125,6 +125,7 @@ export const SubSectionBlock = ({
           options={
             <SectionMenu
               sectionId={subSection.id}
+              permissionSectionId={sectionId}
               sectionTitle={subSection.title}
               instructions={meta.instructions ?? ''}
               isHidden={meta.hidden}

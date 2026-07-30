@@ -10,17 +10,12 @@ import {
 } from '@/api/approvals';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
+import { Select } from '@/components/ui/Select';
 import { useApprovalDetailsModalAnalytics } from './ApprovalDetailsModal.analytics';
-import {
-  Body,
-  Field,
-  FieldLabel,
-  Notes,
-  RankBlock,
-  RankBlockTitle,
-} from './ApprovalDetailsModal.styles';
+import { Body, Field, FieldLabel, Notes } from './ApprovalDetailsModal.styles';
 import { APPROVAL_DETAILS_MODAL_IDS } from './ApprovalDetailsModal.testids';
+import { ApproverTimeline } from './components/ApproverTimeline';
+import { HmlSelect } from './components/HmlSelect';
 
 const FORM_ID = 'approval-details-form';
 
@@ -40,12 +35,18 @@ export interface ApprovalDetailsModalProps {
   onSubmit: (config: ApprovalRoundConfig) => void;
 }
 
-// Configures who approves (which ranks, which named users per rank) and
-// which HML groups need receipt confirmation, before ApprovalRotation opens
-// with this configuration. Simplified from main's cascading single-rank +
-// inline-search-popover UI to a plain multi-select per concern (reusing
-// SearchableMultiSelect throughout) — same configuration surface, less
-// bespoke chrome.
+/**
+ * Configures the approval round before ApprovalRotation opens on it (main's
+ * ApprovalDetailsModal, Edit.tsx:2900): how high the document has to climb, who
+ * signs at each rank on the way, and which חמ״לים have to confirm receipt.
+ *
+ * The rank field picks *one* rank and the round is every rank up to it. That is
+ * main's model and it is the honest one — approval is a chain, and a document
+ * approved by an אלוף that skipped the אל״ם below is not a thing that happens.
+ * The timeline underneath is where that chain becomes visible, and is the reason
+ * this isn't a multi-select: a set of checkboxes would let you build a round
+ * with a hole in it.
+ */
 export const ApprovalDetailsModal = ({
   onClose,
   onSubmit: onSubmitConfig,
@@ -58,27 +59,35 @@ export const ApprovalDetailsModal = ({
   const approverUsers = usersData ?? APPROVER_USERS_FALLBACK.approverUsers;
   const hmlGroups = hmlData ?? HML_GROUPS_FALLBACK.hmlGroups;
 
-  const [selectedRanks, setSelectedRanks] = useState<string[]>([]);
-  const [stageUsers, setStageUsers] = useState<Record<string, string[]>>({});
-  const [selectedHmlNames, setSelectedHmlNames] = useState<string[]>([]);
+  const [topRank, setTopRank] = useState('');
+  const [usersByRank, setUsersByRank] = useState<Record<string, string[]>>({});
+  const [selectedHmlIds, setSelectedHmlIds] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+  const { trackRoundConfigured } = useApprovalDetailsModalAnalytics();
 
-  const handleRankUsersChange = (rank: string) => (users: string[]) =>
-    setStageUsers((prev) => ({ ...prev, [rank]: users }));
+  // Derived, never stored: the round *is* "everything up to the chosen rank", so
+  // keeping a second list of stages beside the choice would only be a list that
+  // could disagree with it.
+  const topRankIndex = ranks.indexOf(topRank);
+  const activeRanks = topRankIndex >= 0 ? ranks.slice(0, topRankIndex + 1) : [];
+
+  const handleAddUser = (rank: string, user: string) =>
+    setUsersByRank((prev) => ({ ...prev, [rank]: [...(prev[rank] ?? []), user] }));
+
+  const handleRemoveUser = (rank: string, user: string) =>
+    setUsersByRank((prev) => ({
+      ...prev,
+      [rank]: (prev[rank] ?? []).filter((candidate) => candidate !== user),
+    }));
 
   const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value);
-  const { trackRoundConfigured } = useApprovalDetailsModalAnalytics();
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const hmlGroupIds = hmlGroups
-      .filter((group) => selectedHmlNames.includes(group.name))
-      .map((group) => group.id);
-
-    trackRoundConfigured(selectedRanks.length, hmlGroupIds.length);
+    trackRoundConfigured(activeRanks.length, selectedHmlIds.length);
     onSubmitConfig({
-      stages: selectedRanks.map((rank) => ({ rank, users: stageUsers[rank] ?? [] })),
-      hmlGroupIds,
+      stages: activeRanks.map((rank) => ({ rank, users: usersByRank[rank] ?? [] })),
+      hmlGroupIds: selectedHmlIds,
       notes,
     });
   };
@@ -87,7 +96,7 @@ export const ApprovalDetailsModal = ({
     <Modal
       title="אישור המסמך"
       onClose={onClose}
-      width={520}
+      width={580}
       data-testid={APPROVAL_DETAILS_MODAL_IDS.root}
       footer={
         <>
@@ -97,7 +106,7 @@ export const ApprovalDetailsModal = ({
           <Button
             type="submit"
             form={FORM_ID}
-            disabled={selectedRanks.length === 0}
+            disabled={activeRanks.length === 0}
             data-testid={APPROVAL_DETAILS_MODAL_IDS.submitBtn}
           >
             שליחה לאישור
@@ -107,43 +116,36 @@ export const ApprovalDetailsModal = ({
     >
       <Body id={FORM_ID} onSubmit={onSubmit}>
         <Field>
-          <FieldLabel>גורמים מאשרים</FieldLabel>
-          <SearchableMultiSelect
+          <FieldLabel htmlFor="approval-rank">גורם מאשר</FieldLabel>
+          <Select
+            id="approval-rank"
             options={ranks}
-            selected={selectedRanks}
-            onChange={setSelectedRanks}
-            placeholder="בחר גורמים מאשרים..."
-            data-testid={APPROVAL_DETAILS_MODAL_IDS.ranksSelect}
+            value={topRank}
+            onChange={setTopRank}
+            placeholder="בחר גורם מאשר"
+            data-testid={APPROVAL_DETAILS_MODAL_IDS.rankSelect}
           />
         </Field>
 
-        {selectedRanks.map((rank) => (
-          <RankBlock key={rank}>
-            <RankBlockTitle>{rank}</RankBlockTitle>
-            <SearchableMultiSelect
-              options={approverUsers}
-              selected={stageUsers[rank] ?? []}
-              onChange={handleRankUsersChange(rank)}
-              placeholder="בחר מאשרים..."
-              data-testid={APPROVAL_DETAILS_MODAL_IDS.rankUsersSelect(rank)}
-            />
-          </RankBlock>
-        ))}
+        {activeRanks.length > 0 && (
+          <ApproverTimeline
+            ranks={activeRanks}
+            usersByRank={usersByRank}
+            approverUsers={approverUsers}
+            onAddUser={handleAddUser}
+            onRemoveUser={handleRemoveUser}
+          />
+        )}
 
         <Field>
           <FieldLabel>חמ״לים שנדרש מולם וידוא קבלה</FieldLabel>
-          <SearchableMultiSelect
-            options={hmlGroups.map((group) => group.name)}
-            selected={selectedHmlNames}
-            onChange={setSelectedHmlNames}
-            placeholder="בחר חמ״לים..."
-            data-testid={APPROVAL_DETAILS_MODAL_IDS.hmlSelect}
-          />
+          <HmlSelect groups={hmlGroups} selectedIds={selectedHmlIds} onChange={setSelectedHmlIds} />
         </Field>
 
         <Field>
-          <FieldLabel>הערות</FieldLabel>
+          <FieldLabel htmlFor="approval-notes">הערות</FieldLabel>
           <Notes
+            id="approval-notes"
             value={notes}
             onChange={handleNotesChange}
             placeholder="הוסף הערות לסבב האישורים..."

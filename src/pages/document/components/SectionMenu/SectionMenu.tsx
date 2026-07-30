@@ -21,6 +21,13 @@ const PANEL_WIDTH = 220;
 
 export interface SectionMenuProps {
   sectionId: string;
+  /**
+   * Which section the מאשרי/עורכי actions land on, when that isn't the node the
+   * menu is attached to. A sub-section passes its parent: those two permissions
+   * are granted per *section*, so the tree they open has no row of its own to
+   * select, and preselecting the sub-section's id selects nothing at all.
+   */
+  permissionSectionId?: string;
   sectionTitle: string;
   instructions: string;
   tone?: ActionTone;
@@ -40,13 +47,15 @@ export interface SectionMenuProps {
  * actions open.
  *
  * מאשרי הסעיף and עורכי הסעיף open the document permissions dialog on the matching
- * permission with this section already selected, rather than editing the section's
- * approvers here. That is main's routing (its `permTrigger`, TopNavbar.tsx:1093),
+ * permission with this section already selected — a sub-section's menu selects the
+ * section it belongs to, since that is the level the permission exists at (see
+ * `permissionSectionId`) — rather than editing the section's approvers here. That is main's routing (its `permTrigger`, TopNavbar.tsx:1093),
  * and it is the honest one: those two permissions are granted per section but held
  * document-wide, so a per-section editor can only ever show a slice of them.
  */
 export const SectionMenu = ({
   sectionId,
+  permissionSectionId,
   sectionTitle,
   instructions,
   tone = 'default',
@@ -80,7 +89,7 @@ export const SectionMenu = ({
   // popover left standing behind an overlay is a popover nobody can reach.
   const handleOpenPermissions = (levelId: string) => () => {
     panel.close();
-    openDocPermissions({ levelId, sectionId });
+    openDocPermissions({ levelId, sectionId: permissionSectionId ?? sectionId });
   };
 
   const handleToggleHidden = () => {

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, gray, radii } from '@/styles/theme';
+import { gray, radii, transitions } from '@/styles/theme';
 
 export const Field = styled.div`
 	display: flex;
@@ -13,40 +13,35 @@ export const FieldLabel = styled.label`
 	color: ${gray[700]};
 `;
 
-export const RankBlock = styled.div`
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	padding: 10px 12px;
-	border-radius: ${radii.lg};
-	background-color: ${gray[50]};
-`;
-
-export const RankBlockTitle = styled.span`
-	font-size: 12px;
-	font-weight: 700;
-	color: ${colors.primary};
-`;
-
+// main's notes field (Edit.tsx:3057): plain white on a grey hairline, and the
+// focus state only deepens the edge — this sits under three other controls that
+// already carry the app's blue, and a fourth would make the form read as a
+// warning.
 export const Notes = styled.textarea`
 	width: 100%;
 	min-height: 80px;
-	padding: 10px 12px;
-	border-radius: ${radii.lg};
-	border: 1px solid ${colors.border};
-	background-color: ${gray[50]};
-	font-size: 13px;
-	color: ${gray[800]};
+	padding: 12px 16px;
+	border-radius: ${radii.xl};
+	border: 1px solid ${gray[200]};
+	font-size: 14px;
+	color: ${gray[700]};
 	resize: none;
+	transition: border-color ${transitions.normal};
+
+	&::placeholder {
+		color: ${gray[300]};
+	}
 
 	&:focus {
 		outline: none;
-		border-color: ${colors.primary};
+		border-color: ${gray[300]};
 	}
 `;
 
+// 24px between sections, main's `gap-6` (Edit.tsx:2937) — the rank field and the
+// timeline it produces have to read as two things, not one control that grew.
 export const Body = styled.form`
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
+	gap: 24px;
 `;

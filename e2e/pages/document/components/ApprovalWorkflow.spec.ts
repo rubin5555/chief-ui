@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { SEARCHABLE_MULTI_SELECT_IDS } from '../../../../src/components/ui/SearchableMultiSelect/SearchableMultiSelect.testids';
+import { SELECT_IDS } from '../../../../src/components/ui/Select/Select.testids';
 import { ACCEPTENCE_VERIFICATION_IDS } from '../../../../src/pages/document/components/AcceptenceVerification/AcceptenceVerification.testids';
 import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/ApprovalDetailsModal/ApprovalDetailsModal.testids';
 import { APPROVAL_ROTATION_IDS } from '../../../../src/pages/document/components/ApprovalRotation/ApprovalRotation.testids';
@@ -50,14 +51,11 @@ const advanceToApprovalRound = async (page: import('@playwright/test').Page) => 
 const configureOneStageRound = async (page: import('@playwright/test').Page) => {
   await advanceToApprovalRound(page);
 
-  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.ranksSelect).click();
-  await page.getByTestId(SEARCHABLE_MULTI_SELECT_IDS.option(RANK)).click();
-  // Click the modal heading (not Escape, which also closes the Modal itself)
-  // to dismiss the open dropdown before continuing.
-  await page.getByRole('heading', { name: 'אישור המסמך' }).click();
-  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.rankUsersSelect(RANK)).click();
-  await page.getByTestId(SEARCHABLE_MULTI_SELECT_IDS.option(USER)).click();
-  await page.getByRole('heading', { name: 'אישור המסמך' }).click();
+  // RANK is the lowest rank, so the round it cascades to is one stage long.
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.rankSelect).click();
+  await page.getByTestId(SELECT_IDS.option(RANK)).click();
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.addApprover(RANK)).click();
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.approverOption(RANK, USER)).click();
   await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.submitBtn).click();
 };
 

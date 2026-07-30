@@ -109,7 +109,10 @@ export const RotationCarousel = ({
             aria-label="המאשר הבא"
             data-testid={APPROVAL_ROTATION_IDS.nextUserBtn}
           >
-            <ChevronLeft size={16} aria-hidden="true" />
+            {/* The header is RTL, so this button sits on the right and its arrow
+                has to point that way — main's `rotate-180` chevron
+                (Edit.tsx:2741), and its mirror image below. */}
+            <ChevronRight size={16} aria-hidden="true" />
           </CarouselNavBtn>
           <CarouselTitle>
             <StageLabel>{activeStage.rank}</StageLabel>
@@ -122,7 +125,7 @@ export const RotationCarousel = ({
             aria-label="המאשר הקודם"
             data-testid={APPROVAL_ROTATION_IDS.prevUserBtn}
           >
-            <ChevronRight size={16} aria-hidden="true" />
+            <ChevronLeft size={16} aria-hidden="true" />
           </CarouselNavBtn>
         </CarouselHeader>
 

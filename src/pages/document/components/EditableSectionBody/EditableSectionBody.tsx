@@ -106,6 +106,7 @@ export const EditableSectionBody = ({
             placeholder={PLACEHOLDER[depth]}
             minHeight={MIN_HEIGHT[depth]}
             selectionOnly={isMarking}
+            inset
           />
         </div>
       )}

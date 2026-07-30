@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SEARCHABLE_MULTI_SELECT_IDS } from '../../../../src/components/ui/SearchableMultiSelect/SearchableMultiSelect.testids';
+import { SELECT_IDS } from '../../../../src/components/ui/Select/Select.testids';
 import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/ApprovalDetailsModal/ApprovalDetailsModal.testids';
 import { APPROVAL_ROTATION_IDS } from '../../../../src/pages/document/components/ApprovalRotation/ApprovalRotation.testids';
 import { STATUS_FLOW_NAV_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/StatusFlowNav/StatusFlowNav.testids';
@@ -97,12 +97,10 @@ test('approving a stage stamps the approver into the signatures block', async ({
   await page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn).click();
   await page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.submitBtn).click();
 
-  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.ranksSelect).click();
-  await page.getByTestId(SEARCHABLE_MULTI_SELECT_IDS.option(RANK)).click();
-  await page.getByRole('heading', { name: 'אישור המסמך' }).click();
-  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.rankUsersSelect(RANK)).click();
-  await page.getByTestId(SEARCHABLE_MULTI_SELECT_IDS.option(USER)).click();
-  await page.getByRole('heading', { name: 'אישור המסמך' }).click();
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.rankSelect).click();
+  await page.getByTestId(SELECT_IDS.option(RANK)).click();
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.addApprover(RANK)).click();
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.approverOption(RANK, USER)).click();
   await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.submitBtn).click();
 
   await expect(page.getByTestId(APPROVER_STAMP_LIST_IDS.root)).toHaveCount(0);

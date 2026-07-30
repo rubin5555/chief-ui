@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components';
 import { flexGap } from '@/styles/mixins';
-import { colors, gray, radii, shadows } from '@/styles/theme';
+import { colors, docColors, gray, radii, shadows } from '@/styles/theme';
 
 // Shared between the live TinyMCE body and the inactive-state preview (see
 // ContentEditor.tsx) so both render identical typography for the same HTML string.
@@ -82,21 +82,34 @@ const richTextContent = css`
 	}
 `;
 
-export const EditorWrapper = styled.div`
+/**
+ * `$inset` is the field as it appears *in* a page's own surface rather than
+ * floating on one: a tinted fill with a hairline edge and no lift, which is how
+ * main draws a section's content box on the white sheet (Edit.tsx:4533 —
+ * `#f9fafb` on a `#f1f5f9` border). A white card with a grey border reads as a
+ * box drawn on the paper instead of a part of it.
+ *
+ * `docColors` is otherwise the document page's own namespace, but the hairline
+ * is exactly the "content-box border" role it was minted for (see
+ * src/pages/document/DESIGN_PARITY.md), and the alternative — a shared component
+ * taking a raw hex — is worse.
+ */
+export const EditorWrapper = styled.div<{ $inset: boolean }>`
 	display: flex;
 	flex-direction: column;
-	border: 1px solid ${gray[200]};
+	border: 1px solid ${({ $inset }) => ($inset ? docColors.hairline : gray[200])};
 	border-radius: ${radii.xl};
 	overflow: hidden;
-	box-shadow: ${shadows.sm};
-	background: ${colors.surface};
+	box-shadow: ${({ $inset }) => ($inset ? 'none' : shadows.sm)};
+	background: ${({ $inset }) => ($inset ? gray[50] : colors.surface)};
 	transition:
 		border-color 0.15s ease,
 		box-shadow 0.15s ease;
 
 	&:focus-within {
-		border-color: ${colors.primary};
-		box-shadow: 0 0 0 3px color-mix(in srgb, ${colors.primaryLight} 30%, transparent);
+		border-color: ${({ $inset }) => ($inset ? gray[300] : colors.primary)};
+		box-shadow: ${({ $inset }) =>
+      $inset ? 'none' : `0 0 0 3px color-mix(in srgb, ${colors.primaryLight} 30%, transparent)`};
 	}
 `;
 

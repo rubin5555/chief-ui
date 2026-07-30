@@ -22,11 +22,11 @@ test('zooming writes the level to the URL and stops at the bounds', async ({ pag
   await page.goto('/document/d1');
 
   const zoomValue = page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomValue);
-  await expect(zoomValue).toHaveText('100%');
+  await expect(zoomValue).toHaveValue('100');
 
   await page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomIn).click();
   await expect(page).toHaveURL(/zoom=110/);
-  await expect(zoomValue).toHaveText('110%');
+  await expect(zoomValue).toHaveValue('110');
 
   // The paper scales with it — the control and the sheet are in different subtrees
   // and share nothing but the search param.
@@ -36,21 +36,44 @@ test('zooming writes the level to the URL and stops at the bounds', async ({ pag
   // hold there rather than falling back to the schema's default.
   for (let i = 0; i < 7; i++) await page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomOut).click();
 
-  await expect(zoomValue).toHaveText('50%');
+  await expect(zoomValue).toHaveValue('50');
   await expect(page).toHaveURL(/zoom=50/);
+});
+
+test('the zoom level can be typed straight in, and is clamped on commit', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  const zoomValue = page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomValue);
+  await zoomValue.fill('175');
+  await zoomValue.press('Enter');
+
+  await expect(page).toHaveURL(/zoom=175/);
+  await expect(page.getByTestId(PAPER_CANVAS_IDS.paper)).toHaveCSS('zoom', '1.75');
+
+  // Past ZOOM_MAX the owner pins it, and the field falls back to what was
+  // actually applied rather than to what was asked for.
+  await zoomValue.fill('900');
+  await zoomValue.press('Enter');
+  await expect(zoomValue).toHaveValue('200');
+  await expect(page).toHaveURL(/zoom=200/);
+
+  // Escape abandons a half-typed number instead of committing it.
+  await zoomValue.fill('60');
+  await zoomValue.press('Escape');
+  await expect(zoomValue).toHaveValue('200');
 });
 
 test('a bookmarked zoom level is restored on load', async ({ page }) => {
   await page.goto('/document/d1?zoom=75');
 
-  await expect(page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomValue)).toHaveText('75%');
+  await expect(page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomValue)).toHaveValue('75');
   await expect(page.getByTestId(PAPER_CANVAS_IDS.paper)).toHaveCSS('zoom', '0.75');
 });
 
 test('an out-of-range zoom in the URL falls back to the default', async ({ page }) => {
   await page.goto('/document/d1?zoom=4000');
 
-  await expect(page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomValue)).toHaveText('100%');
+  await expect(page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomValue)).toHaveValue('100');
 });
 
 test('the search field publishes its query to the URL, and clears on close', async ({ page }) => {

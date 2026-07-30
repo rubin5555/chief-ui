@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { CompareButton } from './controls/CompareButton';
 import { DuplicateButton } from './controls/DuplicateButton';
 import { EditDocButton } from './controls/EditDocButton';
 import type { ExportType } from './controls/ExportControls';
@@ -25,6 +26,8 @@ interface DocActionToolbarProps {
   onEditDocClick?: () => void;
   onDuplicateClick?: () => void;
   onPermissionsClick?: () => void;
+  /** Opens the version picker; the bar it turns on is drawn by the page itself. */
+  onCompareClick?: () => void;
   onZoomChange?: (zoom: number) => void;
   onSearchChange?: (query: string) => void;
 }
@@ -45,6 +48,7 @@ export const DocActionToolbar = ({
   onEditDocClick,
   onDuplicateClick,
   onPermissionsClick,
+  onCompareClick,
   onZoomChange,
   onSearchChange,
 }: DocActionToolbarProps) => {
@@ -52,6 +56,7 @@ export const DocActionToolbar = ({
     trackEditDocClicked,
     trackDuplicateClicked,
     trackPermissionsClicked,
+    trackCompareClicked,
     trackExportStarted,
     trackZoomChanged,
     trackSearchToggled,
@@ -72,6 +77,11 @@ export const DocActionToolbar = ({
     onPermissionsClick?.();
   };
 
+  const onCompareButtonClick = () => {
+    trackCompareClicked();
+    onCompareClick?.();
+  };
+
   const onExportStart = (type: ExportType) => trackExportStarted(type);
 
   const onZoomControlChange = (nextZoom: number) => {
@@ -87,6 +97,7 @@ export const DocActionToolbar = ({
       <EditDocButton onClick={onEditDocButtonClick} />
       <DuplicateButton onClick={onDuplicateButtonClick} />
       <PermissionsButton onClick={onPermissionsButtonClick} />
+      <CompareButton onClick={onCompareButtonClick} />
       <ExportControls onExportStart={onExportStart} />
 
       <Divider />

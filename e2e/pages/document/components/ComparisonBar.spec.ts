@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
 import { COMPARISON_BAR_IDS } from '../../../../src/pages/document/components/ComparisonBar/ComparisonBar.testids';
-import { VERSION_PICKER_MODAL_IDS } from '../../../../src/pages/document/components/ComparisonBar/components/VersionPickerModal/VersionPickerModal.testids';
+import { VERSION_PICKER_MODAL_IDS } from '../../../../src/pages/document/components/DocumentActionsSlot/components/VersionPickerModal/VersionPickerModal.testids';
 
 // Comparing the document against an earlier version. The permissions dialog it
 // used to share a file with now has its own spec under DocumentActionsSlot/.
@@ -12,9 +13,9 @@ test('picking a version opens the comparison bar, and closing it clears the URL'
 }) => {
   await page.goto('/document/d1');
 
-  // No version picked, so no bar — the button in its place is how you start.
+  // No version picked, so no bar — the navbar's compare icon is how you start.
   await expect(page.getByTestId(COMPARISON_BAR_IDS.root)).toHaveCount(0);
-  await page.getByTestId(COMPARISON_BAR_IDS.triggerBtn).click();
+  await page.getByTestId(DOC_ACTION_TOOLBAR_IDS.compare).click();
 
   const picker = page.getByTestId(VERSION_PICKER_MODAL_IDS.root);
   await expect(picker).toBeVisible();

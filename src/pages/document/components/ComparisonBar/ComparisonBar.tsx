@@ -1,10 +1,9 @@
 import { getRouteApi } from '@tanstack/react-router';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
-import { lazy, Suspense, useState } from 'react';
+import { useState } from 'react';
 import { useComparisonBarAnalytics } from './ComparisonBar.analytics';
 import {
   Bar,
-  CompareTriggerBtn,
   Controls,
   Divider,
   IconBtn,
@@ -14,10 +13,6 @@ import {
   VersionLabel,
 } from './ComparisonBar.styles';
 import { COMPARISON_BAR_IDS } from './ComparisonBar.testids';
-
-const VersionPickerModal = lazy(() =>
-  import('./components/VersionPickerModal').then((m) => ({ default: m.VersionPickerModal })),
-);
 
 const routeApi = getRouteApi('/document/$id');
 
@@ -31,30 +26,20 @@ const routeApi = getRouteApi('/document/$id');
  */
 const DIFFERENCE_COUNT = 0;
 
-// main's version-comparison bar (Edit.tsx:3731), and the picker that turns it on.
+// main's version-comparison bar (Edit.tsx:3731).
 //
 // Which version is being compared against lives in the URL, so a comparison is
 // bookmarkable and survives a reload. The two view toggles don't: they are how you
 // are looking at the comparison rather than what you are comparing
 // (.claude/skills/router-state-splitting.md).
 export const ComparisonBar = () => {
-  const { id } = routeApi.useParams();
   const { compareVersion } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
 
-  const [showPicker, setShowPicker] = useState(false);
   const [hideDeleted, setHideDeleted] = useState(false);
   const [showHighlight, setShowHighlight] = useState(false);
   const [navIndex, setNavIndex] = useState(1);
-  const { trackComparisonStarted, trackViewToggled } = useComparisonBarAnalytics();
-
-  const handleOpenPicker = () => setShowPicker(true);
-  const handleClosePicker = () => setShowPicker(false);
-
-  const handlePickVersion = (label: string) => {
-    trackComparisonStarted(label);
-    return navigate({ search: (prev) => ({ ...prev, compareVersion: label }), replace: true });
-  };
+  const { trackViewToggled } = useComparisonBarAnalytics();
 
   const handleClose = () =>
     navigate({ search: (prev) => ({ ...prev, compareVersion: '' }), replace: true });
@@ -70,28 +55,10 @@ export const ComparisonBar = () => {
   const handlePrev = () => setNavIndex((prev) => Math.max(1, prev - 1));
   const handleNext = () => setNavIndex((prev) => Math.min(DIFFERENCE_COUNT, prev + 1));
 
-  // No version picked means no comparison. The bar's own absence says so, and the
-  // button standing in its place is how you start one — which is a step main takes
-  // in the navbar instead, from a control this page doesn't have.
-  if (!compareVersion) {
-    return (
-      <>
-        <CompareTriggerBtn
-          type="button"
-          data-testid={COMPARISON_BAR_IDS.triggerBtn}
-          onClick={handleOpenPicker}
-        >
-          השוואת גרסאות
-        </CompareTriggerBtn>
-
-        <Suspense fallback={null}>
-          {showPicker && (
-            <VersionPickerModal docId={id} onPick={handlePickVersion} onClose={handleClosePicker} />
-          )}
-        </Suspense>
-      </>
-    );
-  }
+  // No version picked means no comparison, and nothing to draw. Starting one is
+  // the navbar's compare icon, where main puts it (TopNavbar.tsx:1275) — a bar
+  // that only exists during a comparison can't hold the way into one.
+  if (!compareVersion) return null;
 
   return (
     <Bar dir="rtl" data-testid={COMPARISON_BAR_IDS.root}>

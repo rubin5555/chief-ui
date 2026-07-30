@@ -50,6 +50,13 @@ export interface ContentEditorProps {
    * this field is editable, just not by this click.
    */
   selectionOnly?: boolean;
+  /**
+   * Draws the field as part of the surface it sits in — a tinted fill on a
+   * hairline edge, no lift — instead of as a white card floating on one. The
+   * document page's sections are inset: they are areas of the sheet, not cards
+   * placed on it (see EditorWrapper).
+   */
+  inset?: boolean;
 }
 
 export const ContentEditor = ({
@@ -60,6 +67,7 @@ export const ContentEditor = ({
   minHeight = 120,
   disabled = false,
   selectionOnly = false,
+  inset = false,
 }: ContentEditorProps) => {
   const myId = useRef(`ce-${self.crypto.randomUUID()}`);
   const localToolbarId = useRef(`ce-tb-${myId.current}`);
@@ -132,7 +140,12 @@ export const ContentEditor = ({
   };
 
   return (
-    <EditorWrapper ref={wrapperRef} data-testid={CONTENT_EDITOR_IDS.root} onBlur={handleBlur}>
+    <EditorWrapper
+      ref={wrapperRef}
+      $inset={inset}
+      data-testid={CONTENT_EDITOR_IDS.root}
+      onBlur={handleBlur}
+    >
       {/* Standalone: toolbar is always visible, not gated by active state */}
       {!ctx && (
         <ToolbarContainer id={localToolbarId.current} data-testid={CONTENT_EDITOR_IDS.toolbar} />

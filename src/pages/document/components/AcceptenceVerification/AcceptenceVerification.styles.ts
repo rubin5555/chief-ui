@@ -41,9 +41,13 @@ export const Notes = styled.textarea`
 	border-radius: ${radii.lg};
 	border: 1px solid ${colors.border};
 	background-color: ${gray[50]};
-	font-size: 13px;
+	font-size: 14px;
 	color: ${gray[800]};
 	resize: none;
+
+	&::placeholder {
+		color: ${gray[300]};
+	}
 
 	&:focus {
 		outline: none;
