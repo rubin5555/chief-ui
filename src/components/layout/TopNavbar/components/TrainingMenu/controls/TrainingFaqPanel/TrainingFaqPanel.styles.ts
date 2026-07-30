@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import styled from 'styled-components';
+import { revealMotion } from '@/styles/animations';
 import { flexBetween, flexCenter, flexGap, flexScroll } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
@@ -52,6 +53,7 @@ export const FaqQuestionLabel = styled.span`
 `;
 
 export const FaqAnswer = styled.p`
+  ${revealMotion}
   padding: 12px 16px;
   background: ${gray[50]};
   border-top: 1px solid ${colors.border};

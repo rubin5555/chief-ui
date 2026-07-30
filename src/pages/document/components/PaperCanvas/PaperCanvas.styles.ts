@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { zoomMotion } from '@/styles/animations';
 import { colors, docColors } from '@/styles/theme';
 import {
   PAGE_BREAK_LINE_WIDTH,
@@ -31,6 +32,7 @@ export const StickyToolbar = styled.div<{ $zoom: number }>`
   width: ${PAPER_WIDTH};
   overflow: hidden;
   zoom: ${({ $zoom }) => $zoom / 100};
+  ${zoomMotion}
 
   @media print {
     zoom: 1;
@@ -45,6 +47,7 @@ export const Paper = styled.div<{ $zoom: number }>`
   box-shadow: ${PAPER_SHADOW};
   direction: rtl;
   zoom: ${({ $zoom }) => $zoom / 100};
+  ${zoomMotion}
   background-image: repeating-linear-gradient(
     to bottom,
     transparent 0,

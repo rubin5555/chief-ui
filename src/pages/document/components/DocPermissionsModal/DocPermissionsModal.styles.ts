@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { revealMotion, widthMotion } from '@/styles/animations';
 import { colors, gray } from '@/styles/theme';
 
 export const PermissionBody = styled.div`
@@ -9,6 +10,7 @@ export const PermissionBody = styled.div`
 
 export const SideColumn = styled.div<{ $width: number }>`
   width: ${({ $width }) => $width}px;
+  ${widthMotion}
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -16,4 +18,8 @@ export const SideColumn = styled.div<{ $width: number }>`
   overflow-y: auto;
   border-right: 1px solid ${gray[100]};
   background: ${colors.surface};
+
+  > * {
+    ${revealMotion}
+  }
 `;

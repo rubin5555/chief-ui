@@ -1,5 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
 import styled from 'styled-components';
+import { revealMotion } from '@/styles/animations';
 import { ellipsis, flexBetween, subtleScrollbar } from '@/styles/mixins';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 
@@ -74,6 +75,7 @@ export const SubjectTitle = styled.span`
 `;
 
 export const SectionList = styled.div`
+  ${revealMotion}
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -147,6 +149,7 @@ export const AssignedTable = styled.table`
 `;
 
 export const AssignedList = styled.div`
+  ${revealMotion}
   margin: 2px 0 4px;
   border: 1px solid ${gray[100]};
   border-radius: ${radii.xl};

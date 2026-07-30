@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { dialogMotion, overlayMotion } from '@/styles/animations';
+import { dialogMotion, overlayMotion, widthMotion } from '@/styles/animations';
 import { flexBetween, flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 
@@ -29,6 +29,7 @@ export const ModalCard = styled.div<{
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  ${widthMotion}
   ${dialogMotion}
 `;
 

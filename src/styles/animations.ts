@@ -1,4 +1,5 @@
 import { css, keyframes } from 'styled-components';
+import { transitions } from './theme';
 
 export const overlayFadeIn = keyframes`
   from { opacity: 0; }
@@ -32,7 +33,42 @@ export const dialogExit = keyframes`
   }
 `;
 
+export const revealDown = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
 export const MODAL_EXIT_DURATION_MS = 140;
+
+export const revealMotion = css`
+  animation: ${revealDown} 160ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`;
+
+export const widthMotion = css`
+  transition: width ${transitions.slow};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`;
+
+export const zoomMotion = css`
+  transition: zoom ${transitions.slow};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`;
 
 export const overlayMotion = css<{ $closing?: boolean }>`
   animation: ${({ $closing }) => ($closing ? overlayFadeOut : overlayFadeIn)}

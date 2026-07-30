@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import type { Pos } from '@/hooks/useFloatingPanel';
+import { revealMotion } from '@/styles/animations';
 import { subtleScrollbar } from '@/styles/mixins';
 import { colors, radii, shadows } from '@/styles/theme';
 import { FLOATING_PANEL_IDS } from './FloatingPanel.testids';
@@ -26,5 +27,6 @@ export const FloatingPanelRoot = styled.div.attrs<FloatingPanelRootProps>((props
   overflow-x: hidden;
   overflow-y: auto;
 
+  ${revealMotion}
   ${subtleScrollbar}
 `;
