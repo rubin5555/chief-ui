@@ -16,12 +16,17 @@ import {
 import { OUTLINE_SECTION_ROW_IDS } from './OutlineSectionRow.testids';
 
 const DROP_RADIUS = 8;
-const INDEX_WIDTH = 16;
+
+// Wide enough for `12.`, because the numbers run on across topics rather than
+// restarting at each one — a document of any size reaches two digits, and a
+// number wider than its box would sit under the title beside it.
+const INDEX_WIDTH = 22;
 
 export interface OutlineSectionRowProps {
   subjectId: string;
   section: Section;
-  index: number;
+  /** Continuous position in the document, not within the parent topic — as on the sheet. */
+  number: number;
   dropEdge: DropEdge;
   isDragging: boolean;
   tree: ReturnType<typeof useDocumentTree>;
@@ -40,7 +45,7 @@ export interface OutlineSectionRowProps {
 export const OutlineSectionRow = ({
   subjectId,
   section,
-  index,
+  number,
   dropEdge,
   isDragging,
   tree,
@@ -102,7 +107,9 @@ export const OutlineSectionRow = ({
           </DragHandle>
         )}
 
-        <SectionIndex $width={INDEX_WIDTH}>{index + 1}.</SectionIndex>
+        <SectionIndex $width={INDEX_WIDTH} data-testid={OUTLINE_SECTION_ROW_IDS.index(section.id)}>
+          {number}.
+        </SectionIndex>
 
         {isRenaming ? (
           <SectionRenameInput

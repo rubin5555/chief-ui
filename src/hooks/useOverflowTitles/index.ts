@@ -1,0 +1,1 @@
+export { useOverflowTitles } from './useOverflowTitles';

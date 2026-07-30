@@ -1,4 +1,5 @@
 import type { useDragReorder } from '@/hooks/useDragReorder';
+import { numberSubjects } from '../../document.numbering';
 import type { Section, Subject, SubSection } from '../../types';
 import type { DropEdge, OutlineRow } from './DocumentOutlineTree.types';
 
@@ -36,6 +37,11 @@ export const getDropEdge = (
  * sections with its sub-sections and its `+ תת סעיף` link, then the topic's
  * `+ הוספת סעיף`. A collapsed topic contributes its own row and nothing else,
  * which is what makes collapsing cheap — the rows simply aren't there.
+ *
+ * Section numbers come from `numberSubjects`, the same function the sheet
+ * numbers with, so a row and the section it points at always read alike — and a
+ * collapsed topic still spends its numbers, because collapsing it in the sidebar
+ * doesn't renumber the document.
  */
 export const flattenOutline = (
   subjects: Subject[],
@@ -44,13 +50,20 @@ export const flattenOutline = (
 ): OutlineRow[] => {
   const rows: OutlineRow[] = [];
 
-  const pushSection = (subject: Subject, section: Section, index: number, siblingIds: string[]) => {
+  const pushSection = (
+    subject: Subject,
+    section: Section,
+    index: number,
+    number: number,
+    siblingIds: string[],
+  ) => {
     rows.push({
       kind: 'section',
       key: section.id,
       subjectId: subject.id,
       section,
       index,
+      number,
       siblingIds,
     });
 
@@ -77,13 +90,13 @@ export const flattenOutline = (
     }
   };
 
-  for (const subject of subjects) {
+  for (const { subject, firstSectionNumber } of numberSubjects(subjects)) {
     rows.push({ kind: 'subject', key: subject.id, subject });
     if (!isExpanded(subject.id)) continue;
 
     const siblingIds = subject.sections.map((section) => section.id);
     subject.sections.forEach((section, index) => {
-      pushSection(subject, section, index, siblingIds);
+      pushSection(subject, section, index, firstSectionNumber + index, siblingIds);
     });
 
     if (!readOnly) {

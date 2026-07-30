@@ -2,6 +2,7 @@ import type { FocusEvent, RefObject } from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import { outlineNodeSelector } from '../../../../document.constants';
+import type { NumberedSubject } from '../../../../document.numbering';
 import type { useDocumentOverrides } from '../../../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../../../hooks/useDocumentTrash';
 import {
@@ -11,7 +12,6 @@ import {
 } from '../../../SectionNavigation';
 import { SIGNATURES_TOPIC_TITLE, SignaturesSection } from '../../../SignaturesSection';
 import { SubjectBlock } from '../../../SubjectBlock';
-import type { NumberedSubject } from '../../paperCanvas.utils';
 import { VirtualList, VirtualSubject } from './PaperSubjectList.styles';
 import { PAPER_SUBJECT_LIST_IDS } from './PaperSubjectList.testids';
 import { usePaperSubjectVirtualizer } from './usePaperSubjectVirtualizer';

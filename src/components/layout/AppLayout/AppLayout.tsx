@@ -10,6 +10,7 @@ import { ThemeToggle } from '@/components/layout/TopNavbar/components/ThemeToggl
 import { TrainingMenu } from '@/components/layout/TopNavbar/components/TrainingMenu';
 import { IconButton } from '@/components/ui/IconButton';
 import { NavToolbarSlotProvider } from '@/context/NavToolbarSlotContext';
+import { useOverflowTitles } from '@/hooks/useOverflowTitles';
 import { BrandLink, NavToolbarHost } from './AppLayout.styles';
 
 // Shared chrome for every routed page — rendered once at the root layout
@@ -21,6 +22,10 @@ import { BrandLink, NavToolbarHost } from './AppLayout.styles';
 // and keep their own handlers and modals, per NavToolbarSlotContext's doc comment.
 export const AppLayout = () => {
   const [navToolbarNode, setNavToolbarNode] = useState<HTMLDivElement | null>(null);
+
+  // Every page, including whatever a modal portals outside this tree — the
+  // listener is on the document, not on the subtree below.
+  useOverflowTitles();
 
   return (
     <NavToolbarSlotProvider value={navToolbarNode}>

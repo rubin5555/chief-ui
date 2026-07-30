@@ -21,7 +21,10 @@ export type OutlineRow =
       key: string;
       subjectId: string;
       section: Section;
+      /** Position within the parent topic, which is what a drop is measured against. */
       index: number;
+      /** Continuous position in the document, which is what the row shows — see `numberSubjects`. */
+      number: number;
       siblingIds: string[];
     }
   | {

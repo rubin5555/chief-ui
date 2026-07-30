@@ -6,7 +6,7 @@ import { OUTLINE_SECTION_ROW_IDS } from '../../../../src/pages/document/componen
 import { OUTLINE_SUBJECT_ROW_IDS } from '../../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubjectRow/OutlineSubjectRow.testids';
 import { ADD_MENU_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/components/AddMenu/AddMenu.testids';
 import { SUBJECT_BLOCK_IDS } from '../../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
-import { dragOnto, scrollOutlineToEnd } from '../../../support/interactions';
+import { dragOnto, revealOutlineRow, scrollOutlineToEnd } from '../../../support/interactions';
 
 // The sidebar outline is editable in its own right — rename, add, delete and
 // reorder at three levels — and everything it changes shows up in the paper,
@@ -201,6 +201,37 @@ test('the outline holds the rows in the column and reaches the rest by scrolling
 
   await scrollOutlineToEnd(page);
   await expect(lastTopic).toBeVisible();
+});
+
+test('outline section numbers run on across topics, and agree with the sheet', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  // Seeded: s1 holds two sections, s2 two, s3 three. So the first section of the
+  // second topic is the document's third — sections are numbered continuously
+  // rather than restarting inside each topic, both here and on the paper.
+  await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.index('s1-1'))).toHaveText('1.');
+  await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.index('s2-1'))).toHaveText('3.');
+
+  await revealOutlineRow(page, OUTLINE_SECTION_ROW_IDS.root('s3-1'));
+  await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.index('s3-1'))).toHaveText('5.');
+
+  // The same number against the same section in the sheet — one function decides
+  // it for both (numberSubjects), and this is what says so.
+  await expect(page.getByTestId(SUBJECT_BLOCK_IDS.root('s3'))).toContainText('5.');
+});
+
+test('sub-section letters restart in every section, as they do on the sheet', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  await page.getByTestId(ADD_NODE_LINK_IDS.addSubSection('s1-1')).click();
+  await page.getByTestId(ADD_NODE_LINK_IDS.addSubSection('s1-2')).click();
+
+  // Two sections, one sub-section each, and both read `א.` — the letters place a
+  // sub-section inside its section, so numbering them across the document would
+  // say nothing.
+  const letters = page.locator('[data-testid^="outline-sub-section-"]');
+  await expect(letters.first()).toContainText('א.');
+  await expect(letters.nth(1)).toContainText('א.');
 });
 
 test('each section row carries the status dot its seeded status calls for', async ({ page }) => {

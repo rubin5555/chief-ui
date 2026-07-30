@@ -67,7 +67,7 @@ export const OutlineRow = ({
         <OutlineSectionRow
           subjectId={row.subjectId}
           section={row.section}
-          index={row.index}
+          number={row.number}
           dropEdge={getDropEdge(row.siblingIds, drag.sections, row.section.id)}
           isDragging={drag.sections.draggedId === row.section.id}
           tree={tree}

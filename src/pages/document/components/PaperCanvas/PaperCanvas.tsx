@@ -2,6 +2,7 @@ import { getRouteApi } from '@tanstack/react-router';
 import { useRef } from 'react';
 import { ContentEditorToolbar } from '@/components/ui/ContentEditor';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
+import { numberSubjects } from '../../document.numbering';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import { ActiveFilterChips } from '../ActiveFilterChips';
@@ -12,7 +13,7 @@ import { DocLetterhead } from './components/DocLetterhead';
 import { PaperSubjectList } from './components/PaperSubjectList';
 import { Centered, EditorScroll, Paper, PaperInner, StickyToolbar } from './PaperCanvas.styles';
 import { PAPER_CANVAS_IDS } from './PaperCanvas.testids';
-import { collectFilteredNodeIds, collectSearchMatchIds, numberSubjects } from './paperCanvas.utils';
+import { collectFilteredNodeIds, collectSearchMatchIds } from './paperCanvas.utils';
 
 const routeApi = getRouteApi('/document/$id');
 

@@ -105,7 +105,11 @@ export const OutlineSubSectionRow = ({
           </DragHandle>
         )}
 
-        <SubSectionIndex $width={INDEX_WIDTH}>{HE_ALPHA[index]}.</SubSectionIndex>
+        {/* Restarts at `א` in every section, exactly as the sheet does — the
+            letters say where you are inside a section, and a document-wide run of
+            them would say nothing at all. Falls back to a digit past the alphabet,
+            as SubSectionBlock does. */}
+        <SubSectionIndex $width={INDEX_WIDTH}>{HE_ALPHA[index] ?? index + 1}.</SubSectionIndex>
 
         {isRenaming ? (
           <SubSectionRenameInput
