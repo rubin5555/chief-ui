@@ -2,8 +2,10 @@ import { EyeOff, Lock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { ContentEditor } from '@/components/ui/ContentEditor';
 import { useDebounce } from '@/hooks/useDebounce';
+import { DOC_NODE_ATTR } from '../../document.constants';
 import type { Footnote, SectionMeta } from '../../types';
 import { AttachmentChipList } from '../AttachmentPicker';
+import { useSectionChatCoordination } from '../SectionChat';
 import { FootnoteList } from './components/FootnoteList';
 import { BodyRoot, ClassifiedBox, HiddenNotice } from './EditableSectionBody.styles';
 import { EDITABLE_SECTION_BODY_IDS } from './EditableSectionBody.testids';
@@ -45,6 +47,10 @@ export const EditableSectionBody = ({
   onFootnotesChange,
 }: EditableSectionBodyProps) => {
   const isClassified = meta.classification.level !== null;
+
+  // While a passage is being marked to quote, a click on the body is aimed at the
+  // text, not at editing it — see SectionChatContext.
+  const { isMarking } = useSectionChatCoordination();
 
   // ContentEditor stays fully responsive on every keystroke; only the outward
   // tree mutation (which re-renders the whole canvas) is debounced, per
@@ -92,13 +98,14 @@ export const EditableSectionBody = ({
           תוכן ממודר — {meta.classification.level}
         </ClassifiedBox>
       ) : (
-        <div data-testid={EDITABLE_SECTION_BODY_IDS.content(id)}>
+        <div data-testid={EDITABLE_SECTION_BODY_IDS.content(id)} {...{ [DOC_NODE_ATTR]: id }}>
           <ContentEditor
             id={id}
             value={draft}
             onChange={setDraft}
             placeholder={PLACEHOLDER[depth]}
             minHeight={MIN_HEIGHT[depth]}
+            selectionOnly={isMarking}
           />
         </div>
       )}

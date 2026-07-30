@@ -261,6 +261,26 @@ you'd rather they weren't:
   while its section is scrolled out of view. It is the one popover on this page
   that is not on `useFloatingPanel` — it stays open through clicks in the paper,
   because marking a passage to quote *is* a click in the paper.
+- **Marking a passage suspends editing rather than fighting it.** main's sections
+  are plain divs, so a drag across one just selects text; here they are TinyMCE
+  fields that open on click, and the click *ending* the drag opened the editor and
+  focused it before anything could read the selection — the marker never caught
+  anything. `SectionChatContext` now carries whether a passage is being marked
+  (it changes what a click on the sheet means, page-wide, so it is not a fact
+  about one bubble), and `ContentEditor` grew a `selectionOnly` prop that stops a
+  click activating the field. Marking also only accepts a selection anchored
+  inside a section body, so selecting text in the bubble itself is reading the
+  conversation rather than quoting the document — main accepts either.
+- **A quote is found again across paragraphs, and only in the sheet.** main's
+  `highlightTextInDoc` (`Edit.tsx:319`) walks `document.body` for the first *text
+  node* containing the string, so a passage dragged across two paragraphs — the
+  ordinary case — is never found, and a phrase that appears twice lands on
+  whichever copy comes first, including the one printed in the chat bubble.
+  `SectionChat/utils/highlightTextInDoc.ts` searches the section the comment is
+  filed under first and then the rest of the sheet's bodies, matches on
+  non-whitespace characters so block and inline boundaries stop mattering, and
+  spans text nodes. A card whose passage has since been edited away goes disabled
+  on the click that finds nothing, rather than staying a dead control.
 - **The restore dialog previews real content.** It is main's two-column browser
   (`Edit.tsx:171`) — deleted sections down a 260px list, their text beside it,
   the confirm button under the list naming what it will do. main's preview reads

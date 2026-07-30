@@ -22,6 +22,19 @@ export const HE_ALPHA = 'אבגדהוזחטיכלמנסעפצקרשת'.split('')
 export const SUPERSCRIPT_NUMS = ['¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹', '¹⁰', '¹¹', '¹²'];
 
 /**
+ * Marks a node's rendered body in the paper with the id it belongs to.
+ *
+ * Written by EditableSectionBody, read by SectionChat when a quoted passage is
+ * clicked and has to be found again in the sheet. A data attribute rather than a
+ * ref: the two are in different subtrees and the lookup happens once, in a click
+ * handler — threading a ref registry through the tree for that would be a
+ * standing cost for a momentary need. Deliberately not the testid, which exists
+ * for tests to depend on and should stay free to change with them.
+ */
+export const DOC_NODE_ATTR = 'data-doc-node';
+export const docNodeSelector = (id: string) => `[${DOC_NODE_ATTR}="${id}"]`;
+
+/**
  * The document's status progression (main's STATUS_FLOW, Edit.tsx:1697).
  * Order is meaningful: the sidebar's forward/back buttons step through this
  * array, so `מבצעית` is deliberately absent — it is a terminal state reached

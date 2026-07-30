@@ -1,9 +1,10 @@
 import { Highlighter, MessageSquare, Send, X } from 'lucide-react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { type SectionCommentDto, useAddSectionComment, useSectionComments } from '@/api/comments';
 import { ModalPortal } from '@/components/ui/ModalPortal';
 import { ACTION_ICON_SIZE, ActionBtn, type ActionTone } from '../NodeActionRow';
+import { ChatMessage } from './components/ChatMessage';
 import { useSectionChatAnalytics } from './SectionChat.analytics';
 import {
   BubbleBody,
@@ -15,14 +16,9 @@ import {
   InputRow,
   MarkerBanner,
   MarkerToggleBtn,
-  MessageBubble,
   MessageInput,
   MessagesList,
-  MessageText,
-  QuoteAuthor,
-  QuoteBlock,
   QuoteStrip,
-  QuoteText,
   SendBtn,
   TailBorder,
   TailFill,
@@ -30,6 +26,8 @@ import {
 import { SECTION_CHAT_IDS } from './SectionChat.testids';
 import { useSectionChatCoordination } from './SectionChatContext';
 import { useChatBubblePosition } from './useChatBubblePosition';
+import { useQuoteMarker } from './useQuoteMarker';
+import { highlightTextInDoc } from './utils/highlightTextInDoc';
 
 export interface SectionChatProps {
   sectionId: string;
@@ -56,8 +54,10 @@ export interface SectionChatProps {
  * It closes on its X, on its own trigger, and on nothing else.
  *
  * Owns its own trigger, thread and draft (per
- * `.claude/skills/modal-placement.md`); only *which* chat is open is coordinated
- * above it, because two bubbles share one spot on screen.
+ * `.claude/skills/modal-placement.md`). Two things are coordinated above it, both
+ * because they are facts about the page and not about one bubble: which chat is
+ * open, since they all share one spot on screen, and whether a passage is being
+ * marked, since that changes what a click on the sheet means.
  */
 export const SectionChat = ({
   sectionId,
@@ -65,7 +65,8 @@ export const SectionChat = ({
   tone = 'default',
   onMessageSent,
 }: SectionChatProps) => {
-  const { openSectionId, toggleChat, closeChat } = useSectionChatCoordination();
+  const { openSectionId, toggleChat, closeChat, isMarking, setMarking } =
+    useSectionChatCoordination();
   const open = openSectionId === sectionId;
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -80,34 +81,23 @@ export const SectionChat = ({
   // of relying on a refetch, same spirit as the rest of src/api today.
   const [sentComments, setSentComments] = useState<SectionCommentDto[]>([]);
   const [message, setMessage] = useState('');
-  const [markerMode, setMarkerMode] = useState(false);
   const [quote, setQuote] = useState('');
-  const { trackPanelOpened, trackMessageSent } = useSectionChatAnalytics();
+  const { trackPanelOpened, trackMessageSent, trackQuoteMarked, trackQuoteJumped } =
+    useSectionChatAnalytics();
 
   const comments = [...(data ?? []), ...sentComments];
 
-  // Quote-marking: capture the plain selected text on the page while marker
-  // mode is on. This mirrors main's Edit.tsx behavior exactly (a DOM
-  // selection snapshot, not a TinyMCE bookmark) — jumping back to the
-  // quoted location inside the document is a deferred follow-up, not
-  // required for a comment to carry its quoted context.
-  //
+  const handleMarked = (marked: string) => {
+    setQuote(marked);
+    setMarking(false);
+    trackQuoteMarked();
+    inputRef.current?.focus();
+  };
+
   // Gated on `open` rather than on the bubble being on screen: scrolling the
   // section out of view hides the bubble but does not close the chat, and a
   // passage marked while it is hidden is still the passage that was asked for.
-  useEffect(() => {
-    if (!open || !markerMode) return;
-    const handleMouseUp = () => {
-      const selected = window.getSelection()?.toString().trim();
-      if (!selected) return;
-      setQuote(selected);
-      setMarkerMode(false);
-      window.getSelection()?.removeAllRanges();
-      inputRef.current?.focus();
-    };
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => document.removeEventListener('mouseup', handleMouseUp);
-  }, [open, markerMode]);
+  useQuoteMarker({ enabled: open && isMarking, onMarked: handleMarked });
 
   const handleToggle = () => {
     if (!open) trackPanelOpened();
@@ -116,10 +106,19 @@ export const SectionChat = ({
   const handleClearQuote = () => setQuote('');
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value);
   const handleToggleMarker = () => {
-    setMarkerMode((prev) => !prev);
+    setMarking(!isMarking);
     setQuote('');
   };
-  const handleCancelMarker = () => setMarkerMode(false);
+  const handleCancelMarker = () => setMarking(false);
+
+  // Jumping back to a quoted passage. The lookup is scoped to this section first,
+  // so a phrase that appears more than once in the document lands on the one the
+  // comment is actually about.
+  const handleQuoteClick = (quoted: string) => {
+    const found = highlightTextInDoc(quoted, sectionId);
+    trackQuoteJumped(found);
+    return found;
+  };
 
   const handleSend = async (e: FormEvent) => {
     e.preventDefault();
@@ -172,29 +171,12 @@ export const SectionChat = ({
 
               <MessagesList>
                 {comments.length === 0 && <EmptyState>אין עדיין תגובות</EmptyState>}
-                {comments.map((comment) => {
-                  const mine = comment.from === 'me';
-                  return (
-                    <MessageBubble
-                      key={comment.id}
-                      $mine={mine}
-                      data-testid={SECTION_CHAT_IDS.message(comment.id)}
-                    >
-                      {comment.quote && (
-                        <QuoteBlock $mine={mine}>
-                          {/* main hardcodes the two names (Edit.tsx:453); the
-                            comment carries its author, so it says who it was. */}
-                          <QuoteAuthor>{mine ? 'את/ה' : comment.authorName}</QuoteAuthor>
-                          <QuoteText>{comment.quote}</QuoteText>
-                        </QuoteBlock>
-                      )}
-                      <MessageText $quoted={Boolean(comment.quote)}>{comment.text}</MessageText>
-                    </MessageBubble>
-                  );
-                })}
+                {comments.map((comment) => (
+                  <ChatMessage key={comment.id} comment={comment} onQuoteClick={handleQuoteClick} />
+                ))}
               </MessagesList>
 
-              {markerMode && (
+              {isMarking && (
                 <MarkerBanner>
                   <Highlighter size={12} />
                   <span>סמן טקסט במסמך...</span>
@@ -205,7 +187,7 @@ export const SectionChat = ({
               )}
 
               {quote && (
-                <QuoteStrip>
+                <QuoteStrip data-testid={SECTION_CHAT_IDS.draftQuote}>
                   <span>{quote}</span>
                   <button type="button" onClick={handleClearQuote} aria-label="ביטול ציטוט">
                     <X size={10} />
@@ -228,7 +210,7 @@ export const SectionChat = ({
                   />
                   <MarkerToggleBtn
                     type="button"
-                    $active={markerMode}
+                    $active={isMarking}
                     onClick={handleToggleMarker}
                     aria-label="סימון טקסט"
                     data-testid={SECTION_CHAT_IDS.markerToggle}

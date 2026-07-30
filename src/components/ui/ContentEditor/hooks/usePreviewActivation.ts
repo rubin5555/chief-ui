@@ -15,6 +15,7 @@ export const usePreviewActivation = (
   id: string,
   disabled: boolean,
   lockedByOther: boolean,
+  selectionOnly: boolean,
 ) => {
   const previewRef = useRef<HTMLDivElement>(null);
   const pendingSelectionRef = useRef<CursorPath | null>(null);
@@ -26,7 +27,7 @@ export const usePreviewActivation = (
   // preview even if another editor deactivating mid-drag shifts the layout
   // (e.g. stacked table cells) and moves this element out from under the cursor.
   const handlePreviewPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (disabled) return;
+    if (disabled || selectionOnly) return;
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -37,6 +38,11 @@ export const usePreviewActivation = (
   // already reflects native double/triple-click word/paragraph selection.
   const handlePreviewPointerUp = () => {
     if (disabled || !ctx) return;
+    // The click was made to select text, not to start editing. Activating anyway
+    // would swap this preview for TinyMCE and focus it before the mouseup that
+    // reads the selection ever fires — so the selection the reader just made
+    // would be gone by the time anything could ask for it.
+    if (selectionOnly) return;
     // Known to be held by someone else — skip the request entirely rather
     // than optimistically activating and immediately rolling back.
     if (lockedByOther) return;

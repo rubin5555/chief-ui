@@ -41,6 +41,15 @@ export interface ContentEditorProps {
   placeholder?: string;
   minHeight?: number;
   disabled?: boolean;
+  /**
+   * Clicking the field selects text instead of opening it for editing. For
+   * surfaces that are momentarily being read rather than written — the document
+   * page turns this on while a passage is being marked to quote in a comment.
+   *
+   * Distinct from `disabled`, which says the content may not be edited at all:
+   * this field is editable, just not by this click.
+   */
+  selectionOnly?: boolean;
 }
 
 export const ContentEditor = ({
@@ -50,6 +59,7 @@ export const ContentEditor = ({
   placeholder,
   minHeight = 120,
   disabled = false,
+  selectionOnly = false,
 }: ContentEditorProps) => {
   const myId = useRef(`ce-${self.crypto.randomUUID()}`);
   const localToolbarId = useRef(`ce-tb-${myId.current}`);
@@ -75,7 +85,7 @@ export const ContentEditor = ({
     handlePreviewDragLeave,
     handlePreviewDrop,
     applyPendingSelection,
-  } = usePreviewActivation(ctx, myId.current, id, disabled, lockedByOther);
+  } = usePreviewActivation(ctx, myId.current, id, disabled, lockedByOther, selectionOnly);
 
   const handleEditorSetup = useTinyMceSetup(ctx, collab, id, isLockHolderRef, onChangeRef);
 
