@@ -15,37 +15,18 @@ import { DOC_PERMISSIONS_MODAL_IDS } from './DocPermissionsModal.testids';
 
 const routeApi = getRouteApi('/document/$id');
 
-/** main widens the dialog when the section tree appears (TopNavbar.tsx:406). */
 const WIDTH = 1200;
 const WIDTH_WITH_SECTIONS = 1260;
 const MEMBERS_WIDTH = 240;
 const SECTIONS_WIDTH = 288;
 
 export interface DocPermissionsModalProps {
-  /** Changes what the second permission is called, and what it grants. */
   isDistributed: boolean;
-  /** Opens straight onto one permission — see SectionMenu's מאשרי/עורכי actions. */
   initialLevelId?: string;
-  /** Preselected in the section tree, so a permission lands where it was asked for. */
   initialSectionId?: string;
   onClose: () => void;
 }
 
-/**
- * Who may do what with this document (main's DocPermissionsModal,
- * TopNavbar.tsx:211): five permissions, each with its own people and its own
- * description of what it actually grants.
- *
- * Three columns, in main's order — the permissions, then either the people chosen
- * or (for the two per-section permissions) the document's sections with the
- * people granted them underneath, then where people come from. That last column
- * is `@/components/PeoplePicker`, the same sources the mailing-list form draws
- * on, because "everyone in this HML group" means the same thing in both places.
- *
- * **State.** Members are local. There is no document-permissions shape on the API
- * to persist them to, and inventing one would put a field on the DTO that no
- * backend has agreed to.
- */
 export const DocPermissionsModal = ({
   isDistributed,
   initialLevelId,
@@ -71,9 +52,6 @@ export const DocPermissionsModal = ({
   const activeMembers = membersByLevel[activeLevel.id] ?? [];
 
   const handleMembersChange = (next: Member[]) => {
-    // Whoever just arrived is granted the permission on the sections selected at
-    // the time they were picked — the tree filters the *next* pick, which is why
-    // the selection is read here rather than applied to the list afterwards.
     if (activeLevel.isSectionScoped && selectedSectionIds.length > 0) {
       const before = new Set(activeMembers.map((member) => member.id));
       const added = next.filter((member) => !before.has(member.id));
@@ -104,8 +82,7 @@ export const DocPermissionsModal = ({
       (candidate) => candidate !== sectionId,
     );
     setSectionsByMember((prev) => ({ ...prev, [memberId]: remaining }));
-    // Off their last section they would hold a per-section permission over no
-    // section, so they leave the level rather than linger in it unattached.
+
     if (remaining.length === 0) handleRemoveMember(memberId);
   };
 
@@ -174,9 +151,6 @@ export const DocPermissionsModal = ({
           )}
         </SideColumn>
 
-        {/* Keyed by level, so switching permission resets the sources column: its
-            "already imported" marks describe the list being filled, and the moment
-            that is a different list they describe somewhere you have left. */}
         <PeopleSourcesPanel
           key={activeLevel.id}
           members={activeMembers}

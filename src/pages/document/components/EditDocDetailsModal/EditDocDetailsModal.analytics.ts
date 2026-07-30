@@ -17,8 +17,6 @@ export const useEditDocDetailsModalAnalytics = () => {
     });
   };
 
-  // Whether anything was edited on the way through is the question the warning
-  // exists to answer — if nobody ever edits here, the review step is a click.
   const trackReviewContinued = (isDirty: boolean) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,

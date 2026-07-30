@@ -6,22 +6,18 @@ import { FOOTNOTE_ROW_IDS } from './FootnoteRow.testids';
 
 export interface FootnoteRowProps {
   footnote: Footnote;
-  /** The superscript this note is marked with — its position, not its id. */
   marker: string;
   readOnly: boolean;
   onChange: (text: string) => void;
   onRemove: () => void;
 }
 
-/** Height is cleared before measuring, or a shrinking note keeps the height it grew to. */
 const fitToContent = (element: HTMLTextAreaElement | null) => {
   if (!element) return;
   element.style.height = 'auto';
   element.style.height = `${element.scrollHeight}px`;
 };
 
-// One footnote: its marker, its text, and the way to drop it (main,
-// Edit.tsx:4375).
 export const FootnoteRow = ({
   footnote,
   marker,
@@ -42,8 +38,6 @@ export const FootnoteRow = ({
         <NoteText>{footnote.text}</NoteText>
       ) : (
         <NoteInput
-          // Sizes to whatever was already written on mount, then keeps up from
-          // onChange — a direct write from an event, not an effect.
           ref={fitToContent}
           value={footnote.text}
           rows={1}

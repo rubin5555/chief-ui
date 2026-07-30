@@ -13,10 +13,6 @@ export const FieldLabel = styled.label`
 	color: ${gray[700]};
 `;
 
-// main's notes field (Edit.tsx:3057): plain white on a grey hairline, and the
-// focus state only deepens the edge — this sits under three other controls that
-// already carry the app's blue, and a fourth would make the form read as a
-// warning.
 export const Notes = styled.textarea`
 	width: 100%;
 	min-height: 80px;
@@ -38,8 +34,6 @@ export const Notes = styled.textarea`
 	}
 `;
 
-// 24px between sections, main's `gap-6` (Edit.tsx:2937) — the rank field and the
-// timeline it produces have to read as two things, not one control that grew.
 export const Body = styled.form`
 	display: flex;
 	flex-direction: column;

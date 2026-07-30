@@ -20,7 +20,6 @@ const MENU_WIDTH = 170;
 const MENU_GAP = 4;
 
 export interface ColorPickerButtonProps {
-  /** Distinguishes the three instances in test ids. */
   id: string;
   faceTitle: string;
   chevronTitle: string;
@@ -28,26 +27,13 @@ export interface ColorPickerButtonProps {
   palette: string[];
   value: string;
   disabled: boolean;
-  /** Remembers the choice, so the face keeps showing what it would apply. */
   onChange: (color: string) => void;
-  /** Writes it into the document. Separate from `onChange` because choosing and applying are separate acts. */
   onApply: (color: string) => void;
-  /** The face's glyph. Omitted for the text colour, whose glyph is a coloured "A". */
   icon?: ReactNode;
 }
 
-// A press inside the ribbon must not take focus off the text it is about to
-// change — same rule, and the same reason, as ToolbarButton's `keepSelection`.
 const keepSelection = (event: MouseEvent<HTMLButtonElement>) => event.preventDefault();
 
-// main writes this three times over — text colour, highlight and fill (Edit.tsx:
-// 1228-1291, 1293-1357, 1439-1502) — as 60 near-identical lines each, differing
-// only in the title, the palette and which piece of state they set. One component
-// with those three as props is the same UI with a third of the surface.
-//
-// Word's split button, and now Word's behaviour with it: the face applies the
-// colour it is showing, the chevron opens the palette to change what that is. In
-// main the face did nothing — there was no document underneath for it to write to.
 export const ColorPickerButton = ({
   id,
   faceTitle,
@@ -61,9 +47,7 @@ export const ColorPickerButton = ({
   icon,
 }: ColorPickerButtonProps) => {
   const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
-  // The custom picker anchors to the chevron the same way the palette does, but
-  // it is a dialog rather than a menu: it closes by answering it, not by clicking
-  // away, so it isn't the floating panel's business.
+
   const [customPos, setCustomPos] = useState<{ top: number; right: number } | null>(null);
 
   const handleToggle = () => panel.toggle(MENU_WIDTH);

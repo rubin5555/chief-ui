@@ -11,9 +11,6 @@ interface ColumnStyleListProps {
   onChange: (next: Record<string, CellStyle>) => void;
 }
 
-// Per-column base style (json-table's styles.fields[column]) — only meaningful for
-// matrix tables, where every cell carries a real dotted path (see TableDesignModal's
-// isTableSchema gating; listTable never threads a path to its '#'/'value' cells).
 export const ColumnStyleList = ({ columns, value, onChange }: ColumnStyleListProps) => {
   const styledColumns = Object.keys(value);
   const availableColumns = columns.filter((column) => !styledColumns.includes(column));

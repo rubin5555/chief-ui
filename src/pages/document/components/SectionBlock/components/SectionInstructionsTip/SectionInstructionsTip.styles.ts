@@ -1,8 +1,6 @@
 import styled from 'styled-components';
 import { docColors, radii, shadows } from '@/styles/theme';
 
-// The tooltip is a child of this, positioned against it — so the wrapper is what
-// establishes the containing block and what the hover is detected on.
 export const TipRoot = styled.span`
   position: relative;
   display: inline-flex;
@@ -12,14 +10,6 @@ export const TipRoot = styled.span`
   cursor: default;
 `;
 
-/**
- * Shown by CSS on hover and focus rather than by React state.
- *
- * There is nothing to position at runtime — the tip hangs off its own trigger, so
- * a rect measurement would only reproduce what the layout already knows. That
- * makes this the one tooltip on the page with no state behind it, unlike the
- * sidebar's, which has to escape an overflow.
- */
 export const Tip = styled.span`
   position: absolute;
   bottom: 120%;
@@ -37,8 +27,6 @@ export const Tip = styled.span`
   font-weight: 400;
   line-height: 1.5;
   text-align: right;
-  // Instructions are written in a textarea, so their line breaks are the author's
-  // and have to survive into the tip.
   white-space: pre-wrap;
   box-shadow: ${shadows.lg};
   pointer-events: none;
@@ -49,7 +37,6 @@ export const Tip = styled.span`
   }
 `;
 
-// A triangle drawn from borders, pointing back at the icon.
 export const TipArrow = styled.span`
   position: absolute;
   top: 100%;

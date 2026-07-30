@@ -23,8 +23,6 @@ interface RemoteContentUpdate {
 export interface CollabContextValue {
   userId: string;
   connected: boolean;
-  // All three keyed by field id (Section/SubSection/Appendix id, plan §3) —
-  // never by the field's local editor-instance id.
   lockState: Map<string, LockInfo | null>;
   remoteCursors: Map<string, CursorPath | null>;
   remoteContent: Map<string, RemoteContentUpdate>;
@@ -39,9 +37,6 @@ export interface CollabContextValue {
 
 const CollabContext = createContext<CollabContextValue | null>(null);
 
-// A lock request that never hears back (dropped connection, server hiccup)
-// resolves false rather than hanging the caller's optimistic-activation UI
-// forever.
 const ACQUIRE_TIMEOUT_MS = 5000;
 
 const EMPTY_LOCK_STATE = new Map<string, LockInfo | null>();
@@ -102,8 +97,6 @@ export const CollabProvider = ({ userId, children }: CollabProviderProps) => {
           setRemoteCursors((prev) => new Map(prev).set(message.fieldId, message.path));
           return;
         default:
-          // yjs:update / yjs:sync are reserved for the future CRDT swap (plan
-          // §4) and unused by the locking implementation.
           return;
       }
     });
@@ -131,10 +124,6 @@ export const CollabProvider = ({ userId, children }: CollabProviderProps) => {
       }, ACQUIRE_TIMEOUT_MS);
     });
 
-  // Not optimistically cleared locally — the server broadcasts lock:released
-  // back to the releaser too (it doesn't exclude the sender), so the message
-  // handler above is the single source of truth for when this actually takes
-  // effect.
   const releaseLock = (fieldId: string) =>
     clientRef.current?.send({ type: 'lock:release', fieldId });
 
@@ -147,8 +136,6 @@ export const CollabProvider = ({ userId, children }: CollabProviderProps) => {
   const sendCursor = (fieldId: string, path: CursorPath) =>
     clientRef.current?.send({ type: 'cursor', fieldId, path });
 
-  // The send/join/etc. functions close over clientRef (a ref, stable identity) rather than
-  // any state, so they don't need to be listed as dependencies themselves.
   // biome-ignore lint/correctness/useExhaustiveDependencies: see comment above
   const value = useMemo<CollabContextValue>(
     () => ({

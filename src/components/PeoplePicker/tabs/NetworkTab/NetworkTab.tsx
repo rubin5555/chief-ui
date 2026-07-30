@@ -27,9 +27,6 @@ export const NetworkTab = ({
   const { search, debouncedSearch, onSearchChange, onClearSearch } = useSearch(300, initialQuery);
   const [resultsOpen, setResultsOpen] = useState(Boolean(initialQuery.trim()));
 
-  // The directory is asked, not fetched and sifted: it is the organisation's
-  // whole staff, and shipping it to the browser to run `.includes` over was only
-  // ever tenable while it was a mock of ten people.
   const { data, loading } = useUserSearch({ query: debouncedSearch, network });
 
   const onNetworkChange = (val: NetworkFilter) => {
@@ -60,13 +57,8 @@ export const NetworkTab = ({
 
   const handleNetworkChange = (val: NetworkFilter) => () => onNetworkChange(val);
 
-  // Who is already picked is this dialog's business, not the directory's, so
-  // that stays a filter over the answer.
   const results = (data ?? []).filter((person) => !addedMemberIds.has(person.id));
 
-  // Also "searching" between the last keystroke and the debounce firing, when
-  // the answer on hand belongs to a query the user has already moved past —
-  // otherwise the dropdown says "no results" about something nobody asked.
   const isSearching = loading || search !== debouncedSearch;
 
   return (

@@ -25,35 +25,12 @@ export interface DocumentOutlineTreeProps {
   sectionMeta: SectionMetaMap;
   readOnly: boolean;
   isDistributed: boolean;
-  /**
-   * A topic just created from the sidebar's `+`, which opens here in a rename
-   * input. Owned by DocumentSidebar rather than by this component because that is
-   * where the button creating it lives — the tree only renders the consequence.
-   */
   newSubjectId: string | null;
-  /** Empty title means the topic was abandoned; DocumentSidebar drops it again. */
   onSaveNewSubject: (title: string) => void;
 }
 
 const collectSubjectIds = (subjects: Subject[]) => subjects.map((subject) => subject.id);
 
-// main's editable outline (Edit.tsx:3885): three levels, each row draggable,
-// renameable and deletable.
-//
-// Drawn as one flat list of rows rather than three levels of nested lists, so it
-// can be virtualized — see flattenOutline. Nesting survives as an indent on the
-// row; what a row no longer does is render the level below it.
-//
-// Every piece of editing state lives here rather than in the rows, because every
-// piece of it is single-valued — one row renames at a time, one delete is pending
-// at a time — and a row can't know whether some other row is mid-edit. The rows
-// receive it as two objects, not a dozen callbacks
-// (.claude/skills/react-engineering.md, "Shrink Prop Lists").
-//
-// The three useDragReorder instances are per *level*, not per parent: each
-// reorder* is already membership-scoped to the parent holding both ids, so one
-// instance covers every topic's sections at once. That is what replaces main's six
-// useState pairs and ~65 lines of drag bookkeeping (3249-3315).
 export const DocumentOutlineTree = ({
   tree,
   sectionMeta,
@@ -121,11 +98,6 @@ export const DocumentOutlineTree = ({
 
   const rows = flattenOutline(tree.subjects, expand.isExpanded, readOnly);
 
-  // A row asked to rename opens an autofocusing input, and an input can only take
-  // focus if it is mounted — so the row being edited is kept in the rendered
-  // window wherever it sits. A topic added at the foot of a long outline is
-  // exactly the row that would otherwise be off it. Focusing scrolls it into
-  // view on its own, so nothing else has to.
   const editingId = newSubjectId ?? renamingId;
   const editingIndex = editingId ? rows.findIndex((row) => row.key === editingId) : -1;
 

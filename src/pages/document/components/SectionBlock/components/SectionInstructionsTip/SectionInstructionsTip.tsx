@@ -7,12 +7,6 @@ export interface SectionInstructionsTipProps {
   instructions: string;
 }
 
-// The amber mark next to a section's title when someone has left instructions for
-// whoever writes it (main, Edit.tsx:4426).
-//
-// `tabIndex` on the wrapper is what makes the tip reachable without a pointer:
-// the CSS shows it on `:focus-within` as well as `:hover`, and there is nothing
-// inside it to focus otherwise.
 export const SectionInstructionsTip = ({
   sectionId,
   instructions,

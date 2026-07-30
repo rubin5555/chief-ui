@@ -3,11 +3,6 @@ import { SUPPORT_MENU_IDS } from '../../../src/components/layout/TopNavbar/compo
 import { MODAL_IDS } from '../../../src/components/ui/Modal/Modal.testids';
 import { CONTACT_PERMISSIONS_MODAL_IDS } from '../../../src/modals/ContactPermissionsModal/ContactPermissionsModal.testids';
 
-// The generic `Modal` primitive (src/components/ui/Modal) always derives its sub-element
-// testids by suffixing whatever root testid it's given with the same suffixes documented on
-// `MODAL_IDS` (`-overlay`, `-header`, `-body`, `-close`). Every real caller overrides the root
-// id, so we exercise the primitive here through `ContactPermissionsModal` - opened via the
-// support menu, a real UI path - and rebuild its derived ids from that same suffix shape.
 const modalSuffix = (key: 'overlay' | 'header' | 'body' | 'close') =>
   MODAL_IDS[key].slice(MODAL_IDS.root.length);
 

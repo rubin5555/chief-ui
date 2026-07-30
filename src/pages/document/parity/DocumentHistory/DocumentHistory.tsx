@@ -8,17 +8,12 @@ import type { useContentHistory } from './useContentHistory';
 
 export interface DocumentHistoryProps {
   nodeId: string;
-  /** Passed whole rather than as five callbacks — the hook is one object. */
   history: ReturnType<typeof useContentHistory>;
   onRestore: (content: string) => void;
 }
 
 const ICON_SIZE = 14;
 
-// The controls main's history stacks never had: nothing in Edit.tsx renders
-// `handleUndo`, `handleRedo` or `confirmSaveVersion`, so there is no design of
-// main's to match here — this is the smallest honest surface for what the hook
-// can do, and the README says as much.
 export const DocumentHistory = ({ nodeId, history, onRestore }: DocumentHistoryProps) => {
   const [isSaveOpen, setIsSaveOpen] = useState(false);
   const { canUndo, canRedo, isInPast } = history.getState(nodeId);
@@ -76,8 +71,6 @@ export const DocumentHistory = ({ nodeId, history, onRestore }: DocumentHistoryP
         שמור גרסה
       </Button>
 
-      {/* The one thing worth saying out loud: what is on screen is not the newest
-          version, so saving now throws the rest away. */}
       {isInPast && (
         <PastNotice data-testid={DOCUMENT_HISTORY_IDS.pastNotice}>מוצגת גרסה קודמת</PastNotice>
       )}

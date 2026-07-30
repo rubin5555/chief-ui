@@ -30,10 +30,6 @@ export const TableWrap = styled.div`
 	padding: 16px 24px;
 `;
 
-/**
- * The table is a card on the dialog rather than flush with it, so the rows read
- * as one list you scroll through instead of as the dialog's own body.
- */
 export const TableCard = styled.div`
 	display: flex;
 	flex: 1;

@@ -17,10 +17,6 @@ export interface ClassifiedViewersModalProps {
   onClose: () => void;
 }
 
-// Backed by src/api/classifiedViewers.ts, which carries main's CLASSIFIED_POOL
-// verbatim. Deliberately not src/api/networkPeople.ts: that roster has four
-// MailingListFormModal consumers, so repointing it at this data to gain fidelity
-// here would have quietly changed all of them.
 export const ClassifiedViewersModal = ({
   selectedIds,
   onChange,

@@ -11,10 +11,6 @@ import { SOURCE_SYSTEMS_MODAL_IDS } from '../../../../src/pages/document/compone
 import { SOURCE_SYSTEMS_NOTICE_IDS } from '../../../../src/pages/document/components/SourceSystemsNotice/SourceSystemsNotice.testids';
 import { SUBJECT_BLOCK_IDS } from '../../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
 
-// The sheet's own chrome: the letterhead at its top, the provenance notice above
-// it, the emphasis card, and the outline the navbar's search field draws on
-// whatever it matches.
-
 test('the letterhead heads the sheet with the organisation emblem and its seeded fields', async ({
   page,
 }) => {
@@ -23,7 +19,6 @@ test('the letterhead heads the sheet with the organisation emblem and its seeded
   await expect(page.getByTestId(DOC_LETTERHEAD_IDS.root)).toBeVisible();
   await expect(page.getByTestId(DOC_LETTERHEAD_IDS.logo)).toBeVisible();
 
-  // Two of main's five fields carry values; the rest open on their placeholders.
   await expect(page.getByTestId(DOC_LETTERHEAD_FIELD_IDS.input('tazach'))).toHaveValue(
     '2026(06)221047',
   );
@@ -48,7 +43,7 @@ test('the source-systems notice lists where the document’s content came from',
 
   const modal = page.getByTestId(SOURCE_SYSTEMS_MODAL_IDS.root);
   await expect(modal).toBeVisible();
-  // Document scope, so the wording is plural and all three seeded systems show.
+
   await expect(page.getByTestId(SOURCE_SYSTEMS_MODAL_IDS.intro)).toContainText(
     'המסמך מכיל מידע שנוצר ממערכות המקור הבאות',
   );
@@ -65,7 +60,6 @@ test('the emphasis card is added from the sidebar and grows with what is typed i
 }) => {
   await page.goto('/document/d1');
 
-  // Off until asked for — main's showEmphasis starts false.
   await expect(page.getByTestId(EMPHASIS_BLOCK_IDS.root)).toHaveCount(0);
 
   await page.getByTestId(ADD_MENU_IDS.trigger).click();
@@ -79,7 +73,6 @@ test('the emphasis card is added from the sidebar and grows with what is typed i
   await textarea.fill('שורה\nשורה\nשורה\nשורה\nשורה\nשורה\nשורה\nשורה');
   const after = await textarea.evaluate((el) => el.getBoundingClientRect().height);
 
-  // No scrollbar inside the sheet: the box takes the height its content needs.
   expect(after).toBeGreaterThan(before);
   await expect(textarea).toHaveJSProperty('scrollHeight', Math.round(after));
 });
@@ -94,8 +87,6 @@ test('searching the document outlines the nodes that match', async ({ page }) =>
   await page.getByTestId(DOC_ACTION_TOOLBAR_IDS.searchToggle).click();
   await page.getByTestId(DOC_ACTION_TOOLBAR_IDS.searchInput).fill('היסטוריית');
 
-  // s1-2 is "היסטוריית גרסאות"; its topic "מטרה ורקע" doesn't match, so the
-  // outline lands on the section alone.
   await expect(section).toHaveCSS('outline-color', 'rgb(251, 191, 36)');
   await expect(subject).toHaveCSS('outline-style', 'none');
 
@@ -124,18 +115,12 @@ test('the sheet places its topics in order and stays as long as the whole docume
 
   expect(geometry.rows.length).toBeGreaterThan(0);
 
-  // Rendered in document order, and no two topics on top of each other — the
-  // failure mode of getting the two coordinate spaces (the scroll container's
-  // and the zoomed sheet's) mixed up.
   const indexes = geometry.rows.map((row) => row.index);
   expect(indexes).toEqual([...indexes].sort((a, b) => a - b));
   for (let i = 1; i < geometry.rows.length; i++) {
     expect(geometry.rows[i].top).toBeGreaterThanOrEqual(geometry.rows[i - 1].bottom - 1);
   }
 
-  // The spacer reserves every topic's height, rendered or not, so the sheet is
-  // the document's length rather than the window's — which is what the page-break
-  // lines and the scrollbar are drawn against.
   const lastBottom = Math.max(...geometry.rows.map((row) => row.bottom));
   expect(geometry.listHeight).toBeGreaterThanOrEqual(lastBottom - geometry.listTop - 1);
 });
@@ -143,8 +128,6 @@ test('the sheet places its topics in order and stays as long as the whole docume
 test('a topic being edited survives scrolling away from it', async ({ page }) => {
   await page.goto('/document/d1');
 
-  // A section title in the first topic, focused and half-typed: exactly the
-  // state that unmounting the topic would throw away.
   const title = page.getByTestId(SUBJECT_BLOCK_IDS.root('s1')).getByRole('textbox', {
     name: 'שם הסעיף',
   });
@@ -159,8 +142,6 @@ test('a topic being edited survives scrolling away from it', async ({ page }) =>
 });
 
 test('a bookmarked search arrives with the match already outlined', async ({ page }) => {
-  // ?q=מטר — a prefix, so it catches both the topic "מטרה ורקע" and the section
-  // "מטרת המסמך" beneath it, which no whole word does.
   await page.goto('/document/d1?q=%D7%9E%D7%98%D7%A8');
 
   await expect(page.getByTestId(SUBJECT_BLOCK_IDS.root('s1'))).toHaveCSS(

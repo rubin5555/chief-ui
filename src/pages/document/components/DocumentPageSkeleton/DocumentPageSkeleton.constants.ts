@@ -1,7 +1,3 @@
-// Ragged widths rather than a single one repeated: a column of identical bars
-// reads as a table, and what is loading here is prose.
-
-/** The five identifying fields under the crest (main's DocLetterhead). */
 export const LETTERHEAD_FIELD_WIDTHS = ['180px', '140px', '210px', '120px', '160px'];
 
 export const OUTLINE_ROWS = [
@@ -13,11 +9,6 @@ export const OUTLINE_ROWS = [
   { id: 'section-4', width: '46%', indented: true },
 ];
 
-/**
- * Two topics, each with sections, each a few lines of body. Every line carries
- * an id: they are a fixed list that never reorders, but keying prose by its
- * width would collide the moment two lines matched.
- */
 export const PAPER_SUBJECTS = [
   {
     id: 'paper-subject-1',

@@ -27,8 +27,7 @@ export const usePersonalLists = () =>
   useApiQuery(GET_PERSONAL_LISTS_QUERY, (result: GetPersonalListsResult) => result.personalLists);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
-// catalog PersonalTab used to import directly. Delete this registration once
-// GetPersonalLists has a real resolver; call sites don't change.
+
 export const PERSONAL_LISTS_FALLBACK: GetPersonalListsResult = {
   personalLists: [
     {

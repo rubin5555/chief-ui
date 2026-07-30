@@ -25,8 +25,6 @@ export const MenuItem = styled.button`
   }
 `;
 
-// Greyer than the label it sits beside: the icons are there to make the list
-// scannable, not to compete with the text (main, Edit.tsx:308).
 export const MenuIcon = styled.span`
   display: flex;
   flex-shrink: 0;

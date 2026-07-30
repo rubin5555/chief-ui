@@ -34,9 +34,6 @@ interface ListsPanelProps {
 }
 
 export const ListsPanel = ({ departmentOptions, onDelete }: ListsPanelProps) => {
-  // Fetched here rather than by the page: this panel is already lazy-loaded
-  // per-tab, so its data should be too — the query only fires once a user
-  // actually switches to this tab, matching the JS chunk fetch.
   const { data, loading } = useLists();
   const lists = data?.lists ?? LISTS_FALLBACK.lists;
   const deletedLists = data?.deletedLists ?? LISTS_FALLBACK.deletedLists;

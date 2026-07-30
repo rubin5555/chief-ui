@@ -23,9 +23,6 @@ export interface CalendarMonthGridProps {
 
 const ICON_SIZE = 16;
 
-// One month of days. Which month is shown and which date is chosen are the
-// panel's, not this component's — it reads them and reports clicks, so the two
-// facts don't end up living in two places.
 export const CalendarMonthGrid = ({
   view,
   selected,
@@ -35,8 +32,6 @@ export const CalendarMonthGrid = ({
 }: CalendarMonthGridProps) => {
   const cells = buildMonthCells(view);
 
-  // In RTL the chevron pointing right is the one going forward, which is why the
-  // "next" control sits first in source order (main, Edit.tsx:1630).
   const handleStep = (delta: number) => () => onViewChange(shiftMonth(view, delta));
 
   const handleSelect = (day: number) => () => onSelect({ ...view, day });
@@ -69,8 +64,6 @@ export const CalendarMonthGrid = ({
       <DayGrid>
         {cells.map((day, index) =>
           day === null ? (
-            // Leading blanks have no identity beyond their position, and the row
-            // they pad is fixed for the month being shown.
             // biome-ignore lint/suspicious/noArrayIndexKey: position is the only identity a blank has
             <EmptyCell key={`blank-${index}`} />
           ) : (

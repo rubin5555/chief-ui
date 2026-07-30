@@ -25,11 +25,6 @@ interface PersonSearchFieldProps {
   onBlur: () => void;
   resultsOpen: boolean;
   results: DirectoryUser[];
-  /**
-   * Answering takes a round trip now, so there is a moment with neither results
-   * nor an absence of them to report — and saying "no results" during it is
-   * saying it about a question that hasn't been asked yet.
-   */
   loading?: boolean;
   onSelectResult: (person: DirectoryUser) => void;
   showManualAdd: boolean;
@@ -69,11 +64,6 @@ export const PersonSearchField = ({
         {showManualAdd && onManualAdd && <ManualAddPanel onSave={onManualAdd} />}
       </SearchFieldRow>
 
-      {/* On the body: the sources column clips its overflow, so a list long
-          enough to reach past the panel was losing its last rows to an ancestor
-          that has nothing to do with it. Picking still works through the portal
-          — `onMouseDown` fires on the real node before the field's blur, and a
-          portal moves the DOM node, not the React tree events bubble through. */}
       {anchor && (
         <ModalPortal>
           {loading ? (

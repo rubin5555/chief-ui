@@ -6,10 +6,6 @@ import { PARITY_GALLERY_IDS } from '../../../../src/pages/document/parity/Parity
 import { SECTION_TABLE_VIEW_IDS } from '../../../../src/pages/document/parity/SectionTableView/SectionTableView.testids';
 import { VIDUY_KABALAH_MODAL_IDS } from '../../../../src/pages/document/parity/ViduyKabalahModal/ViduyKabalahModal.testids';
 
-// The inspection route for src/pages/document/parity/. These components are not in
-// the live page, so this spec proves only that they still render and still work —
-// enough that "ported, not shipped" stays an honest claim.
-
 const SPECIMENS = [
   'section-table',
   'viduy-kabalah',
@@ -18,7 +14,6 @@ const SPECIMENS = [
   'page-breaks',
 ];
 
-/** Waits out anything queued for the next two animation frames. */
 const settleLayout = (page: Page) =>
   page.evaluate(
     () =>
@@ -29,7 +24,7 @@ const settleLayout = (page: Page) =>
 
 const openGallery = async (page: Page) => {
   await page.goto('/document/parity');
-  // The page-breaks specimen reflows its sheet on the first frame after mount.
+
   await settleLayout(page);
 };
 
@@ -50,7 +45,6 @@ test('the table adds a row from the floating toolbar and refuses to empty itself
   await page.getByTestId(SECTION_TABLE_VIEW_IDS.cell(0, 0)).click();
   await expect(page.getByTestId(SECTION_TABLE_VIEW_IDS.toolbar)).toBeVisible();
 
-  // A 3×3 grid gains a fourth row.
   await page.getByTestId(SECTION_TABLE_VIEW_IDS.toolbarAction('row-after')).click();
   await expect(page.getByTestId(SECTION_TABLE_VIEW_IDS.cell(3, 0))).toBeVisible();
 
@@ -60,7 +54,6 @@ test('the table adds a row from the floating toolbar and refuses to empty itself
   await deleteRow.click();
   await deleteRow.click();
 
-  // The last row stays: a table with nothing to type into has no way back.
   await expect(page.getByTestId(SECTION_TABLE_VIEW_IDS.cell(0, 0))).toBeVisible();
 });
 
@@ -108,7 +101,6 @@ test('undo walks back through committed versions and redo walks forward again', 
     .getByTestId(PARITY_GALLERY_IDS.specimen('document-history'))
     .getByLabel('תוכן לדוגמה');
 
-  // Blur is what commits a version — otherwise every keystroke would be one.
   await draft.fill('גרסה ראשונה');
   await draft.blur();
   await draft.fill('גרסה שנייה');

@@ -31,28 +31,13 @@ import {
 interface SectionAssignmentTreeProps {
   subjects: Subject[];
   members: Member[];
-  /** Section ids per member id. */
   sectionsByMember: Record<string, string[]>;
-  /** Sections the next person picked will be assigned to. */
   selectedSectionIds: string[];
   onToggleSection: (id: string) => void;
   onClearSections: () => void;
   onUnassign: (memberId: string, sectionId: string) => void;
 }
 
-/**
- * The document's own sections, for the two permissions that are granted per
- * section rather than over the whole document (main's TopNavbar.tsx:814).
- *
- * Select the sections first, then pick people: whoever is picked while a section
- * is selected is granted the permission on that section, and appears underneath
- * it. That order is main's, and it is the reason this column replaces the members
- * list rather than sitting next to it — for these two permissions, "who" is only
- * meaningful alongside "for what".
- *
- * The sections are the real document's, read by the dialog and passed down, not a
- * fixture: a permission is granted on a section that exists.
- */
 export const SectionAssignmentTree = ({
   subjects,
   members,
@@ -62,9 +47,6 @@ export const SectionAssignmentTree = ({
   onClearSections,
   onUnassign,
 }: SectionAssignmentTreeProps) => {
-  // Opens on whichever topics hold an already-selected section, so arriving here
-  // from a section's own menu shows that section rather than the shut tree it is
-  // hiding inside.
   const [openSubjects, setOpenSubjects] = useState<string[]>(() =>
     subjects
       .filter((subject) =>

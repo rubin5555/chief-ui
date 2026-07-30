@@ -22,7 +22,6 @@ import { useToolbarAnchor } from './useToolbarAnchor';
 const ICON_SIZE = 14;
 
 export interface TableFloatingToolbarProps {
-  /** The table this strip hangs under. */
   anchorRef: RefObject<HTMLElement | null>;
   onInsertRowBefore: () => void;
   onInsertRowAfter: () => void;
@@ -35,9 +34,6 @@ export interface TableFloatingToolbarProps {
   onDeleteTable: () => void;
 }
 
-// main's row/column strip (Edit.tsx:984-1073). The merge, split and wrap buttons
-// are inert there and stay inert here — parking the ribbon honestly means parking
-// what it actually did.
 export const TableFloatingToolbar = ({
   anchorRef,
   onInsertRowBefore,
@@ -52,8 +48,6 @@ export const TableFloatingToolbar = ({
 }: TableFloatingToolbarProps) => {
   const anchor = useToolbarAnchor(anchorRef, true);
 
-  // Pressing the strip must not blur the cell it is acting on, or the toolbar
-  // unmounts under the pointer before the click lands.
   const handleMouseDown = (event: MouseEvent) => event.preventDefault();
 
   if (!anchor) return null;

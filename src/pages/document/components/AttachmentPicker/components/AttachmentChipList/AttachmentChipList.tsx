@@ -9,11 +9,6 @@ export interface AttachmentChipListProps {
   onOpen: () => void;
 }
 
-// What is attached to a node, listed under its content box (main, Edit.tsx:4586).
-//
-// Every chip opens the same dialog rather than acting on its own file: at 10px
-// there is no room for per-file controls, and main does the same — the list is a
-// summary, and the modal is where you do anything about it.
 export const AttachmentChipList = ({ nodeId, attachments, onOpen }: AttachmentChipListProps) => {
   if (attachments.length === 0) return null;
 

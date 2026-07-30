@@ -9,11 +9,6 @@ interface CollabClientOptions {
   onClose?: () => void;
 }
 
-// A single WebSocket connection to the collab server (plan §2 — one
-// connection per open document, multiplexed across every field in it via
-// each message's own fieldId). Auto-reconnects with a fixed delay on an
-// unexpected close; a reconnect doesn't replay anything — re-joining fields
-// after one is CollabContext's job (it already has the field list).
 const RECONNECT_DELAY_MS = 2000;
 
 export class CollabClient {
@@ -39,7 +34,7 @@ export class CollabClient {
       try {
         message = JSON.parse(event.data as string) as CollabMessage;
       } catch {
-        return; // ignore malformed frames rather than throwing
+        return;
       }
       for (const listener of this.listeners) listener(message);
     });

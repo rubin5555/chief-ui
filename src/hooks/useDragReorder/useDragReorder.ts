@@ -1,10 +1,6 @@
 import type { DragEvent } from 'react';
 import { useState } from 'react';
 
-// Native HTML5 drag-and-drop reordering for a flat list of ids. `onReorder` receives
-// the dragged id and the id it was dropped on — callers resolve which array (and
-// which parent, for nested lists) those ids belong to, so a single hook instance can
-// back reordering scoped to any sub-list without needing that scope as an argument here.
 export const useDragReorder = (onReorder: (draggedId: string, targetId: string) => void) => {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);

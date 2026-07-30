@@ -66,8 +66,6 @@ export const DateTimePicker = ({
   const onPrevMonth = () => setViewMonth((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1));
   const onNextMonth = () => setViewMonth((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1));
 
-  // Typing a time before any day is picked only primes the local inputs — it's applied once
-  // a day is actually selected (see onSelectDay), since there's no date to attach it to yet.
   const applyTime = (hours: number, minutes: number) => {
     if (!selectedDate) return;
     commit(
@@ -133,14 +131,6 @@ export const DateTimePicker = ({
         </TriggerText>
       </Trigger>
 
-      {/* On the body, like every other panel that places itself in viewport
-          coordinates. `position: fixed` means "against the viewport" only while
-          no ancestor has taken over as its containing block, and `transform`,
-          `filter`, `contain` and `zoom` all silently do — this picker's usual
-          home is a field inside a dialog, and a dialog's closing animation is a
-          transform, so the calendar rode the dialog out instead of staying put.
-          Clicks still reach useClickOutside: a portal moves the DOM node, not
-          the React tree events bubble through. */}
       {isOpen && dropPos && (
         <ModalPortal>
           <CalendarPanel

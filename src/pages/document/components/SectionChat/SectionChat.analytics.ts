@@ -14,8 +14,6 @@ export const useSectionChatAnalytics = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.PANEL_OPENED });
   };
 
-  // Whether the message carried a quote, never the message: comments are about a
-  // specific document and are written by a named person.
   const trackMessageSent = (hasQuote: boolean) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,
@@ -28,8 +26,6 @@ export const useSectionChatAnalytics = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.QUOTE_MARKED });
   };
 
-  // Whether the passage was still findable, which is the only interesting thing
-  // about the jump — a rising miss rate would mean quotes are going stale.
   const trackQuoteJumped = (found: boolean) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,

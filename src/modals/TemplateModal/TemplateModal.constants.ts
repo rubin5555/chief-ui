@@ -14,8 +14,6 @@ export type TemplateModalMode = 'new' | 'edit' | 'duplicate';
 
 export type DocumentTreeApi = ReturnType<typeof useDocumentTree>;
 
-// Appendices share the exact id/title/content/permissions shape as a subsection —
-// no separate type needed.
 export type Appendix = SubSection;
 
 export interface PermissionsTarget {
@@ -125,9 +123,6 @@ export const nowDateTimeLocal = (): string => {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
 };
 
-// The trailing generics only parameterize optional validator functions we don't use —
-// `any` here matches the library's own internal pattern for a validator-agnostic form
-// reference (see @tanstack/react-form's useFormContext implementation).
 export type TemplateFormApi = ReactFormExtendedApi<
   TemplateFormValues,
   any,

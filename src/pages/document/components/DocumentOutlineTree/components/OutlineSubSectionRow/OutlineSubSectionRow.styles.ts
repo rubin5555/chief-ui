@@ -8,7 +8,6 @@ import {
   RowTitle,
 } from '../../DocumentOutlineTree.shared.styles';
 
-/** The same "you are here" tint a section row takes — see OutlineSectionRow.styles.ts. */
 export const SubSectionRow = styled.div<{ $active: boolean }>`
   display: flex;
   align-items: center;
@@ -42,7 +41,6 @@ export const SubSectionIndex = styled(RowIndex)`
   color: ${gray[400]};
 `;
 
-// The lightest text in the tree: a sub-section is a detail of a detail.
 export const SubSectionTitle = styled(RowTitle)`
   font-size: 12px;
   color: ${gray[500]};

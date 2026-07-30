@@ -9,11 +9,6 @@ import {
   SIDEBAR_WIDTH,
 } from '../../document.measurements';
 
-// Deliberately restated from `document.measurements` rather than borrowed from
-// PaperCanvas/DocumentSidebar: those own behaviour this has none of — zoom, page
-// breaks, sticky positioning, scroll. What has to match is the geometry, and the
-// geometry is the constants, which both read from.
-
 export const SidebarColumn = styled.div`
 	${flexColumn(0)}
 	width: ${SIDEBAR_WIDTH}px;
@@ -21,8 +16,6 @@ export const SidebarColumn = styled.div`
 	padding: 20px 16px;
 	position: relative;
 
-	/* The sidebar's own divider, on the physical left because that is the side
-	   facing the paper in this RTL page. */
 	&::before {
 		content: '';
 		position: absolute;
@@ -81,7 +74,6 @@ export const PaperSheet = styled.div`
 	direction: rtl;
 `;
 
-/** main's letterhead: a square crest over its five identifying fields. */
 export const Letterhead = styled.div`
 	${flexColumn(10)}
 	align-items: center;

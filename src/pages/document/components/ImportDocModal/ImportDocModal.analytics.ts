@@ -8,8 +8,6 @@ const ACTIONS = {
 } as const;
 
 export const useImportDocModalAnalytics = () => {
-  // The document's id, not its name: which source people actually reach for is
-  // the answerable question, and an id answers it without carrying a title.
   const trackSourcePicked = (docId: string) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,
@@ -18,8 +16,6 @@ export const useImportDocModalAnalytics = () => {
     });
   };
 
-  // The count is what makes this answerable: whether people import one section or
-  // a whole document decides whether the picker needs a "select all".
   const trackImportSubmitted = (count: number) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,

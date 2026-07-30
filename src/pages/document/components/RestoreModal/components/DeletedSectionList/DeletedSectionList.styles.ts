@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import { ellipsis, subtleScrollbar } from '@/styles/mixins';
 import { colors, docColors, gray, radii } from '@/styles/theme';
 
-/** main's 260px sidebar, ruled off from the preview (Edit.tsx:205). */
 export const ListRoot = styled.div`
 	display: flex;
 	flex-direction: column;
@@ -53,11 +52,6 @@ export const SectionRow = styled.button<{ $checked: boolean }>`
 	}
 `;
 
-/**
- * A sub-section isn't chosen on its own: it was deleted with its section and
- * comes back with it. It is listed to show what restoring brings, and tinted
- * with its parent rather than clickable.
- */
 export const SubSectionRow = styled.div<{ $checked: boolean }>`
 	display: flex;
 	align-items: center;
@@ -95,8 +89,6 @@ export const ListFooter = styled.div`
 	border-top: 1px solid ${gray[100]};
 `;
 
-// A pill that states what it will do rather than a generic confirm, and greys
-// out into an instruction — "בחר סעיפים" — when there is nothing to do yet.
 export const RestoreButton = styled.button`
 	width: 100%;
 	padding: 8px;

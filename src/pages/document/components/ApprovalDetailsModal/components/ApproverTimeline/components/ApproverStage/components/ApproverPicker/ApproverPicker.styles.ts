@@ -3,9 +3,6 @@ import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { resetButton, subtleScrollbar } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-// main's inline approver search (Edit.tsx:2982): a search box over a short
-// bordered list, opened from the `+ גורם מאשר` link under a rank.
-
 export const AddLink = styled.button`
 	${resetButton}
 	display: flex;

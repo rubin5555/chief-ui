@@ -2,8 +2,6 @@ import styled from 'styled-components';
 import { rtlTextInput } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-// Filled rather than outlined-on-white: the field is the whole dialog, and a grey
-// well reads as "write here" more plainly than a border around empty space.
 export const InstructionsTextarea = styled.textarea`
   ${rtlTextInput}
   width: 100%;

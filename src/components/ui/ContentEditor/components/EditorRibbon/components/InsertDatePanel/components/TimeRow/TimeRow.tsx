@@ -3,13 +3,10 @@ import { joinTime, splitTime } from '../../insertDatePanel.utils';
 import { TimeColon, TimeInput, TimeInputs } from './TimeRow.styles';
 
 export interface TimeRowProps {
-  /** `hh:mm`. */
   value: string;
   onChange: (value: string) => void;
 }
 
-// Two free-text boxes rather than a stepper: main deliberately has no arrows
-// (Edit.tsx:1653), because typing "0930" is faster than twenty clicks.
 export const TimeRow = ({ value, onChange }: TimeRowProps) => {
   const { hours, minutes } = splitTime(value);
 

@@ -2,18 +2,10 @@ import { gql } from '@apollo/client';
 import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
-// The pool of people who can be granted sight of a classified (ממודר) section.
-//
-// This is deliberately a separate resource from networkPeople.ts even though
-// the shapes rhyme. That file backs four MailingListFormModal consumers; repointing
-// it at main's CLASSIFIED_POOL to get exact fidelity here would have silently
-// changed all of them. A real backend would also expose these separately —
-// clearance-bearing personnel is not the same list as network contacts.
 export interface ClassifiedViewerDto {
   id: string;
   name: string;
   idNumber: string;
-  /** Clearance environment: סודי / סודי ביותר / אמ"ן. */
   env: string;
 }
 
@@ -39,8 +31,7 @@ export const useClassifiedViewerPool = () =>
   );
 
 // ponytail: no backend/resolver yet — registered on stubLink with main's
-// CLASSIFIED_POOL (Edit.tsx:23-34) verbatim. Delete this registration once
-// GetClassifiedViewerPool has a real resolver; call sites don't change.
+
 export const CLASSIFIED_VIEWER_POOL_FALLBACK: GetClassifiedViewerPoolResult = {
   classifiedViewerPool: [
     { id: 'u1', name: 'אלון כהן', idNumber: '123456789', env: 'סודי' },

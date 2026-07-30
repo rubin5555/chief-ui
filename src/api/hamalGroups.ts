@@ -28,8 +28,7 @@ export const useHamalGroups = () =>
   useApiQuery(GET_HAMAL_GROUPS_QUERY, (result: GetHamalGroupsResult) => result.hamalGroups);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
-// catalog HamalTab used to import directly. Delete this registration once
-// GetHamalGroups has a real resolver; call sites don't change.
+
 export const HAMAL_GROUPS_FALLBACK: GetHamalGroupsResult = {
   hamalGroups: [
     {

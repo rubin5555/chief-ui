@@ -13,17 +13,11 @@ import {
 import { CONFIRM_DELETE_MODAL_IDS } from './ConfirmDeleteModal.testids';
 
 export interface ConfirmDeleteModalProps {
-  /** Only its `level` is read here — the wording is all this dialog needs to know. */
   target: OutlineDeleteTarget;
   onConfirm: () => void;
   onClose: () => void;
 }
 
-// "Are you sure you want to delete this topic?" — main, Edit.tsx:5123.
-//
-// Closes through Modal's handle rather than calling `onClose` directly, so
-// confirming plays the same close animation as cancelling; the deletion runs
-// first, while the dialog is still on screen.
 export const ConfirmDeleteModal = ({ target, onConfirm, onClose }: ConfirmDeleteModalProps) => {
   const modalRef = useRef<ModalHandle>(null);
   const warning = DELETE_WARNING[target.level];

@@ -18,7 +18,6 @@ import {
 } from './ImportDocModal.styles';
 import { IMPORT_DOC_MODAL_IDS } from './ImportDocModal.testids';
 
-/** main's dialog is 88vw × 82vh, capped at 1200 (Edit.tsx:1851). */
 const WIDTH = 1200;
 
 const TITLE = 'ייבוא סעיפים ממסמך אחר';
@@ -28,17 +27,6 @@ export interface ImportDocModalProps {
   onImport: (sectionTitles: string[]) => void;
 }
 
-/**
- * Copying sections out of another document, in main's two steps (Edit.tsx:1816):
- * find the document, then read it and mark what to take. Both steps get the
- * whole dialog rather than a column each, because they are different jobs — one
- * is scanning a catalogue, the other is reading prose — and neither reads well
- * in half the width.
- *
- * Imported sections land as new sections under the tree's first subject: there
- * is no "pick a target subject" step yet, which is main's behaviour too and a
- * fair simplification while the modal's job is proving the flow end to end.
- */
 export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
   const { data } = useImportDocs();
   const docsByTab = data ?? IMPORT_DOCS_FALLBACK.importDocs;
@@ -46,17 +34,13 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
   const [activeTab, setActiveTab] = useState<ImportDocTabId>('drafts');
   const [search, setSearch] = useState('');
   const [openDoc, setOpenDoc] = useState<ImportDocItem | null>(null);
-  // Keyed by section id, as main does — ids are stable and unique, so this
-  // survives reordering and gives each row an unambiguous testid, which neither
-  // a title nor a list index manages.
+
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const { trackSourcePicked, trackImportSubmitted } = useImportDocModalAnalytics();
 
   const { data: sectionsData, loading: sectionsLoading } = useImportDocSections(openDoc?.id ?? '');
   const sections = openDoc ? (sectionsData ?? []) : [];
 
-  // Four documents per tab: filtering them is a pass over an array, not
-  // something worth debouncing or asking the server about.
   const docs = docsByTab[activeTab].filter(
     (doc) => !search || doc.name.includes(search) || doc.org.includes(search),
   );
@@ -83,9 +67,6 @@ export const ImportDocModal = ({ onClose, onImport }: ImportDocModalProps) => {
     );
 
   const handleImport = () => {
-    // Maps ids back to titles rather than passing ids through: the tree builds
-    // brand-new sections with fresh uuids, so the source id has no meaning
-    // downstream — only the title survives the copy.
     const titles = sections
       .filter((section) => checkedIds.includes(section.id))
       .map((section) => section.title);

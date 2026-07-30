@@ -17,7 +17,6 @@ export interface CellPropsFieldsProps {
   onChange: (draft: CellProps) => void;
 }
 
-// main's cell half of the properties panel (Edit.tsx:813-848).
 export const CellPropsFields = ({ draft, onChange }: CellPropsFieldsProps) => {
   const handleText = (key: keyof CellProps) => (event: ChangeEvent<HTMLInputElement>) =>
     onChange({ ...draft, [key]: event.target.value });

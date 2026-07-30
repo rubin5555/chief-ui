@@ -27,12 +27,6 @@ export interface AcceptenceVerificationProps {
   onSend: (data: AcceptenceVerificationData) => void;
 }
 
-// Renamed from main's ViduyKabalahModal — an HML recipient's own confirmation
-// that a distributed document was received. Main never reached this from the
-// document owner's editing flow either (its warning copy says the details
-// "will be sent to the document's distributor"), so it's exposed here as a
-// standalone, directly-triggerable action rather than chained after a step
-// that doesn't exist in dev's Edit flow.
 export const AcceptenceVerification = ({ onClose, onSend }: AcceptenceVerificationProps) => {
   const [approvedBy, setApprovedBy] = useState('');
   const [date, setDate] = useState('');

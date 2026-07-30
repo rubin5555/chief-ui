@@ -13,14 +13,6 @@ import { ACTIVE_FILTER_CHIPS_IDS } from './ActiveFilterChips.testids';
 
 const routeApi = getRouteApi('/document/$id');
 
-// main's active-filter chip row (Edit.tsx:4107-4127), pinned to the top of the
-// paper's scroll area so it stays visible while the filter is hiding content.
-//
-// Reads and writes the same `statuses` search param FilterPanel owns rather than
-// taking the active set as a prop: the filter is URL state, so both the control
-// that sets it and the row that displays it read from the one source. Renders
-// nothing when no filter is active, which is why the caller can mount it
-// unconditionally.
 export const ActiveFilterChips = () => {
   const { statuses } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();

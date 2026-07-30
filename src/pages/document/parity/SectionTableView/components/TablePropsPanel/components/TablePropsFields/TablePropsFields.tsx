@@ -16,8 +16,6 @@ export interface TablePropsFieldsProps {
   onChange: (draft: TableProps) => void;
 }
 
-// main's table half of the properties panel (Edit.tsx:850-883). Its caption switch
-// is hand-drawn there; ui/Toggle is the same control with a `role="switch"`.
 export const TablePropsFields = ({ draft, onChange }: TablePropsFieldsProps) => {
   const handleText = (key: keyof TableProps) => (event: ChangeEvent<HTMLInputElement>) =>
     onChange({ ...draft, [key]: event.target.value });

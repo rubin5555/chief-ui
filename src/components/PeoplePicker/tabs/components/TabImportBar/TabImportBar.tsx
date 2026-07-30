@@ -3,7 +3,6 @@ import { ImportBar, ImportBarLabel } from '../../tabs.shared.styles';
 
 interface TabImportBarProps {
   count: number;
-  /** Plural noun for the selection label, e.g. 'קבוצות' → "3 קבוצות נבחרו". */
   noun: string;
   'data-testid': string;
   onImport: () => void;

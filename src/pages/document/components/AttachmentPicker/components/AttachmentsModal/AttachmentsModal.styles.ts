@@ -68,8 +68,6 @@ const RowBtn = styled.button`
   transition: all ${transitions.normal};
 `;
 
-// Lifts off the row's grey fill on hover, which is what tells you the row's
-// buttons are separate targets from the row itself.
 export const DownloadBtn = styled(RowBtn)`
   &:hover:not(:disabled) {
     background-color: ${colors.surface};
@@ -83,8 +81,6 @@ export const DownloadBtn = styled(RowBtn)`
   }
 `;
 
-// The one destructive control in this dialog, and the only place it turns red —
-// on hover, not at rest, so the row doesn't read as a warning.
 export const DeleteBtn = styled(RowBtn)`
   &:hover {
     background-color: ${colors.dangerLight};
@@ -92,9 +88,6 @@ export const DeleteBtn = styled(RowBtn)`
   }
 `;
 
-// Grey rather than the navy of `dashedActionButton`, which is main's treatment
-// here (Edit.tsx:4886): adding a second file is a continuation of what you were
-// already doing, not the dialog's primary action — that is the footer's `סיום`.
 export const AddMoreBtn = styled.button`
   ${resetButton}
   ${flexCenter}

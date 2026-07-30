@@ -36,12 +36,6 @@ interface ImportDocBrowserProps {
   onSelectDoc: (doc: ImportDocItem) => void;
 }
 
-/**
- * Which document to copy from: main's catalog-shaped browser (Edit.tsx:1875) —
- * a tab per source, a search over it, and the results as a table rather than a
- * list, because choosing between four drafts from the same month means reading
- * the org and the date, not just the name.
- */
 export const ImportDocBrowser = ({
   activeTab,
   onTabChange,

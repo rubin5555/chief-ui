@@ -18,12 +18,6 @@ import { PageInner, PageScroll, SidebarColumn, SidebarDivider } from './ProfileP
 const noop = () => {};
 const routeApi = getRouteApi('/');
 
-// Route/tab-gated subtrees load on demand instead of in the main bundle —
-// each is behind a Suspense boundary so switching tabs is the trigger that
-// fetches its chunk. Each panel also owns its own data query (useTemplates/
-// useSignatures/useLists) and its own new/edit/duplicate modal — fetching
-// only starts once the tab is actually active, matching the JS chunk fetch.
-// See .claude/skills/modal-placement.md and .claude/skills/react-engineering.md.
 const TemplatesPanel = lazy(() =>
   import('../components/tabs/TemplatesPanel').then((m) => ({ default: m.TemplatesPanel })),
 );
@@ -38,17 +32,12 @@ export const ProfilePage = () => {
   const { tab: activeTab } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
 
-  // Shared by both ProfileSidebar and TemplatesPanel (collab user identity),
-  // so it stays here rather than being owned by either one alone.
   const { data: profileData } = useProfile();
   const profile = profileData ?? PROFILE_FALLBACK;
 
   const { trackTabChanged } = useProfilePageAnalytics();
 
   const handleTabChange = (tab: string) => {
-    // Reset the shared q/dept/sub params so a filter from one tab's panel
-    // doesn't leak into the next (e.g. Templates' "deleted" subTab bleeding
-    // into Signatures, which has no such subTab).
     navigate({ search: { tab, q: '', dept: '', sub: '' } });
     trackTabChanged(tab);
   };

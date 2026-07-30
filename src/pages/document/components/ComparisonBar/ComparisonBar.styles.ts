@@ -3,9 +3,6 @@ import { resetButton } from '@/styles/mixins';
 import { colors, docColors, radii, transitions } from '@/styles/theme';
 import { BAR_WIDTH } from '../../document.measurements';
 
-// main's comparison bar (Edit.tsx:3734): the same 230mm as the metadata pill and
-// the source notice, on the pale blue that marks the whole page as being in
-// comparison mode.
 export const Bar = styled.div`
   display: flex;
   align-items: center;
@@ -31,11 +28,6 @@ export const Controls = styled.div`
   flex-shrink: 0;
 `;
 
-/**
- * A view preference, filled once it is on. Pills rather than checkboxes because
- * they sit in a bar rather than in a form, and their state has to read at a glance
- * from across the sheet.
- */
 export const TogglePill = styled.button<{ $active: boolean }>`
   ${resetButton}
   padding: 4px 10px;
@@ -65,9 +57,6 @@ export const Divider = styled.div`
   background-color: ${docColors.compareBorder};
 `;
 
-// main sets `dir="ltr"` on this group: the up/down chevrons and the `n/total`
-// between them read as a numeric control rather than as text, so they keep their
-// order regardless of the page's direction.
 export const NavGroup = styled.div`
   display: flex;
   align-items: center;
@@ -92,8 +81,6 @@ export const IconBtn = styled.button`
   }
 `;
 
-// `tabular-nums` so the counter doesn't jitter as it counts past 9, and a minimum
-// width so the chevrons either side of it stay put.
 export const NavCounter = styled.span`
   min-width: 28px;
   text-align: center;

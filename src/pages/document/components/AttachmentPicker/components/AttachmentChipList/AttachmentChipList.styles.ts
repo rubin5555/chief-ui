@@ -2,8 +2,6 @@ import styled from 'styled-components';
 import { resetButton } from '@/styles/mixins';
 import { colors, radii, transitions } from '@/styles/theme';
 
-// Stacked, not wrapped: main lists attachments one per line under the content box
-// so long filenames stay readable (Edit.tsx:4587).
 export const ChipList = styled.div`
   display: flex;
   flex-direction: column;

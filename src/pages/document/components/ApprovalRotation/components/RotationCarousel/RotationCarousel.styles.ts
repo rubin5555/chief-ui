@@ -109,10 +109,6 @@ export const UserLabel = styled.span`
   color: ${gray[400]};
 `;
 
-/**
- * Dot pagination under the card, one per named approver in the current stage
- * (main, Edit.tsx:2751). The chevrons say a next one exists; these say how many.
- */
 export const PageDots = styled.div`
   display: flex;
   justify-content: center;
@@ -128,11 +124,6 @@ export const PageDot = styled.span<{ $active: boolean }>`
   transition: background-color ${transitions.normal};
 `;
 
-/**
- * The link out to a section that needs changing (main, Edit.tsx:2766). Quiet and
- * underlined rather than a button: it leaves this dialog, and it competes with
- * nothing in the footer.
- */
 export const FixNoteLink = styled.button`
   ${resetButton}
   align-self: flex-start;

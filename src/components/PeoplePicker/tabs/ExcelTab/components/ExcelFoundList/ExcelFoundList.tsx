@@ -10,14 +10,11 @@ import { RowCell, RowName } from './ExcelFoundList.styles';
 
 interface ExcelFoundListProps {
   people: DirectoryUser[];
-  /** Already imported from a sheet — checked, greyed, and not clickable. */
   addedIdNumbers: Set<string>;
-  /** Everyone found is coming in unless they are in here. */
   excludedIdNumbers: Set<string>;
   onToggle: (idNumber: string) => void;
 }
 
-/** Everyone the search matched, all ticked until told otherwise. */
 export const ExcelFoundList = ({
   people,
   addedIdNumbers,

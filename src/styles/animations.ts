@@ -1,9 +1,5 @@
 import { css, keyframes } from 'styled-components';
 
-// Kept deliberately subtle and fast — enough to signal "this appeared",
-// not enough to feel like a UI flourish. Used by dialog chrome only
-// (modal.shared.styles, ui/Modal, DataImportModal's picker card).
-
 export const overlayFadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
@@ -36,16 +32,8 @@ export const dialogExit = keyframes`
   }
 `;
 
-// Exit duration in one place so the CSS animation and the JS unmount delay
-// (useDialogClose) can never drift apart. Exit is a touch faster than enter —
-// an element on its way out should get out of the way, not linger.
 export const MODAL_EXIT_DURATION_MS = 140;
 
-// transform/opacity only — both run on the compositor thread, so this costs
-// the browser nothing beyond the initial paint, no matter how heavy the
-// dialog's own content (TinyMCE, forms, etc.) is. `prefers-reduced-motion`
-// is handled in JS (useDialogClose skips the delay outright) rather than
-// here, since the animation needs to actually finish before unmount either way.
 export const overlayMotion = css<{ $closing?: boolean }>`
   animation: ${({ $closing }) => ($closing ? overlayFadeOut : overlayFadeIn)}
     ${({ $closing }) => ($closing ? MODAL_EXIT_DURATION_MS : 150)}ms ease-out

@@ -19,34 +19,17 @@ import { usePrintExpansion } from './usePrintExpansion';
 
 export interface PaperSubjectListProps {
   subjects: NumberedSubject[];
-  /** Sections whose status is currently filtered out, by id. */
   filteredSectionIds: Set<string>;
-  /** Nodes matching the in-document search, by id. Empty when nothing is searched. */
   searchMatchIds: Set<string>;
   tree: ReturnType<typeof useDocumentTree>;
   overrides: ReturnType<typeof useDocumentOverrides>;
   trash: ReturnType<typeof useDocumentTrash>;
   readOnly: boolean;
   isDistributed: boolean;
-  /** The scrolling editor column, which is what the topics are virtualized against. */
   scrollRef: RefObject<HTMLElement | null>;
   zoom: number;
 }
 
-/**
- * The document's topics, and only the ones the sheet currently has to hold.
- *
- * A topic is the unit here rather than a section: a topic is a `<section>` with
- * its own search outline and its own sections beneath it, and flattening the
- * three levels into one row list would cost that structure to virtualize rows
- * that are already cheap. What is expensive is a section — a rich-text editor, a
- * comment thread, an action row — and those all leave with the topic holding
- * them.
- *
- * Printing takes the other path entirely: `@media print` is set up to put this
- * document on paper, and a printer handed the on-screen window would get four
- * topics of a twelve-topic document.
- */
 export const PaperSubjectList = ({
   subjects,
   filteredSectionIds,
@@ -63,24 +46,10 @@ export const PaperSubjectList = ({
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const isPrinting = usePrintExpansion();
 
-  // Two topics are not free to leave.
-  //
-  // `חתימות` registers the signature gate on mount, and that gate is what stops
-  // an unsigned document entering an approval round — so it has to be mounted
-  // whether or not anyone has scrolled to it. A rule the whole document obeys
-  // can't depend on where the reader happens to be looking.
-  //
-  // The focused one stays because unmounting an editor mid-edit throws away the
-  // caret, the selection, and anything typed since the last debounced commit.
   const signaturesIndex = subjects.findIndex(
     ({ subject }) => subject.title === SIGNATURES_TOPIC_TITLE,
   );
 
-  // A node the outline has asked to be taken to. Its topic is pinned rather than
-  // scrolled to: the element has to exist before anything can scroll to it, and
-  // pinning is the mechanism that already mounts a topic the view hasn't reached.
-  // Scrolling first would be aiming at an estimate — the virtualizer's guess at
-  // where an unmeasured topic starts — and then correcting.
   const nav = useSectionNavigation();
   const pendingRevealId = nav?.pendingRevealId ?? null;
   const revealIndex = pendingRevealId
@@ -100,22 +69,9 @@ export const PaperSubjectList = ({
     pinnedIndexes,
   });
 
-  // Runs twice for a topic that wasn't mounted: once when the request arrives and
-  // the element still isn't there, and again once pinning has put it there —
-  // which is what `isRevealMounted` is for, since `pendingRevealId` alone doesn't
-  // change between those two renders.
-  //
-  // `block: 'start'`, landing where EditorScroll's `scroll-padding-top` says —
-  // which is deliberately just above the line the spy calls "you are here", so
-  // the section you were sent to is the one the outline then marks. Centring
-  // instead would land it below that line and mark the section before it.
   const isRevealMounted = revealIndex >= 0 && items.some((item) => item.index === revealIndex);
   const clearPendingReveal = nav?.clearPendingReveal;
 
-  // `isRevealMounted` is a re-run trigger, not an input — the body never reads it,
-  // but it is what turns true when pinning puts the target in the DOM, and that is
-  // the render this effect has to run on. Same shape as the re-measure triggers in
-  // usePaperSubjectVirtualizer.
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-run trigger, see above
   useLayoutEffect(() => {
     if (!pendingRevealId || !clearPendingReveal) return;
@@ -127,11 +83,6 @@ export const PaperSubjectList = ({
   }, [pendingRevealId, isRevealMounted, clearPendingReveal, scrollRef]);
 
   const renderSubject = ({ subject, firstSectionNumber }: NumberedSubject) =>
-    // `חתימות` is drawn by SignaturesSection instead of the generic topic path —
-    // main special-cases it the same way (Edit.tsx:4303), and it holds signature
-    // blocks rather than sections. The match is on the title because that is all
-    // main has to go on; renaming the topic turns it back into an ordinary one,
-    // which is main's behaviour too.
     subject.title === SIGNATURES_TOPIC_TITLE ? (
       <SignaturesSection
         key={subject.id}
@@ -157,9 +108,6 @@ export const PaperSubjectList = ({
 
   if (isPrinting) return <>{subjects.map(renderSubject)}</>;
 
-  // Which topic holds focus, read off the DOM as focus lands rather than tracked
-  // by every node that can take it: the answer is one attribute up the ancestor
-  // chain, and everything editable in a topic is inside that element.
   const handleFocusCapture = (event: FocusEvent<HTMLDivElement>) => {
     const row = event.target.closest('[data-index]');
     setFocusedIndex(row ? Number(row.getAttribute('data-index')) : -1);

@@ -21,8 +21,6 @@ export const DocName = styled.span`
   font-weight: 600;
 `;
 
-// The consequence, in the smallest type in the dialog: it is a fact about where
-// the document goes, not a second question (main, Edit.tsx:4963).
 export const Consequence = styled.p`
   margin: -8px 0 0;
   font-size: 12px;

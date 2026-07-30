@@ -9,21 +9,11 @@ export interface EditorClickEvent {
   target: EventTarget | null;
 }
 
-/**
- * The searchreplace plugin's own API, reachable at `editor.plugins.searchreplace`.
- *
- * It is what lets the ribbon's find-and-replace panel be our design and TinyMCE's
- * behaviour at once: the plugin does the matching, the highlighting and the
- * stepping, and its dialog — which we never open — is only one more caller of
- * these same five functions.
- */
 export interface SearchReplaceApi {
-  /** Highlights every match and returns how many there were. */
   find(text: string, matchCase: boolean, wholeWord: boolean): number;
   next(): void;
   prev(): void;
   replace(text: string, forward?: boolean, all?: boolean): boolean;
-  /** Clears the highlights. Must be called, or they stay in the content. */
   done(keepEditorSelection?: boolean): void;
 }
 

@@ -3,12 +3,6 @@ import styled from 'styled-components';
 import { ellipsis, flexBetween, flexCenter, resetButton } from '@/styles/mixins';
 import { colors, gray } from '@/styles/theme';
 
-/**
- * Fills whatever column it is given. The panel is a header over a scrolling
- * table, so it has to be a flex column in its own right rather than leaning on
- * its consumer to be one — the mailing-list form and the permissions dialog hand
- * it differently shaped space.
- */
 export const PanelRoot = styled.div`
   flex: 1;
   min-width: 0;

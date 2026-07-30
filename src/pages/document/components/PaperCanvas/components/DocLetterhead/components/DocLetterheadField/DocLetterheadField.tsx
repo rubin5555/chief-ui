@@ -11,13 +11,6 @@ export interface DocLetterheadFieldProps {
   onChange: (value: string) => void;
 }
 
-// One labelled line of the letterhead (main's DocHeaderField, Edit.tsx:517).
-//
-// Read-only renders a span rather than a disabled input: on a distributed
-// document these are printed facts, and an input — even one you can't type in —
-// still reads as something you might be able to fill in. The placeholder shows
-// through in that state too, which is main's behaviour and keeps an empty line
-// from collapsing.
 export const DocLetterheadField = ({
   id,
   label,

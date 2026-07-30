@@ -19,9 +19,7 @@ test('renders the seeded document with its header and outline tree', async ({ pa
   await page.goto('/document/d1');
 
   await expect(page.getByTestId(DOCUMENT_PAGE_IDS.root)).toBeVisible();
-  // The metadata pill shows the organisation inside the same element as the
-  // name ("נוהל בטיחות 2026 (ארגון א׳)"), matching main's markup — hence
-  // toContainText rather than an exact match.
+
   await expect(page.getByTestId(DOCUMENT_METADATA_PILL_IDS.title)).toContainText(
     'נוהל בטיחות 2026',
   );
@@ -43,14 +41,6 @@ test('collapses and expands a subject in the outline tree', async ({ page }) => 
 });
 
 test('activating a section mounts a real, focusable TinyMCE editor', async ({ page }) => {
-  // Confirms the section body is genuinely live rich-text editing (Phase 2's
-  // goal), not a mock — a raw-keystroke round trip through TinyMCE's own
-  // onEditorChange isn't asserted here since that event's internal flush
-  // timing is an undocumented TinyMCE heuristic (traced to anywhere from
-  // under a second to several seconds), not something this app controls;
-  // the existing e2e suite avoids depending on it too (see
-  // DataImportModal.spec.ts's chip-drop test, which drives ContentEditor's
-  // onChange directly instead of via simulated typing).
   await page.goto('/document/d1');
 
   const sectionContent = page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'));
@@ -65,11 +55,6 @@ test('activating a section mounts a real, focusable TinyMCE editor', async ({ pa
 test('inserting a table from the ribbon produces real table HTML, undoable with Ctrl+Z', async ({
   page,
 }) => {
-  // In-document tables ride on ContentEditor's TinyMCE table plugin. What changed
-  // is who asks for one: the ribbon's own 8×8 size grid rather than TinyMCE's
-  // menu, running the same `mceInsertTable` command underneath. Command clicks
-  // (unlike raw typing) trigger the non-typing AddUndo path immediately, so no
-  // debounce wait is needed here.
   await page.goto('/document/d1');
 
   const sectionContent = page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'));
@@ -97,13 +82,6 @@ test('posting a section comment renders it in the chat panel', async ({ page }) 
   await page.getByTestId(SECTION_CHAT_IDS.input).fill('הודעת בדיקה');
   await page.getByTestId(SECTION_CHAT_IDS.sendBtn).click();
 
-  // The stub mutation carries the same simulated network latency as every
-  // other src/api/*.ts resource (STUB_DELAY_MS in stubLink.ts) — assertions
-  // auto-retry rather than using a fixed wait.
-  //
-  // Two messages, not one: a thread nobody has posted to still opens with the
-  // other side's prompt (main's CHAT_INIT, seeded in src/api/comments.ts), and
-  // the posted message is appended after it.
   const messages = page.locator('[data-testid^="section-chat-message-"]');
   await expect(messages).toHaveCount(2);
   await expect(messages.first()).toContainText('איך אפשר לעזור בסעיף זה?');
@@ -112,9 +90,6 @@ test('posting a section comment renders it in the chat panel', async ({ page }) 
 });
 
 test('the chat stays open while text is being marked in the document', async ({ page }) => {
-  // The bubble is open so the reader can work in the document underneath it —
-  // marking a passage to quote starts with a mousedown in the paper, which is
-  // exactly what a dismiss-on-outside-click panel closes on.
   await page.goto('/document/d1');
 
   await clickCentred(page.getByTestId(SECTION_CHAT_IDS.trigger('s1-1')));
@@ -129,8 +104,6 @@ test('the chat stays open while text is being marked in the document', async ({ 
 });
 
 test('opening a second section chat closes the first', async ({ page }) => {
-  // Both bubbles live in the same strip of left margin, so two open at once
-  // would be one on top of the other.
   await page.goto('/document/d1');
 
   await clickCentred(page.getByTestId(SECTION_CHAT_IDS.trigger('s1-1')));
@@ -142,18 +115,14 @@ test('opening a second section chat closes the first', async ({ page }) => {
 });
 
 test('a section menu takes focus when it opens and keeps Tab inside it', async ({ page }) => {
-  // The menu is portalled to the body, so it is no longer next to its trigger in
-  // the DOM — without this, Tab would walk straight past it into the page.
   await page.goto('/document/d1');
 
   await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
   await expect(page.getByTestId(SECTION_MENU_IDS.approversAction)).toBeFocused();
 
-  // Tab off the last item wraps back to the first rather than leaving the menu.
   await page.keyboard.press('Shift+Tab');
   await expect(page.getByTestId(SECTION_MENU_IDS.deleteAction)).toBeFocused();
 
-  // Escape closes it and hands focus back to the button that opened it.
   await page.keyboard.press('Escape');
   await expect(page.getByTestId(SECTION_MENU_IDS.panel('s1-1'))).toHaveCount(0);
   await expect(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1'))).toBeFocused();
@@ -171,7 +140,6 @@ test('hiding a section via the section menu replaces its body with a hidden noti
   await expect(sectionBody).toContainText('סעיף מוסתר');
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'))).toHaveCount(0);
 
-  // Toggling back from the menu (still labeled for "show" now) restores it.
   await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
   await page.getByTestId(SECTION_MENU_IDS.toggleHiddenAction).click();
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'))).toBeVisible();
@@ -183,12 +151,9 @@ test('classifying a section opens the viewers picker and gates its content', asy
   await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-2')));
   await page.getByTestId(SECTION_MENU_IDS.toggleClassifiedAction).click();
 
-  // Turning classification on immediately opens the viewers picker.
   const viewersModal = page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.root);
   await expect(viewersModal).toBeVisible();
 
-  // u1 = the first entry in src/api/classifiedViewers.ts's pool (main's
-  // CLASSIFIED_POOL), which this picker reads instead of the network roster.
   const firstCheckbox = page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.checkbox('u1'));
   await firstCheckbox.click();
   await expect(firstCheckbox).toBeChecked();
@@ -196,7 +161,6 @@ test('classifying a section opens the viewers picker and gates its content', asy
   await page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.closeBtn).click();
   await expect(viewersModal).not.toBeVisible();
 
-  // The section body is now gated behind a classification notice, not the editor.
   const sectionBody = page.getByTestId(EDITABLE_SECTION_BODY_IDS.root('s1-2'));
   await expect(sectionBody).toContainText('תוכן ממודר');
   await expect(page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-2'))).toHaveCount(0);
@@ -208,8 +172,6 @@ test('a section asks for its approvers in the document permissions dialog', asyn
   await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
   await page.getByTestId(SECTION_MENU_IDS.approversAction).click();
 
-  // Opened on מאשרי סעיף with this section already selected, so the permission
-  // lands where it was asked for rather than on the whole document.
   await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.root)).toBeVisible();
   await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.description)).toContainText(
     'יוכלו לאשר את הסעיף',
@@ -236,9 +198,6 @@ test('a section menu that fits does not scroll', async ({ page }) => {
   await page.goto('/document/d1');
   await clickCentred(page.getByTestId(SECTION_MENU_IDS.trigger('s1-1')));
 
-  // Its eight actions are well under the 320px cap, so there is nothing to
-  // scroll to — and a scrollbar on a menu that fits is the panel having been
-  // measured a fraction of a pixel too short.
   const overflow = await page
     .getByTestId(SECTION_MENU_IDS.panel('s1-1'))
     .evaluate((panel) => panel.scrollHeight - panel.clientHeight);
@@ -246,16 +205,11 @@ test('a section menu that fits does not scroll', async ({ page }) => {
 });
 
 test('the loading state is shaped like the document, not like a list panel', async ({ page }) => {
-  // Visible at all only because stubLink answers on a deliberate half-second
-  // delay (src/api/stubLink.ts). There is no request to stall — the stub
-  // resolves in memory, so page.route would never see it.
   await page.goto('/document/d1');
 
   const skeleton = page.getByTestId(DOCUMENT_PAGE_SKELETON_IDS.root);
   await expect(skeleton).toBeVisible();
 
-  // The sheet it holds the place of is the real one's width, so the page does
-  // not rearrange itself when the document lands.
   const paper = page.getByTestId(DOCUMENT_PAGE_SKELETON_IDS.paper);
   const skeletonWidth = (await paper.boundingBox())?.width;
 

@@ -24,9 +24,6 @@ interface DocFilterPanelProps {
   panelRef: RefObject<HTMLDivElement | null>;
 }
 
-// The floating filter dropdown anchored to DocTab's filter button. `docs` is
-// the full unfiltered list (DocTab's own filtered view doesn't work here —
-// the checkbox options must stay stable as other filters narrow the table).
 export const DocFilterPanel = ({ docs, filters, top, left, panelRef }: DocFilterPanelProps) => {
   const sections = [
     {

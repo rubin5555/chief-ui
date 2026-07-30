@@ -4,7 +4,6 @@ import type { CursorPath } from '@/collab/types';
 import type { TinyMceEditor } from '@/components/ui/ContentEditor/ContentEditor.types';
 import { type LockInfo, useCollabContext } from './CollabContext';
 
-// Cap per-field history so a long editing session on a large list can't grow unbounded.
 const MAX_HISTORY_LENGTH = 100;
 
 interface HistoryEntry {
@@ -19,29 +18,11 @@ export interface ContentEditorContextValue {
   toolbarId: string;
   activeId: string | null;
   setActive: (id: string | null) => void;
-  /**
-   * The open field's TinyMCE instance, which is what the shared ribbon acts on.
-   *
-   * `activeId` says *which* field is open; this is the object you can send a
-   * command to. They are set and cleared together, but kept apart because the id
-   * is the editor's identity — used for locking and for history — while this is a
-   * handle that only exists between `onInit` and unmount.
-   */
   activeEditor: TinyMceEditor | null;
   setActiveEditor: (editor: TinyMceEditor | null) => void;
-  // Requests the lock for `fieldId` (the stable domain id — see
-  // ContentEditor's `id` prop) then, on grant, activates `instanceId` (the
-  // editor's own per-mount id — see ContentEditor's `myId`). The two are
-  // different things: locking is keyed by field, local activation by mount.
-  // Optimistic — activates immediately, rolls back only if denied (plan §3).
-  // With no CollabProvider above this one, degrades to the original
-  // always-succeeds setActive(instanceId).
   requestActivate: (fieldId: string, instanceId: string) => void;
   lockState: Map<string, LockInfo | null>;
   remoteCursors: Map<string, CursorPath | null>;
-  // Undo/redo history keyed by a stable field id rather than the editor instance,
-  // so it survives the field's TinyMCE instance being unmounted and remounted
-  // (e.g. scrolling a field out of and back into a virtualised list).
   getHistoryValue: (id: string, initialValue: string) => string;
   pushHistoryLevel: (id: string, value: string) => void;
   undoHistory: (id: string) => string | null;

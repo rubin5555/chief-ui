@@ -2,9 +2,6 @@ import styled from 'styled-components';
 import { resetButton } from '@/styles/mixins';
 import { colors, docColors, gray, radii, shadows, transitions } from '@/styles/theme';
 
-// main's status navigation (Edit.tsx:3845): a filled primary button for the step
-// forward, an outlined secondary one for the step back, stacked full-width in the
-// sidebar with a 20px gap below the pair.
 export const FlowNavRoot = styled.div`
   display: flex;
   flex-direction: column;
@@ -12,9 +9,6 @@ export const FlowNavRoot = styled.div`
   margin-bottom: 20px;
 `;
 
-// Both buttons put their label in a `flex: 1` span and the chevron after it, so
-// the label is right-aligned in this RTL column and the chevron pins to the far
-// (left) edge regardless of how long the status name is.
 const FlowBtn = styled.button`
   ${resetButton}
   display: flex;
@@ -60,8 +54,6 @@ export const FlowLabel = styled.span`
   text-align: right;
 `;
 
-// The back button's chevron is the forward one rotated, so both point the way
-// the press moves the document — in RTL that is leftward for "next".
 export const RevertIcon = styled.span`
   display: flex;
   flex-shrink: 0;

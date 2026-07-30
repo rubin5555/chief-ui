@@ -23,8 +23,6 @@ export interface Template {
 
 const noop = () => {};
 
-// Lazy: TemplateModal drags in ContentEditor (TinyMCE, ~1MB+) — only fetched
-// once a user actually opens the new/edit/duplicate flow from this panel.
 const TemplateModal = lazy(() =>
   import('@/modals/TemplateModal').then((m) => ({ default: m.TemplateModal })),
 );
@@ -42,9 +40,6 @@ export const TemplatesPanel = ({
   onDelete,
   onRestore,
 }: TemplatesPanelProps) => {
-  // Fetched here rather than by the page: this panel is already lazy-loaded
-  // per-tab, so its data should be too — the query only fires once a user
-  // actually switches to this tab, matching the JS chunk fetch.
   const { data, loading } = useTemplates();
   const templates = data?.templates ?? TEMPLATES_FALLBACK.templates;
   const deletedTemplates = data?.deletedTemplates ?? TEMPLATES_FALLBACK.deletedTemplates;

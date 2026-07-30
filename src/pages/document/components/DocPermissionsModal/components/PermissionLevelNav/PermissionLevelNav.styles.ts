@@ -1,11 +1,6 @@
 import styled from 'styled-components';
 import { colors, gray, shadows } from '@/styles/theme';
 
-/**
- * main's `w-52` rail (TopNavbar.tsx:420): the five permissions at the top and the
- * active one's description held at the bottom of the column, so the explanation
- * sits in the same place whichever permission is being read.
- */
 export const NavRoot = styled.nav`
   width: 208px;
   flex-shrink: 0;
@@ -50,11 +45,6 @@ export const LevelLabel = styled.span<{ $active: boolean }>`
   color: ${({ $active }) => ($active ? gray[900] : gray[500])};
 `;
 
-/**
- * The description is the substance of this dialog — it is the only place that
- * states what a permission actually grants — but main keeps it quiet at the foot
- * of the rail rather than making it the headline.
- */
 export const LevelDescription = styled.p`
   flex: 1;
   display: flex;

@@ -6,8 +6,6 @@ import { SupportTriggerButton } from './controls/SupportTriggerButton';
 import { useSupportMenuAnalytics } from './SupportMenu.analytics';
 import { PANEL_WIDTH } from './SupportMenu.constants';
 
-// This component is the only place that owns analytics tracking for the menu — the
-// controls/ subcomponents are dumb and receive already-composed callbacks.
 export const SupportMenu = () => {
   const [showPermissions, setShowPermissions] = useState(false);
   const panel = useFloatingPanel({ focusOnOpen: true });

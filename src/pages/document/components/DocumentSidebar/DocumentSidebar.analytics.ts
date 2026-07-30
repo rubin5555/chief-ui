@@ -3,7 +3,6 @@ import type { AddActionId } from './components/SidebarFabRow';
 
 const ANALYTICS_CATEGORY = 'סרגל צד מסמך';
 
-// The ids are internal; what a report should show is what the user picked.
 const ADD_ACTION_LABEL: Record<AddActionId, string> = {
   subject: 'נושא חדש',
   appendix: 'נספח',
@@ -18,9 +17,6 @@ const ACTIONS = {
 } as const;
 
 export const useDocumentSidebarAnalytics = () => {
-  // One action with the choice as its label rather than four actions: what is
-  // worth knowing is the shape of the menu's usage, and that reads better as a
-  // single breakdown.
   const trackAddActionChosen = (action: AddActionId) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,
@@ -29,8 +25,6 @@ export const useDocumentSidebarAnalytics = () => {
     });
   };
 
-  // Both of these fire on completion, not on opening the dialog — the count is
-  // the point, and a dialog that was opened and closed again imported nothing.
   const trackImportCompleted = (count: number) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,

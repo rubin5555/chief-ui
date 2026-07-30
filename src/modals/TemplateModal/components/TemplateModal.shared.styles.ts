@@ -2,11 +2,6 @@ import styled from 'styled-components';
 import { flexCenter, flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-// Shared across AppendixList/SubjectTree/SectionRow/TemplateModalBody — these
-// are the common building blocks of the subject/section/appendix tree UI, not
-// any single component's own concern. See src/modals/MailingListFormModal/tabs/tabs.shared.styles.ts
-// for the same pattern used elsewhere in the codebase.
-
 export const TitleInput = styled.input`
   ${flexFill}
   background: transparent;

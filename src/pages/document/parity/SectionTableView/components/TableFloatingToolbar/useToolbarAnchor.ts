@@ -10,13 +10,6 @@ export interface AnchorRect {
 const GAP = 6;
 const TOOLBAR_HEIGHT = 50;
 
-// The toolbar sits under the table and has to keep up with it: the page scrolls,
-// the window resizes, and a cell that grows makes the table taller. main watches
-// the first two (Edit.tsx:934-945) and misses the third, so typing enough to add
-// a line leaves the toolbar overlapping the row it belongs to.
-//
-// An effect is the right tool here — these are external event sources with
-// cleanup, not state derived from props.
 export const useToolbarAnchor = (
   ref: RefObject<HTMLElement | null>,
   enabled: boolean,
@@ -34,8 +27,6 @@ export const useToolbarAnchor = (
     const measure = () => {
       const box = element.getBoundingClientRect();
       setRect({
-        // Never below the fold: a toolbar you have to scroll to reach is one the
-        // table has already scrolled away from.
         top: Math.min(box.bottom + GAP, window.innerHeight - TOOLBAR_HEIGHT),
         left: box.left,
         width: box.width,

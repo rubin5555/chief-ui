@@ -16,22 +16,8 @@ import { COMPARISON_BAR_IDS } from './ComparisonBar.testids';
 
 const routeApi = getRouteApi('/document/$id');
 
-/**
- * How many differences there are to walk between.
- *
- * Zero, because nothing computes a diff — not here and not in main, whose
- * `comparisonTotal` is the literal `3` (Edit.tsx:3512). The counter shows the truth
- * rather than main's constant, and the chevrons are disabled to match it. When a
- * diff engine exists, this is the line that changes.
- */
 const DIFFERENCE_COUNT = 0;
 
-// main's version-comparison bar (Edit.tsx:3731).
-//
-// Which version is being compared against lives in the URL, so a comparison is
-// bookmarkable and survives a reload. The two view toggles don't: they are how you
-// are looking at the comparison rather than what you are comparing
-// (.claude/skills/router-state-splitting.md).
 export const ComparisonBar = () => {
   const { compareVersion } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();
@@ -55,9 +41,6 @@ export const ComparisonBar = () => {
   const handlePrev = () => setNavIndex((prev) => Math.max(1, prev - 1));
   const handleNext = () => setNavIndex((prev) => Math.min(DIFFERENCE_COUNT, prev + 1));
 
-  // No version picked means no comparison, and nothing to draw. Starting one is
-  // the navbar's compare icon, where main puts it (TopNavbar.tsx:1275) — a bar
-  // that only exists during a comparison can't hold the way into one.
   if (!compareVersion) return null;
 
   return (

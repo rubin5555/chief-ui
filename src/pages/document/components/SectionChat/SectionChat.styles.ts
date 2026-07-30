@@ -2,8 +2,6 @@ import styled from 'styled-components';
 import { colors, docColors, gray, radii, shadows, transitions } from '@/styles/theme';
 import { BUBBLE_LEFT, BUBBLE_MAX_HEIGHT, BUBBLE_WIDTH } from './SectionChat.constants';
 
-// Positioned by the `style` attr rather than CSS interpolation, so following a
-// scrolling section doesn't mint a class per pixel.
 export const BubbleRoot = styled.div.attrs<{ $top: number }>((props) => ({
   style: { top: props.$top },
 }))<{ $top: number }>`
@@ -13,15 +11,6 @@ export const BubbleRoot = styled.div.attrs<{ $top: number }>((props) => ({
 	z-index: 99999;
 `;
 
-/**
- * The speech-bubble tail, drawn as main draws it (Edit.tsx:406-422): two CSS
- * triangles, a wider one in the border colour with a narrower fill sitting on top
- * of it, so the point keeps the same 1px outline as the rest of the bubble.
- *
- * They are siblings of the bubble body rather than children because the body
- * clips to its own rounded box — a tail inside it would be cut off at the very
- * edge it needs to stick out past.
- */
 const Tail = styled.div`
 	position: absolute;
 	width: 0;
@@ -31,8 +20,7 @@ const Tail = styled.div`
 `;
 
 export const TailBorder = styled(Tail)`
-	/* Physical \`right\`, not \`inline-end\`: the paper this points at is to the
-	   bubble's physical right on this RTL page, the same side in either direction. */
+
 	right: -11px;
 	top: 9px;
 	border-left: 11px solid ${docColors.chatArrowBorder};
@@ -67,8 +55,7 @@ export const Header = styled.div`
 	justify-content: space-between;
 	gap: 8px;
 	padding: 8px 10px;
-	/* Shares the tail's fill colour — the tail reads as this strip pulled into a
-	   point, so the two have to be the same tone. */
+
 	background-color: ${docColors.surfaceSubtle};
 	border-bottom: 1px solid ${gray[100]};
 	flex-shrink: 0;
@@ -191,8 +178,6 @@ export const SendBtn = styled.button`
 		opacity: 0.9;
 	}
 
-	/* The arrow has to fly the way the text reads (main mirrors it the same way,
-	   Edit.tsx:498) — lucide draws it pointing right, which is backwards here. */
 	svg {
 		transform: scaleX(-1);
 	}

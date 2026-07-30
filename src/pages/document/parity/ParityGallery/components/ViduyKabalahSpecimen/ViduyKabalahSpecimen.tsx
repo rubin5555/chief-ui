@@ -17,8 +17,6 @@ export const ViduyKabalahSpecimen = () => {
   const handleOpen = () => setIsOpen(true);
   const handleClose = () => setIsOpen(false);
 
-  // Only what was filled in, not what was written: the approver's name and notes
-  // are about a named person, and a gallery has no reason to hold either.
   const handleSend = ({ approvedBy, date, notes }: ViduyKabalahDetails) => {
     const filled = [approvedBy && 'מאשר', date && 'תאריך', notes && 'הערות'].filter(Boolean);
     setLastAction(filled.length ? `נשלח עם: ${filled.join(', ')}` : 'נשלח ריק');

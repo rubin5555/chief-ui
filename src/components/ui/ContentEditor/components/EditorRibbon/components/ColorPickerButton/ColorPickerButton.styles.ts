@@ -8,9 +8,6 @@ export const SwatchGroup = styled.div`
   flex-shrink: 0;
 `;
 
-// Icon over a colour bar — Word's convention, and main's (Edit.tsx:1229-1234).
-// Pressing the face applies the colour it shows; the chevron beside it chooses a
-// different one.
 export const SwatchFace = styled.button`
   ${resetButton}
   ${flexCenter}

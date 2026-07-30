@@ -19,14 +19,6 @@ export interface StatusFilterListProps {
   onApply: (statuses: SectionStatus[]) => void;
 }
 
-// main stages the selection and only commits it when you press סנן (Edit.tsx:2518),
-// so ticking four boxes re-renders the document once rather than four times.
-//
-// That staged set is seeded from `applied` on mount and never re-synced, which is
-// safe *because this component unmounts with the panel* — reopening it mounts a
-// fresh copy that re-reads the URL. Keep it that way: hoisting this state into
-// FilterPanel, which stays mounted for the trigger's sake, would make the panel
-// show a stale selection after a back-button navigation.
 export const StatusFilterList = ({ applied, onApply }: StatusFilterListProps) => {
   const [staged, setStaged] = useState<SectionStatus[]>(applied);
 

@@ -23,7 +23,6 @@ import { SECTION_BLOCK_IDS } from './SectionBlock.testids';
 export interface SectionBlockProps {
   subjectId: string;
   section: Section;
-  /** Continuous position in the document, not within the parent subject. */
   number: number;
   filteredSectionIds: Set<string>;
   searchMatchIds: Set<string>;
@@ -31,13 +30,9 @@ export interface SectionBlockProps {
   overrides: ReturnType<typeof useDocumentOverrides>;
   trash: ReturnType<typeof useDocumentTrash>;
   readOnly: boolean;
-  /** A distributed document shows no per-section status and offers no transitions. */
   isDistributed: boolean;
 }
 
-// One section: its heading row, its body, its status controls, then its
-// sub-sections. This component owns the state and the writes; the heading row's
-// assembly is in components/SectionHeader.
 export const SectionBlock = ({
   subjectId,
   section,
@@ -53,14 +48,8 @@ export const SectionBlock = ({
   const meta = overrides.getMeta(section.id);
   const nav = useSectionNavigation();
 
-  // Owned here rather than inside AttachmentPicker because the chips under the
-  // body open the same dialog, and they are rendered by a different child.
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
 
-  // Whether this section is waiting for someone to say what needs fixing. One
-  // boolean per section, local to it — main keeps a page-level Set of ids
-  // alongside a Record of statuses and two helpers to read them (Edit.tsx:3211),
-  // which is three representations of the same fact.
   const [isAwaitingFix, setIsAwaitingFix] = useState(false);
   const { openChat } = useSectionChatCoordination();
   const { trackStatusChanged, trackFixRequested, trackFixApplied } = useSectionBlockAnalytics();
@@ -98,17 +87,12 @@ export const SectionBlock = ({
     setIsAwaitingFix(false);
   };
 
-  // Arms the section and opens its thread in one go, as main does
-  // (Edit.tsx:4611) — the button asks for a fix, and the thread is where you say
-  // what needs fixing, so making the reader find it is asking twice.
   const handleRequestFix = () => {
     trackFixRequested();
     setIsAwaitingFix(true);
     openChat(section.id);
   };
 
-  // The reason and the status change are one act: whatever is written first after
-  // `לתיקון` is the explanation, and posting it is what moves the section.
   const handleMessageSent = () => {
     if (!isAwaitingFix) return;
     trackFixApplied();
@@ -166,8 +150,6 @@ export const SectionBlock = ({
         onFootnotesChange={handleFootnotesChange}
       />
 
-      {/* A hidden section has nothing to approve, and a distributed document has
-          nothing left to move — main drops the row in both cases (4600). */}
       {!meta.hidden && !isDistributed && (
         <SectionStatusActions
           sectionId={section.id}
@@ -177,7 +159,6 @@ export const SectionBlock = ({
         />
       )}
 
-      {/* Hiding a section hides its sub-sections with it, as main does. */}
       {!meta.hidden &&
         section.subSections.map((subSection, subSectionIndex) =>
           filteredSectionIds.has(subSection.id) ? null : (

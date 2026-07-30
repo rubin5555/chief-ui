@@ -21,21 +21,11 @@ import { EntitySelector } from '../EntitySelector';
 
 export interface DocDetailsFieldsProps {
   form: DocDetailsForm;
-  /** Duplicate mode demands a new name before it will submit. */
   needsRename: boolean;
-  /** Past editing, every field is a fact rather than a control (main's isLimitedEdit). */
   isLimitedEdit: boolean;
   onNameTouched: () => void;
 }
 
-// The document's editable details, in main's order and its two-column grid
-// (Edit.tsx:2271). Split out of EditDocDetailsModal so that component stays the
-// modal's chrome, its dirty tracking and its footer — which is where its modes
-// differ. The fields are the same in all of them.
-//
-// The one field that stays editable past editing is the expiry date: main gates
-// it on `readOnly` alone (2350), because deciding when a distributed document
-// stops applying is a thing you do *after* it is distributed.
 export const DocDetailsFields = ({
   form,
   needsRename,

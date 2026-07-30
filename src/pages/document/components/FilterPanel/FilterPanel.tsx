@@ -10,22 +10,8 @@ import { FILTER_PANEL_IDS } from './FilterPanel.testids';
 
 const routeApi = getRouteApi('/document/$id');
 
-// main's panel is 240px wide and hard-pinned to `top: 52, right: 12`
-// (Edit.tsx:2493) — which only lands under the navbar's filter icon by coincidence
-// of where that icon happens to sit. useFloatingPanel anchors it to the trigger's
-// real rect instead, so it stays put if the toolbar ever moves, and clamps or flips
-// at the viewport edge.
 const PANEL_WIDTH = 240;
 
-// Renders its trigger into the navbar's document-actions toolbar (see
-// DocumentActionsSlot) rather than owning a spot in the page: the trigger and the
-// popover have to be one component, because the popover is positioned off the
-// trigger's own bounding rect.
-//
-// The *applied* filter is bookmarkable — it changes which sections render — so it's
-// backed by the route's `statuses` search param rather than local state, per
-// .claude/skills/router-state-splitting.md. The staged selection inside the open
-// panel is not; that belongs to StatusFilterList.
 export const FilterPanel = () => {
   const { statuses } = routeApi.useSearch();
   const navigate = routeApi.useNavigate();

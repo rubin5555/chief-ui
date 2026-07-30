@@ -11,16 +11,9 @@ export interface SectionStatusActionsProps {
   sectionId: string;
   status: SectionStatus;
   onStatusChange: (status: SectionStatus) => void;
-  /** Sends the section back for changes; the reason is written in its chat thread. */
   onRequestFix: () => void;
 }
 
-// The status controls at the foot of a section (main, Edit.tsx:4600).
-//
-// Three shapes, one per stage: a section being written offers to submit it, one
-// awaiting approval offers both answers, and one already settled offers only the
-// way back to editing. `idle` falls into that last group — it has never been
-// submitted, but "reopen" is still the only move that makes sense.
 export const SectionStatusActions = ({
   sectionId,
   status,

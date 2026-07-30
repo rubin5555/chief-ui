@@ -8,9 +8,6 @@ export type TableGridIconVariant =
   | 'col-after'
   | 'col-delete';
 
-// lucide has no row/column-insert glyph, so main draws all six by hand
-// (Edit.tsx:1013-1060). Keeping them as data indexed by variant is what stops six
-// near-identical 8-line SVGs becoming six near-identical components.
 const PATHS: Record<TableGridIconVariant, ReactNode> = {
   'row-before': (
     <>

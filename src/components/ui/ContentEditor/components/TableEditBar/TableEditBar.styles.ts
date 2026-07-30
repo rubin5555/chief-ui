@@ -2,15 +2,6 @@ import styled from 'styled-components';
 import { flexCenter, resetButton } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-/**
- * main's row/column strip (Edit.tsx:984-1073), which hangs under the table it
- * acts on.
- *
- * `position: fixed` and portalled onto the body, because the table it points at
- * lives inside the paper's `zoom` — an absolutely-positioned bar written next to
- * it would be laid out in zoomed pixels while its measurements are in real ones.
- * FloatingPanel is portalled for the same reason and explains it at length.
- */
 export const BarRoot = styled.div`
   position: fixed;
   z-index: 9990;
@@ -26,8 +17,6 @@ export const BarRoot = styled.div`
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 `;
 
-// A CSS triangle pointing back at the table, so the strip reads as belonging to
-// it rather than floating over the page (main, Edit.tsx:1007).
 export const BarArrow = styled.span`
   position: absolute;
   top: -6px;

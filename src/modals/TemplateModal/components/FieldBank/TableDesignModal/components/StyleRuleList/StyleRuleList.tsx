@@ -27,9 +27,6 @@ interface StyleRuleListProps {
 
 const OPERATOR_LABELS = Object.values(RULE_OPERATOR_LABELS);
 
-// Conditional per-cell formatting ("if <column> <operator> <value>, apply <style>"),
-// compiled by utils/tableDesignOptions.ts into json-table's FieldStyle.when predicates.
-// Only meaningful for matrix tables — see TableDesignModal's isTableSchema gating.
 export const StyleRuleList = ({ columns, value, onChange }: StyleRuleListProps) => {
   const handleAdd = () => {
     if (columns.length === 0) return;

@@ -6,9 +6,6 @@ import type { TinyMceEditor } from '../ContentEditor.types';
 import { caretRangeAtPoint } from '../utils/domCaret';
 import { clampOffset, getNodePath, resolveNodePath, serializeSelection } from '../utils/nodePath';
 
-// Owns the inactive-preview surface: capturing the real selection or a chip's drop
-// point before swapping to TinyMCE, and re-applying it once the editor mounts
-// (handleInit calls `applyPendingSelection` after TinyMCE re-normalises its body).
 export const usePreviewActivation = (
   ctx: ContentEditorContextValue | null,
   myId: string,
@@ -19,32 +16,20 @@ export const usePreviewActivation = (
 ) => {
   const previewRef = useRef<HTMLDivElement>(null);
   const pendingSelectionRef = useRef<CursorPath | null>(null);
-  // Chip HTML dropped on the inactive preview, inserted once the editor mounts.
+
   const pendingInsertHtmlRef = useRef<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // Capture the pointer so the eventual pointerup/click stays targeted at this
-  // preview even if another editor deactivating mid-drag shifts the layout
-  // (e.g. stacked table cells) and moves this element out from under the cursor.
   const handlePreviewPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (disabled || selectionOnly) return;
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
-  // Capture the real browser selection out of the preview DOM (still mounted at
-  // this point) before swapping to TinyMCE, then activate. Reading the actual
-  // Selection/Range — rather than re-deriving one from click coordinates — is
-  // what makes this robust: it's already normalised start-before-end, and it
-  // already reflects native double/triple-click word/paragraph selection.
   const handlePreviewPointerUp = () => {
     if (disabled || !ctx) return;
-    // The click was made to select text, not to start editing. Activating anyway
-    // would swap this preview for TinyMCE and focus it before the mouseup that
-    // reads the selection ever fires — so the selection the reader just made
-    // would be gone by the time anything could ask for it.
+
     if (selectionOnly) return;
-    // Known to be held by someone else — skip the request entirely rather
-    // than optimistically activating and immediately rolling back.
+
     if (lockedByOther) return;
 
     pendingSelectionRef.current = null;
@@ -66,9 +51,6 @@ export const usePreviewActivation = (
 
   const handlePreviewDragLeave = () => setIsDragOver(false);
 
-  // Dropping on an inactive preview: map the drop point to a node path (same mechanism
-  // as click-to-activate above), stash the chip HTML, and activate — handleInit finishes
-  // the insertion once TinyMCE has mounted at the equivalent caret.
   const handlePreviewDrop = (e: React.DragEvent<HTMLDivElement>) => {
     setIsDragOver(false);
     if (disabled || !ctx || lockedByOther) return;
@@ -95,11 +77,6 @@ export const usePreviewActivation = (
     ctx.requestActivate(id, myId);
   };
 
-  // Preview and editor are rendered from the same HTML string, so the captured
-  // node path re-resolves to the equivalent position in the editor's body —
-  // no dependency on visual layout matching between the two. Called from
-  // handleInit's runAfterFrame: TinyMCE re-normalises its body on init/focus,
-  // and resolving immediately can hit nodes that get replaced right after.
   const applyPendingSelection = (editor: TinyMceEditor) => {
     const pending = pendingSelectionRef.current;
     pendingSelectionRef.current = null;
@@ -120,15 +97,10 @@ export const usePreviewActivation = (
           range.setEnd(endNode, clampOffset(endNode, pending.endOffset));
           editor.selection.setRng(range);
           editor.nodeChanged();
-        } catch {
-          // Structure didn't line up (TinyMCE normalised the content differently
-          // than the preview) — leave the default focus caret rather than throwing.
-        }
+        } catch {}
       }
     }
 
-    // A chip dropped on the preview inserts at the caret resolved above (or the
-    // default focus caret when the drop point couldn't be mapped).
     if (pendingInsert) editor.insertContent(pendingInsert);
   };
 

@@ -8,8 +8,6 @@ export const SignaturesBody = styled.div`
   gap: 10px;
 `;
 
-// Sits above the fields rather than beside them, because it explains why they are
-// outlined in red (main, Edit.tsx:4305).
 export const RequiredWarning = styled.p`
   display: flex;
   align-items: center;
@@ -27,9 +25,6 @@ export const HeaderActions = styled.div`
   flex-shrink: 0;
 `;
 
-// Both header buttons are tinted rather than plain icon buttons: they carry words,
-// and the signatures topic is the one place in the sheet where the heading row
-// holds actions instead of the action row.
 const HeaderBtn = styled.button`
   ${resetButton}
   display: flex;
@@ -52,8 +47,6 @@ export const TemplatesBtn = styled(HeaderBtn)`
   }
 `;
 
-// Dashed and unfilled, which is main's way of marking the one that adds another of
-// something rather than acting on what is there.
 export const AddSignatureBtn = styled(HeaderBtn)`
   border: 1px dashed ${docColors.primaryLightBorder};
 

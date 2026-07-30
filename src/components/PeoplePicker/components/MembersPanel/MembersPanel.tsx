@@ -30,15 +30,9 @@ import { MEMBERS_PANEL_IDS } from './MembersPanel.testids';
 interface MembersPanelProps {
   members: Member[];
   onRemove: (id: string) => void;
-  /** Defaults to the mailing-list wording. */
   title?: string;
 }
 
-/**
- * Everyone picked so far, with imported groups expandable to the people inside
- * them. Which group is open is its own business — nothing outside this panel
- * reacts to a row being unfolded.
- */
 const MembersPanelComponent = ({ members, onRemove, title = 'נמענים' }: MembersPanelProps) => {
   const [groupExpanded, setGroupExpanded] = useState<string | null>(null);
   const onToggleGroup = (id: string) => setGroupExpanded((prev) => (prev === id ? null : id));

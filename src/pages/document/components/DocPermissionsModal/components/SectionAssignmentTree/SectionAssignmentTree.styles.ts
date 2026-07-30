@@ -3,11 +3,6 @@ import styled from 'styled-components';
 import { ellipsis, flexBetween, subtleScrollbar } from '@/styles/mixins';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 
-// main writes this column's tints as 8-digit hex — `#1B3A6B14` on a chosen
-// section, `#1B3A6B1f` on an open count — where the last byte is an alpha out of
-// 255. The percentages below are those bytes converted (20/255, 31/255). They
-// had been `docColors.selectionBg` (`#dbeafe`), a flat pale blue reading as a
-// different colour family from the navy everything else here is tinted with.
 const CHOSEN_TINT = `color-mix(in srgb, ${colors.primary} 7.8%, transparent)`;
 const OPEN_COUNT_TINT = `color-mix(in srgb, ${colors.primary} 12.2%, transparent)`;
 
@@ -78,7 +73,6 @@ export const SubjectTitle = styled.span`
   ${ellipsis}
 `;
 
-/** main indents the sections under a chapter by 30px (TopNavbar.tsx:840). */
 export const SectionList = styled.div`
   display: flex;
   flex-direction: column;
@@ -87,9 +81,6 @@ export const SectionList = styled.div`
   padding-right: 30px;
 `;
 
-// A chosen section lifts rather than brightens — main gives it a shadow and
-// takes its hover away, so the row stops behaving like something you are about
-// to pick and starts looking like something already picked.
 export const SectionRow = styled.button<{ $selected: boolean }>`
   display: flex;
   align-items: center;
@@ -123,7 +114,6 @@ export const SectionTitle = styled.span<{ $selected: boolean }>`
   ${ellipsis}
 `;
 
-/** The count of people already assigned to a section, and a way to see who. */
 export const SectionCount = styled.span<{ $open: boolean }>`
   display: flex;
   align-items: center;
@@ -149,9 +139,6 @@ export const CountChevron = styled(ChevronLeft)<{ $open: boolean }>`
   transform: rotate(${({ $open }) => ($open ? '-90deg' : '0deg')});
 `;
 
-// The people holding the permission on this section, as a table rather than a
-// pair of stacked labels: three facts about each of them line up down the
-// column, which is the difference between reading the list and reading a row.
 export const AssignedTable = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -178,9 +165,6 @@ export const AssignedHeadCell = styled.th<{ $narrow?: boolean }>`
   ${({ $narrow }) => ($narrow ? 'width: 24px;' : '')}
 `;
 
-// The remove button appears on hover, so a list of eight people isn't eight
-// invitations to remove someone. It stays for keyboard users, who have no hover
-// to reveal it with.
 export const AssignedRow = styled.tr`
   border-bottom: 1px solid ${gray[50]};
   transition: background-color 0.15s;
@@ -227,11 +211,6 @@ export const RemoveButton = styled.button`
   }
 `;
 
-/**
- * Anyone picked while no section was selected. main drops them into the level's
- * list where the tree cannot show them, so they are silently granted a
- * per-section permission over no section at all; naming them is the fix.
- */
 export const UnassignedNotice = styled.p`
   margin: 8px 0 0;
   padding: 8px 12px;

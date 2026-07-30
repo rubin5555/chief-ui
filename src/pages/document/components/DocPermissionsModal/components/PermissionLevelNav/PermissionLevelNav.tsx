@@ -15,7 +15,6 @@ interface PermissionLevelNavProps {
   onSelect: (id: string) => void;
 }
 
-/** The five permissions, and what the one you are looking at grants. */
 export const PermissionLevelNav = ({ levels, activeId, onSelect }: PermissionLevelNavProps) => {
   const handleSelect = (id: string) => () => onSelect(id);
   const active = levels.find((level) => level.id === activeId) ?? levels[0];

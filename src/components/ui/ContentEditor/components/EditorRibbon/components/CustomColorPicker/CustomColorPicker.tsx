@@ -18,12 +18,6 @@ export interface CustomColorPickerProps {
 
 const BLACK: Rgb = [0, 0, 0];
 
-// main holds hue, saturation, value, rgb and the hex string in five separate
-// pieces of state and keeps them in step by writing four of them from every
-// setter (Edit.tsx:612-632). They are one colour, so this holds one HSV triple —
-// the only representation a colour square and a hue bar can both be driven from —
-// and derives the rest. The hex *input* is still its own state, because a
-// half-typed "#1B3" is a string the user is editing, not yet a colour.
 export const CustomColorPicker = ({
   initialColor,
   position,
@@ -48,8 +42,6 @@ export const CustomColorPicker = ({
 
   const handleHueChange = (nextHue: number) => applyHsv([nextHue, saturation, value]);
 
-  // Coming the other way — from a typed hex or channel — the HSV triple follows
-  // the numbers, and the draft is left exactly as typed.
   const handleRgbChange = (rgb: Rgb) => {
     setHsv(rgbToHsv(...rgb));
     setHexDraft(rgbToHex(...rgb).replace('#', ''));

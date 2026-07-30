@@ -10,15 +10,12 @@ export interface TableCellInputProps {
   onFocus: () => void;
 }
 
-/** Height is cleared before measuring, or a shrinking cell keeps the height it grew to. */
 const fitToContent = (element: HTMLTextAreaElement | null) => {
   if (!element) return;
   element.style.height = 'auto';
   element.style.height = `${element.scrollHeight}px`;
 };
 
-// A cell that grows downward as it fills, so a long entry pushes the row taller
-// rather than scrolling inside a box the reader can't see the bottom of.
 export const TableCellInput = ({ row, col, value, onChange, onFocus }: TableCellInputProps) => {
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     onChange(event.target.value);

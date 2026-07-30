@@ -84,8 +84,6 @@ export const HintText = styled.p`
   color: ${gray[400]};
 `;
 
-// Shared "list of editable design blocks" shell — reused by ColumnStyleList and
-// StyleRuleList so per-column overrides and conditional rules render identically.
 export const DesignListWrap = styled.div`
   ${flexColumn(10)}
 `;

@@ -2,9 +2,6 @@ import styled from 'styled-components';
 import { resetButton } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-// The buttons live in the body rather than Modal's footer slot on purpose: a
-// footer draws a rule above itself, and main's confirm card is one undivided
-// block (Edit.tsx:5125).
 export const ConfirmBody = styled.div`
   display: flex;
   flex-direction: column;
@@ -48,9 +45,6 @@ export const CancelBtn = styled(ConfirmButton)`
   }
 `;
 
-// Navy, not red. main confirms deletions with its primary colour throughout —
-// the dialog itself is the warning, so the button only has to read as the
-// affirmative answer.
 export const ConfirmBtn = styled(ConfirmButton)`
   font-weight: 600;
   color: ${colors.surface};

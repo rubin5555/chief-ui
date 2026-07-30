@@ -5,8 +5,6 @@ import { NotificationsTriggerButton } from './controls/NotificationsTriggerButto
 import { useNotificationsMenuAnalytics } from './NotificationsMenu.analytics';
 import { PANEL_WIDTH } from './NotificationsMenu.constants';
 
-// This component is the only place that owns analytics tracking for the menu — the
-// controls/ subcomponents are dumb and receive already-composed callbacks.
 export const NotificationsMenu = () => {
   const [hasUnread, setHasUnread] = useState(true);
   const panel = useFloatingPanel({ focusOnOpen: true });

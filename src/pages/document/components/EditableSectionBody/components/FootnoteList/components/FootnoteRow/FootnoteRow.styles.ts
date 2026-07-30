@@ -2,8 +2,6 @@ import styled from 'styled-components';
 import { resetButton } from '@/styles/mixins';
 import { gray, transitions } from '@/styles/theme';
 
-// `flex-start` so the marker stays on the first line of a footnote that wraps —
-// centring it would float the number down the middle of a long note.
 export const Row = styled.div`
   display: flex;
   align-items: flex-start;
@@ -19,8 +17,6 @@ export const Marker = styled.span`
   color: ${gray[700]};
 `;
 
-// 10px, borderless and transparent: a footnote is part of the printed page, so
-// the field has to look like the text it will become rather than like an input.
 export const NoteInput = styled.textarea`
   flex: 1;
   min-width: 0;

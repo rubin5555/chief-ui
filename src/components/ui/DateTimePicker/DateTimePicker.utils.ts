@@ -18,9 +18,6 @@ export const formatDateTimeLocal = (date: Date): string =>
 export const formatDisplayValue = (date: Date): string =>
   `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
-// Local-date key, not toISOString() — that converts to UTC first and silently shifts
-// the date by a day for any timezone ahead of UTC (e.g. Israel), desyncing the id from
-// what's actually rendered.
 export const dayKey = (date: Date) =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
@@ -51,8 +48,6 @@ export interface CalendarDay {
   inMonth: boolean;
 }
 
-// Grid always renders 6 full weeks (42 days) starting from the Sunday on/before the 1st,
-// so the layout height never shifts between months with 4 vs 6 visible weeks.
 export const buildCalendarGrid = (viewMonth: Date): CalendarDay[] => {
   const year = viewMonth.getFullYear();
   const month = viewMonth.getMonth();
@@ -81,8 +76,6 @@ export const computeDropPos = (rect: DOMRect): DropPos => {
   const spaceAbove = rect.top - GAP - EDGE_MARGIN;
   const left = clamp(EDGE_MARGIN, window.innerWidth - PANEL_WIDTH - EDGE_MARGIN, rect.left);
 
-  // flip upward when there isn't enough room below but there's more room above — mirrors
-  // the same rule Select's dropdown uses so both floating panels behave consistently
   if (spaceBelow < PANEL_HEIGHT && spaceAbove > spaceBelow) {
     return { bottom: window.innerHeight - rect.top + GAP, left };
   }

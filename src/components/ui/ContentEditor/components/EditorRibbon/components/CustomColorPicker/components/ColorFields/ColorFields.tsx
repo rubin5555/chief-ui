@@ -13,7 +13,6 @@ import {
 } from './ColorFields.styles';
 
 export interface ColorFieldsProps {
-  /** Without the leading `#` — the hash is chrome, printed beside the box. */
   hex: string;
   rgb: Rgb;
   onHexChange: (hex: string) => void;
@@ -21,8 +20,6 @@ export interface ColorFieldsProps {
 }
 
 export const ColorFields = ({ hex, rgb, onHexChange, onRgbChange }: ColorFieldsProps) => {
-  // Typing a hex updates the swatches only once six digits are in — anything
-  // shorter is a half-typed colour, not a colour.
   const handleHexChange = (event: ChangeEvent<HTMLInputElement>) => {
     const next = event.target.value.replace(/[^a-fA-F0-9]/g, '').slice(0, HEX_LENGTH);
     onHexChange(next);

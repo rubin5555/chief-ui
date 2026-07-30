@@ -26,9 +26,6 @@ export const useSectionBlockAnalytics = () => {
     });
   };
 
-  // Asking and completing are separate events on purpose: the gap between them is
-  // how many people press `לתיקון` and then never say what needs fixing, which is
-  // the one thing this flow can quietly fail at.
   const trackFixRequested = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.FIX_REQUESTED });
   };

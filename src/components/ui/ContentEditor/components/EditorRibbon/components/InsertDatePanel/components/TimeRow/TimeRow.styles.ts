@@ -5,7 +5,7 @@ import { colors, docColors, gray, radii, transitions } from '@/styles/theme';
 export const TimeInputs = styled.div`
   ${flexGap(8)}
   justify-content: center;
-  /* hh:mm reads left-to-right even on an RTL page. */
+
   direction: ltr;
 `;
 

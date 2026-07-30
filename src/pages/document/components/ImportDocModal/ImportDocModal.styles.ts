@@ -1,18 +1,12 @@
 import styled from 'styled-components';
 import { gray } from '@/styles/theme';
 
-/** main splits the dialog in two once a document is chosen (Edit.tsx:1951). */
 export const SplitBody = styled.div`
 	display: flex;
 	flex: 1;
 	overflow: hidden;
 `;
 
-/**
- * Replaces the dialog's title while a document is open, because the way back to
- * the list is the thing you need there — the title only tells you what you
- * already know you are doing.
- */
 export const BackNav = styled.div`
 	display: flex;
 	align-items: center;

@@ -18,8 +18,6 @@ export const HistorySpecimen = () => {
 
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => setContent(event.target.value);
 
-  // Committing on blur rather than per keystroke, or every letter becomes a
-  // version and "undo" means "delete one character".
   const handleBlur = () => history.push(NODE_ID, content);
 
   return (

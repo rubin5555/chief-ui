@@ -7,8 +7,6 @@ const ACTIONS = {
 } as const;
 
 export const useRestoreModalAnalytics = () => {
-  // Only the completed restore is tracked. Ticking a checkbox is browsing, and a
-  // restore dialog opened and closed again restored nothing.
   const trackRestoreSubmitted = (count: number) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,

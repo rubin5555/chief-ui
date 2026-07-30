@@ -18,23 +18,10 @@ export interface ToolbarToggle {
   id: string;
   title: string;
   Icon: LucideIcon;
-  /**
-   * The TinyMCE command the button runs. Unless `dir` says otherwise, the same
-   * command's `queryCommandState` is what lights the button — so which buttons are
-   * on is read off the caret rather than remembered, and typing into text someone
-   * else made bold lights `bold` without anyone having pressed it.
-   */
   command: string;
-  /**
-   * Direction is the one pair TinyMCE won't answer `queryCommandState` for. Its
-   * own buttons read the containing block's `direction`/`dir` instead
-   * (plugins/directionality), and so does readRibbonState.
-   */
   dir?: 'rtl' | 'ltr';
 }
 
-// main declares these one <TB> at a time (Edit.tsx:1221-1381). As data they render
-// from one `.map()` per group, and each carries the command that makes it real.
 export const TEXT_FORMAT_TOGGLES: ToolbarToggle[] = [
   { id: 'bold', title: 'מודגש (Ctrl+B)', Icon: Bold, command: 'Bold' },
   { id: 'italic', title: 'נטוי (Ctrl+I)', Icon: Italic, command: 'Italic' },
@@ -76,16 +63,6 @@ export const DIRECTION_TOGGLES: ToolbarToggle[] = [
   },
 ];
 
-/**
- * Every toggle in the ribbon, in one list, because reading the caret's state is a
- * single pass over all of them and doesn't care which group a button is drawn in.
- *
- * There is no exclusivity table any more. main kept one — pressing an alignment
- * had to turn the other three off by hand — because its buttons were the only
- * record of what was set. Here the document is that record: after
- * `JustifyCenter`, `JustifyRight` reports false because the paragraph really is
- * centred.
- */
 export const ALL_TOGGLES: ToolbarToggle[] = [
   ...TEXT_FORMAT_TOGGLES,
   ...LIST_TOGGLES,
@@ -95,21 +72,8 @@ export const ALL_TOGGLES: ToolbarToggle[] = [
 
 export const TOOLBAR_ICON_SIZE = 14;
 
-/**
- * Marks the ribbon and everything it opens as still being "inside the editor",
- * even though its panels are portalled onto `document.body` and are therefore
- * nowhere near it in the DOM.
- *
- * ContentEditor closes a field when focus leaves it, and a colour palette or a
- * find box taking focus is not leaving — it is the toolbar being used. Without
- * the marker, opening the picker would close the very field it is about to paint.
- */
 export const RIBBON_MARKER_ATTR = 'data-editor-ribbon';
 
-// The two palettes and the hue ramp are the only literal hex in this feature, and
-// deliberately so: a swatch's colour *is* the value the button applies, not chrome
-// that should follow the theme. Themed tokens here would make the picker offer a
-// different colour in dark mode than the one it writes into the document.
 export const TEXT_COLORS = [
   '#000000',
   '#374151',
@@ -144,5 +108,4 @@ export const DEFAULT_TEXT_COLOR = '#000000';
 export const DEFAULT_HIGHLIGHT_COLOR = '#fde047';
 export const DEFAULT_FILL_COLOR = '#ffffff';
 
-// White needs an outline on a white toolbar, or the swatch reads as an empty slot.
 export const WHITE = '#ffffff';

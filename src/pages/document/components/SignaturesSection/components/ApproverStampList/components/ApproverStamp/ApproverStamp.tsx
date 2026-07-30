@@ -7,14 +7,6 @@ export interface ApproverStampProps {
   signature: ApproverSignature;
 }
 
-// One approver's mark: a dashed ring reading אושר with their name inside it, and —
-// when they picked a signature to go with the approval — a handwritten squiggle
-// over the top (main, Edit.tsx:4332).
-//
-// Both are hand-drawn SVG rather than a font or an image: the ring's text has to
-// sit on two centred baselines inside a circle, and the squiggle is a pair of
-// bezier paths whose whole job is to look like ink. Serif on the ring is main's,
-// and it is what makes it read as a stamp rather than as a badge.
 export const ApproverStamp = ({ signature }: ApproverStampProps) => (
   <StampRoot data-testid={APPROVER_STAMP_IDS.root(signature.name)}>
     <StampArea>
@@ -68,8 +60,7 @@ export const ApproverStamp = ({ signature }: ApproverStampProps) => (
             strokeLinejoin="round"
             fill="none"
           />
-          {/* The faint second stroke is the underline a signature trails; at 0.3
-              it reads as pen pressure rather than as a second line. */}
+
           <path
             d="M10 30 Q30 24 50 28 Q66 32 76 24"
             stroke={docColors.stampInk}

@@ -12,16 +12,12 @@ import { ApproverPicker } from './components/ApproverPicker';
 
 export interface ApproverStageProps {
   rank: string;
-  /** The named approvers already on this rank. */
   users: string[];
-  /** Everyone who could approve, before this rank's own picks are excluded. */
   approverUsers: string[];
   onAddUser: (rank: string, user: string) => void;
   onRemoveUser: (rank: string, user: string) => void;
 }
 
-// One rank in the round: its dot on the timeline, whoever has been named for it,
-// and the way to name another (main, Edit.tsx:2966).
 export const ApproverStage = ({
   rank,
   users,
@@ -50,8 +46,6 @@ export const ApproverStage = ({
         </ApproverChip>
       ))}
 
-      {/* main caps a rank at two named approvers (Edit.tsx:2975) and drops the
-          link rather than disabling it — there is nothing to explain. */}
       {users.length < MAX_APPROVERS_PER_RANK && (
         <ApproverPicker
           rank={rank}

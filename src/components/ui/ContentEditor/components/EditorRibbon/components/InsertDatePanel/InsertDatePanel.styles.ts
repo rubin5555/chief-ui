@@ -18,8 +18,6 @@ export const TimeCaption = styled.span`
   color: ${gray[400]};
 `;
 
-// Only appears once a day has been picked: until then there is nothing to insert,
-// and main hides the whole footer rather than disabling its button (Edit.tsx:1670).
 export const PanelFooter = styled.div`
   ${flexBetween}
   gap: 8px;

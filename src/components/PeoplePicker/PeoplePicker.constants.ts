@@ -2,9 +2,6 @@ import { FileSpreadsheet, FileText, Layers, List, Network, Users } from 'lucide-
 import type { ComponentType } from 'react';
 import { excelColors } from '@/styles/theme';
 
-// The shapes and the source list every people picker works in, whether it is
-// filling a mailing list or handing out a permission on a document.
-
 export type ImportTabId = 'network' | 'doc' | 'hamal' | 'mirage' | 'personal' | 'excel';
 export type NetworkFilter = 'sodibioti' | 'sodi' | 'aman';
 
@@ -78,11 +75,6 @@ export const IMPORT_TABS: Array<{
   Icon: ComponentType<{ className?: string }>;
   compact?: boolean;
   idleIconColor?: string;
-  /**
-   * Whether this tab puts a search box in the shared row above the content.
-   * Excel doesn't — there is nothing to search in a file you haven't handed
-   * over yet — so the row is hidden for it rather than left standing empty.
-   */
   hasSearch?: boolean;
 }> = [
   { id: 'network', label: 'הוסף מרשתות', Icon: Network },
@@ -90,10 +82,7 @@ export const IMPORT_TABS: Array<{
   { id: 'hamal', label: 'קבוצות חמ"ל', Icon: Users },
   { id: 'mirage', label: "קבוצות מיראז'", Icon: Layers },
   { id: 'personal', label: 'אזור אישי', Icon: List },
-  // Last, compact and green (main's TopNavbar.tsx:471). It is the odd one out on
-  // purpose: the five above are directories of people the organisation already
-  // holds, this one is a file the user brings — so it keeps Excel's own colour
-  // and takes only the width its short label needs, rather than a fifth of the row.
+
   {
     id: 'excel',
     label: 'Excel',

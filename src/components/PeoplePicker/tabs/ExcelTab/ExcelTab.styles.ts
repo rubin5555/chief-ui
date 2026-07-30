@@ -37,7 +37,6 @@ export const UploadHint = styled.span`
 	text-align: right;
 `;
 
-/** The chosen file, once there is one — stated rather than hinted at. */
 export const FileNameLabel = styled.span`
 	font-size: 11px;
 	font-weight: 600;

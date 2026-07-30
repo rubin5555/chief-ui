@@ -10,12 +10,6 @@ export interface PdfAccessRowProps {
   onChange: (value: PdfAccess) => void;
 }
 
-/**
- * Who may open the document once it is a PDF. A pair of segments rather than a
- * switch, because neither answer is the absence of the other — "for authorised
- * readers only" and "for everyone" are both positions, and a switch would make
- * one of them read as off.
- */
 export const PdfAccessRow = ({ value, locked, onChange }: PdfAccessRowProps) => {
   const handleSelect = (option: PdfAccess) => () => onChange(option);
 

@@ -7,13 +7,6 @@ import {
   RowTitle,
 } from '../../DocumentOutlineTree.shared.styles';
 
-/**
- * `$active` is the row for the section currently under the reader — the column's
- * answer to "where am I". A tint and a bar on the leading edge, both quiet: this
- * follows the scroll, so it is on screen constantly and must never compete with
- * the row you are about to click. The bar is `inset` so it takes no space and
- * the row doesn't shift as the reader moves between sections.
- */
 export const SectionRow = styled.div<{ $active: boolean }>`
   display: flex;
   align-items: center;
@@ -41,7 +34,6 @@ export const SectionRow = styled.div<{ $active: boolean }>`
   }
 `;
 
-// Bolder than the title beside it: the numbers are what you scan the column by.
 export const SectionIndex = styled(RowIndex)`
   font-size: 12px;
   font-weight: 700;

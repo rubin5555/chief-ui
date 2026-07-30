@@ -20,9 +20,6 @@ export const SubjectRow = styled.div`
     background-color: ${colors.surface};
   }
 
-  // A topic hides its menu button as well as its grip, which the two rows below
-  // it don't — at this level the row itself is a control (it expands), so the
-  // fewer competing targets it shows at rest, the better.
   &:hover ${DragHandle}, &:hover ${RowMenuBtn} {
     opacity: 1;
   }
@@ -33,8 +30,6 @@ export const SubjectRow = styled.div`
   }
 `;
 
-// Rotates rather than swapping icons, so the arrow turns as the topic opens.
-// -90deg from a leftward chevron points it down, in RTL as in LTR.
 export const Chevron = styled.span<{ $expanded: boolean }>`
   display: flex;
   flex-shrink: 0;

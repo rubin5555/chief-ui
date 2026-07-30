@@ -12,7 +12,6 @@ export interface SectionHeaderProps {
   sectionId: string;
   title: string;
   content: string;
-  /** Continuous position in the document, not within the parent subject. */
   number: number;
   meta: SectionMeta;
   readOnly: boolean;
@@ -30,12 +29,6 @@ export interface SectionHeaderProps {
   onDelete: () => void;
 }
 
-// A section's heading row: its number, its editable title, whatever the section
-// has to say about itself, and the action row (main, Edit.tsx:4397).
-//
-// Split out of SectionBlock because the row is the half of that component that is
-// pure assembly — every handler here is passed straight through, and the state
-// they touch belongs to the block.
 export const SectionHeader = ({
   sectionId,
   title,

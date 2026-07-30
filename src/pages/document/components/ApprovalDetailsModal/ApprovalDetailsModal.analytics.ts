@@ -7,8 +7,6 @@ const ACTIONS = {
 } as const;
 
 export const useApprovalDetailsModalAnalytics = () => {
-  // How many stages a round is given is the shape of the whole feature: a round
-  // that is always one stage long is a different product from one that is five.
   const trackRoundConfigured = (stageCount: number, hmlGroupCount: number) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,

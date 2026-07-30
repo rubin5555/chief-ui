@@ -31,13 +31,6 @@ export const SearchResultId = styled.p`
   color: ${gray[400]};
 `;
 
-// The panel both states below share. Mounted on the body rather than inside the
-// field, so it is placed in viewport coordinates: `useDropdownAnchor` measures
-// the field, and the numbers land on the style attr rather than in the CSS, so
-// styled-components doesn't mint a class per reposition.
-//
-// z-index above the dialog overlay (9998): the results belong to the field, and
-// the field is inside a dialog that would otherwise cover them.
 const DropdownSurface = styled.div.attrs<{ $anchor: DropdownAnchor }>(({ $anchor }) => ({
   style: {
     top: $anchor.top,

@@ -43,12 +43,6 @@ export interface RotationCarouselProps {
   onAddFixNote: () => void;
 }
 
-// The approval round as an approver sees it: where the document is in the round,
-// who is looking at it now, their notes, and their signature (main, Edit.tsx:2700).
-//
-// Navigation only ever moves along one axis — the named users inside the current
-// stage. Stages advance by being approved, not by being browsed, which is what
-// keeps this out of main's dual-index carousel.
 export const RotationCarousel = ({
   stages,
   hmlGroups,
@@ -109,9 +103,6 @@ export const RotationCarousel = ({
             aria-label="המאשר הבא"
             data-testid={APPROVAL_ROTATION_IDS.nextUserBtn}
           >
-            {/* The header is RTL, so this button sits on the right and its arrow
-                has to point that way — main's `rotate-180` chevron
-                (Edit.tsx:2741), and its mirror image below. */}
             <ChevronRight size={16} aria-hidden="true" />
           </CarouselNavBtn>
           <CarouselTitle>
@@ -129,7 +120,6 @@ export const RotationCarousel = ({
           </CarouselNavBtn>
         </CarouselHeader>
 
-        {/* Only worth drawing when there is more than one to page through. */}
         {activeStage.users.length > 1 && (
           <PageDots data-testid={APPROVAL_ROTATION_IDS.pageDots}>
             {activeStage.users.map((user, index) => (

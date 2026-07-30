@@ -61,8 +61,6 @@ export const SubjectTree = ({
       </AddNodeButton>
 
       {tree.subjects.map((subject, subjectIndex) => {
-        // Bound to this subject once — every SectionRow below receives fully or
-        // partially applied callbacks, never a raw subjectId to re-curry itself with.
         const onSubSectionAdd = (sectionId: string) => () => {
           tree.addSubSection(subject.id, sectionId);
           onSubSectionAdded();

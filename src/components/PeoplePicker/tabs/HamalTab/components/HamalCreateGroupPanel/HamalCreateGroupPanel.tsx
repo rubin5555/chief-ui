@@ -32,8 +32,6 @@ interface HamalCreateGroupPanelProps {
   onClose: () => void;
 }
 
-// Floating "קבוצה חדשה" form. Owns its draft state; it is mounted only while
-// open, so every open starts from a clean slate without explicit resets.
 export const HamalCreateGroupPanel = ({ panelRef, pos, onClose }: HamalCreateGroupPanelProps) => {
   const [name, setName] = useState('');
   const [memberSearch, setMemberSearch] = useState('');

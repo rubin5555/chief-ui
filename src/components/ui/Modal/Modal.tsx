@@ -20,10 +20,6 @@ import {
 import { MODAL_IDS } from './Modal.testids';
 
 export interface ModalHandle {
-  // Starts the close animation and, once it finishes, calls the `onClose` prop.
-  // Exposed for callers that need to trigger a close from outside the built-in
-  // header-close/overlay-click/Escape paths — e.g. a footer button, or a form
-  // submit handler that saves and then closes.
   requestClose: () => void;
 }
 
@@ -31,23 +27,8 @@ interface ModalProps {
   title: string;
   icon?: ReactNode;
   onClose: () => void;
-  // Fired when the built-in header-close button, overlay click, or Escape key
-  // requests a close — before the close animation starts. Lets a caller run a
-  // side effect (e.g. analytics) on every "user dismissed the dialog" path,
-  // not just the ones it renders itself. Defaults to starting the close
-  // animation immediately, with no side effect.
   onRequestClose?: () => void;
-  // 'confirm' is for a short question with two answers: the title centres over
-  // the body with no rule beneath it and no close X, because a confirm dialog's
-  // dismissal is one of the two buttons rather than a third, quieter way out.
-  // Everything else — focus trap, Escape, overlay click, animation — is
-  // unchanged, and 'default' is untouched.
   variant?: 'default' | 'confirm';
-  // Rendered in the header where the title text would go. For a dialog that
-  // drills into something and needs a way back out — without it, the only exit
-  // from the inner view is the X, which closes the whole dialog. `title` still
-  // names the dialog for assistive tech, so the accessible name doesn't change
-  // as the user moves around inside it.
   headerSlot?: ReactNode;
   footer?: ReactNode;
   footerAlign?: 'end' | 'between';

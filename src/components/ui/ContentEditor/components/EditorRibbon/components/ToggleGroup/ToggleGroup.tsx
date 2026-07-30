@@ -9,9 +9,6 @@ export interface ToggleGroupProps {
   onToggle: (toggle: ToolbarToggle) => void;
 }
 
-// One run of on/off ribbon buttons. It reports which toggle was pressed and
-// renders whichever ids came back as active — what a press does to the document,
-// and what that in turn does to the other buttons, is the editor's business.
 export const ToggleGroup = ({ toggles, activeIds, disabled, onToggle }: ToggleGroupProps) => {
   const handleToggle = (toggle: ToolbarToggle) => () => onToggle(toggle);
 

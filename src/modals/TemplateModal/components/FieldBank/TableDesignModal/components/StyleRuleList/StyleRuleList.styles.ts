@@ -8,8 +8,6 @@ export {
   DesignRemoveBtn as RemoveBtn,
 } from '../../TableDesignModal.styles';
 
-// A rule's condition (column/operator/value selects) can wrap onto multiple lines, so
-// the remove button stays top-aligned instead of the shared header's vertical centering.
 export const BlockHeader = styled(DesignBlockHeader)`
   align-items: flex-start;
   gap: 8px;

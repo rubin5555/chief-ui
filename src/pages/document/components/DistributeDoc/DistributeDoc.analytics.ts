@@ -7,8 +7,6 @@ const ACTIONS = {
 } as const;
 
 export const useDistributeDocAnalytics = () => {
-  // No recipient count to report: who a distributed document reaches is settled
-  // by the approval round, not by this dialog (see DistributeDoc's doc comment).
   const trackDistributeSent = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.DISTRIBUTE_SENT });
   };

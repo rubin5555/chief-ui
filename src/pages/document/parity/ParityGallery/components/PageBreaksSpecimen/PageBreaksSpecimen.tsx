@@ -8,8 +8,6 @@ const NOTE =
   'להדפסה. ב-main זה רץ פעם אחת בטעינה בלבד, כך שכל הקלדה מוציאה אותו מסנכרון; כאן ' +
   'ResizeObserver מריץ אותו מחדש כשהתוכן גדל. הקווים המקווקווים עצמם הם CSS טהור.';
 
-// Deliberately awkward heights: each block is a fraction of a page, so somewhere
-// down the sheet one of them has to land on a break.
 const BOX_HEIGHTS = [220, 340, 260, 300, 380, 240, 320];
 
 export const PageBreaksSpecimen = () => {

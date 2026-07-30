@@ -26,8 +26,6 @@ interface TrainingFaqPanelProps {
   onItemToggle: (question: string, isExpanding: boolean) => void;
 }
 
-// Owns which FAQ item is expanded locally — this panel unmounts whenever the menu
-// navigates away from it, which resets the expansion state for free.
 export const TrainingFaqPanel = ({
   panelRef,
   pos,

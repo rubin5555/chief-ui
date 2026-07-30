@@ -6,9 +6,7 @@ const DocPermissionsModal = lazy(() =>
 );
 
 export interface DocPermissionsRequest {
-  /** Which of the five permissions to open on. Defaults to the first. */
   levelId?: string;
-  /** Preselected in the section tree, for the two per-section permissions. */
   sectionId?: string;
 }
 
@@ -23,20 +21,6 @@ export interface DocPermissionsProviderProps {
   children: ReactNode;
 }
 
-/**
- * The document permissions dialog has two ways in that sit in different subtrees:
- * the navbar toolbar's key button, and a section's 3-dots menu, four levels deep
- * inside the paper. main wires the second to the first through a `permTrigger`
- * prop threaded down from the page (TopNavbar.tsx:1093); this is that wire, with
- * the state and the dialog kept together in one place instead.
- *
- * Feature-scoped, and mounted at DocumentCanvas rather than living in
- * src/context: nothing outside this page has a document to permission. The
- * provider owns *and renders* the dialog, so this is not the callback context
- * `.claude/skills/modal-placement.md` rules out — that one puts a modal's state
- * in one subtree and its rendering in another, which is what going through
- * DocumentActionsSlot would have done.
- */
 export const DocPermissionsProvider = ({
   isDistributed,
   children,

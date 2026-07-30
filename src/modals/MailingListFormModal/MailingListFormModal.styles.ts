@@ -8,7 +8,6 @@ export const BodyLayout = styled.div`
 	overflow: hidden;
 `;
 
-/** Holds the members half, which fills whatever the sources half leaves. */
 export const MembersColumn = styled.div`
 	flex: 1;
 	display: flex;

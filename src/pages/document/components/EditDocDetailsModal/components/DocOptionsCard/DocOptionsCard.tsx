@@ -6,20 +6,9 @@ import { OptionsCard } from './DocOptionsCard.styles';
 
 export interface DocOptionsCardProps {
   form: DocDetailsForm;
-  /** Past editing, every option is settled (main's isLimitedEdit). */
   isLimitedEdit: boolean;
 }
 
-/**
- * What happens to the document once it leaves: who can open the PDF, whether the
- * approval round is called off, whether it carries a watermark, and whether it
- * goes out sealed (main, Edit.tsx:2362).
- *
- * The PDF row stays live even on a document past editing — main keeps it
- * editable there too (2365 gates on `readOnly` alone, not `isLimitedEdit`),
- * because who may open a distributed file is a decision you go on making after
- * the document itself is fixed.
- */
 export const DocOptionsCard = ({ form, isLimitedEdit }: DocOptionsCardProps) => (
   <OptionsCard>
     <form.Field name="pdfAccess">

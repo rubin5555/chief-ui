@@ -2,11 +2,6 @@ import { gql } from '@apollo/client';
 import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
-// One query per concern (ranks / approver users / hml groups) rather than one
-// giant GetApprovalConfig query, so panels can fetch only what they render —
-// see .claude/skills/router-state-splitting.md's "data query moves with the
-// component" rule.
-
 export const GET_APPROVAL_RANKS_QUERY = gql`
   query GetApprovalRanks {
     approvalRanks
@@ -78,9 +73,7 @@ export const useHmlGroups = () =>
   useApiQuery(GET_HML_GROUPS_QUERY, (result: GetHmlGroupsResult) => result.hmlGroups);
 
 // ponytail: no backend/resolver yet — registered on stubLink, seeded from the
-// same mock lists main's Edit.tsx ApprovalDetailsModal used (APPROVAL_RANKS/
-// MOCK_APPROVER_USERS/MOCK_HML_LIST). Delete these registrations once real
-// resolvers exist; call sites don't change.
+
 export const HML_GROUPS_FALLBACK: GetHmlGroupsResult = {
   hmlGroups: [
     { id: 'north', name: 'חמ״ל צפון', users: ['רנ"ג כהן א.', 'סמ"ר לוי מ.'] },
@@ -90,8 +83,6 @@ export const HML_GROUPS_FALLBACK: GetHmlGroupsResult = {
 };
 
 registerStub('GetHmlGroups', (): GetHmlGroupsResult => HML_GROUPS_FALLBACK);
-
-// --- Approval round stages (the carousel's seed) ---
 
 export interface ApprovalStageDto {
   rank: string;
@@ -127,10 +118,6 @@ export const useApprovalRoundStages = (docId: string) =>
     !docId,
   );
 
-// main's MOCK_ROUND_STAGES (Edit.tsx:2535-2540), verbatim — two approver ranks
-// followed by two חמ״ל stages, so the carousel opens on a populated round
-// rather than an empty one. A round the user configures through
-// ApprovalDetailsModal replaces this.
 export const APPROVAL_ROUND_STAGES_FALLBACK: GetApprovalRoundStagesResult = {
   approvalRoundStages: [
     { rank: 'סא״ל', users: ['כהן א.', 'לוי מ.'], status: 'pending', type: 'approver' },

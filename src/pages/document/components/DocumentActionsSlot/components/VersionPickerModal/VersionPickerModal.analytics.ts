@@ -1,8 +1,5 @@
 import { analytics } from '@/analytics';
 
-// Kept here rather than on ComparisonBar, which used to own this picker: the bar
-// now only draws a comparison that is already running, and the moment a
-// comparison *starts* is the click on a row in this list.
 const ANALYTICS_CATEGORY = 'השוואת גרסאות';
 
 const ACTIONS = {

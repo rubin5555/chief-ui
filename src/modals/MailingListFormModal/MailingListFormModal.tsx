@@ -22,7 +22,6 @@ export type ModalMode = 'new' | 'edit' | 'duplicate';
 
 const FORM_ID = 'mailing-list-form';
 
-/** main pairs a 700px source column with the members list filling the rest. */
 const SOURCES_WIDTH = 700;
 
 interface MailingListFormModalProps {
@@ -45,17 +44,6 @@ const SAVE_LABELS: Record<ModalMode, string> = {
   duplicate: 'שכפל',
 };
 
-/**
- * The form for one mailing list: name it, choose its department, fill it with
- * people, save. Three modes — new, edit, duplicate — differing only in title,
- * save label and what blocks saving.
- *
- * "Form", not "MailingListModal", because it is not the only dialog in the app
- * that gathers people from these sources: the document permissions dialog does
- * the same thing for a different purpose, and a name that claimed mailing lists
- * in general left no room to say which one you meant. The gathering itself is
- * `@/components/PeoplePicker`, shared by both; what is left here is the form.
- */
 export const MailingListFormModal = ({
   mode = 'new',
   initialName = '',

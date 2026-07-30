@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import { colors, gray, radii } from '@/styles/theme';
 
-/** Two answers to one question, joined into a single control (main, Edit.tsx:2367). */
 export const Segments = styled.div`
 	display: flex;
 	overflow: hidden;

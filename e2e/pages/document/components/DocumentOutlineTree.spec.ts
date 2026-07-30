@@ -8,10 +8,6 @@ import { ADD_MENU_IDS } from '../../../../src/pages/document/components/Document
 import { SUBJECT_BLOCK_IDS } from '../../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
 import { dragOnto, revealOutlineRow, scrollOutlineToEnd } from '../../../support/interactions';
 
-// The sidebar outline is editable in its own right — rename, add, delete and
-// reorder at three levels — and everything it changes shows up in the paper,
-// which reads the same tree.
-
 test('renaming a section from its row menu updates the paper too', async ({ page }) => {
   await page.goto('/document/d1');
 
@@ -26,7 +22,7 @@ test('renaming a section from its row menu updates the paper too', async ({ page
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-1'))).toContainText(
     'מטרת המסמך המעודכנת',
   );
-  // The in-paper title is an input, so its value is what changed there.
+
   await expect(
     page
       .getByTestId(SUBJECT_BLOCK_IDS.root('s1'))
@@ -53,7 +49,6 @@ test('an emptied rename keeps the original title rather than leaving a blank row
 test('adding a section names it for its position, as main does', async ({ page }) => {
   await page.goto('/document/d1');
 
-  // s1 is seeded with two sections, so the next one is `סעיף 3`.
   await page.getByTestId(ADD_NODE_LINK_IDS.addSection('s1')).click();
 
   const s1Sections = page
@@ -68,7 +63,6 @@ test('adding a sub-section names it for the Hebrew letter it renders under', asy
 
   await page.getByTestId(ADD_NODE_LINK_IDS.addSubSection('s1-1')).click();
 
-  // The seeded sections have no sub-sections, so the first one is `תת סעיף א`.
   await expect(
     page.getByTestId(SUBJECT_BLOCK_IDS.root('s1')).getByRole('textbox', { name: 'שם תת הסעיף' }),
   ).toHaveValue('תת סעיף א');
@@ -122,8 +116,7 @@ test('creating a topic from the + menu opens it for naming, and drops it if left
   await page.goto('/document/d1');
 
   const topicRows = page.locator('[data-testid^="outline-subject-toggle-"]');
-  // Counting is a one-shot read with no retry, so wait for the seeded tree to be
-  // on screen before taking it — otherwise the count is taken as 0 mid-load.
+
   await expect(page.getByTestId(OUTLINE_SUBJECT_ROW_IDS.toggle('s1'))).toBeVisible();
   const seededCount = await topicRows.count();
 
@@ -134,8 +127,6 @@ test('creating a topic from the + menu opens it for naming, and drops it if left
   await expect(nameInput).toBeFocused();
   await expect(topicRows).toHaveCount(seededCount + 1);
 
-  // Blurring an unnamed topic takes it away again, so an accidental press costs
-  // nothing (main's saveNewSection, Edit.tsx:3590).
   await nameInput.press('Escape');
   await expect(topicRows).toHaveCount(seededCount);
 
@@ -155,12 +146,9 @@ test('appendices are named with successive Hebrew letters', async ({ page }) => 
 
   await page.getByTestId(ADD_MENU_IDS.trigger).click();
   await page.getByTestId(ADD_MENU_IDS.action('appendix')).click();
-  // An appendix arrives already named, so nothing pulls the outline down to it —
-  // and the outline is virtualized, so the foot of it has to be scrolled to
-  // before the new row is there to read.
+
   await scrollOutlineToEnd(page);
-  // `נספחים` is already in the seed tree and its title starts with `נספח`, so it
-  // counts — main matches appendices by prefix, which makes the first added one ב׳.
+
   await expect(topicRows.last()).toContainText('נספח ב׳');
 
   await page.getByTestId(ADD_MENU_IDS.trigger).click();
@@ -181,8 +169,6 @@ test('dragging a section onto its sibling reorders both the outline and the pape
 
   await dragOnto(page, OUTLINE_SECTION_ROW_IDS.root('s1-2'), OUTLINE_SECTION_ROW_IDS.root('s1-1'));
 
-  // s1-2 was below s1-1 and is now above it, in the sheet and in the sidebar —
-  // where the row indices are positional, so they swap with the rows.
   await expect(s1SectionTitles.first()).toHaveValue('היסטוריית גרסאות');
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-2'))).toContainText('1.');
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-1'))).toContainText('2.');
@@ -194,8 +180,6 @@ test('the outline holds the rows in the column and reaches the rest by scrolling
   await page.goto('/document/d1');
   await expect(page.getByTestId(OUTLINE_SUBJECT_ROW_IDS.toggle('s1'))).toBeVisible();
 
-  // The outline is one flat, virtualized list of every level, so the last of six
-  // topics is not merely off screen — it is not in the page at all.
   const lastTopic = page.getByTestId(OUTLINE_SUBJECT_ROW_IDS.root('s6'));
   await expect(lastTopic).toHaveCount(0);
 
@@ -206,17 +190,12 @@ test('the outline holds the rows in the column and reaches the rest by scrolling
 test('outline section numbers run on across topics, and agree with the sheet', async ({ page }) => {
   await page.goto('/document/d1');
 
-  // Seeded: s1 holds two sections, s2 two, s3 three. So the first section of the
-  // second topic is the document's third — sections are numbered continuously
-  // rather than restarting inside each topic, both here and on the paper.
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.index('s1-1'))).toHaveText('1.');
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.index('s2-1'))).toHaveText('3.');
 
   await revealOutlineRow(page, OUTLINE_SECTION_ROW_IDS.root('s3-1'));
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.index('s3-1'))).toHaveText('5.');
 
-  // The same number against the same section in the sheet — one function decides
-  // it for both (numberSubjects), and this is what says so.
   await expect(page.getByTestId(SUBJECT_BLOCK_IDS.root('s3'))).toContainText('5.');
 });
 
@@ -226,9 +205,6 @@ test('sub-section letters restart in every section, as they do on the sheet', as
   await page.getByTestId(ADD_NODE_LINK_IDS.addSubSection('s1-1')).click();
   await page.getByTestId(ADD_NODE_LINK_IDS.addSubSection('s1-2')).click();
 
-  // Two sections, one sub-section each, and both read `א.` — the letters place a
-  // sub-section inside its section, so numbering them across the document would
-  // say nothing.
   const letters = page.locator('[data-testid^="outline-sub-section-"]');
   await expect(letters.first()).toContainText('א.');
   await expect(letters.nth(1)).toContainText('א.');
@@ -237,9 +213,6 @@ test('sub-section letters restart in every section, as they do on the sheet', as
 test('each section row carries the status dot its seeded status calls for', async ({ page }) => {
   await page.goto('/document/d1');
 
-  // Seeded in src/api/docs.ts: everything under s1 is approved, everything under
-  // s3 needs fixing — main paints these from the topic's status, and the seed
-  // mirrors that node by node.
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.statusDot('s1-1'))).toHaveCSS(
     'background-color',
     'rgb(22, 163, 74)',

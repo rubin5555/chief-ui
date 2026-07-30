@@ -21,12 +21,6 @@ const PANEL_WIDTH = 220;
 
 export interface SectionMenuProps {
   sectionId: string;
-  /**
-   * Which section the מאשרי/עורכי actions land on, when that isn't the node the
-   * menu is attached to. A sub-section passes its parent: those two permissions
-   * are granted per *section*, so the tree they open has no row of its own to
-   * select, and preselecting the sub-section's id selects nothing at all.
-   */
   permissionSectionId?: string;
   sectionTitle: string;
   instructions: string;
@@ -42,17 +36,6 @@ export interface SectionMenuProps {
   onDelete: () => void;
 }
 
-/**
- * A node's 3-dots menu: its own trigger, its popover, and the two modals its
- * actions open.
- *
- * מאשרי הסעיף and עורכי הסעיף open the document permissions dialog on the matching
- * permission with this section already selected — a sub-section's menu selects the
- * section it belongs to, since that is the level the permission exists at (see
- * `permissionSectionId`) — rather than editing the section's approvers here. That is main's routing (its `permTrigger`, TopNavbar.tsx:1093),
- * and it is the honest one: those two permissions are granted per section but held
- * document-wide, so a per-section editor can only ever show a slice of them.
- */
 export const SectionMenu = ({
   sectionId,
   permissionSectionId,
@@ -85,8 +68,6 @@ export const SectionMenu = ({
 
   const handleToggle = () => panel.toggle(PANEL_WIDTH);
 
-  // Closes the menu on the way: the dialog it opens is a full-screen one, and a
-  // popover left standing behind an overlay is a popover nobody can reach.
   const handleOpenPermissions = (levelId: string) => () => {
     panel.close();
     openDocPermissions({ levelId, sectionId: permissionSectionId ?? sectionId });
@@ -98,8 +79,6 @@ export const SectionMenu = ({
     panel.close();
   };
 
-  // Turning classification on opens the viewers picker straight away: a section
-  // nobody may see is not a useful state to leave behind.
   const handleToggleClassified = () => {
     const turningOn = !isClassified;
     trackClassifiedToggled(turningOn);
@@ -135,8 +114,6 @@ export const SectionMenu = ({
 
   return (
     <>
-      {/* NodeActionRow's own button — this is the last control on that row, and has
-          to match the ones before it. */}
       <ActionBtn
         ref={panel.btnRef}
         type="button"

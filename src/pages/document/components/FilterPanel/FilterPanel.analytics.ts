@@ -13,9 +13,6 @@ export const useFilterPanelAnalytics = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.PANEL_OPENED });
   };
 
-  // Applying an empty selection is what clearing the filter *is* here — main's סנן
-  // button commits whatever is staged, including nothing — so the two report as
-  // separate actions rather than one with an empty label.
   const trackFilterApplied = (statuses: string[]) => {
     if (statuses.length === 0) {
       analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.FILTER_CLEARED });

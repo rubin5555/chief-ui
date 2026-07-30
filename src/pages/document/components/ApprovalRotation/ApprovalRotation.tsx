@@ -20,24 +20,10 @@ export interface ApprovalRotationProps {
   hmlGroups: HmlGroupDto[];
   onClose: () => void;
   onReject: (reason: string) => void;
-  /**
-   * Fired per approved stage, carrying who approved it. The document stamps them
-   * into its signatures section.
-   */
   onApprove: (signature: ApproverSignature) => void;
   onDistribute: () => void;
 }
 
-// Owns the round's state and which of its three views is showing; each view is its
-// own component under components/.
-//
-// Re-derived from scratch against main's dual-index carousel (a selectedStageIdx
-// shared across a rank/user axis and a separate HML axis), which was flagged as
-// easy to get subtly wrong. Here approval only ever acts on one index — the
-// current stage — with a nested viewedUserIndex for browsing that stage's named
-// users, and HML groups are shown read-only rather than being part of the same
-// axis at all. That removes the free-navigation footgun instead of modelling it
-// more carefully.
 export const ApprovalRotation = ({
   docName,
   config,
@@ -65,8 +51,7 @@ export const ApprovalRotation = ({
   const { trackStageApproved, trackRoundRejected } = useApprovalRotationAnalytics();
 
   const activeStage = stages[activeStageIndex];
-  // Keyed by stage *and* user: notes belong to the person, not to the stage, and
-  // paging between two approvers must not show one the other's remarks.
+
   const noteKey = `${activeStageIndex}-${viewedUserIndex}`;
 
   const handleNoteChange = (note: string) =>
@@ -76,18 +61,12 @@ export const ApprovalRotation = ({
   const handlePickSignature = (name: string) => setSignature(name);
   const handleClearSignature = () => setSignature(null);
 
-  // The section-fix note is written in the section's own chat thread, which is in
-  // the document behind this dialog — so the only thing to do here is get out of
-  // the way. Closing is honest about that; opening a second dialog on top would
-  // not be.
   const handleAddFixNote = () => onClose();
 
   const handleApprove = () => {
     setApprovedStageIndices((prev) => new Set(prev).add(activeStageIndex));
     trackStageApproved(activeStage.rank, signature !== null);
-    // Reported before the local reset, and with `hasSignature` rather than the
-    // name itself: the stamp shows the rank and approver, and the picked
-    // signature only decides whether a handwritten mark is drawn over it.
+
     onApprove({
       rank: activeStage.rank,
       name: activeStage.users[viewedUserIndex] ?? activeStage.rank,
@@ -124,9 +103,6 @@ export const ApprovalRotation = ({
       maxHeight="85vh"
       data-testid={APPROVAL_ROTATION_IDS.root}
       footer={
-        // Only the carousel uses the modal's footer; the other two views carry
-        // their own buttons, because in both cases the buttons answer a question
-        // the view itself is asking.
         view === 'carousel' ? (
           <FooterActions>
             <Button type="button" variant="ghost" onClick={onClose}>

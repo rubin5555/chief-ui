@@ -15,24 +15,9 @@ interface ZoomControlProps {
   onChange: (zoom: number) => void;
 }
 
-// Fully controlled: the zoom level belongs to the URL, and a second copy held here
-// would drift the moment anything else moved it — a hand-edited `?zoom=`, the back
-// button, or the route schema rejecting an out-of-range value.
-//
-// It reports the requested level and lets the owner clamp it, which is also where
-// main puts the bounds (its own handleZoom, TopNavbar.tsx:1133) — this control knows
-// how big a step is, not how far the document is allowed to zoom.
 export const ZoomControl = ({ value, onChange }: ZoomControlProps) => {
-  // The one exception to "fully controlled": a half-typed number. Between the
-  // first keystroke and the commit the field has to be allowed to hold "1", or
-  // "" — neither of which is a zoom level anyone asked for. `null` means "not
-  // being typed into", and the committed value shows through. Because the owner
-  // clamps, typing 500 leaves 200 in the field once the draft clears.
   const [draft, setDraft] = useState<string | null>(null);
-  // Escape leaves the field, and leaving the field is itself a commit — so the
-  // blur it causes would apply the very number Escape just abandoned.
-  // `setDraft(null)` can't prevent that: it lands after the blur handler runs.
-  // A ref does, because it is already true by the time blur reads it.
+
   const discardRef = useRef(false);
 
   const onZoomBy = (delta: number) => () => onChange(value + delta);
@@ -67,8 +52,7 @@ export const ZoomControl = ({ value, onChange }: ZoomControlProps) => {
       >
         −
       </ZoomButton>
-      {/* A label, so the `%` beside the field is part of the field's hit area
-          rather than dead text next to it. */}
+
       <ZoomValueGroup>
         <ZoomField
           type="text"

@@ -2,12 +2,6 @@ import styled from 'styled-components';
 import { ellipsis, flexCenter, flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
-// main writes the active state as 8-digit hex — `#1B3A6B07`, `#1B3A6B35`,
-// `#1B3A6B18` — where the last byte is an alpha out of 255, not a percentage.
-// The percentages below are those bytes converted (7/255, 53/255, 24/255). Read
-// as literal percentages they land three to eight times stronger, which is a
-// navy-outlined chip where main has a barely-there tint.
-
 export const IconTabButton = styled.button<{ $isActive: boolean; $compact: boolean }>`
   ${(p) => flexGap(p.$compact ? 4 : 6)}
   ${(p) => (p.$compact ? 'flex-shrink: 0;' : flexFill)}

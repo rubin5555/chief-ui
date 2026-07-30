@@ -14,8 +14,6 @@ export const ProgressRow = styled.div`
   gap: 8px;
 `;
 
-// `nowrap` is what makes the bar, not the text, absorb the width the sidebar has
-// left: a count like `10/12` must not wrap onto a second line.
 export const ProgressLabel = styled.span`
   flex-shrink: 0;
   white-space: nowrap;

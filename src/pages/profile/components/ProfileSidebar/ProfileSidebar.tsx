@@ -40,8 +40,6 @@ export interface ListEntry {
 
 const noop = () => {};
 
-// EnvironmentRequestModal is only needed once the user asks to request an
-// environment — lazy-loaded so it doesn't ship in the main bundle.
 const EnvironmentRequestModal = lazy(() =>
   import('@/modals/EnvironmentRequestModal').then((m) => ({
     default: m.EnvironmentRequestModal,

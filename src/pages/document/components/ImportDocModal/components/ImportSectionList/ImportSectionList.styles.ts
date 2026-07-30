@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import { ellipsis, subtleScrollbar } from '@/styles/mixins';
 import { colors, docColors, gray, radii } from '@/styles/theme';
 
-/** main's 260px picker column, ruled off from the document (Edit.tsx:1953). */
 export const ListRoot = styled.div`
 	display: flex;
 	flex-direction: column;
@@ -81,8 +80,6 @@ export const ListFooter = styled.div`
 	border-top: 1px solid ${gray[100]};
 `;
 
-// States what it will do rather than saying "confirm", and greys out into an
-// instruction — "בחר סעיפים" — while there is nothing yet to do.
 export const ImportButton = styled.button`
 	width: 100%;
 	padding: 8px;

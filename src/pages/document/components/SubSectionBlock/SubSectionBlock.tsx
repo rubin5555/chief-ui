@@ -22,16 +22,12 @@ export interface SubSectionBlockProps {
   subjectId: string;
   sectionId: string;
   subSection: SubSection;
-  /** Position within the parent section, which picks the Hebrew letter marker. */
   index: number;
   tree: ReturnType<typeof useDocumentTree>;
   overrides: ReturnType<typeof useDocumentOverrides>;
   readOnly: boolean;
 }
 
-// The third tree level. Unlike a section it has no delete-to-trash path — a
-// sub-section delete is a plain removal, so RestoreModal only ever offers whole
-// sections (see RestoreModal's doc comment for that scope call).
 export const SubSectionBlock = ({
   subjectId,
   sectionId,
@@ -44,9 +40,6 @@ export const SubSectionBlock = ({
   const meta = overrides.getMeta(subSection.id);
   const nav = useSectionNavigation();
 
-  // Whether the attachments dialog is open lives here rather than inside
-  // AttachmentPicker, because the chips under the body open it too and they are
-  // rendered by a different child.
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
 
   const handleTitleChange = (title: string) =>
@@ -121,8 +114,6 @@ export const SubSectionBlock = ({
             )
           }
           chat={
-            // main labels a sub-section chat with its marker, so a reader can
-            // tell two similarly-titled sub-sections apart in the chat header.
             <SectionChat
               sectionId={subSection.id}
               title={`${marker}. ${subSection.title || 'תת סעיף ללא שם'}`}

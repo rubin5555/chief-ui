@@ -19,10 +19,6 @@ export const RowLabel = styled.span`
   color: ${gray[400]};
 `;
 
-// main tints the chip from the status colour with hex alpha suffixes
-// (`s.color + '18'` / `+ '40'`, Edit.tsx:4113). Those can't be concatenated onto
-// a `var(--token)`, so the same ~9%/25% opacities come from color-mix, which
-// also keeps the tint correct when the token changes in dark mode.
 export const Chip = styled.span<{ $color: string }>`
   display: inline-flex;
   align-items: center;

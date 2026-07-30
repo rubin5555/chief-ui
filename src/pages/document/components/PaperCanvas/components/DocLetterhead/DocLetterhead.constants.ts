@@ -1,10 +1,3 @@
-/**
- * The letterhead's five fields (main's DocHeader, Edit.tsx:545).
- *
- * main keeps five separate `useState`s here, two of them seeded with values that
- * look like they came from a real document. Same fields, same order, same seeds —
- * as one list, so the component holds one record instead of five setters.
- */
 export interface LetterheadField {
   id: string;
   label: string;

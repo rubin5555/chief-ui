@@ -27,8 +27,6 @@ export const useSectionMenuAnalytics = () => {
     });
   };
 
-  // On save, not on opening the dialog: instructions that were drafted and
-  // cancelled are not instructions.
   const trackInstructionsSaved = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.INSTRUCTIONS_SAVED });
   };

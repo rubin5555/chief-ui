@@ -17,8 +17,6 @@ export const ToolbarRoot = styled.div`
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 `;
 
-// A CSS triangle pointing back at the table, so the strip reads as belonging to
-// it rather than floating over the page (main, Edit.tsx:1007).
 export const ToolbarArrow = styled.span`
   position: absolute;
   top: -6px;

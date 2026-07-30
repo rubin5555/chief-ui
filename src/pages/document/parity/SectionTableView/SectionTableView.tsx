@@ -31,11 +31,6 @@ export interface SectionTableViewProps {
   onDelete: () => void;
 }
 
-// main's in-section table (Edit.tsx:901-1120).
-//
-// main lifts the active cell to the page and hands the view seven separate
-// mutation callbacks; nothing outside the table reads either, so the cell lives
-// here and the six grid edits are pure functions applied to one `onChange`.
 export const SectionTableView = ({ table, onChange, onDelete }: SectionTableViewProps) => {
   const tableRef = useRef<HTMLDivElement>(null);
   const [activeCell, setActiveCell] = useState<ActiveCell | null>(null);
@@ -58,8 +53,6 @@ export const SectionTableView = ({ table, onChange, onDelete }: SectionTableView
   const handleInsertColumnBefore = () => onChange(insertColumn(table, col));
   const handleInsertColumnAfter = () => onChange(insertColumn(table, col + 1));
 
-  // Removing the row or column the cursor is in would otherwise leave the active
-  // cell pointing past the end of the grid.
   const handleDeleteRow = () => {
     const next = deleteRow(table, row);
     onChange(next);
@@ -85,8 +78,6 @@ export const SectionTableView = ({ table, onChange, onDelete }: SectionTableView
         <Grid>
           <tbody>
             {table.cells.map((cells, rowIndex) => (
-              // Rows have no identity of their own — inserting one shifts every
-              // row after it, which is exactly what should re-render.
               // biome-ignore lint/suspicious/noArrayIndexKey: a grid row is its position
               <tr key={`row-${rowIndex}`}>
                 {cells.map((cell, colIndex) => (

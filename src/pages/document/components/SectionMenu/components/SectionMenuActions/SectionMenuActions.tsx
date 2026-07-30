@@ -14,12 +14,6 @@ export interface SectionMenuActionsProps {
   onDelete: () => void;
 }
 
-// The menu's default view. Grouped by separator as main groups it (Edit.tsx:71):
-// who may touch the section, then what to do to it, then how to annotate it, then
-// the one destructive action on its own.
-//
-// main's export-to-Word/Excel entries aren't here — there is no export capability
-// behind them, in main either.
 export const SectionMenuActions = ({
   isHidden,
   isClassified,

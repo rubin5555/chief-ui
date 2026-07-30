@@ -5,16 +5,11 @@ import { ToolbarButton } from '../ToolbarButton';
 
 export interface IndentControlsProps {
   disabled: boolean;
-  /** There is no indent to take away yet, so the outdent button has nothing to do. */
   canOutdent: boolean;
   onIndent: () => void;
   onOutdent: () => void;
 }
 
-// main counts the indent depth in the ribbon's own state, which is a number that
-// belongs to whichever paragraph the caret happens to be in — so it is wrong for
-// every paragraph but one. The depth lives in the document; whether there is any
-// to remove comes back from `queryCommandState('Outdent')`.
 export const IndentControls = ({
   disabled,
   canOutdent,

@@ -13,18 +13,12 @@ import {
 const PANEL_WIDTH = 160;
 
 export interface ApproverSignaturePickerProps {
-  /** `null` shows the empty box — an approval without one is allowed, just unsigned. */
   signature: string | null;
   options: SignatureDto[];
   onPick: (name: string) => void;
   onClear: () => void;
 }
 
-// The signature an approver attaches to their approval (main, Edit.tsx:2790).
-//
-// Owns its own popover, which is why the picker is a component rather than three
-// controls inline in the carousel: the panel is positioned off this trigger's
-// rect, and .claude/skills/modal-placement.md keeps that state here with it.
 export const ApproverSignaturePicker = ({
   signature,
   options,

@@ -1,8 +1,6 @@
 import styled from 'styled-components';
 import { colors, gray, transitions } from '@/styles/theme';
 
-// Baseline alignment, not centre: the label and the value sit on the same
-// writing line, which is what makes a row of these read as a printed form.
 export const FieldRow = styled.div`
   display: flex;
   align-items: baseline;
@@ -29,8 +27,6 @@ export const FieldValue = styled.span`
   color: ${gray[700]};
 `;
 
-// Underlined rather than boxed: at 10px a bordered input would dominate the
-// letterhead, and the rule already says "you can type here".
 export const FieldInput = styled.input`
   ${fieldValue}
   background: transparent;

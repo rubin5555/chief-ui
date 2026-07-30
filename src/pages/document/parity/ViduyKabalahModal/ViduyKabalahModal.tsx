@@ -25,10 +25,6 @@ export interface ViduyKabalahModalProps {
   onClose: () => void;
 }
 
-// main's "וידוא קבלה — חמ״ל" dialog (Edit.tsx:2546-2622). Its `setShowViduyKabalah(true)`
-// has no call site anywhere in Edit.tsx, so nothing in main can open it — which is
-// why it is here rather than in the live page. The live page's own
-// `AcceptenceVerification` covers the same ground and is reachable.
 export const ViduyKabalahModal = ({ onSend, onClose }: ViduyKabalahModalProps) => {
   const modalRef = useRef<ModalHandle>(null);
   const [approvedBy, setApprovedBy] = useState('');

@@ -25,19 +25,6 @@ import {
 } from './DocumentPageSkeleton.styles';
 import { DOCUMENT_PAGE_SKELETON_IDS } from './DocumentPageSkeleton.testids';
 
-/**
- * What the document page looks like before its document arrives: the metadata
- * bar over a sidebar and an A4 sheet.
- *
- * It replaces `ui/PanelLoading`, which draws a toolbar, a tab row and five list
- * rows in a card — the shape of the profile page's panels, and of nothing on
- * this page. A skeleton's whole job is to hold the place its content will take,
- * so one showing the wrong furniture is worse than none: the page visibly
- * rearranges itself the moment it loads.
- *
- * Geometry comes from `document.measurements`, the same constants the real
- * sheet and sidebar read, so the sheet doesn't move when it is filled in.
- */
 export const DocumentPageSkeleton = () => (
   <div role="status" aria-label="טוען מסמך" data-testid={DOCUMENT_PAGE_SKELETON_IDS.root}>
     <BarRow>
@@ -48,7 +35,7 @@ export const DocumentPageSkeleton = () => (
       <SidebarColumn data-testid={DOCUMENT_PAGE_SKELETON_IDS.sidebar}>
         <StatusBlock>
           <SkeletonBar $width="60%" $height="16px" />
-          {/* Two progress bars: a label over its track. */}
+
           {['preparing', 'approved'].map((id) => (
             <ProgressRow key={id}>
               <SkeletonBar $width="45%" $height="10px" />

@@ -2,8 +2,6 @@ import styled from 'styled-components';
 import { resetButton } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-// `flex-end` in this RTL row puts the buttons at the left edge, opposite the
-// text they follow — main's placement (Edit.tsx:4601).
 export const ActionsRow = styled.div`
   display: flex;
   align-items: center;
@@ -23,7 +21,6 @@ const StatusBtn = styled.button`
   transition: opacity ${transitions.normal}, background-color ${transitions.normal};
 `;
 
-/** The step forward — filled, because it is the one thing to do next. */
 export const PrimaryStatusBtn = styled(StatusBtn)`
   background-color: ${colors.primary};
   color: ${colors.surface};
@@ -33,7 +30,6 @@ export const PrimaryStatusBtn = styled(StatusBtn)`
   }
 `;
 
-/** Sending back, in either direction. Outlined so it doesn't compete with the step forward. */
 export const SecondaryStatusBtn = styled(StatusBtn)`
   border: 1px solid ${gray[300]};
   color: ${gray[700]};

@@ -13,9 +13,6 @@ export interface DistributePromptProps {
   onDistributeLater: () => void;
 }
 
-// What the round ends on once every stage has approved: an offer to distribute
-// now, and an equally valid way to decline. `לא כרגע` is outlined rather than
-// ghosted because deciding to wait is a real answer, not a dismissal.
 export const DistributePrompt = ({
   docName,
   onDistributeNow,

@@ -2,8 +2,6 @@ import styled from 'styled-components';
 import { resetButton } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
-// One rank's column in the round's timeline (main, Edit.tsx:2966-2974).
-
 export const StageRoot = styled.div`
 	display: flex;
 	flex-direction: column;
@@ -27,11 +25,6 @@ export const StageLabel = styled.span`
 	color: ${gray[600]};
 `;
 
-/**
- * A named approver on this rank. The remove button comes first in the markup and
- * so sits at the column's leading edge on this RTL page, which is where main
- * draws it — the name is what the column is about, and the × stays out of it.
- */
 export const ApproverChip = styled.div`
 	display: flex;
 	align-items: center;

@@ -16,25 +16,15 @@ const PANEL_WIDTH = 200;
 
 export interface ApproverPickerProps {
   rank: string;
-  /** Everyone who could approve, minus whoever is already on this rank. */
   options: string[];
   onPick: (user: string) => void;
 }
 
-/**
- * Adds a named approver to one rank of the round (main, Edit.tsx:2976-3001).
- *
- * Its own search rather than a shared multi-select: main puts this *inside* the
- * timeline, under the rank it adds to, so which rank is being filled is read
- * from where the popover is rather than from a label on it.
- */
 export const ApproverPicker = ({ rank, options, onPick }: ApproverPickerProps) => {
   const panel = useFloatingPanel();
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // `focusOnOpen` is for menus, which take focus themselves; this panel has a
-  // search box, and focus belongs in it (see useFloatingPanel's options doc).
   useEffect(() => {
     if (panel.open) inputRef.current?.focus();
   }, [panel.open]);

@@ -34,9 +34,6 @@ interface SignaturesPanelProps {
 }
 
 export const SignaturesPanel = ({ departmentOptions, onDelete }: SignaturesPanelProps) => {
-  // Fetched here rather than by the page: this panel is already lazy-loaded
-  // per-tab, so its data should be too — the query only fires once a user
-  // actually switches to this tab, matching the JS chunk fetch.
   const { data, loading } = useSignatures();
   const signatures = data ?? SIGNATURES_FALLBACK.signatures;
 

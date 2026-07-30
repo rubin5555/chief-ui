@@ -28,8 +28,6 @@ export const RenameItem = styled(MenuItem)`
   }
 `;
 
-// Navy on a tinted navy hover, not red: in main this menu's delete always asks for
-// confirmation, so the item itself isn't the destructive step (Edit.tsx:5115).
 export const DeleteItem = styled(MenuItem)`
   color: ${colors.primary};
 
@@ -47,9 +45,6 @@ export const RenameIcon = styled(Icon)`
   color: ${gray[400]};
 `;
 
-// Takes the item's own navy rather than the grey the rename icon uses — main
-// leaves this one to inherit (Edit.tsx:5116), so the row reads as a single
-// coloured unit.
 export const DeleteIcon = styled(Icon)`
   color: inherit;
 `;

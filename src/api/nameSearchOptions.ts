@@ -19,8 +19,7 @@ export const useNameSearchOptions = () =>
   );
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
-// list OperationParams used to import directly. Delete this registration
-// once GetNameSearchOptions has a real resolver; call sites don't change.
+
 export const NAME_SEARCH_OPTIONS_FALLBACK: GetNameSearchOptionsResult = {
   nameSearchOptions: [
     'אבי כהן',

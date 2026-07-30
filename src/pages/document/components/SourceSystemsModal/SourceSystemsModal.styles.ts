@@ -31,8 +31,6 @@ export const SystemName = styled.span`
   color: ${gray[800]};
 `;
 
-// The field is what the system actually contributed, so it reads as a caption to
-// the name above it rather than as a second heading.
 export const SystemField = styled.span`
   font-size: 11px;
   color: ${gray[500]};

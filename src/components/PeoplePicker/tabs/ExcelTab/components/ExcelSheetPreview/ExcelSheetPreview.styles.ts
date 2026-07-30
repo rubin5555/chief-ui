@@ -23,9 +23,6 @@ export const PreviewCaption = styled.span`
 	text-align: right;
 `;
 
-// LTR inside an otherwise RTL dialog, because a spreadsheet's columns run A→D
-// from the left whatever language its contents are in — so every `right` below
-// is a physical edge and means the same thing it does in main.
 export const SheetFrame = styled.div`
 	width: ${SHEET_WIDTH}px;
 	direction: ltr;

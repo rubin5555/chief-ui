@@ -11,12 +11,9 @@ export interface HmlSelectProps {
   onChange: (ids: string[]) => void;
 }
 
-// Which חמ״לים have to confirm they received the document (main, Edit.tsx:3014).
 export const HmlSelect = ({ groups, selectedIds, onChange }: HmlSelectProps) => {
   const panel = useFloatingPanel({ focusOnOpen: true });
 
-  // Anchored to the trigger's leading edge and drawn at its full width, so the
-  // list reads as the field opening rather than as a menu beside it.
   const handleToggle = () => panel.toggle((rect) => ({ top: rect.bottom + 4, left: rect.left }));
 
   const handleToggleGroup = (id: string) =>

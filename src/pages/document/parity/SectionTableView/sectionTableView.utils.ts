@@ -8,10 +8,6 @@ export const createTable = (rows: number, cols: number): SectionTable => ({
 
 const emptyRow = (cols: number) => Array.from({ length: cols }, () => '');
 
-// main keeps the six grid edits in the page component alongside every other piece
-// of document state (Edit.tsx:3393-3396 and the handlers it passes down). They are
-// pure array work with no React in them, so they live here and the view applies
-// them — which is also what lets the table own its own active cell.
 export const insertRow = (table: SectionTable, at: number): SectionTable => {
   const cells = [...table.cells];
   cells.splice(at, 0, emptyRow(table.cols));
@@ -19,8 +15,6 @@ export const insertRow = (table: SectionTable, at: number): SectionTable => {
 };
 
 export const deleteRow = (table: SectionTable, at: number): SectionTable => {
-  // A table with no rows has nothing to type into and no way back; main's own
-  // delete has no such floor, which is how its toolbar can strand an empty grid.
   if (table.rows <= 1) return table;
   return {
     ...table,
@@ -60,7 +54,6 @@ export const setCell = (
   ),
 });
 
-/** Keeps the cursor inside the grid after a row or column is removed. */
 export const clampCell = (table: SectionTable, row: number, col: number) => ({
   row: Math.min(row, table.rows - 1),
   col: Math.min(col, table.cols - 1),

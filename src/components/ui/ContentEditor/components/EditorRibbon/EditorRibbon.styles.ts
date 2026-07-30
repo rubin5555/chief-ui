@@ -1,15 +1,6 @@
 import styled from 'styled-components';
 import { colors, gray } from '@/styles/theme';
 
-/**
- * A single non-wrapping row: main lets the ribbon run past the paper's edge
- * rather than reflow, because a toolbar that changes height moves everything
- * below it every time the window is resized (Edit.tsx:1209-1219).
- *
- * `$flush` is the ribbon drawn inside a field's own frame rather than as the
- * page's toolbar. The frame already draws the outer edge and casts the lift, so
- * repeating either puts a second line 1px inside the first.
- */
 export const ToolbarRoot = styled.div<{ $flush: boolean }>`
   display: flex;
   align-items: center;
@@ -38,8 +29,6 @@ export const ToolbarGroup = styled.div`
   flex-shrink: 0;
 `;
 
-// "AB¹" drawn in type rather than an icon, because no icon set has a footnote
-// marker and main draws it the same way (Edit.tsx:1386).
 export const FootnoteGlyph = styled.span`
   display: inline-flex;
   align-items: flex-end;

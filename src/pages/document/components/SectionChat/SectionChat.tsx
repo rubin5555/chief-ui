@@ -33,32 +33,9 @@ export interface SectionChatProps {
   sectionId: string;
   title: string;
   tone?: ActionTone;
-  /**
-   * Fired after a comment is posted. SectionBlock uses it to complete main's
-   * "send it back for changes" flow: the section flips to `fix` on the first
-   * message written after the request, so the reason and the status change are
-   * one act rather than two.
-   */
   onMessageSent?: () => void;
 }
 
-/**
- * A section's comment thread, drawn as main draws it (Edit.tsx:342-515): a speech
- * bubble in the page's left margin with a tail pointing back at the section.
- *
- * Deliberately *not* on `useFloatingPanel`, which every other popover on this page
- * uses. A menu is done with as soon as you touch anything else, so dismissing it
- * on an outside click is right; this bubble is open precisely so you can work in
- * the document underneath it — marking a passage to quote is a mousedown in the
- * paper, and that is the one gesture a dismiss-on-outside panel cannot survive.
- * It closes on its X, on its own trigger, and on nothing else.
- *
- * Owns its own trigger, thread and draft (per
- * `.claude/skills/modal-placement.md`). Two things are coordinated above it, both
- * because they are facts about the page and not about one bubble: which chat is
- * open, since they all share one spot on screen, and whether a passage is being
- * marked, since that changes what a click on the sheet means.
- */
 export const SectionChat = ({
   sectionId,
   title,
@@ -76,9 +53,6 @@ export const SectionChat = ({
   const { data } = useSectionComments(sectionId);
   const { mutate: addComment } = useAddSectionComment();
 
-  // The stub mutation has no cache-normalized link back to the query (no
-  // real resolvers yet, per src/api/stubLink.ts) — appended locally instead
-  // of relying on a refetch, same spirit as the rest of src/api today.
   const [sentComments, setSentComments] = useState<SectionCommentDto[]>([]);
   const [message, setMessage] = useState('');
   const [quote, setQuote] = useState('');
@@ -94,9 +68,6 @@ export const SectionChat = ({
     inputRef.current?.focus();
   };
 
-  // Gated on `open` rather than on the bubble being on screen: scrolling the
-  // section out of view hides the bubble but does not close the chat, and a
-  // passage marked while it is hidden is still the passage that was asked for.
   useQuoteMarker({ enabled: open && isMarking, onMarked: handleMarked });
 
   const handleToggle = () => {
@@ -111,9 +82,6 @@ export const SectionChat = ({
   };
   const handleCancelMarker = () => setMarking(false);
 
-  // Jumping back to a quoted passage. The lookup is scoped to this section first,
-  // so a phrase that appears more than once in the document lands on the one the
-  // comment is actually about.
   const handleQuoteClick = (quoted: string) => {
     const found = highlightTextInDoc(quoted, sectionId);
     trackQuoteJumped(found);
@@ -134,9 +102,6 @@ export const SectionChat = ({
 
   return (
     <>
-      {/* The row's own button, not IconButton: this sits inside NodeActionRow
-          between the paperclip and the 3-dots, and a different size or hover
-          would break the row apart visually. */}
       <ActionBtn
         ref={triggerRef}
         type="button"
@@ -150,11 +115,6 @@ export const SectionChat = ({
         <MessageSquare size={ACTION_ICON_SIZE} aria-hidden="true" />
       </ActionBtn>
 
-      {/* Portalled out to the body: this trigger sits inside the A4 sheet, and
-          the sheet is scaled with CSS `zoom`. Zoom applies to fixed-position
-          descendants too, so a bubble left in place would be drawn at the paper's
-          scale and land somewhere other than the pixels it was measured against
-          the moment the reader zoomed. */}
       {open && top !== null && (
         <ModalPortal>
           <BubbleRoot $top={top} dir="rtl" data-testid={SECTION_CHAT_IDS.panel(sectionId)}>

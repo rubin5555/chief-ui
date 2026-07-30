@@ -74,13 +74,6 @@ export const useDocumentTree = (initialSubjects: Subject[] = []) => {
       ),
     }));
 
-  // The three `add*` functions take the new node's title and hand back its id.
-  //
-  // Both exist for the sidebar outline. main's "+ הוספת סעיף" link creates a node
-  // that already reads `סעיף 3` (Edit.tsx:4059) rather than an empty row, and its
-  // "יצירת נושא חדש" action creates an empty one and immediately focuses a rename
-  // input on it (3575) — which needs the id the caller just created. Returning it
-  // beats making callers guess at "the last node with an empty title".
   const addSubject = (title = '') => {
     const subject: Subject = { id: makeId('subject'), title, sections: [] };
     setSubjects((prev) => [...prev, subject]);
@@ -122,9 +115,6 @@ export const useDocumentTree = (initialSubjects: Subject[] = []) => {
       ),
     );
 
-  // Scoped by membership rather than an explicit subjectId param: a drag/drop only
-  // reorders `draggedId` within the one subject whose sections contain both ids, and
-  // is a no-op (rather than a cross-subject move) for every other subject.
   const reorderSections = (draggedId: string, targetId: string) =>
     setSubjects((prev) =>
       prev.map((subject) => {
@@ -164,8 +154,6 @@ export const useDocumentTree = (initialSubjects: Subject[] = []) => {
       subSections: section.subSections.filter((subSection) => subSection.id !== subSectionId),
     }));
 
-  // Same membership-scoping approach as reorderSections, one level deeper: only the
-  // section whose subSections contain both ids is touched.
   const reorderSubSections = (draggedId: string, targetId: string) =>
     setSubjects((prev) =>
       prev.map((subject) => ({

@@ -16,13 +16,6 @@ export interface DocLetterheadProps {
   readOnly: boolean;
 }
 
-// The block at the top of the sheet: the organisation's emblem on the right, and
-// the document's dispatch details on the left (main's DocHeader, Edit.tsx:545).
-//
-// The five values are local state, as they are in main — they belong to the
-// printed page rather than to the document record, and nothing else reads them.
-// One record rather than five setters, keyed by the field ids in
-// DocLetterhead.constants.
 export const DocLetterhead = ({ readOnly }: DocLetterheadProps) => {
   const [values, setValues] = useState<Record<string, string>>(LETTERHEAD_INITIAL_VALUES);
 

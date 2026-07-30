@@ -7,9 +7,6 @@ export interface CalendarDate extends CalendarMonth {
   day: number;
 }
 
-// The month laid out as a 7-column grid: leading nulls for the days before the
-// 1st, then every date. main computes this inline inside an IIFE in its JSX
-// (Edit.tsx:1609-1612).
 export const buildMonthCells = ({ year, month }: CalendarMonth): (number | null)[] => {
   const firstDayOfWeek = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -31,7 +28,6 @@ export const isSameMonth = (a: CalendarMonth, b: CalendarMonth) =>
 
 const pad = (value: number | string) => String(value).padStart(2, '0');
 
-// main's footer format: dd.mm.yyyy with the time after two spaces (Edit.tsx:1618).
 export const formatDateTime = (date: CalendarDate, time: string) =>
   `${pad(date.day)}.${pad(date.month + 1)}.${date.year}  ${time}`;
 

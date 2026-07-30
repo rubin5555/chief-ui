@@ -1,8 +1,6 @@
 import styled from 'styled-components';
 import { colors, radii } from '@/styles/theme';
 
-// main deliberately gives this no background and no border (its own comment,
-// Edit.tsx:3797) — the status reads as a heading for the column, not as a chip.
 export const HeaderRow = styled.div`
   display: flex;
   align-items: center;

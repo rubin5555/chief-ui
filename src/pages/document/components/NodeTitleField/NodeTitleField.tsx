@@ -21,13 +21,6 @@ const ARIA_LABEL: Record<NodeTitleVariant, string> = {
   subSection: 'שם תת הסעיף',
 };
 
-// In main, a heading inside the paper is an input, not static text — you retitle
-// a section by clicking its title, and the sidebar outline follows. This is the
-// one component behind all three levels of that.
-//
-// Only the section variant shrink-wraps to its text (main's ghost-span trick at
-// Edit.tsx:4403); subject and sub-section titles fill the row. That asymmetry is
-// main's, and it is visible: a section's hover highlight ends at the last letter.
 export const NodeTitleField = ({ nodeId, variant, value, onChange }: NodeTitleFieldProps) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => onChange(event.target.value);
   const autoWidth = variant === 'section';

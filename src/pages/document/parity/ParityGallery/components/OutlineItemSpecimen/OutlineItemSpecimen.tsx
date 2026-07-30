@@ -13,7 +13,6 @@ const NOTE =
 export const OutlineItemSpecimen = () => {
   const [lastAction, setLastAction] = useState('טרם שונה שם');
 
-  // An empty title is main's Escape signal — the row was abandoned, not renamed.
   const handleSave = (title: string) =>
     setLastAction(title ? `שם חדש: ${title}` : 'שינוי השם בוטל');
 

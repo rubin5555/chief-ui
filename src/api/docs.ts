@@ -40,8 +40,7 @@ export interface GetDocsResult {
 export const useDocs = () => useApiQuery(GET_DOCS_QUERY, (result: GetDocsResult) => result.docs);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
-// catalog DocTab/DocFilterPanel used to import directly. Delete this
-// registration once GetDocs has a real resolver; call sites don't change.
+
 export const DOCS_FALLBACK: GetDocsResult = {
   docs: [
     {
@@ -254,24 +253,18 @@ export const useUpdateDocument = () =>
     (result) => result.updateDocument,
   );
 
-// main's SOURCE_MAP (Edit.tsx:4989-4998), split into its document-level list
-// and its three per-section entries. Verbatim — these strings are what the
-// source-systems modal renders.
 export const DOCUMENT_SOURCE_SYSTEMS: SourceOrigin[] = [
   { name: 'מערכת כוח אדם', field: 'נתוני כוח אדם ותפקידים' },
   { name: 'מערכת ניהול תחמושת', field: 'מלאי ציוד' },
   { name: 'מערכת לוגיסטיקה', field: 'תהליכי שילוח ואספקה' },
 ];
 
-// main's SECTIONS_WITH_SOURCE (Edit.tsx:3513) is the key set of this map: only
-// these three nodes get an enabled refresh-from-source button.
 const SECTION_SOURCE_ORIGIN: Record<string, SourceOrigin[]> = {
   's1-1': [{ name: 'מערכת כוח אדם', field: 'נתוני כוח אדם ותפקידים' }],
   's2-1': [{ name: 'מערכת ניהול תחמושת', field: 'מלאי ציוד ותחמושת' }],
   's3-1': [{ name: 'מערכת לוגיסטיקה', field: 'תהליכי שילוח ואספקה' }],
 };
 
-// main stamps every node header with the same hardcoded value (Edit.tsx:4265).
 const SEED_STAMP: NodeStamp = { at: '25-06-2026 11:18', by: 's2345678' };
 
 const seedMeta = (status: SectionStatus, id?: string): SectionMeta => ({
@@ -281,14 +274,6 @@ const seedMeta = (status: SectionStatus, id?: string): SectionMeta => ({
   ...(id && SECTION_SOURCE_ORIGIN[id] ? { sourceOrigin: SECTION_SOURCE_ORIGIN[id] } : {}),
 });
 
-// Keyed by both subject id (s1..s6 — read by DocumentOutlineTree's subject
-// rows) and a representative sample of actual section ids (s1-1, s3-1, ... —
-// read by EditableSectionBody's status badge and by FilterPanel's status
-// filter). Seeding subject ids alone left every real section/subSection
-// falling through to emptySectionMeta()'s 'idle' default, which made the
-// status filter feature look non-functional against this seed data (every
-// status except 'idle' matched nothing) even though the feature itself
-// works correctly once a section actually carries a status.
 const DOCUMENT_SECTION_META: SectionMetaMap = {
   s1: seedMeta('approved'),
   s2: seedMeta('approved'),
@@ -299,12 +284,7 @@ const DOCUMENT_SECTION_META: SectionMetaMap = {
   's1-1': seedMeta('approved', 's1-1'),
   's1-2': seedMeta('approved'),
   's2-1': seedMeta('approved', 's2-1'),
-  // Every section carries its parent topic's status, because in main that is
-  // literally the only status a section has: main stores `status` on topics only
-  // (Edit.tsx:1744) and its outline paints each section row with the *parent's*
-  // colour (3991). This model keeps status per node — which is what the filter
-  // and Phase 7's per-section transitions need — so the seed mirrors main's
-  // colours node by node instead of leaving four rows grey.
+
   's2-2': seedMeta('approved'),
   's3-1': seedMeta('fix', 's3-1'),
   's3-2': seedMeta('fix'),
@@ -317,20 +297,11 @@ const DOCUMENT_SECTION_META: SectionMetaMap = {
 const emptyPermissions = () => ({ approvers: [], editors: [] });
 
 // ponytail: no backend/resolver yet — registered on stubLink, seeded from the
-// same document tree main's Edit.tsx prototype used (MOCK_SECTIONS). Delete
-// this registration once GetDocument has a real resolver; call sites don't
-// change. The mock ignores $id beyond matching it against DOCS_FALLBACK for
-// header fields — there is only one seed document tree today.
+
 export const DOCUMENT_FALLBACK: DocumentDto = {
   id: 'd1',
   status: 'טיוטה',
-  // Verbatim from main's metadata pill (Edit.tsx:3692-3700). main hardcodes
-  // every field here except name and orderNum, which it reads off the doc —
-  // getOrCreateDocument below overrides exactly those two (plus organization,
-  // which is 'ארגון א׳' for the seed document either way).
-  // main splits these between the metadata pill (Edit.tsx:3692) and
-  // EditDocDetailsModal's own defaults (2226-2238); both sets are here, so the
-  // pill and the dialog can't drift apart.
+
   header: {
     name: 'נוהל בטיחות 2026',
     organization: 'ארגון א׳',
@@ -453,11 +424,6 @@ export const DOCUMENT_FALLBACK: DocumentDto = {
   sourceSystems: DOCUMENT_SOURCE_SYSTEMS,
 };
 
-// Keyed per document id rather than mutating the single shared
-// DOCUMENT_FALLBACK object directly — every id currently renders identical
-// seed content (there's only one mock tree), but without this, editing
-// document A and then loading document B in the same session would leak
-// A's edited subjects/sectionMeta into B once UpdateDocument is wired up.
 const documentStore: Record<string, DocumentDto> = {};
 
 const getOrCreateDocument = (id: string): DocumentDto => {
@@ -470,10 +436,7 @@ const getOrCreateDocument = (id: string): DocumentDto => {
         ...DOCUMENT_FALLBACK,
         id: matchingDoc.id,
         status: matchingDoc.status,
-        // Only the fields main actually reads off the document. template /
-        // effectiveDate / referenceNum / department stay on the hardcoded
-        // header above, because that is what main's pill renders — pulling
-        // them from DOCS_FALLBACK instead would silently change the pill.
+
         header: {
           ...DOCUMENT_FALLBACK.header,
           name: matchingDoc.name,
@@ -496,8 +459,6 @@ registerStub('UpdateDocument', (variables): UpdateDocumentResult => {
   const document = Object.assign(getOrCreateDocument(id), input);
   return { updateDocument: document };
 });
-
-// --- Import (Phase 7): pick sections from another document to copy in ---
 
 export interface ImportDocItem {
   id: string;
@@ -536,9 +497,6 @@ export const GET_IMPORT_DOCS_QUERY = gql`
 `;
 
 export interface GetImportDocsResult {
-  // `recent` exists in main's IMPORT_DOCS but its ImportDocModal only ever
-  // renders drafts/distributed, so the data is restored here for fidelity
-  // while the modal keeps main's two visible tabs.
   importDocs: { drafts: ImportDocItem[]; distributed: ImportDocItem[]; recent: ImportDocItem[] };
 }
 
@@ -546,8 +504,7 @@ export const useImportDocs = () =>
   useApiQuery(GET_IMPORT_DOCS_QUERY, (result: GetImportDocsResult) => result.importDocs);
 
 // ponytail: no backend/resolver yet — registered on stubLink, seeded from the
-// same IMPORT_DOCS mock main's Edit.tsx ImportDocModal used. Delete this
-// registration once GetImportDocs has a real resolver; call sites don't change.
+
 export const IMPORT_DOCS_FALLBACK: GetImportDocsResult = {
   importDocs: {
     drafts: [
@@ -601,8 +558,6 @@ export const GET_IMPORT_DOC_SECTIONS_QUERY = gql`
   }
 `;
 
-// A section offered for import carries its label and body paragraphs, not just
-// a title — main's ImportDocModal renders the body in its split-view preview.
 export interface ImportDocSectionDto {
   id: string;
   label: string;
@@ -626,11 +581,6 @@ export const useImportDocSections = (docId: string) =>
     !docId,
   );
 
-// main's IMPORT_DOC_SECTIONS (Edit.tsx:1802-1808), verbatim. main keeps one
-// flat list and shows it for whichever document is selected, so the resolver
-// below returns this same array for every docId rather than inventing
-// per-document titles. The query stays parameterised because a real resolver
-// genuinely will vary by document.
 export const IMPORT_DOC_SECTIONS_FALLBACK: ImportDocSectionDto[] = [
   {
     id: 'is1',
@@ -677,8 +627,6 @@ registerStub(
   (): GetImportDocSectionsResult => ({ importDocSections: IMPORT_DOC_SECTIONS_FALLBACK }),
 );
 
-// --- Deleted sections (restore panel) ---
-
 export interface DeletedSectionDto {
   id: string;
   label: string;
@@ -717,9 +665,6 @@ export const useDeletedSections = (docId: string) =>
     !docId,
   );
 
-// main's DELETED_SECTIONS (Edit.tsx:157-169), verbatim — the restore panel's
-// seed. RestoreModal also tracks sections deleted in the current session; this
-// is the server-side trash that predates the session.
 export const DELETED_SECTIONS_FALLBACK: DeletedSectionDto[] = [
   {
     id: 'p1',
@@ -741,14 +686,11 @@ registerStub(
   (): GetDeletedSectionsResult => ({ deletedSections: DELETED_SECTIONS_FALLBACK }),
 );
 
-// --- Document versions (version picker → comparison mode) ---
-
 export interface DocVersionDto {
   label: string;
   datetime: string;
   ref: string;
   approvedBy: string;
-  /** 'נוכחית' on the live version, empty otherwise. */
   tag: string;
 }
 
@@ -780,7 +722,6 @@ export const useDocVersions = (docId: string) =>
     !docId,
   );
 
-// Verbatim from main's version-compare picker (TopNavbar.tsx:1682-1685).
 export const DOC_VERSIONS_FALLBACK: DocVersionDto[] = [
   {
     label: 'עדכון מס׳ 2',

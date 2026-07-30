@@ -1,7 +1,5 @@
 import type { OutlineNode } from '../../../OutlineSectionItem';
 
-// A miniature of main's outline: a topic with sections, one of which has
-// sub-sections, so the recursion has something to recurse into.
 export const DEMO_OUTLINE: OutlineNode = {
   id: 'demo-topic',
   title: 'כללי',

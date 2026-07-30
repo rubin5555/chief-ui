@@ -26,13 +26,6 @@ export interface OutlineSubjectRowProps {
   readOnly: boolean;
 }
 
-// A topic's own row. What sits beneath it is now the outline's business, not
-// this row's — the tree is drawn as a flat list so it can be virtualized, and
-// this component's job ends at its own line.
-//
-// This is the only level that collapses, and the only one whose row is itself
-// the toggle — which is why every interactive thing inside it (the menu, the
-// rename input) stops its own click from bubbling.
 export const OutlineSubjectRow = ({
   subject,
   dropEdge,
@@ -47,8 +40,6 @@ export const OutlineSubjectRow = ({
   const isNew = editing.editingNewId === subject.id;
   const isRenaming = editing.renamingId === subject.id;
 
-  // A topic being named for the first time isn't expandable yet — clicking the row
-  // it lives in would collapse the input away mid-edit (main's guard, Edit.tsx:3911).
   const handleToggle = () => {
     if (!isNew) expand.toggle(subject.id);
   };
@@ -81,9 +72,6 @@ export const OutlineSubjectRow = ({
       data-testid={OUTLINE_SUBJECT_ROW_IDS.root(subject.id)}
       {...drag.subjects.getDropTargetProps(subject.id)}
     >
-      {/* The whole row toggles, as main's does. It can't be a <button>: it
-          contains the rename input and the menu button, and nesting those inside
-          one would break both. */}
       <SubjectRow
         dir="rtl"
         data-testid={OUTLINE_SUBJECT_ROW_IDS.toggle(subject.id)}

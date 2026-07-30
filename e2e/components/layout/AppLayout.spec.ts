@@ -3,11 +3,6 @@ import { expect, test } from '@playwright/test';
 import { OUTLINE_ROW_MENU_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineRowMenu/OutlineRowMenu.testids';
 import { OUTLINE_SECTION_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSectionRow/OutlineSectionRow.testids';
 
-// AppLayout installs useOverflowTitles for the whole app: any text the interface
-// has had to cut short answers with the whole of it on hover. The sidebar outline
-// is where it is easiest to provoke — a narrow column of one-line rows — but
-// nothing about the behaviour is the outline's.
-
 const LONG_TITLE = 'סעיף שכותרתו ארוכה בהרבה מרוחב עמודת התוכן ולכן אין שום סיכוי שתיכנס בשלמותה';
 
 const renameSection = async (page: Page, id: string, title: string) => {
@@ -35,8 +30,6 @@ test('a title that fits gets no tooltip, and loses one it no longer needs', asyn
   await row.getByText('מטרת המסמך').hover();
   await expect(row.getByText('מטרת המסמך')).not.toHaveAttribute('title', /./);
 
-  // Long enough to earn a tooltip, then short again — the tooltip has to go with
-  // the truncation, or the reader is left hovering text that is already all there.
   await renameSection(page, 's1-1', LONG_TITLE);
   await row.getByText(LONG_TITLE).hover();
   await expect(row.getByText(LONG_TITLE)).toHaveAttribute('title', LONG_TITLE);

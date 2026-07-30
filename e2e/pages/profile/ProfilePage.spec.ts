@@ -10,11 +10,6 @@ import { LISTS_PANEL_IDS } from '../../../src/pages/profile/components/tabs/List
 import { SIGNATURES_PANEL_IDS } from '../../../src/pages/profile/components/tabs/SignaturesPanel/SignaturesPanel.testids';
 import { TEMPLATES_PANEL_IDS } from '../../../src/pages/profile/components/tabs/TemplatesPanel/TemplatesPanel.testids';
 
-// Every screenshot below waits for a row, not just for the panel that will hold
-// one. The stub link answers on a delay, so a panel is on screen well before its
-// contents are: without this the shot catches the loading skeleton, and whether
-// it does is a race with however busy the machine is — which is what made these
-// two "flaky under parallel load" rather than simply wrong.
 const waitForLoadedRows = (page: Page) =>
   expect(page.getByTestId(ITEM_ROW_IDS.root).first()).toBeVisible();
 

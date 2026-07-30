@@ -8,9 +8,6 @@ const ACTIONS = {
 } as const;
 
 export const useApprovalRotationAnalytics = () => {
-  // Whether a signature was attached is the interesting half: an approval without
-  // one is allowed, and how often that happens decides whether the picker is
-  // doing its job.
   const trackStageApproved = (rank: string, hasSignature: boolean) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,
@@ -19,8 +16,6 @@ export const useApprovalRotationAnalytics = () => {
     });
   };
 
-  // The reason itself is never sent: it is free text about a specific document,
-  // written by a named approver.
   const trackRoundRejected = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.ROUND_REJECTED });
   };

@@ -24,15 +24,6 @@ export interface OutlineRowProps {
   isDistributed: boolean;
 }
 
-/**
- * Turns one flattened row back into the component that draws it.
- *
- * The two `+ add` links live here rather than in the rows they used to hang
- * under, because that is where they ended up when the tree was flattened: they
- * are rows of their own now, and the naming rules behind them — a section named
- * for its position, a sub-section for the Hebrew letter it will render under —
- * need `tree`, which the links themselves have no business holding.
- */
 export const OutlineRow = ({
   row,
   tree,
@@ -96,8 +87,6 @@ export const OutlineRow = ({
       );
 
     case 'addSection': {
-      // main names a new section for its position (Edit.tsx:4059) so the row is
-      // readable the moment it appears, rather than an empty line to fill in.
       const subject = tree.subjects.find(({ id }) => id === row.subjectId);
       const handleAddSection = () => {
         tree.addSection(row.subjectId, `סעיף ${(subject?.sections.length ?? 0) + 1}`);
@@ -108,8 +97,6 @@ export const OutlineRow = ({
     }
 
     case 'addSubSection': {
-      // Named for the letter it will render under (main, Edit.tsx:4048), so it
-      // reads as `תת סעיף ג׳` from the moment it exists.
       const count =
         tree.subjects
           .find(({ id }) => id === row.subjectId)

@@ -24,9 +24,7 @@ export const useNetworkPeople = () =>
   useApiQuery(GET_NETWORK_PEOPLE_QUERY, (result: GetNetworkPeopleResult) => result.networkPeople);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
-// pool NetworkTab/HamalAddMemberPanel/HamalCreateGroupPanel used to import
-// directly. Delete this registration once GetNetworkPeople has a real
-// resolver; call sites don't change.
+
 export const NETWORK_PEOPLE_FALLBACK: GetNetworkPeopleResult = {
   networkPeople: [
     {

@@ -12,16 +12,8 @@ export interface OutlineSectionItemProps {
   onSave?: (title: string) => void;
 }
 
-/** Focus lands on the field the moment it appears, without an effect to place it. */
 const focusOnMount = (element: HTMLInputElement | null) => element?.focus();
 
-// main's outline row (Edit.tsx:2020-2070), and the only self-recursive component
-// in the file: a row renders its own children at depth + 1.
-//
-// The live tree is three explicit components — OutlineSubjectRow, OutlineSectionRow,
-// OutlineSubSectionRow — because the three levels genuinely differ: only the first
-// takes a drop from another subject, only the last is lettered, and each offers a
-// different menu. Recursion buys uniformity the data doesn't have.
 export const OutlineSectionItem = ({
   node,
   depth = 0,
@@ -41,8 +33,6 @@ export const OutlineSectionItem = ({
 
   const handleDraftChange = (event: ChangeEvent<HTMLInputElement>) => setDraft(event.target.value);
 
-  // Enter commits, Escape reports an empty title — main's signal to the parent
-  // that a row created for renaming should be dropped again.
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault();

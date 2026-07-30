@@ -23,15 +23,6 @@ interface DeletedSectionPreviewProps {
   onToggle: (sectionId: string) => void;
 }
 
-/**
- * What each deleted section actually said, so choosing one is recognising it
- * rather than trusting its title. Selectable from here too — main lets either
- * column do the choosing, since by the time you have read the thing you should
- * not have to go back to the list to say yes.
- *
- * Unlike main's, the content is real: a delete snapshots the section, so this is
- * the text that will come back rather than a fixture standing in for it.
- */
 export const DeletedSectionPreview = ({
   entries,
   checkedIds,

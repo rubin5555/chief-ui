@@ -18,9 +18,6 @@ export interface DistributeConfirmModalProps {
   onClose: () => void;
 }
 
-// Asked before a document is distributed (main, Edit.tsx:4953). Distribution is
-// the one step in the flow that can't be walked back, which is why it is the one
-// that asks first.
 export const DistributeConfirmModal = ({
   docName,
   onConfirm,

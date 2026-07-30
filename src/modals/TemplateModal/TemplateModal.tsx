@@ -28,10 +28,6 @@ interface TemplateModalProps {
   mode?: TemplateModalMode;
   initialName?: string;
   departmentOptions: string[];
-  // Identifies this user on the collab server (plan §2/§6) — lock ownership
-  // and remote-cursor labels are keyed by this id. Undefined disables collab
-  // entirely (ContentEditorProvider degrades to its pre-collab local-only
-  // behavior), which is what standalone/unauthenticated callers get today.
   currentUserId?: string;
   onClose: () => void;
   onSave: (draft: TemplateDraft) => void;
@@ -74,9 +70,6 @@ export const TemplateModal = ({
     trackModalOpened(mode);
   }, []);
 
-  // No backend yet, so every mode starts from an empty structure — any subject,
-  // appendix, imported field, or emphasis text present means the user changed
-  // something this session.
   const isStructureDirty =
     tree.subjects.length > 0 ||
     appendicesState.appendices.length > 0 ||
@@ -108,9 +101,6 @@ export const TemplateModal = ({
     modalRef.current?.requestClose();
   };
 
-  // ContentEditorProvider (inside TemplateModalBody) degrades to local-only
-  // activation (no lock gating/remote cursors) when it finds no CollabProvider
-  // above it — the wrapper is only mounted once a real user identity is available.
   const body = (
     <TemplateModalBody
       tree={tree}

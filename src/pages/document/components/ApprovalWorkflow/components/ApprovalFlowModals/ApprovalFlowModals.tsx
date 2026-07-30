@@ -38,7 +38,6 @@ export interface ApprovalFlowModalsProps {
   status: string;
   hmlGroups: HmlGroupDto[];
   roundConfig: ApprovalRoundConfig | null;
-  /** True while the toast is up — it outlives the step that started it. */
   isDistributing: boolean;
   onClose: () => void;
   onSaveHeader: (header: DocumentHeader) => void;
@@ -54,14 +53,6 @@ export interface ApprovalFlowModalsProps {
   onCloseToast: () => void;
 }
 
-// Every dialog the approval flow can put on screen, picked by the step it is on.
-//
-// Split out of ApprovalWorkflow so that component is the flow's *state machine* —
-// which step follows which, and what each transition does — rather than a
-// transition table with eight lazy imports stapled underneath it.
-//
-// One Suspense boundary around all of them: only ever one is mounted, and a
-// per-modal boundary would be eight of the same `null`.
 export const ApprovalFlowModals = ({
   step,
   header,
@@ -100,8 +91,6 @@ export const ApprovalFlowModals = ({
 
     {step === 'details' && <ApprovalDetailsModal onClose={onClose} onSubmit={onDetailsSubmit} />}
 
-    {/* Guarded on the config as well as the step: there is no round to show
-        without one, and the step alone can't promise it exists. */}
     {step === 'rotation' && roundConfig && (
       <ApprovalRotation
         docName={header.name}
@@ -128,8 +117,6 @@ export const ApprovalFlowModals = ({
 
     {step === 'acceptance' && <AcceptenceVerification onClose={onClose} onSend={onClose} />}
 
-    {/* Not keyed off the step: distribution carries on while you go back to
-        reading the document, so the toast outlives the dialog that started it. */}
     {isDistributing && <DistributeProgressToast onClose={onCloseToast} />}
   </Suspense>
 );

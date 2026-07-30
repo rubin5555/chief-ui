@@ -1,16 +1,6 @@
 import styled from 'styled-components';
 import { gray, radii } from '@/styles/theme';
 
-/**
- * One grey shape standing in for something not loaded yet.
- *
- * A single shimmer for the whole app: every skeleton is several of these, and
- * two implementations would mean two animations running at different phases on
- * the same screen — which reads as a fault rather than as loading.
- *
- * `$flex` is for a bar that should take the room left over rather than a stated
- * width; `$round` makes it a circle for an avatar or an icon button.
- */
 export const SkeletonBar = styled.div<{
   $width: string;
   $height?: string;

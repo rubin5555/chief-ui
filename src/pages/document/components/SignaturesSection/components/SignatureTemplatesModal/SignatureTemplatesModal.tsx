@@ -10,22 +10,14 @@ import {
 import { SIGNATURE_TEMPLATES_MODAL_IDS } from './SignatureTemplatesModal.testids';
 
 export interface SignatureTemplatesModalProps {
-  /** Receives the chosen template's body, which the section drops into a slot. */
   onPick: (content: string) => void;
   onClose: () => void;
 }
 
-// The reusable signature bodies, offered under "התבניות שלי" (main,
-// Edit.tsx:5149).
-//
-// The query lives inside this lazy component rather than in the section, so the
-// catalog is fetched when someone asks to see it and not on every document load.
 export const SignatureTemplatesModal = ({ onPick, onClose }: SignatureTemplatesModalProps) => {
   const { data } = useSignatures();
   const templates = (data ?? SIGNATURES_FALLBACK.signatures).templates;
 
-  // Picking closes the dialog: there is one thing to do here, and staying open
-  // after it would invite a second template nobody asked for.
   const handlePick = (content: string) => () => {
     onPick(content);
     onClose();

@@ -2,11 +2,6 @@ import styled from 'styled-components';
 import { flexBetween, flexCenter, flexGap, navIconAction } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-// The trigger renders into the navbar's document-actions toolbar, so it has to be
-// indistinguishable from the buttons beside it — hence the shared mixin rather than
-// a local approximation. It's a plain styled.button (not `ui/IconButton`) because
-// useFloatingPanel needs the ref, and because main's filter icon has no
-// active/selected state: what's filtered is shown by the chips over the paper.
 export const FilterTrigger = styled.button`
   ${navIconAction}
 `;
@@ -51,8 +46,6 @@ export const OptionRow = styled.button`
   }
 `;
 
-// Unchecked is a 2px outline, checked a filled navy square — the box changes weight
-// and not just colour, so it stays distinguishable from the status dot beside it.
 export const CheckBox = styled.span<{ $checked: boolean }>`
   ${flexCenter}
   flex-shrink: 0;

@@ -1,11 +1,6 @@
 import styled from 'styled-components';
 import { colors, gray } from '@/styles/theme';
 
-// Shared by the two halves of an upload's result — the people it found and the
-// cells it couldn't make anything of. They are separate components because they
-// are different things to look at, but they are stacked in one column and have
-// to be introduced the same way.
-
 export const ListSection = styled.section<{ $fill?: boolean }>`
 	display: flex;
 	flex-direction: column;

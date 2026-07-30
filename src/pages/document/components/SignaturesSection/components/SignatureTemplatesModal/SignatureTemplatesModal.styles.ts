@@ -7,8 +7,6 @@ export const TemplateList = styled.div`
   flex-direction: column;
 `;
 
-// Hairline dividers between rows and none after the last: a list of choices, not a
-// stack of cards.
 export const TemplateRow = styled.button`
   ${resetButton}
   display: flex;

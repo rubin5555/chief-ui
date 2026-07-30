@@ -44,13 +44,6 @@ interface TableDesignModalProps {
   onClose: () => void;
 }
 
-// Table-shape fields get the full matrixTable surface (totals, aggregate, row titles,
-// per-column styles, conditional rules); list-shape fields only reach json-table's design
-// options once renderAsTable is on, and even then only the target-level styles (header/
-// subheader/key/cell/caption) and fixed #/value labels apply — per-column styles and
-// conditional rules need real per-cell paths, which listTable never threads through (see
-// utils/tableDesignOptions.ts and json-table's render.ts), so those two sections are
-// gated to isTableSchema.
 export const TableDesignModal = ({ field, onSave, onClose }: TableDesignModalProps) => {
   const isTableSchema = field.shape === 'table';
   const [renderAsTable, setRenderAsTable] = useState(Boolean(field.renderAsTable));

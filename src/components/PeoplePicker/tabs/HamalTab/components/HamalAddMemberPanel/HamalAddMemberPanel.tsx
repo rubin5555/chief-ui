@@ -20,14 +20,11 @@ const noop = () => {};
 
 interface HamalAddMemberPanelProps {
   pos: Pos;
-  /** Id numbers already in the group — excluded from search results. */
   existingIdNumbers: string[];
   onSelect: (member: PersonMember) => void;
   onClose: () => void;
 }
 
-// Floating "הוסף חבר לקבוצה" popover anchored to a group row's + button.
-// Owns its search state; remounts per open so the query always starts empty.
 export const HamalAddMemberPanel = ({
   pos,
   existingIdNumbers,

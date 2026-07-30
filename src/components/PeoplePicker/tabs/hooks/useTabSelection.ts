@@ -1,7 +1,5 @@
 import { useState } from 'react';
 
-// Internal to useTabSelection — promote back to src/hooks/ only if a second
-// independent feature needs it (see system-assembly.md's global-vs-local rule).
 const useToggleSet = <T extends string>() => {
   const [set, setSet] = useState<Set<T>>(new Set());
 

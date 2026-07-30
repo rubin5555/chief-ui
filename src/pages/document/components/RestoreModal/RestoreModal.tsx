@@ -16,21 +16,8 @@ export interface RestoreModalProps {
   onRestore: (entries: DeletedSectionEntry[]) => void;
 }
 
-/** main's dialog is 88vw × 82vh, capped at 1200 (Edit.tsx:193). */
 const WIDTH = 1200;
 
-/**
- * What was deleted, and what it said — main's two-column restore (Edit.tsx:171):
- * a list of the deleted sections on one side, their text on the other, and the
- * confirm button under the list rather than in the dialog's own footer, so the
- * count it names sits with the things being counted.
- *
- * Unlike main's (a disconnected `DELETED_SECTIONS` fixture), `deletedSections` is
- * the real trash `DocumentCanvas` accumulates from actual deletes this session,
- * so the preview shows the content that will genuinely come back. Sub-sections
- * are not separately restorable: they were deleted with their section and return
- * with it, which is why they are listed but not selectable.
- */
 export const RestoreModal = ({ deletedSections, onClose, onRestore }: RestoreModalProps) => {
   const modalRef = useRef<ModalHandle>(null);
   const [checkedIds, setCheckedIds] = useState<string[]>([]);

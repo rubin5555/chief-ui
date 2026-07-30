@@ -11,17 +11,10 @@ import {
 import { APPROVAL_DIRTY_WARNING_IDS } from './ApprovalDirtyWarningModal.testids';
 
 export interface ApprovalDirtyWarningModalProps {
-  /** Goes back to the details step, where the edits are still there to undo. */
   onBack: () => void;
   onContinue: () => void;
 }
 
-// Shown when someone edits the document's details on the way into an approval
-// round (main, Edit.tsx:5084): the edits land on this version only, and previous
-// versions keep what they had.
-//
-// `ביטול` returns to the details rather than abandoning the flow, which is what
-// main's does — the point is to let you undo the edit, not to start over.
 export const ApprovalDirtyWarningModal = ({
   onBack,
   onContinue,

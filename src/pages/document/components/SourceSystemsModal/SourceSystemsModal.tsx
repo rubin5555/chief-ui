@@ -14,11 +14,6 @@ import { SOURCE_SYSTEMS_MODAL_IDS } from './SourceSystemsModal.testids';
 
 export interface SourceSystemsModalProps {
   systems: SourceOrigin[];
-  /**
-   * Whether the whole document or a single node was asked about. Only the opening
-   * sentence differs, but it differs in number — "the systems below" against "the
-   * system below" — so it can't be one string.
-   */
   scope: 'doc' | 'node';
   onClose: () => void;
 }
@@ -28,13 +23,6 @@ const INTRO = {
   node: 'סעיף זה מכיל מידע שנוצר ממערכת המקור הבאה:',
 };
 
-// Where a document's — or a section's — imported content came from (main,
-// Edit.tsx:4987).
-//
-// main keeps this list in a lookup table declared inside the render, keyed by
-// node id with a `doc` entry alongside. Here the list arrives as a prop: the
-// document carries its own `sourceSystems` and each node its `sourceOrigin`, so
-// whoever opens the modal already holds the answer.
 export const SourceSystemsModal = ({ systems, scope, onClose }: SourceSystemsModalProps) => {
   const modalRef = useRef<ModalHandle>(null);
 

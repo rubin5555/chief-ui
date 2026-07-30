@@ -1,24 +1,13 @@
 import type { TableGridIconVariant } from './components/TableGridIcon';
 
 export interface TableBarAction {
-  /** Also the test id suffix. */
   id: string;
   title: string;
   command: string;
-  /** One of the six hand-drawn row/column glyphs, where lucide has none. */
   glyph?: TableGridIconVariant;
   danger?: boolean;
 }
 
-/**
- * The strip, in the order main draws it (Edit.tsx:1013-1073): rows, then columns,
- * then cells, then the two properties dialogs, then delete.
- *
- * Four of main's fifteen buttons are missing, and deliberately. Two were extra
- * split directions and one was a word-wrap toggle that TinyMCE's table model has
- * no command for; all three were inert in main too. Shipping them here would put
- * back exactly what got this ribbon parked in `parity/` in the first place.
- */
 export const ROW_ACTIONS: TableBarAction[] = [
   {
     id: 'row-before',

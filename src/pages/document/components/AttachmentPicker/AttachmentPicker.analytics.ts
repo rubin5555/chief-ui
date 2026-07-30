@@ -8,7 +8,6 @@ const ACTIONS = {
 } as const;
 
 export const useAttachmentPickerAnalytics = () => {
-  // How many were picked at once, never their names: filenames are content.
   const trackFilesAttached = (count: number) => {
     analytics.trackEvent({
       category: ANALYTICS_CATEGORY,

@@ -48,12 +48,6 @@ export const flexScroll = css`
   overflow-y: auto;
 `;
 
-// A scrollbar for something small and floating — a menu, a popover — where the
-// platform's own is nearly as wide as the content and sits on top of the rounded
-// corner it is meant to be inside.
-//
-// Thin with a transparent track rather than hidden altogether: a menu that
-// scrolls with no sign that it scrolls is a menu whose last option nobody finds.
 export const subtleScrollbar = css`
   scrollbar-width: thin;
   scrollbar-color: ${gray[300]} transparent;
@@ -90,14 +84,6 @@ export const focusPrimaryBorder = css`
   }
 `;
 
-// One of main's navbar action icons (TopNavbar.tsx:1254): a 16px glyph in a
-// circular hit area that only tints on hover — no active/selected state, since
-// what's active is shown in the page itself rather than on the button.
-//
-// It lives here rather than in DocActionToolbar.styles.ts because the document
-// page's FilterPanel renders its own trigger *into* that toolbar and has to be
-// indistinguishable from the buttons beside it, and src/styles is the nearest
-// common ancestor of a layout component and a page one.
 export const navIconAction = css`
   padding: 6px;
   border-radius: ${radii.full};

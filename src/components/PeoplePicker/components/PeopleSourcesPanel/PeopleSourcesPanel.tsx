@@ -20,32 +20,13 @@ const byIdNumber = (m: Member) => m.idNumber;
 const byId = (m: Member) => m.id;
 
 interface PeopleSourcesPanelProps {
-  /** Everyone picked so far, so a source can grey out what is already in. */
   members: Member[];
   onMembersChange: (members: Member[]) => void;
-  /**
-   * Rendered above the source tabs. The mailing-list form puts its name and
-   * department fields here; the permissions dialog has nothing to put there.
-   */
   header?: ReactNode;
-  /** Fixed column width. Left out, the panel takes whatever room is going. */
   width?: number;
-  /** For analytics. The panel itself reports nothing — it isn't a feature. */
   onTabChange?: (id: ImportTabId) => void;
 }
 
-/**
- * Where people come from: the five source tabs, the search box standing in for
- * them until one is picked, and whichever tab is open. It owns which tab that is
- * and which source rows have already been imported, and it merges picks into the
- * caller's list — deduped, since the same person can sit in two sources.
- *
- * It renders no members list of its own. The two halves of a picker are separate
- * components because their consumers arrange them differently: the mailing-list
- * form puts members beside the sources, while the permissions dialog puts a
- * column of permission levels on the far side and, for the two section-level
- * permissions, swaps the members list out for the document's section tree.
- */
 export const PeopleSourcesPanel = ({
   members,
   onMembersChange,
@@ -57,8 +38,7 @@ export const PeopleSourcesPanel = ({
   const [activeTab, setActiveTab] = useState<ImportTabId | null>(null);
   const [networkInitialQuery, setNetworkInitialQuery] = useState('');
   const [autoFocusNetworkSearch, setAutoFocusNetworkSearch] = useState(false);
-  // Local to the pre-search box: it unmounts the instant activeTab flips away from
-  // null (see SearchRow below), so there is nothing to keep in sync past that point.
+
   const [preSearchQuery, setPreSearchQuery] = useState('');
 
   const addedMemberIds = new Set(members.map((m) => m.id));
@@ -91,9 +71,6 @@ export const PeopleSourcesPanel = ({
 
   const onTabSelect = (id: ImportTabId) => () => selectTab(id);
 
-  // Fires at most once per mount: the pre-search box unmounts as soon as activeTab
-  // stops being null, so this only runs on the focus or first keystroke that
-  // switches into the network tab.
   const onActivateNetworkFromSearch = (query: string) => {
     if (activeTab !== null) return;
     setNetworkInitialQuery(query);

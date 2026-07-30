@@ -60,8 +60,7 @@ export const DayCell = styled.button<{ $selected: boolean; $today: boolean }>`
   font-size: 14px;
   border-radius: ${radii.full};
   transition: background ${transitions.normal};
-  /* Selected and today wear the same navy ring; main separates them only by font
-     weight (Edit.tsx:1646-1650), so a date that is both reads as one state. */
+
   border: ${({ $selected, $today }) =>
     $selected || $today ? `2px solid ${colors.primary}` : '2px solid transparent'};
   font-weight: ${({ $selected, $today }) => ($selected ? 700 : $today ? 600 : 400)};

@@ -9,15 +9,8 @@ import { SUBJECT_BLOCK_IDS } from './SubjectBlock.testids';
 
 export interface SubjectBlockProps {
   subject: Subject;
-  /**
-   * This subject's first section's number. Section numbering runs continuously
-   * across the whole document rather than restarting per subject (main's
-   * `secCounter`, Edit.tsx:4390), so a subject can't work it out alone.
-   */
   firstSectionNumber: number;
-  /** Sections whose status is currently filtered out, by id. */
   filteredSectionIds: Set<string>;
-  /** Nodes matching the in-document search, by id. Empty when nothing is searched. */
   searchMatchIds: Set<string>;
   tree: ReturnType<typeof useDocumentTree>;
   overrides: ReturnType<typeof useDocumentOverrides>;
@@ -26,13 +19,6 @@ export interface SubjectBlockProps {
   isDistributed: boolean;
 }
 
-// One topic in the paper: its editable heading, then its sections.
-//
-// `tree`/`overrides`/`trash` pass through as whole hook objects. Each block level
-// calls them with the ids it already knows from rendering that node, which is
-// what let the seven curried handler factories DocumentCanvas used to own
-// disappear entirely — see .claude/skills/react-engineering.md's "Shrink Prop
-// Lists".
 export const SubjectBlock = ({
   subject,
   firstSectionNumber,
@@ -66,9 +52,6 @@ export const SubjectBlock = ({
             key={section.id}
             subjectId={subject.id}
             section={section}
-            // Numbered by position in the document, not position in what's
-            // currently visible — a filter hides sections, it doesn't renumber
-            // the ones that remain.
             number={firstSectionNumber + sectionIndex}
             filteredSectionIds={filteredSectionIds}
             searchMatchIds={searchMatchIds}

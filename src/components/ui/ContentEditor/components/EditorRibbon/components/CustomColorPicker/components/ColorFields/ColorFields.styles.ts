@@ -5,7 +5,7 @@ export const FieldsRow = styled.div`
   display: flex;
   gap: 5px;
   margin-bottom: 12px;
-  /* Hex and RGB are read left-to-right regardless of the page's direction. */
+
   direction: ltr;
 `;
 

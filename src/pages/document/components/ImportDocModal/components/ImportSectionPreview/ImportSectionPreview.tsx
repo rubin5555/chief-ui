@@ -23,12 +23,6 @@ interface ImportSectionPreviewProps {
   onToggle: (sectionId: string) => void;
 }
 
-/**
- * The source document as it reads, so picking a section is recognising it rather
- * than trusting its title. Selectable from here too — main lets either column do
- * the choosing (Edit.tsx:1990), since once you have read the thing you shouldn't
- * have to go back to the list to say yes.
- */
 export const ImportSectionPreview = ({
   docName,
   sections,

@@ -16,7 +16,6 @@ const openPermissions = async (page: Page) => {
   await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.root)).toBeVisible();
 };
 
-/** Picks someone out of the network directory, which is where a search lands. */
 const addFromNetwork = async (page: Page, name: string) => {
   await page.getByTestId(PEOPLE_PICKER_IDS.searchBar).getByRole('textbox').fill(name);
   await page.getByRole('button', { name: new RegExp(name) }).click();
@@ -51,7 +50,6 @@ test('a person granted one permission is not granted the others', async ({ page 
   await page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.level('manage')).click();
   await expect(members).not.toContainText('אבי כהן');
 
-  // And back: leaving a permission doesn't empty it.
   await page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.level('view-after')).click();
   await expect(members).toContainText('אבי כהן');
 });
@@ -75,7 +73,6 @@ test('someone picked while a section is selected is granted it on that section',
   await openPermissions(page);
   await page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.level('section-editors')).click();
 
-  // Open the first topic and select the first section under it.
   await page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.subjectRow('s1')).click();
   const section = page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.sectionRow('s1-1'));
   await section.click();
@@ -84,7 +81,6 @@ test('someone picked while a section is selected is granted it on that section',
 
   await addFromNetwork(page, 'שרה לוי');
 
-  // The section now counts one, and unfolding it names her.
   const count = page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.sectionMemberCount('s1-1'));
   await expect(count).toHaveText('1');
   await count.click();
@@ -97,8 +93,6 @@ test('picking with no section selected says so instead of granting nothing', asy
 
   await addFromNetwork(page, 'שרה לוי');
 
-  // main drops these into a list the section tree cannot show, which reads as the
-  // pick having been ignored. They are counted and named instead.
   await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.unassigned)).toContainText('1 נבחרו');
 });
 
@@ -111,8 +105,7 @@ test('the Excel source is offered here too, with its file picker and no search b
 
   await expect(page.getByTestId(EXCEL_TAB_IDS.uploadBtn)).toBeVisible();
   await expect(page.getByTestId(EXCEL_TAB_IDS.hint)).toContainText('עמודה A בלבד');
-  // Nothing to search in a file that hasn't been handed over, so the row that
-  // every other tab fills is out of the way rather than standing empty.
+
   await expect(page.getByTestId(PEOPLE_PICKER_IDS.searchBar)).toBeHidden();
 });
 
@@ -122,19 +115,14 @@ test('uploading a sheet lists who was found, what failed, and grants only what i
   await openPermissions(page);
   await page.getByTestId(PEOPLE_PICKER_IDS.tabBar).getByText('Excel').click();
 
-  // A real .xlsx, read in the browser — see e2e/fixtures/make-personal-numbers-xlsx.mjs
-  // for what is in column A and why.
   await page.getByTestId(EXCEL_TAB_IDS.fileInput).setInputFiles(SHEET_FIXTURE);
   await expect(page.getByTestId(EXCEL_TAB_IDS.hint)).toHaveText('personal-numbers.xlsx');
 
-  // Two lists: the people the numbers resolved to, and the cells that resolved
-  // to nobody — the second is why the upload doesn't just import itself.
   await expect(page.getByTestId(EXCEL_TAB_IDS.foundList)).toContainText('אבי כהן');
   const failed = page.getByTestId(EXCEL_TAB_IDS.failedList);
   await expect(failed).toContainText('לא נמצא במערכת');
   await expect(failed).toContainText('מספר אישי לא תקין');
 
-  // Everyone found arrives ticked, so unticking is what takes someone out.
   await page.getByTestId(EXCEL_TAB_IDS.foundRow('012345678')).click();
   await page.getByTestId(EXCEL_TAB_IDS.importBtn).click();
 
@@ -148,9 +136,6 @@ test('the network search asks the directory instead of sifting a copy of it', as
 
   await page.getByTestId(PEOPLE_PICKER_IDS.searchBar).getByRole('textbox').fill('אבי');
 
-  // A state that only exists because the answer is a round trip away — before
-  // this the whole directory was in the browser and results were instant.
-  // It must not read "no results" while the question is still in flight.
   await expect(page.getByText('מחפש...')).toBeVisible();
   await expect(page.getByRole('button', { name: /אבי כהן/ })).toBeVisible();
 });
@@ -164,8 +149,6 @@ test('the search results are mounted outside the column that clips its overflow'
   const result = page.getByRole('button', { name: /אבי כהן/ });
   await expect(result).toBeVisible();
 
-  // The sources column is `overflow: hidden`, so a long enough list used to lose
-  // its last rows to an ancestor that has nothing to do with it.
   const clipped = await result.evaluate(
     (element, id) => Boolean(element.closest(`[data-testid="${id}"]`)),
     PEOPLE_PICKER_IDS.sourcesPanel,

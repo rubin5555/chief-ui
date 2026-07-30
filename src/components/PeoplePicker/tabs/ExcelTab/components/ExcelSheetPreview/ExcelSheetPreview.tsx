@@ -12,16 +12,6 @@ import {
 const EMPTY_COLUMNS = SHEET_COLUMNS.slice(1);
 const LAST_COLUMN_INDEX = SHEET_COLUMNS.length - 1;
 
-/**
- * What the file is supposed to look like, drawn rather than described: column A
- * navy, its first cell outlined the way a spreadsheet outlines the cell you are
- * standing in, and B through D left empty. A picture because the instruction is
- * about *shape* — "column A only" is a sentence people read past and a grid they
- * don't.
- *
- * Entirely decorative: no data, no interaction, and `user-select: none` so it
- * can't be mistaken for something to copy out of.
- */
 export const ExcelSheetPreview = () => (
   <PreviewArea>
     <PreviewCaption>לדוגמא:</PreviewCaption>

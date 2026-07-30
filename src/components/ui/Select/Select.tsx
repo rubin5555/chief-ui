@@ -25,13 +25,11 @@ export const Select = ({
   'data-testid': testId,
 }: SelectProps) => {
   const [internalSelected, setInternalSelected] = useState<string>('');
-  // Derived, not synced via effect: a controlled parent's value always wins,
-  // and uncontrolled usage falls back to the locally picked option.
+
   const selected = value ?? internalSelected;
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  // Highlight only reflects real keyboard nav — set on open too, it'd render as an unprompted
-  // highlighted option (looks like Tab was pressed) before the user has touched the keyboard.
+
   const [keyboardActive, setKeyboardActive] = useState(false);
   const [dropPos, setDropPos] = useState<DropPos | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -87,16 +85,7 @@ export const Select = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    // scrolling the trigger out from under the fixed-position dropdown leaves it floating
-    // detached, so close immediately on any scroll that isn't inside the dropdown itself (e.g.
-    // its own options list). No debounce and no refocus — both caused a visible delay/jump.
-    //
-    // Armed a frame late, because opening can *cause* a scroll: the same click focuses the
-    // trigger, and the browser scrolls a newly-focused element into view. That lands a few
-    // milliseconds after the dropdown mounts and used to close it again immediately — which
-    // made the control unopenable whenever its trigger sat near the edge of a scrolling
-    // container, such as a field low in a dialog's body. Nobody scrolls deliberately inside
-    // the frame they clicked in, so nothing real is missed.
+
     let armed = false;
     const arm = requestAnimationFrame(() => {
       armed = true;
@@ -130,7 +119,7 @@ export const Select = ({
     if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onTriggerClick();
-      // opening via keyboard is itself a keyboard-nav gesture, so show the highlight immediately
+
       if (e.key === 'ArrowDown') setKeyboardActive(true);
     }
   };

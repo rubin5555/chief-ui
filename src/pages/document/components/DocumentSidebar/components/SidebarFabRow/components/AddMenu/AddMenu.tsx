@@ -13,21 +13,11 @@ export interface AddMenuProps {
   onSelect: (action: AddActionId) => void;
 }
 
-// The `+` at the bottom of the sidebar and the four things it can add.
-//
-// main positions this by hand — `bottom: window.innerHeight - rect.top + 8` — to
-// make it open upward from a button that sits at the bottom of the viewport
-// (Edit.tsx:3569). useFloatingPanel flips it upward on its own when there isn't
-// room below, so the anchor here just asks for "below the button" and gets the
-// flip, the viewport clamp, outside-click and Escape for free.
 export const AddMenu = ({ onSelect }: AddMenuProps) => {
   const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
 
   const handleToggle = () => panel.toggle((rect) => ({ top: rect.bottom + 6, left: rect.left }));
 
-  // Every one of these four actions hands focus onward — to a new topic's name
-  // field, or to a modal — so none of them wants it back on the `+`. Returning it
-  // would blur the name field in the commit it appeared and discard the new topic.
   const handleSelect = (action: AddActionId) => () => {
     onSelect(action);
     panel.closeWithoutRefocus();

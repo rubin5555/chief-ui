@@ -1,9 +1,6 @@
 export type Rgb = [number, number, number];
 export type Hsv = [number, number, number];
 
-// main keeps these four conversions as loose module functions above the picker
-// (Edit.tsx:560-603). They are pure maths with no React in them, which is exactly
-// what a `.utils.ts` is for.
 export const rgbToHsv = (r: number, g: number, b: number): Hsv => {
   const rn = r / 255;
   const gn = g / 255;
@@ -53,8 +50,6 @@ export const hexToRgb = (hex: string): Rgb | null => {
     : null;
 };
 
-// Where a pointer landed inside an element, as a 0..1 fraction of each axis.
-// Both draggable surfaces need it, and neither should be re-deriving clamps.
 export const fractionWithin = (element: Element, clientX: number, clientY: number) => {
   const rect = element.getBoundingClientRect();
   return {

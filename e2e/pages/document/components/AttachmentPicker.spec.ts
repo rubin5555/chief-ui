@@ -13,18 +13,13 @@ const file = (name: string, size: number) => ({
   buffer: Buffer.alloc(size),
 });
 
-// The paperclip on a node's action row, the dialog behind it, and the chips it
-// leaves under the content box.
-
 test('attaching files lists them in the dialog and under the section', async ({ page }) => {
   await page.goto('/document/d1');
 
-  // 2048 bytes reads as 2 KB — main rounds every size to whole KB.
   await page
     .getByTestId(ATTACHMENT_PICKER_IDS.input(SECTION))
     .setInputFiles([file('נספח א.pdf', 2048), file('טבלת נתונים.pdf', 5120)]);
 
-  // Picking lands you in the dialog: the list is the confirmation the files arrived.
   const modal = page.getByTestId(ATTACHMENTS_MODAL_IDS.root);
   await expect(modal).toBeVisible();
   await expect(modal).toContainText('נספח א.pdf');
@@ -34,7 +29,6 @@ test('attaching files lists them in the dialog and under the section', async ({ 
   await page.getByTestId(ATTACHMENTS_MODAL_IDS.doneBtn).click();
   await expect(modal).not.toBeVisible();
 
-  // Both files show as chips under the section's content box.
   const chips = page.getByTestId(ATTACHMENT_CHIP_LIST_IDS.root(SECTION)).getByRole('button');
   await expect(chips).toHaveCount(2);
   await expect(chips.first()).toContainText('נספח א.pdf');
@@ -43,16 +37,11 @@ test('attaching files lists them in the dialog and under the section', async ({ 
 test('emptying the list leaves the dialog saying so, still offering to add', async ({ page }) => {
   await page.goto('/document/d1');
 
-  // The paperclip opens the native file dialog, which Playwright intercepts as a
-  // filechooser rather than opening anything on the page — so files go in through
-  // the input directly, which is the same code path.
   await page.getByTestId(ATTACHMENT_PICKER_IDS.input(SECTION)).setInputFiles([file('x.pdf', 1024)]);
   await expect(page.getByTestId(ATTACHMENTS_MODAL_IDS.emptyState)).toHaveCount(0);
 
   await page.locator('[data-testid^="attachments-modal-delete-"]').click();
 
-  // The dialog stays open on its empty state rather than closing itself — you
-  // most likely deleted the wrong one and want to add another.
   await expect(page.getByTestId(ATTACHMENTS_MODAL_IDS.emptyState)).toHaveText('אין קבצים מצורפים');
   await expect(page.getByTestId(ATTACHMENTS_MODAL_IDS.addMoreBtn)).toBeVisible();
 });
@@ -92,14 +81,12 @@ test('a chip reopens the dialog it came from', async ({ page }) => {
 test('the source button is live only on a node that came from one', async ({ page }) => {
   await page.goto('/document/d1');
 
-  // s1-1 is seeded with a source origin (src/api/docs.ts); s1-2 has none.
   await expect(page.getByTestId(SOURCE_REFRESH_BUTTON_IDS.root('s1-2'))).toBeDisabled();
 
   const live = page.getByTestId(SOURCE_REFRESH_BUTTON_IDS.root('s1-1'));
   await expect(live).toBeEnabled();
   await live.click();
 
-  // Section scope, so the wording is singular and only this node's system shows.
   await expect(page.getByTestId(SOURCE_SYSTEMS_MODAL_IDS.intro)).toContainText(
     'סעיף זה מכיל מידע שנוצר ממערכת המקור הבאה',
   );

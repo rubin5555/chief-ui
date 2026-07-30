@@ -19,23 +19,8 @@ export interface TableEditBarProps {
   editor: TinyMceEditor | null;
 }
 
-// Pressing the strip must not blur the cell it is acting on — the bar would
-// unmount under the pointer before the click landed. Same rule as the ribbon's.
 const keepSelection = (event: MouseEvent) => event.preventDefault();
 
-/**
- * The strip that appears under a table while the caret is in one.
- *
- * TinyMCE has a table context toolbar of its own, and it is switched off
- * (`table_toolbar: ''`, see ContentEditor.constants) — it is skin chrome in the
- * middle of a document whose every other control is drawn by this app. This is
- * main's strip (Edit.tsx:984-1073) in its place, running the same table commands
- * TinyMCE's own buttons would have run.
- *
- * It renders nothing at all when the caret is elsewhere. There is no "disabled"
- * state to design, because a table bar with no table is not a thing anyone should
- * be looking at.
- */
 export const TableEditBar = ({ editor }: TableEditBarProps) => {
   const table = useActiveTable(editor);
   const anchor = useTableAnchor(table);
@@ -96,10 +81,6 @@ export const TableEditBar = ({ editor }: TableEditBarProps) => {
 
         <BarDivider />
 
-        {/* These two open TinyMCE's own dialogs, which are the only editor chrome
-            left on screen. They are worth keeping: each is a full properties form
-            — borders, widths, alignment, cell type — and main's equivalent was a
-            hand-rolled card whose fields wrote nowhere. */}
         <BarAction
           type="button"
           title="מאפייני תא"

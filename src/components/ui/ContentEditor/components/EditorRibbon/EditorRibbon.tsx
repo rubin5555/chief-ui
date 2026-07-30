@@ -30,38 +30,11 @@ import { useFormatPainter } from './useFormatPainter';
 import { useRibbonState } from './useRibbonState';
 
 export interface EditorRibbonProps {
-  /**
-   * The field the ribbon is pointed at, or `null` when none is open. Everything
-   * here acts on this one editor, and everything here is disabled without it — a
-   * toolbar over a document nobody is editing has nothing to press.
-   */
   editor: TinyMceEditor | null;
-  /** Set on the root, so ContentEditor's blur guard can recognise the toolbar. */
   id?: string;
-  /** Drawn inside a field's own frame rather than as the page's toolbar — see ToolbarRoot. */
   flush?: boolean;
 }
 
-/**
- * main's Word-style ribbon (Edit.tsx:1122-1688), driving TinyMCE.
- *
- * In main this was 45 pieces of React state and nothing else: bold lit a button
- * and changed no text, the table picker fired a CustomEvent nobody caught,
- * find-and-replace neither found nor replaced. The drawing was the deliverable.
- *
- * Here the drawing is kept and the state is thrown away. Every control runs an
- * editor command, and which buttons are lit is read back off the caret rather
- * than remembered (useRibbonState) — so clicking into text somebody else made
- * bold lights `bold`, and moving between two sections re-answers the whole row.
- * That is also what removes main's exclusivity table: after `JustifyCenter`,
- * `JustifyRight` reports false on its own, because the paragraph really is
- * centred.
- *
- * The three colour buttons are Word's split control, and now behave like one: the
- * face applies what it shows, the chevron changes what that is. Fill paints a
- * table cell, so it greys out anywhere else — main drew it always-enabled, which
- * was easy when it painted nothing.
- */
 export const EditorRibbon = ({ editor, id, flush = false }: EditorRibbonProps) => {
   const [textColor, setTextColor] = useState(DEFAULT_TEXT_COLOR);
   const [highlightColor, setHighlightColor] = useState(DEFAULT_HIGHLIGHT_COLOR);
@@ -72,9 +45,6 @@ export const EditorRibbon = ({ editor, id, flush = false }: EditorRibbonProps) =
 
   const isDisabled = !editor;
 
-  // Everything goes through `execCommand` rather than the formatter API, even
-  // where both would work: execCommand is what TinyMCE's own buttons call, so it
-  // brings the undo level and the NodeChange that re-reads this row with it.
   const run = (command: string, value?: unknown) => editor?.execCommand(command, false, value);
 
   const handleToggle = (toggle: ToolbarToggle) => run(toggle.command);
@@ -91,9 +61,6 @@ export const EditorRibbon = ({ editor, id, flush = false }: EditorRibbonProps) =
   const handleInsertTable = (rows: number, cols: number) =>
     run('mceInsertTable', { rows, columns: cols });
 
-  // A marker in the text, not a footnote's text — the note itself belongs to the
-  // section, and the section menu is where one is written (SectionMenu's
-  // `onAddFootnote`). This is the reference that points at it.
   const handleInsertFootnote = () => {
     if (!editor) return;
     editor.insertContent(`<sup>${nextFootnoteMarker(editor)}</sup>`);

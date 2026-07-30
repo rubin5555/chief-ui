@@ -10,9 +10,6 @@ export interface SaveVersionModalProps {
   onClose: () => void;
 }
 
-// Saving from a point in the past discards everything after it, so it asks first.
-// main has `saveVersionConfirm` state and a `confirmSaveVersion` handler for this
-// (Edit.tsx:3209, 3384-3391) but never renders a dialog — this is the missing half.
 export const SaveVersionModal = ({ onConfirm, onClose }: SaveVersionModalProps) => {
   const modalRef = useRef<ModalHandle>(null);
 

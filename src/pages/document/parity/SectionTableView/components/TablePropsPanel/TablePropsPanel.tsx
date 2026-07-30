@@ -17,12 +17,6 @@ export interface TablePropsPanelProps {
   onClose: () => void;
 }
 
-// main's cell/table properties dialog (Edit.tsx:794-898), rebuilt on ui/Modal —
-// which brings the focus trap, Escape and overlay click its hand-rolled fixed card
-// never had.
-//
-// Both drafts are held here rather than in the table view, because a draft only
-// exists while the dialog is open: closing it is what throws the edits away.
 export const TablePropsPanel = ({
   kind,
   cellProps,

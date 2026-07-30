@@ -30,8 +30,6 @@ export const SpecimenNote = styled.p`
   color: ${gray[600]};
 `;
 
-// A neutral tray, so a component's own surface is visible against something that
-// isn't the same white it is.
 export const SpecimenStage = styled.div`
   padding: 16px;
   overflow-x: auto;

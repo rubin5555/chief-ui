@@ -22,7 +22,6 @@ export interface OutlineSubSectionRowProps {
   subjectId: string;
   sectionId: string;
   subSection: SubSection;
-  /** Position within its section, which is what turns into a Hebrew letter. */
   index: number;
   dropEdge: DropEdge;
   isDragging: boolean;
@@ -32,10 +31,6 @@ export interface OutlineSubSectionRowProps {
   readOnly: boolean;
 }
 
-// The tree's deepest row: `א.`, a title, and a menu.
-//
-// It writes its own title change, because it is the only component holding all
-// three ids `updateSubSectionTitle` needs — see OutlineEditingApi.stopRename.
 export const OutlineSubSectionRow = ({
   subjectId,
   sectionId,
@@ -51,16 +46,12 @@ export const OutlineSubSectionRow = ({
   const isRenaming = editing.renamingId === subSection.id;
   const nav = useSectionNavigation();
 
-  // Same rule as the section row above it: the row navigates, its own controls
-  // don't. See OutlineSectionRow.
   const handleRowClick = (event: MouseEvent<HTMLDivElement>) => {
     if ((event.target as HTMLElement).closest('button, input')) return;
     nav?.revealNode(subSection.id);
   };
 
   const commitRename = (event: FocusEvent<HTMLInputElement>) => {
-    // An emptied field keeps the old title rather than leaving an unnamed row —
-    // main's `e.target.value || sb.title` (Edit.tsx:4026).
     tree.updateSubSectionTitle(
       subjectId,
       sectionId,
@@ -70,8 +61,6 @@ export const OutlineSubSectionRow = ({
     editing.stopRename();
   };
 
-  // Enter and Escape both blur, so both commit. That is main's behaviour, not an
-  // oversight: this input has no cancel, and clearing the field is how you back out.
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
   };
@@ -105,17 +94,10 @@ export const OutlineSubSectionRow = ({
           </DragHandle>
         )}
 
-        {/* Restarts at `א` in every section, exactly as the sheet does — the
-            letters say where you are inside a section, and a document-wide run of
-            them would say nothing at all. Falls back to a digit past the alphabet,
-            as SubSectionBlock does. */}
         <SubSectionIndex $width={INDEX_WIDTH}>{HE_ALPHA[index] ?? index + 1}.</SubSectionIndex>
 
         {isRenaming ? (
           <SubSectionRenameInput
-            // The row becomes this input on demand, so focus follows the request:
-            // asking to rename and then having to click the field you just
-            // summoned would be the odd behaviour.
             autoFocus
             defaultValue={subSection.title}
             dir="rtl"

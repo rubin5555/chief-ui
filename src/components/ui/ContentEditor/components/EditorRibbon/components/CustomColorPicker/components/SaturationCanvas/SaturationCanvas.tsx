@@ -3,7 +3,6 @@ import { fractionWithin } from '../../customColorPicker.utils';
 import { CanvasRoot, CanvasThumb, ValueOverlay } from './SaturationCanvas.styles';
 
 export interface SaturationCanvasProps {
-  /** The fully-saturated form of the current hue — the square's right edge. */
   hueColor: string;
   saturation: number;
   value: number;
@@ -11,11 +10,6 @@ export interface SaturationCanvasProps {
   onChange: (saturation: number, value: number) => void;
 }
 
-// main tracks the drag with document-level mousemove/mouseup listeners it adds and
-// removes by hand (Edit.tsx:634-647). Pointer capture is the primitive for exactly
-// this: the element keeps receiving moves once pressed, even outside its own box,
-// and the browser releases the capture on pointerup — so there is nothing to clean
-// up and a drag that ends off-screen can't leave a listener behind.
 export const SaturationCanvas = ({
   hueColor,
   saturation,

@@ -11,9 +11,6 @@ const INTRO =
   'המוסכמות כמו שאר העמוד — styled-components, טוקנים במקום צבעים קשיחים, רכיב אחד לקובץ — ' +
   'ואף אחד מהם אינו מיובא לשום מקום מלבד המסך הזה. ההסבר המלא נמצא ב-parity/README.md.';
 
-// The inspection route's whole page. Nothing else in the feature imports it, and
-// it imports nothing from the live page beyond ui primitives and the shared
-// measurements — so the parked components can be looked at without being shipped.
 export const ParityGallery = () => (
   <GalleryRoot dir="rtl" data-testid={PARITY_GALLERY_IDS.root}>
     <GalleryHeader>

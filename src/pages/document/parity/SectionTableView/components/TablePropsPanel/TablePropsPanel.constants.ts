@@ -19,10 +19,6 @@ export const TABLE_PROPS_DEFAULT: TableProps = {
   align: '',
 };
 
-// main's `<select>`s carry an HTML value beside each label ('td'/'th', 'row'/'col')
-// (Edit.tsx:818-847). ui/Select is label-only, and nothing here is ever applied to
-// a real table — main's save handler just copies the draft into a sibling state —
-// so the visible Hebrew *is* the value.
 export const NONE_OPTION = 'ללא';
 
 export const CELL_TYPE_OPTIONS = ['תא', 'כותרת לתא'];

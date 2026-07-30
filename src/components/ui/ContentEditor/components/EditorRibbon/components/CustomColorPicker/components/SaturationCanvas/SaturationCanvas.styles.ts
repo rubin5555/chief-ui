@@ -13,8 +13,6 @@ export const CanvasRoot = styled.div<{ $hueColor: string }>`
   background: linear-gradient(to right, ${colors.surface}, ${({ $hueColor }) => $hueColor});
 `;
 
-// The black overlay is what turns a hue ramp into a saturation/value square: left
-// to right is saturation, top to bottom is darkness.
 export const ValueOverlay = styled.span`
   position: absolute;
   inset: 0;

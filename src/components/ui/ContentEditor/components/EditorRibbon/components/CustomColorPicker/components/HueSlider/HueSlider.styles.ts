@@ -1,8 +1,6 @@
 import styled from 'styled-components';
 import { colors, radii } from '@/styles/theme';
 
-// The six-stop wheel, written out because it *is* the hue axis rather than a
-// themed surface — see EditorRibbon.constants.ts on why palettes stay literal.
 export const HueTrack = styled.div`
   position: relative;
   flex: 1;

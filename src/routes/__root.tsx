@@ -4,15 +4,6 @@ import { lazy, Suspense } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatusDetails, StatusMessage, StatusRoot, StatusTitle } from './-root.styles';
 
-// Two reasons this isn't a plain import.
-//
-// Production never needs it, and a static import would ship the devtools bundle
-// to everyone; behind `lazy` it becomes a chunk nothing ever requests.
-//
-// And under test it actively gets in the way: the toggle is pinned to a viewport
-// corner, where it silently intercepts clicks on whatever a popover happens to
-// open there. A test failing on a widget that isn't part of the app is a test
-// that teaches nothing.
 const showDevtools = process.env.NODE_ENV !== 'production' && !process.env.E2E;
 
 const RouterDevtools = showDevtools

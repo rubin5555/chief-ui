@@ -10,8 +10,6 @@ export interface DeleteTableModalProps {
   onClose: () => void;
 }
 
-// main's delete confirmation (Edit.tsx:1100-1117) on ui/Modal's confirm variant:
-// a centred question with two answers and no third, quieter way out.
 export const DeleteTableModal = ({ onConfirm, onClose }: DeleteTableModalProps) => {
   const modalRef = useRef<ModalHandle>(null);
 

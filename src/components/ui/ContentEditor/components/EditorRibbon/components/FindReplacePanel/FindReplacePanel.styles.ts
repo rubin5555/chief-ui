@@ -84,8 +84,6 @@ export const StepButton = styled.button`
   }
 `;
 
-// A permanent label rather than a placeholder: the box below the search field
-// would otherwise be indistinguishable from it once something is typed in.
 export const ReplaceLabel = styled.span`
   flex-shrink: 0;
   padding: 8px 10px;

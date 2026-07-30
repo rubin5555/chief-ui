@@ -1,9 +1,5 @@
 import { colors, gray } from '@/styles/theme';
 
-// Purely decorative: each of these is rendered inside an ExportButton that already
-// carries the accessible name ("ייצוא ל-Word" / "ייצוא PDF"), so announcing the artwork
-// again would just repeat it.
-
 export const WordIcon = () => (
   <svg
     aria-hidden="true"

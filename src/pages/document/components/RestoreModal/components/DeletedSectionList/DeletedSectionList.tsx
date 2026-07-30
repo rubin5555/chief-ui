@@ -23,13 +23,11 @@ interface DeletedSectionListProps {
   onRestore: () => void;
 }
 
-/** main's button says what it is about to do, and what to do first when it can't. */
 const restoreLabel = (count: number) => {
   if (count === 0) return 'בחר סעיפים';
   return count === 1 ? 'שחזר סעיף' : `שחזר ${count} סעיפים`;
 };
 
-/** What was deleted, and which of it is coming back. */
 export const DeletedSectionList = ({
   entries,
   checkedIds,

@@ -1,17 +1,5 @@
 import type { SectionStatus, Subject } from '../../types';
 
-/**
- * The ids of every node whose title or content contains `query`.
- *
- * Case-insensitive and trimmed, matching main (Edit.tsx:4215). An empty query
- * matches nothing rather than everything — an outline where every row is
- * highlighted says exactly as much as one where none is.
- *
- * main's own version of this is unreachable: `docSearchQuery` is declared and
- * never set (3205), so the amber outline it styles has never appeared. The
- * markup is main's; the query reaching it comes from the navbar's search field
- * through the URL.
- */
 export const collectSearchMatchIds = (subjects: Subject[], query: string): Set<string> => {
   const needle = query.trim().toLowerCase();
   if (!needle) return new Set();
@@ -34,22 +22,6 @@ export const collectSearchMatchIds = (subjects: Subject[], query: string): Set<s
   return matched;
 };
 
-/**
- * The ids of every section and sub-section the active status filter excludes.
- *
- * Returned as the complement — what to hide — so the blocks stay a plain walk of
- * the real tree and keep their real positions; numbering a filtered list would
- * renumber whatever survived.
- *
- * `getStatus` is the overrides hook's own lookup, not a raw meta map, so a node
- * with no seeded meta entry gets the same default status here as it does
- * everywhere else and can't be quietly exempt from filtering.
- *
- * Note main's own status filter is inert: it renders chips and never touches the
- * document (Edit.tsx only reads `activeFilters` at 4108/4111). dev filters for
- * real — the one place the migrated page deliberately does more than the mock
- * rather than less, and it has an e2e test asserting it.
- */
 export const collectFilteredNodeIds = (
   subjects: Subject[],
   getStatus: (id: string) => SectionStatus,

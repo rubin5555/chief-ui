@@ -27,14 +27,6 @@ export interface AttachmentsModalProps {
   onClose: () => void;
 }
 
-// What is attached to a node, with a way to add, download or drop one (main,
-// Edit.tsx:4848).
-//
-// Both footer buttons close: main's `ביטול` and `סיום` do the same thing, because
-// every change here has already been made — a file is added the moment it is
-// picked and removed the moment its bin is clicked. Nothing is staged, so there
-// is nothing to cancel. Kept as main has it rather than dropping a button people
-// will look for.
 export const AttachmentsModal = ({
   attachments,
   onAddMore,
@@ -82,9 +74,6 @@ export const AttachmentsModal = ({
               </FileInfo>
 
               <RowActions>
-                {/* A server-seeded attachment has no object URL behind it — there
-                    is no blob in this tab to hand the browser — so its download
-                    is unavailable rather than broken. */}
                 <DownloadBtn
                   type="button"
                   title="הורדה"

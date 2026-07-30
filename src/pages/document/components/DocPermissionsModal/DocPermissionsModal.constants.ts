@@ -1,39 +1,19 @@
 import { Eye, Network, PenLine, UserCheck } from 'lucide-react';
 import type { ElementType } from 'react';
 
-/**
- * The document's five permission levels, with main's own descriptions verbatim
- * (TopNavbar.tsx:212). The wording is the substance here — each one says exactly
- * what a person with that permission may and may not do, and paraphrasing it would
- * change what the dialog promises.
- */
 export interface PermissionLevel {
   id: string;
   label: string;
   Icon: ElementType;
   description: string;
-  /**
-   * The last two permissions are granted per section rather than over the whole
-   * document — "עורכי הסעיף יוכלו לערוך רק את הסעיף שבעבורו ניתנה להם ההרשאה" —
-   * so choosing them swaps the members column for the document's section tree.
-   */
   isSectionScoped?: boolean;
 }
 
-/**
- * The two per-section permissions, named so that a section's own menu can ask for
- * the one it means without restating the string.
- */
 export const SECTION_PERMISSION_LEVEL_IDS = {
   editors: 'section-editors',
   approvers: 'section-approvers',
 } as const;
 
-/**
- * `צפייה טרם הפצה` becomes `מורשים לייצוא לוורד` once the document is distributed
- * (main's `isDistributed` branch): before distribution the permission is about
- * seeing a draft, and afterwards there is no draft left to see.
- */
 export const buildPermissionLevels = (isDistributed: boolean): PermissionLevel[] => [
   {
     id: 'view-after',

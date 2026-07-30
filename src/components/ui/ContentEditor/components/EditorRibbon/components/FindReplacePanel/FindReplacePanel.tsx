@@ -28,20 +28,6 @@ export interface FindReplacePanelProps {
   editor: TinyMceEditor | null;
 }
 
-/**
- * main's find-and-replace (Edit.tsx:1508-1590), whose six controls were wired to
- * nothing — no search ran and nothing was replaced. This is that panel over
- * TinyMCE's `searchreplace` plugin, which does the matching, the highlighting and
- * the stepping.
- *
- * The plugin's own dialog is never opened. Its API is public precisely so a host
- * can bring its own UI, and that is the whole of the exercise here: main's design,
- * TinyMCE's behaviour.
- *
- * `done()` on close is not optional. The highlights are real elements injected
- * into the content, so a panel that closed without clearing them would leave the
- * document marked up for a search nobody is running any more.
- */
 export const FindReplacePanel = ({ editor }: FindReplacePanelProps) => {
   const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
   const [query, setQuery] = useState('');
@@ -66,9 +52,6 @@ export const FindReplacePanel = ({ editor }: FindReplacePanelProps) => {
   const handleReplacementChange = (event: ChangeEvent<HTMLInputElement>) =>
     setReplacement(event.target.value);
 
-  // Case-insensitive, whole words off — the two defaults the plugin's own dialog
-  // opens with, and this panel has no checkboxes to say otherwise. `done()` first,
-  // so searching twice doesn't leave the previous run's highlights behind.
   const handleFind = () => {
     if (!search || !query) return;
     search.done();

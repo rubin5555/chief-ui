@@ -43,7 +43,6 @@ test('links a field through system → operation → instance → field', async 
   await page.getByTestId(DATA_IMPORT_IDS.submitBtn).click();
   await expect(page.getByTestId(DATA_IMPORT_IDS.root)).not.toBeVisible();
 
-  // The sidebar switches to the expanded field bank holding the imported chip.
   await expect(page.getByTestId(FIELD_BANK_IDS.bar('top'))).toBeVisible();
   await expect(page.getByTestId(FIELD_BANK_IDS.list)).toContainText('מספר יחידה');
 });
@@ -58,7 +57,6 @@ test('field bank collapses back to the subject tree', async ({ page }) => {
 });
 
 test('dragging a chip into a section editor inserts it into TinyMCE', async ({ page }) => {
-  // A subject with one section renders a ContentEditor preview in the document pane.
   await page.getByTestId(TEMPLATE_MODAL_IDS.addSubjectBtn).click();
   await page.getByRole('button', { name: 'הוספת סעיף' }).click();
 
@@ -66,8 +64,6 @@ test('dragging a chip into a section editor inserts it into TinyMCE', async ({ p
   await page.getByTestId(DATA_IMPORT_IDS.submitBtn).click();
   await expect(page.getByTestId(FIELD_BANK_IDS.list)).toBeVisible();
 
-  // HTML5 drag-and-drop with a custom DataTransfer isn't supported by Playwright's
-  // dragTo, so the dragstart → dragover → drop sequence is dispatched manually.
   await page.evaluate(
     ({ chipSelector, previewSelector }) => {
       const chip = document.querySelector(chipSelector);
@@ -94,10 +90,8 @@ test('dragging a chip into a section editor inserts it into TinyMCE', async ({ p
     },
   );
 
-  // The drop activates TinyMCE and inserts the chip as a non-editable island.
   await expect(page.locator('.mce-content-body [data-chip-id]')).toContainText('מספר יחידה');
 
-  // Clicking the chip's × inside the editor removes it.
   await page.locator('.mce-content-body [data-chip-remove]').click();
   await expect(page.locator('.mce-content-body [data-chip-id]')).toHaveCount(0);
 });

@@ -3,11 +3,6 @@ import { flexCenter } from '@/styles/mixins';
 import { gray } from '@/styles/theme';
 import { LOGO_COLUMN_WIDTH, MESSAGE_MIN_HEIGHT, MESSAGE_PADDING } from './distributeDoc.constants';
 
-/**
- * main's share body (Edit.tsx:3103): the system's mark in a fixed column, a rule,
- * then the message filling what is left — an email as the recipient will see it,
- * rather than a form that composes one.
- */
 export const MessageRow = styled.div`
 	display: flex;
 	flex: 1;
@@ -28,7 +23,6 @@ export const Logo = styled.img`
 	object-fit: contain;
 `;
 
-/** `self-stretch` in main — a full-height rule, not a border on either neighbour. */
 export const Divider = styled.div`
 	flex-shrink: 0;
 	width: 1px;

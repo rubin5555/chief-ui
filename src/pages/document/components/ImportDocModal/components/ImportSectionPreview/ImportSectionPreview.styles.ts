@@ -2,9 +2,6 @@ import styled from 'styled-components';
 import { flexCenter, subtleScrollbar } from '@/styles/mixins';
 import { colors, docColors, gray, radii } from '@/styles/theme';
 
-// Set like the document rather than like a dialog — this is the other
-// document's text, and the point of showing it is to recognise the section you
-// meant (Edit.tsx:1985).
 export const PreviewRoot = styled.div`
 	flex: 1;
 	overflow-y: auto;
@@ -56,15 +53,12 @@ export const HeadingTitle = styled.span`
 	color: ${gray[700]};
 `;
 
-/** main runs a rule from the title to the marker, so the row reads as a heading. */
 export const HeadingRule = styled.span`
 	flex: 1;
 	height: 1px;
 	background: ${gray[200]};
 `;
 
-// Hidden until the row is hovered, so a page of headings isn't a page of
-// controls — but always shown once chosen, since that is a state, not an offer.
 export const HeadingMarker = styled.span<{ $checked: boolean }>`
 	display: flex;
 	flex-shrink: 0;

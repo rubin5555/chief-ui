@@ -17,7 +17,6 @@ test('renders a row per template with its actions', async ({ page }) => {
 test('clicking an action does not trigger the row click handler', async ({ page }) => {
   const row = page.getByTestId(ITEM_ROW_IDS.root).first();
   await row.getByTestId(ITEM_ROW_IDS.action('שכפול')).click();
-  // Action clicks stop propagation, so the row-level onClick (edit) should not fire and the
-  // row keeps rendering as before.
+
   await expect(row).toBeVisible();
 });

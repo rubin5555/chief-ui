@@ -13,13 +13,8 @@ export interface TableSizePickerProps {
   onInsert: (rows: number, cols: number) => void;
 }
 
-// See ToolbarButton's `keepSelection`: the caret is where the table will go.
 const keepSelection = (event: MouseEvent<HTMLButtonElement>) => event.preventDefault();
 
-// The hovered corner of an 8×8 grid picks a table's dimensions (Edit.tsx:
-// 1407-1437). main dispatches a global `insert-table` CustomEvent from here and
-// catches it with a `useEffect` in the page; this calls a prop, which the ribbon
-// turns into `mceInsertTable` on the field the caret is in.
 export const TableSizePicker = ({ disabled, onInsert }: TableSizePickerProps) => {
   const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
   const [hover, setHover] = useState<{ rows: number; cols: number } | null>(null);
@@ -41,7 +36,6 @@ export const TableSizePicker = ({ disabled, onInsert }: TableSizePickerProps) =>
     onInsert(rows, cols);
   };
 
-  // 1-based, because "3 × 4" counts rows and columns, not offsets.
   const cells = Array.from({ length: GRID_SIDE * GRID_SIDE }, (_, index) => ({
     row: Math.floor(index / GRID_SIDE) + 1,
     col: (index % GRID_SIDE) + 1,

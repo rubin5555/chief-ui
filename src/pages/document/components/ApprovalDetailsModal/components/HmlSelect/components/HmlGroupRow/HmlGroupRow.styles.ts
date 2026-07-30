@@ -2,9 +2,6 @@ import styled from 'styled-components';
 import { flexCenter, resetButton } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-// One חמ״ל in the picker (main, Edit.tsx:3023-3042): a checkbox that selects it,
-// and a chevron that shows who is in it without selecting anything.
-
 export const GroupRow = styled.div`
 	display: flex;
 	align-items: center;

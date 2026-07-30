@@ -17,13 +17,6 @@ export interface HmlGroupRowProps {
   onToggle: (id: string) => void;
 }
 
-/**
- * One חמ״ל, with its members a chevron away (main, Edit.tsx:3023).
- *
- * Whether the members are showing is this row's own business and stays here: it
- * is a way of reading the list, not part of what is being chosen, and nothing
- * above the row is any different for it being open.
- */
 export const HmlGroupRow = ({ group, isSelected, onToggle }: HmlGroupRowProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 

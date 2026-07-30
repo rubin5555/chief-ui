@@ -9,17 +9,6 @@ import {
 } from '@/styles/mixins';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-/**
- * Styled here rather than taken from `ui/Select`: main draws both of this
- * dialog's fields identically (Edit.tsx:2944/3016), but this one opens a
- * checklist with its own expandable rows, not a list of options — a shared
- * control that answered both would be a control with a mode.
- *
- * The chevron-then-label order is `ui/Select`'s, not main's (which puts the
- * chevron on the far side). These two fields sit one above the other, and them
- * differing from each other would read as a defect in a way that both differing
- * from the mock in the same small way does not.
- */
 export const Trigger = styled.button<{ $isPlaceholder: boolean }>`
 	${resetButton}
 	${flexGap(8)}
@@ -57,12 +46,6 @@ export const Panel = styled(FloatingPanel)`
 	direction: rtl;
 `;
 
-/**
- * main's `הוסף` (Edit.tsx:3044). It confirms nothing — each checkbox has already
- * taken effect — it is just the way out of the list without hunting for
- * somewhere neutral to click, which on a checklist you are meant to tick several
- * things in is worth having.
- */
 export const PanelFooter = styled.div`
 	display: flex;
 	justify-content: flex-end;

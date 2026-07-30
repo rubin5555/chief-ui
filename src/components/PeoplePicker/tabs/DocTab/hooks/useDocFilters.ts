@@ -2,8 +2,6 @@ import { useState } from 'react';
 import type { DocItem } from '../../../PeoplePicker.constants';
 import { useFilterList } from './useFilterList';
 
-// All DocTab filter state (type/status/org chips + date range) in one object,
-// so the filter panel takes a single prop instead of ten.
 export const useDocFilters = () => {
   const typeFilter = useFilterList<string>();
   const statusFilter = useFilterList<string>();
@@ -29,7 +27,6 @@ export const useDocFilters = () => {
     setDateTo('');
   };
 
-  // Dates are collected but not applied — the mock docs have no parseable dates yet.
   const matches = (d: DocItem) => {
     if (typeFilter.active.length && !typeFilter.has(d.docType)) return false;
     if (statusFilter.active.length && !statusFilter.has(d.status)) return false;

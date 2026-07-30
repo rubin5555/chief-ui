@@ -48,7 +48,6 @@ interface LinkToggleIconsProps {
   size: number;
 }
 
-// Linked rows swap a ✓ for an ✕ on hover; unlinked rows reveal a + on hover.
 const LinkToggleIcons = ({ isLinked, size }: LinkToggleIconsProps) =>
   isLinked ? (
     <>

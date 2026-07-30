@@ -22,13 +22,11 @@ interface ImportSectionListProps {
   onImport: () => void;
 }
 
-/** main's button says what it is about to do, and what to do first when it can't. */
 const importLabel = (count: number) => {
   if (count === 0) return 'בחר סעיפים';
   return count === 1 ? 'ייבא סעיף' : `ייבא ${count} סעיפים`;
 };
 
-/** What the source document contains, and which of it is being copied over. */
 export const ImportSectionList = ({
   sections,
   checkedIds,

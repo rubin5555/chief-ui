@@ -41,15 +41,12 @@ export const VersionLabel = styled.span`
   color: ${gray[800]};
 `;
 
-// One line for everything that identifies the version but isn't its name: when it
-// was approved, its reference, and by whom.
 export const VersionMeta = styled.span`
   ${ellipsis}
   font-size: 11px;
   color: ${gray[500]};
 `;
 
-/** `נוכחית` on the live version — the one you are comparing *from*, not to. */
 export const CurrentTag = styled.span`
   flex-shrink: 0;
   padding: 2px 8px;

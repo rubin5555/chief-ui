@@ -2,8 +2,6 @@ import styled, { css } from 'styled-components';
 import { flexGap } from '@/styles/mixins';
 import { colors, docColors, gray, radii, shadows } from '@/styles/theme';
 
-// Shared between the live TinyMCE body and the inactive-state preview (see
-// ContentEditor.tsx) so both render identical typography for the same HTML string.
 const richTextContent = css`
 	p {
 		margin: 0 0 6px;
@@ -47,8 +45,6 @@ const richTextContent = css`
 		}
 	}
 
-	/* json-table's own semantic classes (see src/lib/json-table) — the base table/td/th
-	   rules above already cover layout, these just tune the fine-grained cell kinds. */
 	caption.jt-caption {
 		caption-side: top;
 		text-align: right;
@@ -82,18 +78,6 @@ const richTextContent = css`
 	}
 `;
 
-/**
- * `$inset` is the field as it appears *in* a page's own surface rather than
- * floating on one: a tinted fill with a hairline edge and no lift, which is how
- * main draws a section's content box on the white sheet (Edit.tsx:4533 —
- * `#f9fafb` on a `#f1f5f9` border). A white card with a grey border reads as a
- * box drawn on the paper instead of a part of it.
- *
- * `docColors` is otherwise the document page's own namespace, but the hairline
- * is exactly the "content-box border" role it was minted for (see
- * src/pages/document/DESIGN_PARITY.md), and the alternative — a shared component
- * taking a raw hex — is worse.
- */
 export const EditorWrapper = styled.div<{ $inset: boolean }>`
 	display: flex;
 	flex-direction: column;
@@ -167,8 +151,6 @@ export const PreviewWrapper = styled.div`
 	position: relative;
 `;
 
-// A remote collaborator's caret — solid, not blinking (this app's animation
-// convention is deliberately subtle; see the dialog entrance keyframes).
 export const CursorBar = styled.div`
 	position: absolute;
 	width: 2px;
@@ -213,7 +195,6 @@ export const EditorContent = styled.div<{ $minHeight: number }>`
 	direction: rtl;
 	padding: 10px 14px;
 
-	/* The contenteditable div TinyMCE creates in inline mode */
 	.mce-content-body {
 		outline: none;
 		font-size: 13px;
@@ -222,7 +203,6 @@ export const EditorContent = styled.div<{ $minHeight: number }>`
 		font-family: inherit;
 		word-break: break-word;
 
-		/* Placeholder */
 		&[data-mce-placeholder]:not(.mce-visualblocks)::before {
 			content: attr(data-mce-placeholder);
 			right: 0;

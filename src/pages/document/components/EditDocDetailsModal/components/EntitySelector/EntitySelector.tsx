@@ -10,15 +10,6 @@ export interface EntitySelectorProps {
   onNameChange: (entityName: string) => void;
 }
 
-/**
- * Where in the Amazon hierarchy this document is filed: a level, then a node in
- * it (main's AmazonSelector, Edit.tsx:2145).
- *
- * Choosing a level clears the name beside it, which is the whole reason the two
- * belong in one component: `חדר 101` is not a thing you can be filed under once
- * you have said `פרויקט`, so leaving it there would show a pairing that doesn't
- * exist.
- */
 export const EntitySelector = ({
   entityType,
   entityName,

@@ -1,10 +1,6 @@
 import { analytics } from '@/analytics';
 import type { ModalMode } from './MailingListFormModal';
 
-// Names the form specifically rather than mailing lists in general: the document
-// permissions dialog draws people from the same sources, and two categories that
-// both read "רשימת תפוצה" would pool creating a list together with granting
-// access to a document under one number.
 const ANALYTICS_CATEGORY = 'טופס רשימת תפוצה';
 
 const ACTIONS = {

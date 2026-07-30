@@ -4,12 +4,6 @@ import { EDITOR_RIBBON_IDS } from '../../../src/components/ui/ContentEditor/comp
 import { TABLE_EDIT_BAR_IDS } from '../../../src/components/ui/ContentEditor/components/TableEditBar/TableEditBar.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
 
-// The ribbon above the sheet is this app's own — main's drawing, TinyMCE's
-// behaviour. What matters is that pressing a button changes the document, and
-// that the row reports back what the caret is actually sitting in; both are
-// things main's version could not do.
-
-/** Opens s1-1 for editing and returns its contenteditable. */
 const openSection = async (page: Page): Promise<Locator> => {
   const sectionContent = page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'));
   await sectionContent.click();
@@ -48,8 +42,7 @@ test('bold writes real markup, and the button reads its state back off the caret
 
   await bold.click();
   await expect(editable.locator('strong')).toHaveText('שלום עולם');
-  // Lit because the selection *is* bold now — not because the button remembers
-  // having been pressed.
+
   await expect(bold).toHaveAttribute('aria-pressed', 'true');
 
   await bold.click();
@@ -79,8 +72,6 @@ test('find and replace runs against the field, not against a mock', async ({ pag
   await page.getByTestId(EDITOR_RIBBON_IDS.findQuery).fill('אלפא');
   await page.getByTestId(EDITOR_RIBBON_IDS.replaceValue).fill('גמא');
 
-  // Replace works from whatever the last search found, so the search has to run
-  // first — which is how the plugin's own dialog drives it too.
   await page.getByRole('button', { name: 'חפש', exact: true }).click();
   await page.getByTestId(EDITOR_RIBBON_IDS.replaceAll).click();
 
@@ -108,6 +99,6 @@ test('the table bar appears with the caret, edits the table, and leaves with it'
 
   await page.getByTestId(TABLE_EDIT_BAR_IDS.action('table-delete')).click();
   await expect(editable.locator('table')).toHaveCount(0);
-  // No table, no bar — there is no disabled state for it to fall back to.
+
   await expect(bar).toHaveCount(0);
 });

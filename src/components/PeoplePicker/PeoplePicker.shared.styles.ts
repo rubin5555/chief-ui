@@ -8,7 +8,6 @@ export const ColHeader = styled.span<{ $align?: 'right' | 'center' }>`
   text-align: ${(p) => p.$align ?? 'center'};
 `;
 
-// Shared styles for floating popover panels (add member, create group, manual entry, etc.)
 export const PopoverHeader = styled.div`
   ${flexBetween}
   padding: 12px 16px 8px;

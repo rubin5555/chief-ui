@@ -15,12 +15,6 @@ export interface SectionInstructionsModalProps {
   onClose: () => void;
 }
 
-// Notes for whoever writes a section, shown to them as a tooltip beside its title
-// (main, Edit.tsx:5183).
-//
-// The draft is local and only committed on save, which is what makes `ביטול`
-// mean something — unlike the attachments dialog, where every change has already
-// happened by the time you look at it.
 export const SectionInstructionsModal = ({
   sectionTitle,
   instructions,
@@ -41,8 +35,6 @@ export const SectionInstructionsModal = ({
   return (
     <Modal
       ref={modalRef}
-      // main quotes the section's name into the title when it has one, and drops
-      // the quotes entirely when it doesn't rather than showing empty ones.
       title={sectionTitle ? `יצירת הנחיות לסעיף ״${sectionTitle}״` : 'יצירת הנחיות לסעיף'}
       width={500}
       onClose={onClose}

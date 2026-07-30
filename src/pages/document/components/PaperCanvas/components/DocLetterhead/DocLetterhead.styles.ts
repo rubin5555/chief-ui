@@ -1,8 +1,6 @@
 import styled from 'styled-components';
 import { docColors, gray, radii } from '@/styles/theme';
 
-// `align-items: stretch` is what lets the divider run the full height of the
-// block regardless of which side is taller (main, Edit.tsx:553).
 export const LetterheadRoot = styled.div`
   display: flex;
   align-items: stretch;
@@ -27,7 +25,6 @@ export const Logo = styled.img`
   object-fit: contain;
 `;
 
-/** Pushes the emblem and the fields to opposite edges of the letterhead. */
 export const Spacer = styled.div`
   flex: 1;
 `;
@@ -39,8 +36,6 @@ export const Divider = styled.div`
   background-color: ${gray[200]};
 `;
 
-// A percentage rather than a fixed width: the letterhead spans the sheet, and at
-// 55% the field rules stay long enough to write on when the page is zoomed out.
 export const FieldColumn = styled.div`
   display: flex;
   flex-direction: column;
