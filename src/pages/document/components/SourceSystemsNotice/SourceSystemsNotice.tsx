@@ -1,10 +1,13 @@
 import { lazy, Suspense, useState } from 'react';
+import { chunkGuard } from '../../../../utils/chunkRecovery';
 import type { SourceOrigin } from '../../types';
 import { NoticeLead, NoticeLink, NoticeRow } from './SourceSystemsNotice.styles';
 import { SOURCE_SYSTEMS_NOTICE_IDS } from './SourceSystemsNotice.testids';
 
-const SourceSystemsModal = lazy(() =>
-  import('../SourceSystemsModal').then((m) => ({ default: m.SourceSystemsModal })),
+const SourceSystemsModal = lazy(
+  chunkGuard(() =>
+    import('../SourceSystemsModal').then((m) => ({ default: m.SourceSystemsModal })),
+  ),
 );
 
 export interface SourceSystemsNoticeProps {

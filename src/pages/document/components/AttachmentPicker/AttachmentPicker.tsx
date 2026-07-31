@@ -1,6 +1,7 @@
 import { Paperclip } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import { lazy, Suspense, useEffect, useRef } from 'react';
+import { chunkGuard } from '../../../../utils/chunkRecovery';
 import type { AttachmentFile } from '../../types';
 import { ACTION_ICON_SIZE, ActionBtn, type ActionTone } from '../NodeActionRow';
 import { useAttachmentPickerAnalytics } from './AttachmentPicker.analytics';
@@ -8,8 +9,10 @@ import { HiddenFileInput } from './AttachmentPicker.styles';
 import { ATTACHMENT_PICKER_IDS } from './AttachmentPicker.testids';
 import { toAttachmentFiles } from './attachmentPicker.utils';
 
-const AttachmentsModal = lazy(() =>
-  import('./components/AttachmentsModal').then((m) => ({ default: m.AttachmentsModal })),
+const AttachmentsModal = lazy(
+  chunkGuard(() =>
+    import('./components/AttachmentsModal').then((m) => ({ default: m.AttachmentsModal })),
+  ),
 );
 
 export interface AttachmentPickerProps {

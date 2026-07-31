@@ -1,12 +1,15 @@
 import { RefreshCw } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
+import { chunkGuard } from '../../../../../../utils/chunkRecovery';
 import type { SourceOrigin } from '../../../../types';
 import type { ActionTone } from '../../NodeActionRow.shared.styles';
 import { ACTION_ICON_SIZE, ActionBtn } from '../../NodeActionRow.shared.styles';
 import { SOURCE_REFRESH_BUTTON_IDS } from './SourceRefreshButton.testids';
 
-const SourceSystemsModal = lazy(() =>
-  import('../../../SourceSystemsModal').then((m) => ({ default: m.SourceSystemsModal })),
+const SourceSystemsModal = lazy(
+  chunkGuard(() =>
+    import('../../../SourceSystemsModal').then((m) => ({ default: m.SourceSystemsModal })),
+  ),
 );
 
 export interface SourceRefreshButtonProps {

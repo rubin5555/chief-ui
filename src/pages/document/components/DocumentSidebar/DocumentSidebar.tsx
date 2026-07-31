@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
+import { chunkGuard } from '../../../../utils/chunkRecovery';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { useDocumentTrash } from '../../hooks/useDocumentTrash';
 import type { Section } from '../../types';
@@ -14,11 +15,11 @@ import { SidebarDivider, SidebarRoot, StatusBlock } from './DocumentSidebar.styl
 import { DOCUMENT_SIDEBAR_IDS } from './DocumentSidebar.testids';
 import { nextAppendixTitle } from './documentSidebar.utils';
 
-const ImportDocModal = lazy(() =>
-  import('../ImportDocModal').then((m) => ({ default: m.ImportDocModal })),
+const ImportDocModal = lazy(
+  chunkGuard(() => import('../ImportDocModal').then((m) => ({ default: m.ImportDocModal }))),
 );
-const RestoreModal = lazy(() =>
-  import('../RestoreModal').then((m) => ({ default: m.RestoreModal })),
+const RestoreModal = lazy(
+  chunkGuard(() => import('../RestoreModal').then((m) => ({ default: m.RestoreModal }))),
 );
 
 const PROGRESS_STATUSES = new Set(['טיוטה פנימית', 'בהכנה']);

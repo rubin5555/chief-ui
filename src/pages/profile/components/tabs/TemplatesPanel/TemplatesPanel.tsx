@@ -8,6 +8,7 @@ import { ModalLoading } from '@/components/ui/ModalLoading';
 import { PanelLoading } from '@/components/ui/PanelLoading';
 import { useEntityModal } from '@/hooks/useEntityModal';
 import type { TemplateModalMode } from '@/modals/TemplateModal';
+import { chunkGuard } from '../../../../../utils/chunkRecovery';
 import { TabPanelShell } from '../TabPanelShell';
 import { useFilterableList } from '../useFilterableList';
 import { useTemplatesPanelAnalytics } from './TemplatesPanel.analytics';
@@ -23,8 +24,8 @@ export interface Template {
 
 const noop = () => {};
 
-const TemplateModal = lazy(() =>
-  import('@/modals/TemplateModal').then((m) => ({ default: m.TemplateModal })),
+const TemplateModal = lazy(
+  chunkGuard(() => import('@/modals/TemplateModal').then((m) => ({ default: m.TemplateModal }))),
 );
 
 interface TemplatesPanelProps {

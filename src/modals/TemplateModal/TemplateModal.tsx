@@ -7,6 +7,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ModalLoading } from '@/components/ui/ModalLoading';
 import { CollabProvider } from '@/context/CollabContext';
 import { useDocumentTree } from '@/hooks/useDocumentTree';
+import { chunkGuard } from '../../utils/chunkRecovery';
 import { DocumentDetailsForm } from './components/DocumentDetailsForm';
 import { PermissionsPopover } from './components/PermissionsPopover';
 import { TemplateModalBody } from './components/TemplateModalBody';
@@ -20,8 +21,10 @@ import { emptyTemplateFormValues, MODAL_TITLES, SAVE_LABELS } from './TemplateMo
 import { DetailsSection } from './TemplateModal.styles';
 import { TEMPLATE_MODAL_IDS } from './TemplateModal.testids';
 
-const DataImportModal = lazy(() =>
-  import('@/modals/DataImportModal').then((m) => ({ default: m.DataImportModal })),
+const DataImportModal = lazy(
+  chunkGuard(() =>
+    import('@/modals/DataImportModal').then((m) => ({ default: m.DataImportModal })),
+  ),
 );
 
 interface TemplateModalProps {

@@ -1,35 +1,50 @@
 import { lazy, Suspense } from 'react';
 import type { HmlGroupDto } from '@/api/approvals';
+import { chunkGuard } from '../../../../../../utils/chunkRecovery';
 import type { DocumentHeader } from '../../../../types';
 import type { ApprovalRoundConfig } from '../../../ApprovalDetailsModal';
 import type { ApproverSignature } from '../../../SignaturesSection';
 import type { ApprovalFlowStep } from '../../approvalWorkflow.types';
 
-const AcceptenceVerification = lazy(() =>
-  import('../../../AcceptenceVerification').then((m) => ({ default: m.AcceptenceVerification })),
+const AcceptenceVerification = lazy(
+  chunkGuard(() =>
+    import('../../../AcceptenceVerification').then((m) => ({ default: m.AcceptenceVerification })),
+  ),
 );
-const ApprovalDetailsModal = lazy(() =>
-  import('../../../ApprovalDetailsModal').then((m) => ({ default: m.ApprovalDetailsModal })),
+const ApprovalDetailsModal = lazy(
+  chunkGuard(() =>
+    import('../../../ApprovalDetailsModal').then((m) => ({ default: m.ApprovalDetailsModal })),
+  ),
 );
-const ApprovalRotation = lazy(() =>
-  import('../../../ApprovalRotation').then((m) => ({ default: m.ApprovalRotation })),
+const ApprovalRotation = lazy(
+  chunkGuard(() =>
+    import('../../../ApprovalRotation').then((m) => ({ default: m.ApprovalRotation })),
+  ),
 );
-const DistributeDoc = lazy(() =>
-  import('../../../DistributeDoc').then((m) => ({ default: m.DistributeDoc })),
+const DistributeDoc = lazy(
+  chunkGuard(() => import('../../../DistributeDoc').then((m) => ({ default: m.DistributeDoc }))),
 );
-const EditDocDetailsModal = lazy(() =>
-  import('../../../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
+const EditDocDetailsModal = lazy(
+  chunkGuard(() =>
+    import('../../../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
+  ),
 );
-const ApprovalDirtyWarningModal = lazy(() =>
-  import('../../../EditDocDetailsModal/components/ApprovalDirtyWarningModal').then((m) => ({
-    default: m.ApprovalDirtyWarningModal,
-  })),
+const ApprovalDirtyWarningModal = lazy(
+  chunkGuard(() =>
+    import('../../../EditDocDetailsModal/components/ApprovalDirtyWarningModal').then((m) => ({
+      default: m.ApprovalDirtyWarningModal,
+    })),
+  ),
 );
-const DistributeConfirmModal = lazy(() =>
-  import('../DistributeConfirmModal').then((m) => ({ default: m.DistributeConfirmModal })),
+const DistributeConfirmModal = lazy(
+  chunkGuard(() =>
+    import('../DistributeConfirmModal').then((m) => ({ default: m.DistributeConfirmModal })),
+  ),
 );
-const DistributeProgressToast = lazy(() =>
-  import('../DistributeProgressToast').then((m) => ({ default: m.DistributeProgressToast })),
+const DistributeProgressToast = lazy(
+  chunkGuard(() =>
+    import('../DistributeProgressToast').then((m) => ({ default: m.DistributeProgressToast })),
+  ),
 );
 
 export interface ApprovalFlowModalsProps {

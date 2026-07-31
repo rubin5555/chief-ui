@@ -2,19 +2,24 @@ import { MoreVertical } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
+import { chunkGuard } from '../../../../utils/chunkRecovery';
 import { SECTION_PERMISSION_LEVEL_IDS, useDocPermissions } from '../DocPermissionsModal';
 import { ACTION_ICON_SIZE, ActionBtn, type ActionTone } from '../NodeActionRow';
 import { SectionMenuActions } from './components/SectionMenuActions';
 import { useSectionMenuAnalytics } from './SectionMenu.analytics';
 import { SECTION_MENU_IDS } from './SectionMenu.testids';
 
-const ClassifiedViewersModal = lazy(() =>
-  import('../ClassifiedViewersModal').then((m) => ({ default: m.ClassifiedViewersModal })),
+const ClassifiedViewersModal = lazy(
+  chunkGuard(() =>
+    import('../ClassifiedViewersModal').then((m) => ({ default: m.ClassifiedViewersModal })),
+  ),
 );
-const SectionInstructionsModal = lazy(() =>
-  import('./components/SectionInstructionsModal').then((m) => ({
-    default: m.SectionInstructionsModal,
-  })),
+const SectionInstructionsModal = lazy(
+  chunkGuard(() =>
+    import('./components/SectionInstructionsModal').then((m) => ({
+      default: m.SectionInstructionsModal,
+    })),
+  ),
 );
 
 const PANEL_WIDTH = 220;

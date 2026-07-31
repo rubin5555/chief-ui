@@ -7,6 +7,7 @@ import { ModalLoading } from '@/components/ui/ModalLoading';
 import { PanelLoading } from '@/components/ui/PanelLoading';
 import { useEntityModal } from '@/hooks/useEntityModal';
 import type { SignatureModalMode } from '@/modals/SignatureModal';
+import { chunkGuard } from '../../../../../utils/chunkRecovery';
 import { TabPanelShell } from '../TabPanelShell';
 import { useFilterableList } from '../useFilterableList';
 import { useSignaturesPanelAnalytics } from './SignaturesPanel.analytics';
@@ -24,8 +25,8 @@ export type SignatureType = 'distribution' | 'personal' | 'approver';
 const DEFAULT_SUB_TAB: SignatureType = 'distribution';
 const noop = () => {};
 
-const SignatureModal = lazy(() =>
-  import('@/modals/SignatureModal').then((m) => ({ default: m.SignatureModal })),
+const SignatureModal = lazy(
+  chunkGuard(() => import('@/modals/SignatureModal').then((m) => ({ default: m.SignatureModal }))),
 );
 
 interface SignaturesPanelProps {

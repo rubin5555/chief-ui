@@ -2,6 +2,7 @@ import { getRouteApi } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
 import { PROFILE_FALLBACK, useProfile } from '@/api/profile';
 import { PanelLoading } from '@/components/ui/PanelLoading';
+import { chunkGuard } from '../../../utils/chunkRecovery';
 import { ProfileContent } from '../components/ProfileContent';
 import { ProfileSidebar } from '../components/ProfileSidebar';
 import { SpellCheckBanner } from '../components/SpellCheckBanner';
@@ -18,14 +19,20 @@ import { PageInner, PageScroll, SidebarColumn, SidebarDivider } from './ProfileP
 const noop = () => {};
 const routeApi = getRouteApi('/');
 
-const TemplatesPanel = lazy(() =>
-  import('../components/tabs/TemplatesPanel').then((m) => ({ default: m.TemplatesPanel })),
+const TemplatesPanel = lazy(
+  chunkGuard(() =>
+    import('../components/tabs/TemplatesPanel').then((m) => ({ default: m.TemplatesPanel })),
+  ),
 );
-const SignaturesPanel = lazy(() =>
-  import('../components/tabs/SignaturesPanel').then((m) => ({ default: m.SignaturesPanel })),
+const SignaturesPanel = lazy(
+  chunkGuard(() =>
+    import('../components/tabs/SignaturesPanel').then((m) => ({ default: m.SignaturesPanel })),
+  ),
 );
-const ListsPanel = lazy(() =>
-  import('../components/tabs/ListsPanel').then((m) => ({ default: m.ListsPanel })),
+const ListsPanel = lazy(
+  chunkGuard(() =>
+    import('../components/tabs/ListsPanel').then((m) => ({ default: m.ListsPanel })),
+  ),
 );
 
 export const ProfilePage = () => {

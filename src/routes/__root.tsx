@@ -2,15 +2,18 @@ import type { ErrorRouteProps } from '@tanstack/react-router';
 import { createRootRoute } from '@tanstack/react-router';
 import { lazy, Suspense } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { chunkGuard, isStaleChunkError, recoverFromStaleChunk } from '../utils/chunkRecovery';
 import { StatusDetails, StatusMessage, StatusRoot, StatusTitle } from './-root.styles';
 
 const showDevtools = process.env.NODE_ENV !== 'production' && !process.env.E2E;
 
 const RouterDevtools = showDevtools
-  ? lazy(() =>
-      import('@tanstack/react-router-devtools').then((m) => ({
-        default: m.TanStackRouterDevtools,
-      })),
+  ? lazy(
+      chunkGuard(() =>
+        import('@tanstack/react-router-devtools').then((m) => ({
+          default: m.TanStackRouterDevtools,
+        })),
+      ),
     )
   : () => null;
 
@@ -23,13 +26,21 @@ const RootRoute = () => (
   </>
 );
 
-const RootErrorComponent = ({ error }: ErrorRouteProps) => (
-  <StatusRoot>
-    <StatusTitle>משהו השתבש</StatusTitle>
-    <StatusMessage>אירעה שגיאה בטעינת העמוד. נסו לרענן את הדף או לחזור מאוחר יותר.</StatusMessage>
-    <StatusDetails>{error instanceof Error ? error.message : String(error)}</StatusDetails>
-  </StatusRoot>
-);
+// The router splits its own route chunks, and those requests never pass through
+// chunkGuard — a route whose chunk a deploy has taken away lands here instead.
+// Same answer: pick up the current build once, and only fall through to the
+// error screen if that has already been tried.
+const RootErrorComponent = ({ error }: ErrorRouteProps) => {
+  if (isStaleChunkError(error) && recoverFromStaleChunk()) return null;
+
+  return (
+    <StatusRoot>
+      <StatusTitle>משהו השתבש</StatusTitle>
+      <StatusMessage>אירעה שגיאה בטעינת העמוד. נסו לרענן את הדף או לחזור מאוחר יותר.</StatusMessage>
+      <StatusDetails>{error instanceof Error ? error.message : String(error)}</StatusDetails>
+    </StatusRoot>
+  );
+};
 
 const RootNotFoundComponent = () => (
   <StatusRoot>

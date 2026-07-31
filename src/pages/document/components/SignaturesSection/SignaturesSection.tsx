@@ -1,6 +1,7 @@
 import { FileText, Plus } from 'lucide-react';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
+import { chunkGuard } from '../../../../utils/chunkRecovery';
 import type { Subject } from '../../types';
 import { SubjectHeaderRow, SubjectRoot } from '../components.shared.styles';
 import { NodeTitleField } from '../NodeTitleField';
@@ -17,10 +18,12 @@ import {
 } from './SignaturesSection.styles';
 import { SIGNATURES_SECTION_IDS } from './SignaturesSection.testids';
 
-const SignatureTemplatesModal = lazy(() =>
-  import('./components/SignatureTemplatesModal').then((m) => ({
-    default: m.SignatureTemplatesModal,
-  })),
+const SignatureTemplatesModal = lazy(
+  chunkGuard(() =>
+    import('./components/SignatureTemplatesModal').then((m) => ({
+      default: m.SignatureTemplatesModal,
+    })),
+  ),
 );
 
 interface SignatureBlock {

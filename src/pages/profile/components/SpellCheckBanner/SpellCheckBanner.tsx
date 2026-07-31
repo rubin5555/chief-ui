@@ -2,6 +2,7 @@ import { Check } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ModalLoading } from '@/components/ui/ModalLoading';
+import { chunkGuard } from '../../../../utils/chunkRecovery';
 import { useSpellCheckBannerAnalytics } from './SpellCheckBanner.analytics';
 import {
   BannerIcon,
@@ -12,8 +13,10 @@ import {
 } from './SpellCheckBanner.styles';
 import { SPELL_CHECK_BANNER_IDS } from './SpellCheckBanner.testids';
 
-const SpellCheckModal = lazy(() =>
-  import('@/modals/SpellCheckModal').then((m) => ({ default: m.SpellCheckModal })),
+const SpellCheckModal = lazy(
+  chunkGuard(() =>
+    import('@/modals/SpellCheckModal').then((m) => ({ default: m.SpellCheckModal })),
+  ),
 );
 
 export const SpellCheckBanner = () => {

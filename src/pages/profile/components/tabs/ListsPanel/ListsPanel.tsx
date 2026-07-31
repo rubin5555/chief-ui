@@ -8,6 +8,7 @@ import { ModalLoading } from '@/components/ui/ModalLoading';
 import { PanelLoading } from '@/components/ui/PanelLoading';
 import { useEntityModal } from '@/hooks/useEntityModal';
 import type { ModalMode } from '@/modals/MailingListFormModal';
+import { chunkGuard } from '../../../../../utils/chunkRecovery';
 import { TabPanelShell } from '../TabPanelShell';
 import { useFilterableList } from '../useFilterableList';
 import { useListsPanelAnalytics } from './ListsPanel.analytics';
@@ -24,8 +25,10 @@ export interface DistributionList {
 
 const noop = () => {};
 
-const MailingListFormModal = lazy(() =>
-  import('@/modals/MailingListFormModal').then((m) => ({ default: m.MailingListFormModal })),
+const MailingListFormModal = lazy(
+  chunkGuard(() =>
+    import('@/modals/MailingListFormModal').then((m) => ({ default: m.MailingListFormModal })),
+  ),
 );
 
 interface ListsPanelProps {

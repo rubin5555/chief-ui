@@ -2,6 +2,7 @@ import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual';
 import { lazy, Suspense, useRef, useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import { useDragReorder } from '@/hooks/useDragReorder';
+import { chunkGuard } from '../../../../utils/chunkRecovery';
 import type { SectionMetaMap, Subject } from '../../types';
 import { OutlineRow } from './components/OutlineRow';
 import { useDocumentOutlineTreeAnalytics } from './DocumentOutlineTree.analytics';
@@ -16,8 +17,10 @@ import type {
 } from './DocumentOutlineTree.types';
 import { flattenOutline } from './documentOutlineTree.utils';
 
-const ConfirmDeleteModal = lazy(() =>
-  import('./components/ConfirmDeleteModal').then((m) => ({ default: m.ConfirmDeleteModal })),
+const ConfirmDeleteModal = lazy(
+  chunkGuard(() =>
+    import('./components/ConfirmDeleteModal').then((m) => ({ default: m.ConfirmDeleteModal })),
+  ),
 );
 
 export interface DocumentOutlineTreeProps {
