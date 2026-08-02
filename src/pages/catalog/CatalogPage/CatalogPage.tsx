@@ -1,6 +1,7 @@
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { Search } from 'lucide-react';
 import type { CatalogDoc, CatalogTab } from '@/api/catalog';
+import { DocPermissionsProvider } from '@/modals/DocPermissionsModal';
 import { CatalogSidebar } from '../components/CatalogSidebar';
 import type { CatalogFilters, CatalogFilterValues } from '../components/DocumentCatalog';
 import { DocumentCatalog, parseCsv, toCsv } from '../components/DocumentCatalog';
@@ -129,12 +130,6 @@ export const CatalogPage = () => {
   const handleOpenDoc = (doc: CatalogDoc) =>
     navigateApp({ to: '/document/$id', params: { id: doc.id } });
 
-  // Every row action resolves to a modal, and those land in the next slice of
-  // this migration. Until then the label is logged rather than swallowed, so
-  // an unwired action is visible instead of silently doing nothing.
-  const handleRowAction = (doc: CatalogDoc, label: string) =>
-    console.info('[catalog] row action not wired yet:', label, doc.id);
-
   const filters: CatalogFilters = {
     search: search.q,
     templates: parseCsv(search.template),
@@ -164,20 +159,21 @@ export const CatalogPage = () => {
       />
 
       {dept ? (
-        <DocumentCatalog
-          tab={tab}
-          filters={filters}
-          page={page}
-          onTabChange={handleTabChange}
-          onDistSubChange={handleDistSubChange}
-          onSearchChange={handleSearchChange}
-          onFiltersChange={handleFiltersChange}
-          onClearFilters={handleClearFilters}
-          onPageChange={handlePageChange}
-          onOpenDoc={handleOpenDoc}
-          onOpenTrash={handleOpenTrash}
-          onRowAction={handleRowAction}
-        />
+        <DocPermissionsProvider isDistributed={tab === 'distributed' || tab === 'archive'}>
+          <DocumentCatalog
+            tab={tab}
+            filters={filters}
+            page={page}
+            onTabChange={handleTabChange}
+            onDistSubChange={handleDistSubChange}
+            onSearchChange={handleSearchChange}
+            onFiltersChange={handleFiltersChange}
+            onClearFilters={handleClearFilters}
+            onPageChange={handlePageChange}
+            onOpenDoc={handleOpenDoc}
+            onOpenTrash={handleOpenTrash}
+          />
+        </DocPermissionsProvider>
       ) : (
         <EmptyState data-testid={CATALOG_PAGE_IDS.emptyState}>
           <EmptyStateIcon>

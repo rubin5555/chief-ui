@@ -7,13 +7,21 @@ import type { RowConfig } from '@/components/ui/GridTable';
 import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { useDebounce } from '@/hooks/useDebounce';
+import { ApprovalDetailsModal } from '@/modals/ApprovalDetailsModal';
+import { DistributeDoc } from '@/modals/DistributeDoc';
+import { useDocPermissions } from '@/modals/DocPermissionsModal';
+import { EditDocDetailsModal } from '@/modals/EditDocDetailsModal';
 import { ActiveCatalogFilters } from './components/ActiveCatalogFilters';
+import { CancelProgressToast } from './components/CancelProgressToast';
+import { CatalogCancelModal } from './components/CatalogCancelModal';
+import { CatalogDeleteModal } from './components/CatalogDeleteModal';
 import type { CatalogFilterValues } from './components/CatalogFilterFunnel';
 import { CatalogFilterFunnel } from './components/CatalogFilterFunnel';
 import { CatalogPager } from './components/CatalogPager';
 import { CatalogTabs } from './components/CatalogTabs';
 import { ChildDocRows } from './components/ChildDocRows';
 import { DistributionSubTabs } from './components/DistributionSubTabs';
+import { ReceiptConfirmModal } from './components/ReceiptConfirmModal';
 import type { RowMenuAnchor } from './components/RowActionMenu';
 import {
   INLINE_PHASE_ACTIONS,
@@ -22,6 +30,7 @@ import {
   rowMenuAnchor,
   useRowActionPhase,
 } from './components/RowActionMenu';
+import { VersionHistoryModal } from './components/VersionHistoryModal';
 import { useDocumentCatalogAnalytics } from './DocumentCatalog.analytics';
 import { catalogColumns } from './DocumentCatalog.columns';
 import {
@@ -48,6 +57,8 @@ import {
 import { DOCUMENT_CATALOG_IDS } from './DocumentCatalog.testids';
 import type { CatalogFilters } from './documentCatalog.filters';
 import { filterCatalogDocs, uniqueValues } from './documentCatalog.filters';
+import type { CatalogModalState } from './documentCatalog.rowActions';
+import { catalogDocToHeader, modalForAction } from './documentCatalog.rowActions';
 
 const docKey = (doc: CatalogDoc) => doc.id;
 
@@ -63,10 +74,6 @@ export interface DocumentCatalogProps {
   onPageChange: (page: number) => void;
   onOpenDoc: (doc: CatalogDoc) => void;
   onOpenTrash: () => void;
-  // What a row action ultimately opens is a modal, and those land with the
-  // modals themselves. Until then the label travels out so the wiring is
-  // visible rather than silently dropped.
-  onRowAction: (doc: CatalogDoc, label: string) => void;
 }
 
 export const DocumentCatalog = ({
@@ -81,7 +88,6 @@ export const DocumentCatalog = ({
   onPageChange,
   onOpenDoc,
   onOpenTrash,
-  onRowAction,
 }: DocumentCatalogProps) => {
   // Which parent rows are showing their children. Purely visual and per-visit,
   // so unlike the filters it stays out of the URL.
@@ -90,6 +96,14 @@ export const DocumentCatalog = ({
   // this component's columns, so the menu's state and its render do too.
   const [menuRow, setMenuRow] = useState<{ doc: CatalogDoc; anchor: RowMenuAnchor } | null>(null);
   const { phase, start: startPhase, reset: resetPhase } = useRowActionPhase(() => setMenuRow(null));
+  // Every row action resolves to at most one dialog, so one slot holds it. The
+  // cancel flow's progress toast outlives its dialog, hence its own flag.
+  const [modal, setModal] = useState<CatalogModalState | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  // The permissions dialog is opened through the provider the page wraps this
+  // component in, the same way the document page opens it — that is where its
+  // lazy chunk and its own state already live.
+  const { openDocPermissions } = useDocPermissions();
 
   const { data, loading } = useCatalogDocs(tab);
   const docs = data ?? CATALOG_DOCS_FALLBACK[tab];
@@ -171,9 +185,29 @@ export const DocumentCatalog = ({
     resetPhase();
   };
 
+  const openFor = (doc: CatalogDoc, label: string) => {
+    const next = modalForAction(label, doc);
+    if (next?.kind === 'permissions') {
+      openDocPermissions();
+      return;
+    }
+    setModal(next);
+  };
+
+  const closeModal = () => setModal(null);
+
+  // Sending the cancellation notice closes the dialog and leaves the progress
+  // toast behind, which is the only piece that outlives its own modal.
+  const handleSendCancel = () => {
+    setModal(null);
+    setIsCancelling(true);
+  };
+
+  const onCancelToastClose = () => setIsCancelling(false);
+
   const handleHistoryClick = (doc: CatalogDoc) => (event: MouseEvent) => {
     event.stopPropagation();
-    onRowAction(doc, HISTORY_TITLE);
+    openFor(doc, HISTORY_TITLE);
   };
 
   const handleMenuClick = (doc: CatalogDoc) => (event: MouseEvent) => {
@@ -184,13 +218,13 @@ export const DocumentCatalog = ({
 
   const handleReceiptClick = (doc: CatalogDoc) => (event: MouseEvent) => {
     event.stopPropagation();
-    onRowAction(doc, RECEIPTS_ACTION);
+    openFor(doc, RECEIPTS_ACTION);
     trackReceiptsOpened(doc.name);
   };
 
   const handleReshareClick = (doc: CatalogDoc) => (event: MouseEvent) => {
     event.stopPropagation();
-    onRowAction(doc, RESHARE_ACTION);
+    openFor(doc, RESHARE_ACTION);
     trackReshare(doc.name);
   };
 
@@ -202,7 +236,7 @@ export const DocumentCatalog = ({
       startPhase(label);
       return;
     }
-    onRowAction(menuRow.doc, label);
+    openFor(menuRow.doc, label);
   };
 
   const handleRowClick = (doc: CatalogDoc) => () => {
@@ -307,6 +341,41 @@ export const DocumentCatalog = ({
           onAction={handleMenuAction}
           onClose={closeMenu}
         />
+      )}
+
+      {modal?.kind === 'details' && modal.detailsMode && (
+        <EditDocDetailsModal
+          mode={modal.detailsMode}
+          header={catalogDocToHeader(modal.doc)}
+          docStatus={modal.doc.status}
+          onClose={closeModal}
+          onSave={closeModal}
+        />
+      )}
+
+      {modal?.kind === 'approvalRound' && (
+        <ApprovalDetailsModal onClose={closeModal} onSubmit={closeModal} />
+      )}
+
+      {modal?.kind === 'delete' && <CatalogDeleteModal doc={modal.doc} onClose={closeModal} />}
+
+      {modal?.kind === 'cancel' && (
+        <CatalogCancelModal
+          key={modal.doc.id}
+          doc={modal.doc}
+          onClose={closeModal}
+          onSendCancel={handleSendCancel}
+        />
+      )}
+
+      {isCancelling && <CancelProgressToast onClose={onCancelToastClose} />}
+
+      {modal?.kind === 'history' && <VersionHistoryModal doc={modal.doc} onClose={closeModal} />}
+
+      {modal?.kind === 'receipts' && <ReceiptConfirmModal doc={modal.doc} onClose={closeModal} />}
+
+      {modal?.kind === 'reshare' && (
+        <DistributeDoc docName={modal.doc.name} onClose={closeModal} onSend={closeModal} />
       )}
     </CatalogBody>
   );

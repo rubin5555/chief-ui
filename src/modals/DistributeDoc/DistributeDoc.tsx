@@ -22,9 +22,17 @@ export interface DistributeDocProps {
   docName: string;
   onClose: () => void;
   onSend: (body: string) => void;
+  // The catalog reuses this dialog to send a cancellation notice, which is the
+  // same composer under a different heading.
+  title?: string;
 }
 
-export const DistributeDoc = ({ docName, onClose, onSend }: DistributeDocProps) => {
+export const DistributeDoc = ({
+  docName,
+  onClose,
+  onSend,
+  title = 'שיתוף המסמך ב-OUTLOOK ובצאט',
+}: DistributeDocProps) => {
   const [body, setBody] = useState(() => buildDefaultBody(docName));
   const { trackDistributeSent } = useDistributeDocAnalytics();
 
@@ -35,7 +43,7 @@ export const DistributeDoc = ({ docName, onClose, onSend }: DistributeDocProps) 
 
   return (
     <Modal
-      title="שיתוף המסמך ב-OUTLOOK ובצאט"
+      title={title}
       onClose={onClose}
       width={MODAL_WIDTH}
       maxHeight={MODAL_MAX_HEIGHT}
