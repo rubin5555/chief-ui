@@ -35,7 +35,7 @@ export const useContentEditorCollab = (
     if (!remoteUpdate || remoteUpdate.receivedAt <= lastAppliedRemoteAtRef.current) return;
     lastAppliedRemoteAtRef.current = remoteUpdate.receivedAt;
     onChangeRef.current(remoteUpdate.html);
-  }, [remoteUpdate]);
+  }, [remoteUpdate, onChangeRef]);
 
   useEffect(() => {
     if (!collabRef.current || !isLockHolder) return;

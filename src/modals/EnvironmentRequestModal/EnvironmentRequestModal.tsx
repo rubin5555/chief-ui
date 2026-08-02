@@ -25,7 +25,7 @@ export const EnvironmentRequestModal = ({ onClose, onSubmit }: EnvironmentReques
 
   useEffect(() => {
     trackModalOpened();
-  }, []);
+  }, [trackModalOpened]);
 
   const modalRef = useRef<ModalHandle>(null);
 

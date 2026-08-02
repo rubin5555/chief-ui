@@ -44,7 +44,7 @@ export const SearchableSelect = ({
     } else {
       onClearSearch();
     }
-  }, [panel.open]);
+  }, [panel.open, onClearSearch]);
 
   const onTriggerClick = () => panel.toggle((r) => ({ top: r.bottom + 4, left: r.left }));
 

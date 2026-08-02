@@ -82,7 +82,7 @@ export const MailingListFormModal = ({
 
   useEffect(() => {
     trackModalOpened(mode);
-  }, []);
+  }, [mode, trackModalOpened]);
 
   const handleCancel = () => {
     trackCancelled(mode);
