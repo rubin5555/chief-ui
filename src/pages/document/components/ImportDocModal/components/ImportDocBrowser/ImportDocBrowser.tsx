@@ -92,6 +92,7 @@ export const ImportDocBrowser = ({
             items={docs}
             getRowKey={docKey}
             row={rowConfig}
+            density="comfortable"
             emptyState={
               <NoDocs data-testid={IMPORT_DOC_MODAL_IDS.noDocs}>
                 <NoDocsIcon>

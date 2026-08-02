@@ -197,7 +197,8 @@ columns: ColumnDef<T>[]
 items: T[]
 getRowKey: (item: T, index: number) => string | number
 row?: (item: T, index: number) => RowConfig
-estimateRowHeight?: number   // default 44
+density?: 'compact' | 'comfortable'   // default 'compact'
+estimateRowHeight?: number            // defaults to the density's
 emptyState?: ReactNode
 
 // SubTable — no `row`, no `emptyState`
@@ -207,6 +208,14 @@ maxHeight?: number           // default 240
 ```
 
 `getRowKey` stays explicit — it feeds the virtualiser, and only the call site knows whether identity is `id`, `idNumber`, or a fallback to the index.
+
+## Density
+
+Two scales, and only two. `compact` is the people-picker's: 10px header, tight rows, square corners, `gray[200]` bar. `comfortable` is the catalog's and the import-document modal's: 12px header on `tableColors.headerBar`, 12px/16px rows, rounded hover, inset from the card edge.
+
+Every metric lives in `GridTable.constants.ts`'s `DENSITY` map. A table picks one and gets all of them — **do not override individual metrics at a call site**, and do not add a third density to accommodate one screen. If a new table wants a scale neither of these gives, that is a design question, not a prop.
+
+The two are not interchangeable looks: `comfortable` exists because main draws the catalog table (`Catalog.tsx:1980-2090`) and the import table (`Edit.tsx:1908-1940`) identically, and they must stay identical.
 
 ---
 

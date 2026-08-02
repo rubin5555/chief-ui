@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react';
 
+// Which scale a table renders at. `compact` is the people-picker's — small
+// header, tight rows, squared corners. `comfortable` is the catalog's, which
+// the import-document table shares. Metrics live in `GridTable.constants.ts`.
+export type Density = 'compact' | 'comfortable';
+
 // One column, declared once. The table derives three things from a list of
 // these that used to be three hand-maintained props: the grid track list, the
 // header row, and each body cell. They drifted apart before — a column added to

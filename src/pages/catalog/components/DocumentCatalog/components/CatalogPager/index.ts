@@ -1,0 +1,1 @@
+export { CatalogPager } from './CatalogPager';

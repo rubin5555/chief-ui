@@ -24,6 +24,14 @@ export const excelColors = {
   activeCellBg: 'var(--excel-active-cell-bg)',
 } as const;
 
+// Chrome shared by every comfortable-density GridTable — the catalog's and the
+// import modal's tables are the same table, so their header bar and row
+// separator are one pair of tokens rather than one pair per page.
+export const tableColors = {
+  headerBar: 'var(--table-header-bar)',
+  rowDivider: 'var(--table-row-divider)',
+} as const;
+
 export const docColors = {
   canvasGradient: 'var(--doc-canvas-gradient)',
   neutralBar: 'var(--doc-neutral-bar)',
@@ -117,3 +125,45 @@ export const gray = {
   800: 'var(--gray-800)',
   900: 'var(--gray-900)',
 } as const;
+
+export const catColors = {
+  // main paints the same warm ramp behind the catalog as behind the document
+  // (`Catalog.tsx:2364`), one stop shorter — the document's holds flat from 85%
+  // and this one runs all the way to 100%. Kept as main wrote each.
+  canvasGradient: 'var(--cat-canvas-gradient)',
+  outlineBorder: 'var(--cat-outline-border)',
+  primarySoftBorder: 'var(--cat-primary-soft-border)',
+  selectedTileBg: 'var(--cat-selected-tile-bg)',
+  invalidBorder: 'var(--cat-invalid-border)',
+  // Tailwind's red-500, softer than `colors.danger` (#c4342b). main uses it for
+  // both the trash countdown and the sidebar's delete menu item.
+  dangerSoft: 'var(--cat-danger-soft)',
+  dangerSoftBg: 'var(--cat-danger-soft-bg)',
+  // The sidebar's rows hover to translucent white because what shows through is
+  // the page gradient. Two strengths, as main draws them.
+  hoverVeil: 'var(--cat-hover-veil)',
+  hoverVeilStrong: 'var(--cat-hover-veil-strong)',
+  dashedHoverBg: 'var(--cat-dashed-hover-bg)',
+  childRowBg: 'var(--cat-child-row-bg)',
+  childRowAccent: 'var(--cat-child-row-accent)',
+  childRowDivider: 'var(--cat-child-row-divider)',
+} as const;
+
+// The catalog's ten status pills, keyed by the Hebrew status the API returns.
+// Four inks are the same role as a document status and reuse that token rather
+// than duplicating it; the rest, and every background, are the pills' own.
+export const catStatusColors: Record<string, { bg: string; ink: string }> = {
+  'טיוטה פנימית': { bg: gray[100], ink: gray[500] },
+  בהכנה: { bg: 'var(--cat-status-preparing-bg)', ink: docStatusColors.importPreparing },
+  'בסבב אישורים': {
+    bg: 'var(--cat-status-in-approval-bg)',
+    ink: 'var(--cat-status-in-approval-ink)',
+  },
+  נדחתה: { bg: 'var(--cat-status-rejected-bg)', ink: docStatusColors.fix },
+  נדרסה: { bg: 'var(--cat-status-superseded-bg)', ink: 'var(--cat-status-superseded-ink)' },
+  'ממתין להפצה': { bg: 'var(--cat-status-awaiting-bg)', ink: 'var(--cat-status-awaiting-ink)' },
+  מבצעית: { bg: 'var(--cat-status-active-bg)', ink: docStatusColors.approved },
+  נצורה: { bg: 'var(--cat-status-frozen-bg)', ink: colors.warning },
+  הסתיימה: { bg: 'var(--cat-status-finished-bg)', ink: 'var(--cat-status-finished-ink)' },
+  התבטלה: { bg: 'var(--cat-status-cancelled-bg)', ink: 'var(--cat-status-cancelled-ink)' },
+};

@@ -34,6 +34,16 @@
   --excel-cell-ink: #1a1a1a;
   --excel-active-cell-bg: #ebf0fa;
 
+  /* Shared table chrome. main draws the catalog table (Catalog.tsx:1980-2090)
+     and the import-document table (Edit.tsx:1908-1940) with the same header bar
+     and the same row separator, so these belong to `GridTable`'s comfortable
+     density rather than to either page. Same light values as
+     `--doc-neutral-bar` / `--doc-row-divider` and deliberately separate tokens:
+     a table header and a metadata pill are different roles, and a divider that
+     has to stay visible against a white card needn't darken like a pill does. */
+  --table-header-bar: #ebebeb;
+  --table-row-divider: #f5f5f5;
+
   /* Document-page tokens. Every light value below is a literal from main's
      Edit.tsx, kept byte-identical on purpose — these exist precisely because
      no base token above matched, and snapping to a near-miss would have
@@ -84,6 +94,53 @@
   --doc-translucent-hover: rgba(255, 255, 255, 0.7);
   --doc-icon-hover: rgba(229, 231, 235, 0.7);
   --doc-amber-hover: #fef3c7;
+
+  /* Catalog tokens. Light values are literals from main's Catalog.tsx, kept
+     byte-identical. See src/pages/catalog/CATALOG_PARITY.md for which of
+     main's 44 hex values reuse a base token instead of appearing here. */
+  --cat-canvas-gradient: linear-gradient(
+    135deg,
+    #f6f9fc 0%,
+    #f8fafb 20%,
+    #faf8fa 35%,
+    #fbf7f9 50%,
+    #faf5f1 65%,
+    #f9f3ed 100%
+  );
+  --cat-outline-border: #c4c8ce;
+  --cat-primary-soft-border: #c7d9ff;
+  --cat-selected-tile-bg: #f0f4ff;
+  --cat-invalid-border: #fca5a5;
+  --cat-danger-soft: #ef4444;
+  --cat-danger-soft-bg: #fef2f2;
+  --cat-hover-veil: rgba(255, 255, 255, 0.6);
+  --cat-hover-veil-strong: rgba(255, 255, 255, 0.7);
+  --cat-dashed-hover-bg: rgba(239, 246, 255, 0.5);
+  --cat-child-row-bg: #f0f4f8;
+  --cat-child-row-accent: #cbd5e1;
+  --cat-child-row-divider: #e2e8f0;
+
+  /* The ten status pills, as one family. A pill's background and its ink are
+     a pair, so both sides live here even where a light value happens to equal
+     an existing token — `--cat-status-frozen-bg` and `--doc-amber-hover` are
+     both #fef3c7 today, but a pill and a hover state have no reason to darken
+     together. Inks that are genuinely the same role as a document status
+     (`מבצעית`, `נדחתה`, `בהכנה`, `נצורה`) reuse `docStatusColors` instead of
+     appearing here — see theme.ts. */
+  --cat-status-preparing-bg: #e0f2fe;
+  --cat-status-in-approval-bg: #f3e8ff;
+  --cat-status-in-approval-ink: #7c3aed;
+  --cat-status-rejected-bg: #fee2e2;
+  --cat-status-superseded-bg: #fce7f3;
+  --cat-status-superseded-ink: #db2777;
+  --cat-status-awaiting-bg: #fefce8;
+  --cat-status-awaiting-ink: #ca8a04;
+  --cat-status-active-bg: #dcfce7;
+  --cat-status-frozen-bg: #fef3c7;
+  --cat-status-finished-bg: #f0fdf4;
+  --cat-status-finished-ink: #15803d;
+  --cat-status-cancelled-bg: #f1f5f9;
+  --cat-status-cancelled-ink: #64748b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -118,6 +175,9 @@
     --excel-gutter-ink: #79818d;
     --excel-cell-ink: #e8ecf2;
     --excel-active-cell-bg: #1f2a3b;
+
+    --table-header-bar: #252a33;
+    --table-row-divider: #242a33;
 
     --doc-canvas-gradient: linear-gradient(
       135deg,
@@ -165,6 +225,43 @@
     --doc-translucent-hover: rgba(255, 255, 255, 0.08);
     --doc-icon-hover: rgba(55, 65, 81, 0.7);
     --doc-amber-hover: #4a3b1a;
+
+    --cat-canvas-gradient: linear-gradient(
+      135deg,
+      #14181f 0%,
+      #161a21 20%,
+      #1a1820 35%,
+      #1c1a20 50%,
+      #1c1a17 65%,
+      #1b1915 100%
+    );
+    --cat-outline-border: #454b55;
+    --cat-primary-soft-border: #2c3d5c;
+    --cat-selected-tile-bg: #1b2437;
+    --cat-invalid-border: #7f2c2c;
+    --cat-danger-soft: #f87171;
+    --cat-danger-soft-bg: #3a1f1f;
+    --cat-hover-veil: rgba(255, 255, 255, 0.06);
+    --cat-hover-veil-strong: rgba(255, 255, 255, 0.09);
+    --cat-dashed-hover-bg: rgba(28, 38, 52, 0.5);
+    --cat-child-row-bg: #1d222a;
+    --cat-child-row-accent: #3a4250;
+    --cat-child-row-divider: #2a303a;
+
+    --cat-status-preparing-bg: #0c2a3a;
+    --cat-status-in-approval-bg: #2a1f3d;
+    --cat-status-in-approval-ink: #a78bfa;
+    --cat-status-rejected-bg: #3a1a1a;
+    --cat-status-superseded-bg: #3a1a2c;
+    --cat-status-superseded-ink: #f472b6;
+    --cat-status-awaiting-bg: #332b12;
+    --cat-status-awaiting-ink: #eab308;
+    --cat-status-active-bg: #12301d;
+    --cat-status-frozen-bg: #33270f;
+    --cat-status-finished-bg: #0f2a1c;
+    --cat-status-finished-ink: #34d399;
+    --cat-status-cancelled-bg: #22262c;
+    --cat-status-cancelled-ink: #94a3b8;
   }
 }
 
@@ -199,6 +296,9 @@
   --excel-gutter-ink: #79818d;
   --excel-cell-ink: #e8ecf2;
   --excel-active-cell-bg: #1f2a3b;
+
+  --table-header-bar: #252a33;
+  --table-row-divider: #242a33;
 
   --doc-canvas-gradient: linear-gradient(
     135deg,
@@ -246,4 +346,41 @@
   --doc-translucent-hover: rgba(255, 255, 255, 0.08);
   --doc-icon-hover: rgba(55, 65, 81, 0.7);
   --doc-amber-hover: #4a3b1a;
+
+  --cat-canvas-gradient: linear-gradient(
+    135deg,
+    #14181f 0%,
+    #161a21 20%,
+    #1a1820 35%,
+    #1c1a20 50%,
+    #1c1a17 65%,
+    #1b1915 100%
+  );
+  --cat-outline-border: #454b55;
+  --cat-primary-soft-border: #2c3d5c;
+  --cat-selected-tile-bg: #1b2437;
+  --cat-invalid-border: #7f2c2c;
+  --cat-danger-soft: #f87171;
+  --cat-danger-soft-bg: #3a1f1f;
+  --cat-hover-veil: rgba(255, 255, 255, 0.06);
+  --cat-hover-veil-strong: rgba(255, 255, 255, 0.09);
+  --cat-dashed-hover-bg: rgba(28, 38, 52, 0.5);
+  --cat-child-row-bg: #1d222a;
+  --cat-child-row-accent: #3a4250;
+  --cat-child-row-divider: #2a303a;
+
+  --cat-status-preparing-bg: #0c2a3a;
+  --cat-status-in-approval-bg: #2a1f3d;
+  --cat-status-in-approval-ink: #a78bfa;
+  --cat-status-rejected-bg: #3a1a1a;
+  --cat-status-superseded-bg: #3a1a2c;
+  --cat-status-superseded-ink: #f472b6;
+  --cat-status-awaiting-bg: #332b12;
+  --cat-status-awaiting-ink: #eab308;
+  --cat-status-active-bg: #12301d;
+  --cat-status-frozen-bg: #33270f;
+  --cat-status-finished-bg: #0f2a1c;
+  --cat-status-finished-ink: #34d399;
+  --cat-status-cancelled-bg: #22262c;
+  --cat-status-cancelled-ink: #94a3b8;
 }

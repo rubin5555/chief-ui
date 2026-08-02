@@ -2,13 +2,13 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
 import { renderBodyCells, renderHeaderCells } from './GridTable.cells';
+import { DENSITY } from './GridTable.constants';
 import { GridTableContext } from './GridTable.context';
 import { TableHeader, TableScrollBody, VirtualRow, VirtualScrollSpacer } from './GridTable.styles';
-import type { ColumnDef, RowConfig } from './GridTable.types';
+import type { ColumnDef, Density, RowConfig } from './GridTable.types';
 import { gridTemplateOf } from './GridTable.types';
 import { GridTableRow } from './GridTableRow';
 
-const DEFAULT_ROW_HEIGHT = 44;
 const ROW_OVERSCAN = 8;
 
 interface GridTableProps<T> {
@@ -16,6 +16,7 @@ interface GridTableProps<T> {
   items: T[];
   getRowKey: (item: T, index: number) => string | number;
   row?: (item: T, index: number) => RowConfig;
+  density?: Density;
   estimateRowHeight?: number;
   emptyState?: ReactNode;
 }
@@ -25,7 +26,8 @@ export const GridTable = <T,>({
   items,
   getRowKey,
   row,
-  estimateRowHeight = DEFAULT_ROW_HEIGHT,
+  density = 'compact',
+  estimateRowHeight = DENSITY[density].estimateRowHeight,
   emptyState,
 }: GridTableProps<T>) => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -40,13 +42,15 @@ export const GridTable = <T,>({
   });
 
   return (
-    <GridTableContext.Provider value={template}>
+    <GridTableContext.Provider value={{ template, density }}>
       <TableScrollBody ref={scrollRef}>
-        <TableHeader $columns={template}>{renderHeaderCells(columns)}</TableHeader>
+        <TableHeader $columns={template} $density={density}>
+          {renderHeaderCells(columns)}
+        </TableHeader>
         {items.length === 0 ? (
           emptyState
         ) : (
-          <VirtualScrollSpacer $totalSize={rowVirtualizer.getTotalSize()}>
+          <VirtualScrollSpacer $totalSize={rowVirtualizer.getTotalSize()} $density={density}>
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
               const item = items[virtualRow.index];
               return (

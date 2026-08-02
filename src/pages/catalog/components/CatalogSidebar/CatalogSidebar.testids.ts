@@ -1,0 +1,17 @@
+export const CATALOG_SIDEBAR_IDS = {
+  root: 'catalog-sidebar',
+  navView: 'catalog-sidebar-nav',
+  folderView: 'catalog-sidebar-folders',
+  section: (key: string) => `catalog-sidebar-section-${key}`,
+  subItem: (name: string) => `catalog-sidebar-item-${name}`,
+  orgToggle: (name: string) => `catalog-sidebar-org-${name}`,
+  backToMenu: 'catalog-sidebar-back',
+  newFolderBtn: 'catalog-sidebar-new-folder',
+  newFolderInput: 'catalog-sidebar-new-folder-input',
+  emptyFolders: 'catalog-sidebar-no-folders',
+  folderCard: (id: string) => `catalog-sidebar-folder-${id}`,
+  folderMenuBtn: (id: string) => `catalog-sidebar-folder-menu-${id}`,
+  folderRenameInput: (id: string) => `catalog-sidebar-folder-rename-${id}`,
+  folderSub: (id: string, sub: string) => `catalog-sidebar-folder-${id}-sub-${sub}`,
+  deleteFolderModal: 'catalog-sidebar-delete-folder',
+} as const;
