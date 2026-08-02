@@ -21,14 +21,14 @@ const validateSearch = (search: Record<string, unknown>): ProfileSearch => ({
   sub: typeof search.sub === 'string' ? search.sub : '',
 });
 
-export const Route = createFileRoute('/')({ validateSearch, component: ProfilePage });
+export const Route = createFileRoute('/profile')({ validateSearch, component: ProfilePage });
 ```
 
-- **Read/write search params with `getRouteApi`, not a direct `Route` import.** The route file imports the page component, so the page importing `Route` back would be circular. `getRouteApi('/')` resolves the route by id at render time instead:
+- **Read/write search params with `getRouteApi`, not a direct `Route` import.** The route file imports the page component, so the page importing `Route` back would be circular. `getRouteApi('/profile')` resolves the route by id at render time instead:
 
 ```tsx
 import { getRouteApi } from '@tanstack/react-router';
-const routeApi = getRouteApi('/');
+const routeApi = getRouteApi('/profile');
 
 const { tab: activeTab } = routeApi.useSearch();
 const navigate = routeApi.useNavigate();

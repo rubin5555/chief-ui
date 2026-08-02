@@ -43,7 +43,7 @@
 Before hand-rolling something that might already exist, check these — each replaced 2+ duplicated implementations found during an audit pass:
 
 - **`src/hooks/useClickOutside/`** — shared outside-click-to-close detection (previously copy-pasted in `SearchBar`/`Select`).
-- **`src/pages/profile/components/tabs/useFilterableList.ts`** + **`TabPanelShell/`** — shared search/filter/subTab state (backed by the `/` route's search params, see `.claude/skills/router-state-splitting.md`) and panel shell for tabbed list panels (used by ListsPanel/SignaturesPanel/TemplatesPanel; feature-scoped, not in global `src/hooks/` since it's specific to profile tab panels).
+- **`src/pages/profile/components/tabs/useFilterableList.ts`** + **`TabPanelShell/`** — shared search/filter/subTab state (backed by the `/profile` route's search params, see `.claude/skills/router-state-splitting.md`) and panel shell for tabbed list panels (used by ListsPanel/SignaturesPanel/TemplatesPanel; feature-scoped, not in global `src/hooks/` since it's specific to profile tab panels).
 - **`src/components/ui/PanelLoading/`** — standard `Suspense` fallback for lazy-loaded tab panels.
 - **`src/components/layout/TopNavbar/TopNavPanel.styles.ts`** — shared dropdown-panel styled-components (`PanelBody`/`PanelOption`/`PanelOptionLabel`) for TopNavbar's menu popovers (SupportMenu, TrainingMenu, etc.).
 - **`src/modals/MailingListModal/tabs/tabs.shared.styles.ts`**'s `ExpandChevron` — shared expand/collapse chevron for tab row lists, takes a `$isExpanded` transient prop instead of inline `style={{}}`.

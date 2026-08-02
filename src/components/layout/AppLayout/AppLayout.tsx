@@ -1,14 +1,13 @@
 import { Outlet } from '@tanstack/react-router';
-import { User } from 'lucide-react';
 import { useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { NotificationsMenu } from '@/components/layout/TopNavbar/components/NotificationsMenu';
+import { ProfileButton } from '@/components/layout/TopNavbar/components/ProfileButton';
 import { RealityModeSwitch } from '@/components/layout/TopNavbar/components/RealityModeSwitch';
 import { SupportMenu } from '@/components/layout/TopNavbar/components/SupportMenu';
 import { ThemeToggle } from '@/components/layout/TopNavbar/components/ThemeToggle';
 import { TrainingMenu } from '@/components/layout/TopNavbar/components/TrainingMenu';
-import { IconButton } from '@/components/ui/IconButton';
 import { NavToolbarSlotProvider } from '@/context/NavToolbarSlotContext';
 import { BrandLink, NavToolbarHost } from './AppLayout.styles';
 import { useOverflowTitles } from './useOverflowTitles';
@@ -35,7 +34,7 @@ export const AppLayout = () => {
               <SupportMenu />
               <TrainingMenu />
               <ThemeToggle />
-              <IconButton aria-label="פרופיל" icon={<User size={20} />} isActive />
+              <ProfileButton />
             </>
           }
         />

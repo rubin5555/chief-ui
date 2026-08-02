@@ -1,20 +1,16 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { z } from 'zod';
-import { ProfilePage } from '@/pages/profile/ProfilePage';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import type { ProfileSearch } from './profile';
 
-const PROFILE_TABS = ['templates', 'signatures', 'lists'] as const;
-const DEFAULT_TAB = 'templates' satisfies (typeof PROFILE_TABS)[number];
-
-const profileSearchSchema = z.object({
-  tab: z.enum(PROFILE_TABS).catch(DEFAULT_TAB),
-  q: z.string().catch(''),
-  dept: z.string().catch(''),
-  sub: z.string().catch(''),
-});
-
-export type ProfileSearch = z.infer<typeof profileSearchSchema>;
-
+// The personal area used to be the app's index route. It lives at /profile now,
+// and `/` forwards to it so existing links and bookmarks still land somewhere.
+// The raw search is handed straight over — /profile's own schema is what
+// validates it, so a stale `?tab=` either survives the move or falls back.
 export const Route = createFileRoute('/')({
-  validateSearch: profileSearchSchema,
-  component: ProfilePage,
+  beforeLoad: ({ location }) => {
+    throw redirect({
+      to: '/profile',
+      search: location.search as ProfileSearch,
+      replace: true,
+    });
+  },
 });

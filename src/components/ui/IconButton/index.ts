@@ -1,3 +1,3 @@
 export * from './IconButton';
 
-export { IconButtonBadge, IconButtonRoot } from './IconButton.styles';
+export { IconButtonBadge, IconButtonRoot, iconButtonBase } from './IconButton.styles';

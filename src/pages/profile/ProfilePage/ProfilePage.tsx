@@ -17,7 +17,7 @@ import {
 import { PageInner, PageScroll, SidebarColumn, SidebarDivider } from './ProfilePage.styles';
 
 const noop = () => {};
-const routeApi = getRouteApi('/');
+const routeApi = getRouteApi('/profile');
 
 const TemplatesPanel = lazy(
   chunkGuard(() =>

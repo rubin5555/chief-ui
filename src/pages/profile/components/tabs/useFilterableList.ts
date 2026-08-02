@@ -2,7 +2,7 @@ import { getRouteApi } from '@tanstack/react-router';
 import { useDebounce } from '@/hooks/useDebounce';
 
 const FILTER_DEBOUNCE_MS = 300;
-const routeApi = getRouteApi('/');
+const routeApi = getRouteApi('/profile');
 
 interface UseFilterableListOptions<T extends string> {
   defaultSubTab: T;
