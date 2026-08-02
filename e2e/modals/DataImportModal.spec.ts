@@ -5,7 +5,7 @@ import { FIELD_BANK_IDS } from '../../src/modals/TemplateModal/components/FieldB
 import { TEMPLATE_MODAL_IDS } from '../../src/modals/TemplateModal/TemplateModal.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.getByRole('button', { name: '+ תבנית חדשה' }).click();
   await page.waitForSelector(`[data-testid="${TEMPLATE_MODAL_IDS.root}"]`);
 });

@@ -85,6 +85,18 @@ export default defineConfig({
     port: process.env.PORT ? Number(process.env.PORT) : 3000,
     hot: true,
     historyApiFallback: true,
+    client: {
+      overlay: {
+        // "ResizeObserver loop completed with undelivered notifications" is a
+        // benign browser notice: an observer callback changed layout, so the
+        // browser deferred the rest to the next frame. Chrome reports it as an
+        // uncaught error, which the overlay then paints as a full-viewport
+        // iframe over the app. In dev that is noise; under Playwright it
+        // intercepts every click, which is why the approval-flow specs — the
+        // ones that resize the document while a modal opens — could not run.
+        runtimeErrors: (error) => !error?.message?.startsWith('ResizeObserver loop'),
+      },
+    },
   },
   lazyCompilation: false,
 });

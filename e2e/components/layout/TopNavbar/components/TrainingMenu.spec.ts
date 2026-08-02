@@ -3,7 +3,7 @@ import { FAQ_ENTRIES } from '../../../../../src/components/layout/TopNavbar/comp
 import { TRAINING_MENU_IDS } from '../../../../../src/components/layout/TopNavbar/components/TrainingMenu/TrainingMenu.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${TRAINING_MENU_IDS.trigger}"]`);
 });
 

@@ -4,7 +4,7 @@ import { ORG_CONTACTS } from '../../src/modals/ContactPermissionsModal/ContactPe
 import { CONTACT_PERMISSIONS_MODAL_IDS } from '../../src/modals/ContactPermissionsModal/ContactPermissionsModal.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.getByTestId(SUPPORT_MENU_IDS.trigger).click();
   await page.getByTestId(SUPPORT_MENU_IDS.permissionsOption).click();
   await page.waitForSelector(`[data-testid="${CONTACT_PERMISSIONS_MODAL_IDS.root}"]`);

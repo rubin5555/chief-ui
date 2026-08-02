@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { PROFILE_SIDEBAR_IDS } from '../../../../src/pages/profile/components/ProfileSidebar/ProfileSidebar.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${PROFILE_SIDEBAR_IDS.root}"]`);
 });
 

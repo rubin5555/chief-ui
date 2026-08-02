@@ -3,7 +3,7 @@ import { ITEM_ROW_IDS } from '../../../../../src/components/ui/ItemRow/ItemRow.t
 import { TEMPLATES_PANEL_IDS } from '../../../../../src/pages/profile/components/tabs/TemplatesPanel/TemplatesPanel.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${TEMPLATES_PANEL_IDS.root}"]`);
 
   await expect(page.getByTestId(ITEM_ROW_IDS.root).first()).toBeVisible();

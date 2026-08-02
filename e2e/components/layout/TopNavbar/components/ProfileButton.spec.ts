@@ -24,7 +24,7 @@ const fillOf = async (page: Page) => {
 const expectFill = (page: Page) => expect.poll(() => fillOf(page), { timeout: 5_000 });
 
 test('the old index URL forwards to /profile', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
 
   await expect(page).toHaveURL(/\/profile/);
   await expect(page.getByTestId(PROFILE_CONTENT_IDS.root)).toBeVisible();

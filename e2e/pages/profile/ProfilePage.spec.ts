@@ -14,7 +14,7 @@ const waitForLoadedRows = (page: Page) =>
   expect(page.getByTestId(ITEM_ROW_IDS.root).first()).toBeVisible();
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${PROFILE_SIDEBAR_IDS.root}"]`);
   await waitForLoadedRows(page);
 });

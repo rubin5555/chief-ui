@@ -8,7 +8,7 @@ import { MAILING_LIST_FORM_IDS } from '../../src/modals/MailingListFormModal/Mai
 const PLACEHOLDER_TEXT = 'בחר מקור ייבוא או חפש לפי שם';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.getByTestId(TAB_CARD_IDS.card('רשימות תפוצה')).click();
   await page.getByRole('button', { name: '+ רשימה חדשה' }).click();
   await page.waitForSelector(`[data-testid="${MAILING_LIST_FORM_IDS.root}"]`);

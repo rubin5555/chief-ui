@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { SUPPORT_MENU_IDS } from '../../../src/components/layout/TopNavbar/components/SupportMenu/SupportMenu.testids';
 
 const openPanel = async (page: import('@playwright/test').Page) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.getByTestId(SUPPORT_MENU_IDS.trigger).click();
   const panel = page.getByTestId(SUPPORT_MENU_IDS.panel);
   await expect(panel).toBeVisible();
