@@ -1,14 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { SELECT_IDS } from '../../../../src/components/ui/Select/Select.testids';
+import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/modals/ApprovalDetailsModal/ApprovalDetailsModal.testids';
+import { DISTRIBUTE_DOC_IDS } from '../../../../src/modals/DistributeDoc/DistributeDoc.testids';
+import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/modals/EditDocDetailsModal/EditDocDetailsModal.testids';
 import { ACCEPTENCE_VERIFICATION_IDS } from '../../../../src/pages/document/components/AcceptenceVerification/AcceptenceVerification.testids';
-import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/ApprovalDetailsModal/ApprovalDetailsModal.testids';
 import { APPROVAL_ROTATION_IDS } from '../../../../src/pages/document/components/ApprovalRotation/ApprovalRotation.testids';
 import { APPROVAL_WORKFLOW_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/ApprovalWorkflow.testids';
 import { DISTRIBUTE_PROGRESS_TOAST_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/DistributeProgressToast/DistributeProgressToast.testids';
 import { STATUS_FLOW_NAV_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/StatusFlowNav/StatusFlowNav.testids';
-import { DISTRIBUTE_DOC_IDS } from '../../../../src/pages/document/components/DistributeDoc/DistributeDoc.testids';
 import { DOC_STATUS_HEADER_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/DocStatusHeader/DocStatusHeader.testids';
-import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/EditDocDetailsModal/EditDocDetailsModal.testids';
 import { SIGNATURE_TEXTAREA_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/SignatureTextarea/SignatureTextarea.testids';
 
 const RANK = 'סא״ל';

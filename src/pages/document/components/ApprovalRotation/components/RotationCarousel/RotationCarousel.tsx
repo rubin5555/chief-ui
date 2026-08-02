@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react';
 import { Fragment } from 'react';
 import type { HmlGroupDto } from '@/api/approvals';
 import type { SignatureDto } from '@/api/signatures';
-import type { ApprovalRoundStageConfig } from '../../../ApprovalDetailsModal';
+import type { ApprovalRoundStageConfig } from '@/modals/ApprovalDetailsModal';
 import { Notes } from '../../ApprovalRotation.shared.styles';
 import { APPROVAL_ROTATION_IDS } from '../../ApprovalRotation.testids';
 import { ApproverSignaturePicker } from './components/ApproverSignaturePicker';

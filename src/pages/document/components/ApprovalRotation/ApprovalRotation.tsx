@@ -3,7 +3,7 @@ import type { HmlGroupDto } from '@/api/approvals';
 import { SIGNATURES_FALLBACK, useSignatures } from '@/api/signatures';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import type { ApprovalRoundConfig } from '../ApprovalDetailsModal';
+import type { ApprovalRoundConfig } from '@/modals/ApprovalDetailsModal';
 import type { ApproverSignature } from '../SignaturesSection';
 import { useApprovalRotationAnalytics } from './ApprovalRotation.analytics';
 import { FooterActions } from './ApprovalRotation.shared.styles';

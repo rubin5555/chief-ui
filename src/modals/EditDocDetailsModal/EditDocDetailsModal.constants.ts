@@ -1,4 +1,4 @@
-import type { PdfAccess } from '../../types';
+import type { PdfAccess } from '@/pages/document/types';
 
 export type EditDocDetailsMode = 'edit' | 'duplicate' | 'issue-update' | 'issue-new' | 'approval';
 

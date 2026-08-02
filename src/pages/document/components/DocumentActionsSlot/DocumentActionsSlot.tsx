@@ -2,17 +2,17 @@ import { getRouteApi } from '@tanstack/react-router';
 import { lazy, Suspense, useState } from 'react';
 import { DocActionToolbar } from '@/components/layout/TopNavbar/components/DocActionToolbar';
 import { NavToolbarSlot } from '@/context/NavToolbarSlotContext';
+import { useDocPermissions } from '@/modals/DocPermissionsModal';
+import type { EditDocDetailsMode } from '@/modals/EditDocDetailsModal';
 import { chunkGuard } from '../../../../utils/chunkRecovery';
 import { ZOOM_MAX, ZOOM_MIN } from '../../document.measurements';
 import type { useDocumentOverrides } from '../../hooks/useDocumentOverrides';
 import type { DocumentHeader } from '../../types';
-import { useDocPermissions } from '../DocPermissionsModal';
-import type { EditDocDetailsMode } from '../EditDocDetailsModal';
 import { FilterPanel } from '../FilterPanel';
 
 const EditDocDetailsModal = lazy(
   chunkGuard(() =>
-    import('../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
+    import('@/modals/EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
   ),
 );
 

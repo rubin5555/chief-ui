@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
 import { SEARCH_BAR_IDS } from '../../../../src/components/ui/SearchBar/SearchBar.testids';
+import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/modals/EditDocDetailsModal/EditDocDetailsModal.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
 import { ADD_MENU_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/components/AddMenu/AddMenu.testids';
 import { SIDEBAR_FAB_ROW_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/SidebarFabRow.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
-import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/EditDocDetailsModal/EditDocDetailsModal.testids';
 import { FILTER_PANEL_IDS } from '../../../../src/pages/document/components/FilterPanel/FilterPanel.testids';
 import { IMPORT_DOC_MODAL_IDS } from '../../../../src/pages/document/components/ImportDocModal/ImportDocModal.testids';
 import { RESTORE_MODAL_IDS } from '../../../../src/pages/document/components/RestoreModal/RestoreModal.testids';

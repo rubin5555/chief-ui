@@ -1,8 +1,8 @@
 import { lazy, Suspense } from 'react';
 import type { HmlGroupDto } from '@/api/approvals';
+import type { ApprovalRoundConfig } from '@/modals/ApprovalDetailsModal';
 import { chunkGuard } from '../../../../../../utils/chunkRecovery';
 import type { DocumentHeader } from '../../../../types';
-import type { ApprovalRoundConfig } from '../../../ApprovalDetailsModal';
 import type { ApproverSignature } from '../../../SignaturesSection';
 import type { ApprovalFlowStep } from '../../approvalWorkflow.types';
 
@@ -13,7 +13,7 @@ const AcceptenceVerification = lazy(
 );
 const ApprovalDetailsModal = lazy(
   chunkGuard(() =>
-    import('../../../ApprovalDetailsModal').then((m) => ({ default: m.ApprovalDetailsModal })),
+    import('@/modals/ApprovalDetailsModal').then((m) => ({ default: m.ApprovalDetailsModal })),
   ),
 );
 const ApprovalRotation = lazy(
@@ -22,16 +22,16 @@ const ApprovalRotation = lazy(
   ),
 );
 const DistributeDoc = lazy(
-  chunkGuard(() => import('../../../DistributeDoc').then((m) => ({ default: m.DistributeDoc }))),
+  chunkGuard(() => import('@/modals/DistributeDoc').then((m) => ({ default: m.DistributeDoc }))),
 );
 const EditDocDetailsModal = lazy(
   chunkGuard(() =>
-    import('../../../EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
+    import('@/modals/EditDocDetailsModal').then((m) => ({ default: m.EditDocDetailsModal })),
   ),
 );
 const ApprovalDirtyWarningModal = lazy(
   chunkGuard(() =>
-    import('../../../EditDocDetailsModal/components/ApprovalDirtyWarningModal').then((m) => ({
+    import('@/modals/EditDocDetailsModal/components/ApprovalDirtyWarningModal').then((m) => ({
       default: m.ApprovalDirtyWarningModal,
     })),
   ),

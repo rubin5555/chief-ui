@@ -1,4 +1,4 @@
-import type { PdfAccess } from '../../../../../../types';
+import type { PdfAccess } from '@/pages/document/types';
 import { PDF_ACCESS_OPTIONS } from '../../../../EditDocDetailsModal.constants';
 import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../EditDocDetailsModal.testids';
 import { OptionLabel, OptionRow } from '../components.shared.styles';

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { EDITOR_RIBBON_IDS } from '../../../src/components/ui/ContentEditor/components/EditorRibbon/EditorRibbon.testids';
+import { DOC_PERMISSIONS_MODAL_IDS } from '../../../src/modals/DocPermissionsModal/DocPermissionsModal.testids';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from '../../../src/pages/document/components/ClassifiedViewersModal/ClassifiedViewersModal.testids';
-import { DOC_PERMISSIONS_MODAL_IDS } from '../../../src/pages/document/components/DocPermissionsModal/DocPermissionsModal.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
 import { OUTLINE_SECTION_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSectionRow/OutlineSectionRow.testids';
 import { OUTLINE_SUBJECT_ROW_IDS } from '../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubjectRow/OutlineSubjectRow.testids';

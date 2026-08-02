@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form';
-import type { DocumentHeader } from '../../types';
+import type { DocumentHeader } from '@/pages/document/types';
 
 export const useDocDetailsForm = (
   header: DocumentHeader,

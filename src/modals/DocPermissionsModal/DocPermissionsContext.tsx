@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { createContext, lazy, Suspense, useCallback, useContext, useMemo, useState } from 'react';
-import { chunkGuard } from '../../../../utils/chunkRecovery';
+import { chunkGuard } from '@/utils/chunkRecovery';
 
 const DocPermissionsModal = lazy(
   chunkGuard(() =>

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { HML_GROUPS_FALLBACK, useHmlGroups } from '@/api/approvals';
 import { Button } from '@/components/ui/Button';
+import type { ApprovalRoundConfig } from '@/modals/ApprovalDetailsModal';
 import { DISTRIBUTED_STATUSES, EDITABLE_STATUSES } from '../../document.constants';
 import type { DocumentHeader } from '../../types';
-import type { ApprovalRoundConfig } from '../ApprovalDetailsModal';
 import { useSignatureGate } from '../SignaturesSection';
 import { useApprovalWorkflowAnalytics } from './ApprovalWorkflow.analytics';
 import { AcceptanceRow } from './ApprovalWorkflow.styles';

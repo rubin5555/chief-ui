@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import type { Member } from '@/components/PeoplePicker';
-import type { Subject } from '../../../../types';
+import type { Subject } from '@/pages/document/types';
 import { DOC_PERMISSIONS_MODAL_IDS } from '../../DocPermissionsModal.testids';
 import {
   AssignedCell,

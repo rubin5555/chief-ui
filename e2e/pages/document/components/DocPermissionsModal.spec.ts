@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
 import { PEOPLE_PICKER_IDS } from '../../../../src/components/PeoplePicker/PeoplePicker.testids';
 import { EXCEL_TAB_IDS } from '../../../../src/components/PeoplePicker/tabs/ExcelTab/ExcelTab.testids';
-import { DOC_PERMISSIONS_MODAL_IDS } from '../../../../src/pages/document/components/DocPermissionsModal/DocPermissionsModal.testids';
+import { DOC_PERMISSIONS_MODAL_IDS } from '../../../../src/modals/DocPermissionsModal/DocPermissionsModal.testids';
 
 const SHEET_FIXTURE = fileURLToPath(
   new URL('../../../fixtures/personal-numbers.xlsx', import.meta.url),

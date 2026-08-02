@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../../../src/components/layout/TopNavbar/components/DocActionToolbar/DocActionToolbar.testids';
 import { SELECT_IDS } from '../../../../src/components/ui/Select/Select.testids';
-import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/ApprovalDetailsModal/ApprovalDetailsModal.testids';
+import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/modals/ApprovalDetailsModal/ApprovalDetailsModal.testids';
+import { APPROVAL_DIRTY_WARNING_IDS } from '../../../../src/modals/EditDocDetailsModal/components/ApprovalDirtyWarningModal/ApprovalDirtyWarningModal.testids';
+import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/modals/EditDocDetailsModal/EditDocDetailsModal.testids';
 import { STATUS_FLOW_NAV_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/StatusFlowNav/StatusFlowNav.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
-import { APPROVAL_DIRTY_WARNING_IDS } from '../../../../src/pages/document/components/EditDocDetailsModal/components/ApprovalDirtyWarningModal/ApprovalDirtyWarningModal.testids';
-import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/pages/document/components/EditDocDetailsModal/EditDocDetailsModal.testids';
 import { SIGNATURE_TEXTAREA_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/SignatureTextarea/SignatureTextarea.testids';
 
 test('the dialog shows what the document is, what it says and how it goes out', async ({
