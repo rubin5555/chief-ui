@@ -1,4 +1,3 @@
-import type { ReactFormExtendedApi } from '@tanstack/react-form';
 import type {
   NodePermissions,
   Section,
@@ -122,21 +121,6 @@ export const nowDateTimeLocal = (): string => {
   const now = new Date();
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
 };
-
-export type TemplateFormApi = ReactFormExtendedApi<
-  TemplateFormValues,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any
->;
 
 export interface TemplateDraft {
   mode: TemplateModalMode;

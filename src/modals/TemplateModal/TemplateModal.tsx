@@ -1,4 +1,3 @@
-import { useForm } from '@tanstack/react-form';
 import type { FormEvent } from 'react';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -15,9 +14,10 @@ import { useAppendices } from './hooks/useAppendices';
 import { useEmphasis } from './hooks/useEmphasis';
 import { useFieldBank } from './hooks/useFieldBank';
 import { usePermissionsTarget } from './hooks/usePermissionsTarget';
+import { useTemplateForm } from './hooks/useTemplateForm';
 import { useTemplateModalAnalytics } from './TemplateModal.analytics';
 import type { TemplateDraft, TemplateModalMode } from './TemplateModal.constants';
-import { emptyTemplateFormValues, MODAL_TITLES, SAVE_LABELS } from './TemplateModal.constants';
+import { MODAL_TITLES, SAVE_LABELS } from './TemplateModal.constants';
 import { DetailsSection } from './TemplateModal.styles';
 import { TEMPLATE_MODAL_IDS } from './TemplateModal.testids';
 
@@ -46,10 +46,7 @@ export const TemplateModal = ({
   onClose,
   onSave,
 }: TemplateModalProps) => {
-  const form = useForm({
-    defaultValues: emptyTemplateFormValues(initialName),
-    onSubmit: () => {},
-  });
+  const form = useTemplateForm(initialName);
   const tree = useDocumentTree();
   const emphasis = useEmphasis();
 
@@ -71,7 +68,7 @@ export const TemplateModal = ({
 
   useEffect(() => {
     trackModalOpened(mode);
-  }, []);
+  }, [mode, trackModalOpened]);
 
   const isStructureDirty =
     tree.subjects.length > 0 ||
