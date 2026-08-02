@@ -14,14 +14,22 @@ export const DocumentPage = () => {
   const { data, loading } = useDocument(id);
   const { trackDocumentOpened } = useDocumentPageAnalytics();
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment above
+  // Keyed on the id rather than the `data` object: Apollo hands back a fresh
+  // object on every cache update, and depending on that would re-fire the open
+  // event for a document the reader never left.
+  const openedId = data?.id;
+
   useEffect(() => {
-    if (data) trackDocumentOpened(data.id);
-  }, [data]);
+    if (openedId) trackDocumentOpened(openedId);
+  }, [openedId, trackDocumentOpened]);
 
   return (
     <PageRoot dir="rtl" data-testid={DOCUMENT_PAGE_IDS.root}>
-      {loading || !data ? <DocumentPageSkeleton /> : <DocumentCanvas data={data} />}
+      {/* `key` matters: the canvas seeds local state from `data` (the subject
+          tree, status and header). A warm cache hit swaps `data` without ever
+          flipping `loading`, so without a remount the canvas would keep serving
+          the previously opened document. */}
+      {loading || !data ? <DocumentPageSkeleton /> : <DocumentCanvas key={data.id} data={data} />}
     </PageRoot>
   );
 };
