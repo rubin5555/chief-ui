@@ -1,3 +1,2 @@
 export { GridTable } from './GridTable';
-export type { TableHeaderCell } from './GridTable.types';
-export { GridTableRow } from './GridTableRow';
+export type { ColumnDef, RowConfig } from './GridTable.types';

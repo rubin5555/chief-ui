@@ -2,11 +2,13 @@ import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { HAMAL_GROUPS_FALLBACK, useHamalGroups } from '@/api/hamalGroups';
 import { Button } from '@/components/ui/Button';
+import type { RowConfig } from '@/components/ui/GridTable';
 import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { type Pos, useFloatingPanel } from '@/hooks/useFloatingPanel';
 import { useSearch } from '@/hooks/useSearch';
+import { ExpandedMemberBlock } from '../../components/ExpandedMemberBlock';
 import { ModalSearchInput } from '../../components/ModalSearchInput';
 import type { HamalGroup, Member, PersonMember } from '../../PeoplePicker.constants';
 import { TabImportBar } from '../components/TabImportBar';
@@ -14,10 +16,10 @@ import { useTabSelection } from '../hooks/useTabSelection';
 import { ClearBtn, EmptyState, TabRoot } from '../tabs.shared.styles';
 import { HamalAddMemberPanel } from './components/HamalAddMemberPanel';
 import { HamalCreateGroupPanel } from './components/HamalCreateGroupPanel';
-import { HamalGroupRow } from './components/HamalGroupRow';
+import { hamalColumns } from './HamalTab.columns';
 import { HAMAL_TAB_IDS } from './HamalTab.testids';
 
-const HAMAL_GRID = '28px 1fr 28px 28px';
+const groupKey = (group: HamalGroup) => group.id;
 
 interface HamalTabProps {
   addedGroupIds: Set<string>;
@@ -94,6 +96,27 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
     ? [...openGroup.members, ...(extraMembers[openGroup.id] ?? [])].map((m) => m.idNumber)
     : [];
 
+  const columns = hamalColumns({
+    selectedIds: selected.set,
+    addedGroupIds,
+    expandedId: expanded,
+    addMemberGroupId,
+    extraMembers,
+    onCheckClick: handleCheckClick,
+    onAddMemberClick: handleAddMemberClick,
+    onToggleExpand: handleToggleExpand,
+  });
+
+  const rowConfig = (group: HamalGroup): RowConfig => ({
+    isSelected: selected.set.has(group.id),
+    isAdded: addedGroupIds.has(group.id),
+    onClick: handleRowClick(group.id, addedGroupIds.has(group.id)),
+    expansion:
+      expanded === group.id ? (
+        <ExpandedMemberBlock members={[...group.members, ...(extraMembers[group.id] ?? [])]} />
+      ) : null,
+  });
+
   return (
     <TabRoot data-testid={HAMAL_TAB_IDS.root}>
       <SearchSlot>
@@ -125,30 +148,11 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
         <InlineSpinner />
       ) : (
         <GridTable
-          columns={HAMAL_GRID}
-          headers={[
-            { key: 'select' },
-            { key: 'name', label: 'שם הקבוצה', align: 'right' },
-            { key: 'count' },
-            { key: 'actions' },
-          ]}
+          columns={columns}
           items={filtered}
-          getRowKey={(group) => group.id}
+          getRowKey={groupKey}
+          row={rowConfig}
           emptyState={<EmptyState>לא נמצאו קבוצות</EmptyState>}
-          renderRow={(group: HamalGroup) => (
-            <HamalGroupRow
-              group={group}
-              extraMembers={extraMembers[group.id] ?? []}
-              isSelected={selected.set.has(group.id)}
-              isAdded={addedGroupIds.has(group.id)}
-              isExpanded={expanded === group.id}
-              isAddMemberOpen={addMemberGroupId === group.id}
-              onRowClick={handleRowClick(group.id, addedGroupIds.has(group.id))}
-              onCheckClick={handleCheckClick(group.id, addedGroupIds.has(group.id))}
-              onAddMemberClick={handleAddMemberClick(group.id)}
-              onToggleExpand={handleToggleExpand(group.id)}
-            />
-          )}
         />
       )}
 

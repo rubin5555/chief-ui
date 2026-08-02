@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { MIRAGE_GROUPS_FALLBACK, useMirageGroups } from '@/api/mirageGroups';
-import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import type { ColumnDef, RowConfig } from '@/components/ui/GridTable';
+import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
@@ -23,7 +24,7 @@ import {
 } from '../tabs.shared.styles';
 import { MIRAGE_TAB_IDS } from './MirageTab.testids';
 
-const MIRAGE_GRID = '28px 1fr 24px';
+const groupKey = (group: MirageGroup) => group.id;
 
 interface MirageTabProps {
   addedGroupIds: Set<string>;
@@ -66,6 +67,56 @@ export const MirageTab = ({ addedGroupIds, onImport }: MirageTabProps) => {
       g.environment.includes(debouncedSearch),
   );
 
+  const columns: ColumnDef<MirageGroup>[] = [
+    {
+      key: 'select',
+      width: '28px',
+      cell: (group) => (
+        <CheckboxCell
+          data-testid={MIRAGE_TAB_IDS.rowCheckbox(group.id)}
+          onClick={handleCheckClick(group.id, addedGroupIds.has(group.id))}
+        >
+          <SelectionCheckbox
+            isSelected={selected.set.has(group.id)}
+            isAdded={addedGroupIds.has(group.id)}
+          />
+        </CheckboxCell>
+      ),
+    },
+    {
+      key: 'name',
+      width: '1fr',
+      header: 'שם הקבוצה',
+      align: 'right',
+      cell: (group) => (
+        <NameCell>
+          {group.name}
+          <CountLabel>({group.members.length})</CountLabel>
+        </NameCell>
+      ),
+    },
+    {
+      key: 'actions',
+      width: '24px',
+      cell: (group) => (
+        <ExpandBtn
+          type="button"
+          data-testid={MIRAGE_TAB_IDS.rowExpand(group.id)}
+          onClick={handleToggleExpand(group.id)}
+        >
+          <ExpandChevron size={14} color={gray[400]} $isExpanded={expanded === group.id} />
+        </ExpandBtn>
+      ),
+    },
+  ];
+
+  const rowConfig = (group: MirageGroup): RowConfig => ({
+    isSelected: selected.set.has(group.id),
+    isAdded: addedGroupIds.has(group.id),
+    onClick: handleRowClick(group.id, addedGroupIds.has(group.id)),
+    expansion: expanded === group.id ? <ExpandedMemberBlock members={group.members} /> : null,
+  });
+
   return (
     <TabRoot>
       <SearchSlot>
@@ -87,47 +138,11 @@ export const MirageTab = ({ addedGroupIds, onImport }: MirageTabProps) => {
         <InlineSpinner />
       ) : (
         <GridTable
-          columns={MIRAGE_GRID}
-          headers={[
-            { key: 'select' },
-            { key: 'name', label: 'שם הקבוצה', align: 'right' },
-            { key: 'actions' },
-          ]}
+          columns={columns}
           items={filtered}
-          getRowKey={(group) => group.id}
+          getRowKey={groupKey}
+          row={rowConfig}
           emptyState={<EmptyState>לא נמצאו קבוצות</EmptyState>}
-          renderRow={(group: MirageGroup) => {
-            const isSelected = selected.set.has(group.id);
-            const isAdded = addedGroupIds.has(group.id);
-            const isExpanded = expanded === group.id;
-
-            return (
-              <GridTableRow
-                isSelected={isSelected}
-                isAdded={isAdded}
-                onClick={handleRowClick(group.id, isAdded)}
-                expansion={isExpanded ? <ExpandedMemberBlock members={group.members} /> : null}
-              >
-                <CheckboxCell
-                  data-testid={MIRAGE_TAB_IDS.rowCheckbox(group.id)}
-                  onClick={handleCheckClick(group.id, isAdded)}
-                >
-                  <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
-                </CheckboxCell>
-                <NameCell>
-                  {group.name}
-                  <CountLabel>({group.members.length})</CountLabel>
-                </NameCell>
-                <ExpandBtn
-                  type="button"
-                  data-testid={MIRAGE_TAB_IDS.rowExpand(group.id)}
-                  onClick={handleToggleExpand(group.id)}
-                >
-                  <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
-                </ExpandBtn>
-              </GridTableRow>
-            );
-          }}
         />
       )}
 

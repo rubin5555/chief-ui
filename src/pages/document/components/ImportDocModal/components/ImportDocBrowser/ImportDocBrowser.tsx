@@ -1,11 +1,11 @@
 import { Search } from 'lucide-react';
 import type { ImportDocItem } from '@/api/docs';
-import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import type { ColumnDef, RowConfig } from '@/components/ui/GridTable';
+import { GridTable } from '@/components/ui/GridTable';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { UnderlineTabs } from '@/components/ui/UnderlineTabs';
 import type { ImportDocTabId } from '../../ImportDocModal.constants';
 import {
-  DOC_TABLE_COLUMNS,
   FALLBACK_STATUS_COLOR,
   IMPORT_STATUS_COLOR,
   SEARCH_PLACEHOLDER,
@@ -26,6 +26,8 @@ import {
   TabsRow,
 } from './ImportDocBrowser.styles';
 
+const docKey = (doc: ImportDocItem) => doc.id;
+
 interface ImportDocBrowserProps {
   activeTab: ImportDocTabId;
   onTabChange: (id: string) => void;
@@ -45,17 +47,33 @@ export const ImportDocBrowser = ({
 }: ImportDocBrowserProps) => {
   const handleSelect = (doc: ImportDocItem) => () => onSelectDoc(doc);
 
-  const renderDocRow = (doc: ImportDocItem) => (
-    <GridTableRow onClick={handleSelect(doc)}>
-      <NameCell data-testid={IMPORT_DOC_MODAL_IDS.docRow(doc.id)}>{doc.name}</NameCell>
-      <MetaCell>{doc.org}</MetaCell>
-      <MetaCell>{doc.date}</MetaCell>
-      <StatusCell>
-        <StatusDot $color={IMPORT_STATUS_COLOR[doc.status] ?? FALLBACK_STATUS_COLOR} />
-        {doc.status}
-      </StatusCell>
-    </GridTableRow>
-  );
+  const columns: ColumnDef<ImportDocItem>[] = [
+    {
+      key: 'name',
+      width: '3fr',
+      header: 'שם המסמך',
+      align: 'right',
+      cell: (doc) => (
+        <NameCell data-testid={IMPORT_DOC_MODAL_IDS.docRow(doc.id)}>{doc.name}</NameCell>
+      ),
+    },
+    { key: 'org', width: '1fr', header: 'ארגון', cell: (doc) => <MetaCell>{doc.org}</MetaCell> },
+    { key: 'date', width: '1fr', header: 'תאריך', cell: (doc) => <MetaCell>{doc.date}</MetaCell> },
+    {
+      key: 'status',
+      width: '1fr',
+      header: 'סטטוס',
+      align: 'right',
+      cell: (doc) => (
+        <StatusCell>
+          <StatusDot $color={IMPORT_STATUS_COLOR[doc.status] ?? FALLBACK_STATUS_COLOR} />
+          {doc.status}
+        </StatusCell>
+      ),
+    },
+  ];
+
+  const rowConfig = (doc: ImportDocItem): RowConfig => ({ onClick: handleSelect(doc) });
 
   return (
     <BrowserRoot>
@@ -70,16 +88,10 @@ export const ImportDocBrowser = ({
       <TableWrap>
         <TableCard>
           <GridTable
-            columns={DOC_TABLE_COLUMNS}
-            headers={[
-              { key: 'name', label: 'שם המסמך', align: 'right' },
-              { key: 'org', label: 'ארגון' },
-              { key: 'date', label: 'תאריך' },
-              { key: 'status', label: 'סטטוס', align: 'right' },
-            ]}
+            columns={columns}
             items={docs}
-            getRowKey={(doc) => doc.id}
-            renderRow={renderDocRow}
+            getRowKey={docKey}
+            row={rowConfig}
             emptyState={
               <NoDocs data-testid={IMPORT_DOC_MODAL_IDS.noDocs}>
                 <NoDocsIcon>

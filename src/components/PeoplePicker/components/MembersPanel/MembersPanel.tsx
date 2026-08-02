@@ -1,30 +1,32 @@
-import { Trash2 } from 'lucide-react';
 import { memo, useState } from 'react';
-import { GridTable, GridTableRow } from '@/components/ui/GridTable';
-import { SubTable, SubTableRow } from '@/components/ui/SubTable';
-import type { Member, PersonMember } from '../../PeoplePicker.constants';
-import { MEMBERS_GRID, SUB_MEMBER_GRID } from '../../PeoplePicker.constants';
+import type { RowConfig } from '@/components/ui/GridTable';
+import { GridTable } from '@/components/ui/GridTable';
+import type { Member } from '../../PeoplePicker.constants';
 import { PEOPLE_PICKER_IDS } from '../../PeoplePicker.testids';
 import { ExpandedBlock } from '../components.shared.styles';
+import { GroupMemberTable, memberColumns } from './MembersPanel.columns';
 import {
-  CellText,
   EmptyMembersIcon,
   EmptyMembersState,
   EmptyMembersText,
-  ExpandBtn,
-  ExpandIcon,
   MemberCount,
-  MemberName,
-  MemberNameCell,
-  MemberSublabel,
   PanelHeader,
   PanelRoot,
   PanelTitle,
-  RemoveBtn,
-  SubMemberCell,
-  SubMemberName,
 } from './MembersPanel.styles';
-import { MEMBERS_PANEL_IDS } from './MembersPanel.testids';
+
+const memberKey = (member: Member) => member.id;
+
+const emptyState = (
+  <EmptyMembersState>
+    <EmptyMembersIcon size={40} />
+    <EmptyMembersText>
+      הוסף נמענים לרשימה באמצעות
+      <br />
+      החיפוש או ייבוא מהפאנל הימני
+    </EmptyMembersText>
+  </EmptyMembersState>
+);
 
 interface MembersPanelProps {
   members: Member[];
@@ -54,6 +56,28 @@ const MembersPanelComponent = ({ members, onRemove, title = 'נמענים' }: Me
   };
   const handleRemoveMember = (id: string) => () => onRemove(id);
 
+  const columns = memberColumns({
+    expandedId: groupExpanded,
+    onExpandClick: handleExpandBtn,
+    onRemoveGroup: handleRemoveBtn,
+    onRemoveMember: handleRemoveMember,
+  });
+
+  const rowConfig = (member: Member): RowConfig => {
+    if (!member.isGroup) return {};
+
+    const isExpanded = groupExpanded === member.id;
+    return {
+      onClick: handleRowExpand(member.id),
+      expansion:
+        isExpanded && member.groupMembers ? (
+          <ExpandedBlock>
+            <GroupMemberTable members={member.groupMembers} />
+          </ExpandedBlock>
+        ) : null,
+    };
+  };
+
   return (
     <PanelRoot data-testid={PEOPLE_PICKER_IDS.membersPanel}>
       <PanelHeader>
@@ -64,109 +88,11 @@ const MembersPanelComponent = ({ members, onRemove, title = 'נמענים' }: Me
       </PanelHeader>
 
       <GridTable
-        columns={MEMBERS_GRID}
-        headers={[
-          { key: 'select' },
-          { key: 'name', label: 'שם', align: 'right' },
-          { key: 'idNumber', label: 'ת.ז.' },
-          { key: 'organization', label: 'ארגון' },
-          { key: 'actions' },
-        ]}
+        columns={columns}
         items={members}
-        getRowKey={(member) => member.id}
-        emptyState={
-          <EmptyMembersState>
-            <EmptyMembersIcon size={40} />
-            <EmptyMembersText>
-              הוסף נמענים לרשימה באמצעות
-              <br />
-              החיפוש או ייבוא מהפאנל הימני
-            </EmptyMembersText>
-          </EmptyMembersState>
-        }
-        renderRow={(member: Member) => {
-          const isExpanded = groupExpanded === member.id;
-
-          if (member.isGroup) {
-            const memberCount = member.groupMembers?.length ?? 0;
-            return (
-              <GridTableRow
-                onClick={handleRowExpand(member.id)}
-                expansion={
-                  isExpanded && member.groupMembers ? (
-                    <ExpandedBlock>
-                      <SubTable
-                        columns={SUB_MEMBER_GRID}
-                        headers={[
-                          { key: 'spacer' },
-                          { key: 'name', label: 'שם מלא', align: 'right' },
-                          { key: 'idNumber', label: 'ת.ז.' },
-                          { key: 'organization', label: 'ארגון' },
-                          { key: 'actions' },
-                        ]}
-                        items={member.groupMembers}
-                        getRowKey={(m: PersonMember, i: number) => m.idNumber || i}
-                        renderRow={(m: PersonMember) => (
-                          <SubTableRow>
-                            <span />
-                            <SubMemberName>{m.name}</SubMemberName>
-                            <SubMemberCell $tabular>{m.idNumber}</SubMemberCell>
-                            <SubMemberCell>{m.environment}</SubMemberCell>
-                            <span />
-                          </SubTableRow>
-                        )}
-                      />
-                    </ExpandedBlock>
-                  ) : null
-                }
-              >
-                <ExpandBtn
-                  type="button"
-                  data-testid={MEMBERS_PANEL_IDS.rowExpand(member.id)}
-                  onClick={handleExpandBtn(member.id)}
-                >
-                  <ExpandIcon size={14} $isExpanded={isExpanded} />
-                </ExpandBtn>
-                <MemberNameCell>
-                  <MemberName $weight={600}>{member.name}</MemberName>
-                  {member.groupType && (
-                    <MemberSublabel>
-                      {member.groupType} · {memberCount} חברים
-                    </MemberSublabel>
-                  )}
-                </MemberNameCell>
-                <span />
-                <CellText>{member.environment}</CellText>
-                <RemoveBtn
-                  type="button"
-                  data-testid={MEMBERS_PANEL_IDS.rowRemove(member.id)}
-                  onClick={handleRemoveBtn(member.id)}
-                >
-                  <Trash2 size={14} />
-                </RemoveBtn>
-              </GridTableRow>
-            );
-          }
-
-          return (
-            <GridTableRow>
-              <span />
-              <MemberNameCell>
-                <MemberName>{member.name}</MemberName>
-                {member.subLabel && <MemberSublabel>{member.subLabel}</MemberSublabel>}
-              </MemberNameCell>
-              <CellText $tabular>{member.idNumber}</CellText>
-              <CellText>{member.environment}</CellText>
-              <RemoveBtn
-                type="button"
-                data-testid={MEMBERS_PANEL_IDS.rowRemove(member.id)}
-                onClick={handleRemoveMember(member.id)}
-              >
-                <Trash2 size={14} />
-              </RemoveBtn>
-            </GridTableRow>
-          );
-        }}
+        getRowKey={memberKey}
+        row={rowConfig}
+        emptyState={emptyState}
       />
     </PanelRoot>
   );

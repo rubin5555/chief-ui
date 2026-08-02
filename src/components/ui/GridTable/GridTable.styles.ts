@@ -27,6 +27,18 @@ export const HeaderCell = styled.span<{ $align?: 'right' | 'center' }>`
   text-align: ${({ $align }) => $align ?? 'center'};
 `;
 
+// Only wraps cells whose column returned a bare string or number — an element
+// is placed in the grid untouched, so a cell that needs its own styling keeps
+// bringing its own.
+export const BodyCell = styled.span<{ $align?: 'right' | 'center' }>`
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: ${({ $align }) => $align ?? 'center'};
+`;
+
 export const VirtualScrollSpacer = styled.div<{ $totalSize: number }>`
   position: relative;
   width: 100%;

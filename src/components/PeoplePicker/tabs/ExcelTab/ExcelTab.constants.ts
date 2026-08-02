@@ -6,8 +6,6 @@ const PERSONAL_NUMBER = /^[A-Za-z]?\d{6,9}$/;
 
 export const isPersonalNumber = (value: string) => PERSONAL_NUMBER.test(value);
 
-export const EXCEL_PREVIEW_GRID = '28px 1fr 80px 80px';
-
 export const SHEET_WIDTH = 340;
 
 export const SHEET_COLUMNS = ['A', 'B', 'C', 'D'] as const;

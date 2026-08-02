@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import type { ClassifiedViewerDto } from '@/api/classifiedViewers';
 import { CLASSIFIED_VIEWER_POOL_FALLBACK, useClassifiedViewerPool } from '@/api/classifiedViewers';
 import { Button } from '@/components/ui/Button';
-import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import type { ColumnDef, RowConfig } from '@/components/ui/GridTable';
+import { GridTable } from '@/components/ui/GridTable';
 import { Modal } from '@/components/ui/Modal';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -9,7 +11,7 @@ import { useClassifiedViewersModalAnalytics } from './ClassifiedViewersModal.ana
 import { Body, EmptyState, MutedCell, NameCell, TableWrap } from './ClassifiedViewersModal.styles';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from './ClassifiedViewersModal.testids';
 
-const GRID_COLUMNS = '28px 1fr 120px 140px';
+const personKey = (person: ClassifiedViewerDto) => person.id;
 
 export interface ClassifiedViewersModalProps {
   selectedIds: string[];
@@ -44,6 +46,47 @@ export const ClassifiedViewersModal = ({
     onChange(next);
   };
 
+  const columns: ColumnDef<ClassifiedViewerDto>[] = [
+    {
+      key: 'select',
+      width: '28px',
+      cell: (person) => (
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(person.id)}
+          onChange={handleToggle(person.id)}
+          data-testid={CLASSIFIED_VIEWERS_MODAL_IDS.checkbox(person.id)}
+        />
+      ),
+    },
+    {
+      key: 'name',
+      width: '1fr',
+      header: 'שם מלא',
+      align: 'right',
+      cell: (person) => <NameCell>{person.name}</NameCell>,
+    },
+    {
+      key: 'idNumber',
+      width: '120px',
+      header: 'ת.ז',
+      align: 'right',
+      cell: (person) => <MutedCell>{person.idNumber}</MutedCell>,
+    },
+    {
+      key: 'environment',
+      width: '140px',
+      header: 'סביבה',
+      align: 'right',
+      cell: (person) => <MutedCell>{person.env}</MutedCell>,
+    },
+  ];
+
+  const rowConfig = (person: ClassifiedViewerDto): RowConfig => ({
+    isSelected: selectedIds.includes(person.id),
+    onClick: handleToggle(person.id),
+  });
+
   return (
     <Modal
       title="רשימת צופים ממודרת"
@@ -61,32 +104,11 @@ export const ClassifiedViewersModal = ({
         <SearchBar value={search} onChange={setSearch} placeholder="חיפוש..." />
         <TableWrap>
           <GridTable
-            columns={GRID_COLUMNS}
-            headers={[
-              { key: 'select' },
-              { key: 'name', label: 'שם מלא', align: 'right' },
-              { key: 'idNumber', label: 'ת.ז', align: 'right' },
-              { key: 'environment', label: 'סביבה', align: 'right' },
-            ]}
+            columns={columns}
             items={filtered}
-            getRowKey={(person) => person.id}
+            getRowKey={personKey}
+            row={rowConfig}
             emptyState={<EmptyState>לא נמצאו תוצאות</EmptyState>}
-            renderRow={(person) => {
-              const isSelected = selectedIds.includes(person.id);
-              return (
-                <GridTableRow isSelected={isSelected} onClick={handleToggle(person.id)}>
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={handleToggle(person.id)}
-                    data-testid={CLASSIFIED_VIEWERS_MODAL_IDS.checkbox(person.id)}
-                  />
-                  <NameCell>{person.name}</NameCell>
-                  <MutedCell>{person.idNumber}</MutedCell>
-                  <MutedCell>{person.env}</MutedCell>
-                </GridTableRow>
-              );
-            }}
           />
         </TableWrap>
       </Body>

@@ -1,11 +1,13 @@
 import type { DirectoryUser } from '@/api/users';
-import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import type { ColumnDef, RowConfig } from '@/components/ui/GridTable';
+import { GridTable } from '@/components/ui/GridTable';
 import { SelectionCheckbox } from '../../../../components/SelectionCheckbox';
 import { CheckboxCell, EmptyState } from '../../../tabs.shared.styles';
-import { EXCEL_PREVIEW_GRID } from '../../ExcelTab.constants';
 import { EXCEL_TAB_IDS } from '../../ExcelTab.testids';
 import { ListCount, ListHeader, ListSection } from '../components.shared.styles';
 import { RowCell, RowName } from './ExcelFoundList.styles';
+
+const personKey = (person: DirectoryUser) => person.idNumber;
 
 interface ExcelFoundListProps {
   people: DirectoryUser[];
@@ -24,6 +26,49 @@ export const ExcelFoundList = ({
     if (!isAdded) onToggle(idNumber);
   };
 
+  const isRowSelected = (person: DirectoryUser) =>
+    !addedIdNumbers.has(person.idNumber) && !excludedIdNumbers.has(person.idNumber);
+
+  const columns: ColumnDef<DirectoryUser>[] = [
+    {
+      key: 'select',
+      width: '28px',
+      cell: (person) => (
+        <CheckboxCell data-testid={EXCEL_TAB_IDS.foundRow(person.idNumber)}>
+          <SelectionCheckbox
+            isSelected={isRowSelected(person)}
+            isAdded={addedIdNumbers.has(person.idNumber)}
+          />
+        </CheckboxCell>
+      ),
+    },
+    {
+      key: 'name',
+      width: '1fr',
+      header: 'שם',
+      align: 'right',
+      cell: (person) => <RowName>{person.name}</RowName>,
+    },
+    {
+      key: 'idNumber',
+      width: '80px',
+      header: 'ת.ז.',
+      cell: (person) => <RowCell $tabular>{person.idNumber}</RowCell>,
+    },
+    {
+      key: 'organization',
+      width: '80px',
+      header: 'ארגון',
+      cell: (person) => <RowCell>{person.environment}</RowCell>,
+    },
+  ];
+
+  const rowConfig = (person: DirectoryUser): RowConfig => ({
+    isSelected: isRowSelected(person),
+    isAdded: addedIdNumbers.has(person.idNumber),
+    onClick: handleToggle(person.idNumber, addedIdNumbers.has(person.idNumber)),
+  });
+
   return (
     <ListSection $fill data-testid={EXCEL_TAB_IDS.foundList}>
       <ListHeader>
@@ -32,35 +77,11 @@ export const ExcelFoundList = ({
       </ListHeader>
 
       <GridTable
-        columns={EXCEL_PREVIEW_GRID}
-        headers={[
-          { key: 'select' },
-          { key: 'name', label: 'שם', align: 'right' },
-          { key: 'idNumber', label: 'ת.ז.' },
-          { key: 'organization', label: 'ארגון' },
-        ]}
+        columns={columns}
         items={people}
-        getRowKey={(person) => person.idNumber}
+        getRowKey={personKey}
+        row={rowConfig}
         emptyState={<EmptyState>אף מספר אישי בקובץ לא נמצא במערכת</EmptyState>}
-        renderRow={(person: DirectoryUser) => {
-          const isAdded = addedIdNumbers.has(person.idNumber);
-          const isSelected = !isAdded && !excludedIdNumbers.has(person.idNumber);
-
-          return (
-            <GridTableRow
-              isSelected={isSelected}
-              isAdded={isAdded}
-              onClick={handleToggle(person.idNumber, isAdded)}
-            >
-              <CheckboxCell data-testid={EXCEL_TAB_IDS.foundRow(person.idNumber)}>
-                <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
-              </CheckboxCell>
-              <RowName>{person.name}</RowName>
-              <RowCell $tabular>{person.idNumber}</RowCell>
-              <RowCell>{person.environment}</RowCell>
-            </GridTableRow>
-          );
-        }}
       />
     </ListSection>
   );

@@ -16,6 +16,4 @@ export const IMPORT_STATUS_COLOR: Record<string, string> = {
 
 export const FALLBACK_STATUS_COLOR = docStatusColors.idle;
 
-export const DOC_TABLE_COLUMNS = '3fr 1fr 1fr 1fr';
-
 export const SEARCH_PLACEHOLDER = 'חיפוש לפי שם, מספר פקודה...';

@@ -1,22 +1,24 @@
 import { Filter } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { DOCS_FALLBACK, useDocs } from '@/api/docs';
+import type { RowConfig } from '@/components/ui/GridTable';
 import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
 import { ModalSearchInput } from '../../components/ModalSearchInput';
 import type { DocItem, Member } from '../../PeoplePicker.constants';
-import { DOC_GRID } from '../../PeoplePicker.constants';
 import { deduplicateMembers } from '../../utils/deduplicateMembers';
 import { TabImportBar } from '../components/TabImportBar';
 import { useTabSelection } from '../hooks/useTabSelection';
 import { EmptyState, SubTabBar, SubTabBtn, SubTabIndicator, TabRoot } from '../tabs.shared.styles';
 import { DocFilterPanel } from './components/DocFilterPanel';
-import { DocRow } from './components/DocRow';
+import { DocDistribution, docColumns } from './DocTab.columns';
 import { FilterBtnInline } from './DocTab.styles';
 import { DOC_TAB_IDS } from './DocTab.testids';
 import { useDocFilters } from './hooks/useDocFilters';
+
+const docKey = (doc: DocItem) => doc.id;
 
 interface DocTabProps {
   addedDocIds: Set<string>;
@@ -82,6 +84,21 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
     (d) => (!debouncedSearch || d.name.includes(debouncedSearch)) && filters.matches(d),
   );
 
+  const columns = docColumns({
+    selectedIds: selected.set,
+    addedDocIds,
+    expandedId: expanded,
+    onCheckClick: handleCheckClick,
+    onToggleExpand: handleToggleExpand,
+  });
+
+  const rowConfig = (doc: DocItem): RowConfig => ({
+    isSelected: selected.set.has(doc.id),
+    isAdded: addedDocIds.has(doc.id),
+    onClick: handleRowClick(doc.id, addedDocIds.has(doc.id)),
+    expansion: expanded === doc.id ? <DocDistribution doc={doc} /> : null,
+  });
+
   return (
     <TabRoot>
       <SubTabBar>
@@ -115,38 +132,11 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
         <InlineSpinner />
       ) : (
         <GridTable
-          columns={DOC_GRID}
-          headers={[
-            { key: 'select' },
-            { key: 'name', label: 'שם המסמך', align: 'right' },
-            { key: 'command', label: 'פקודה' },
-            { key: 'update', label: 'עדכון' },
-            { key: 'type', label: 'סוג' },
-            { key: 'organization', label: 'ארגון' },
-            { key: 'date', label: 'תאריך' },
-            { key: 'distribution', label: 'מ"פ' },
-            { key: 'actions' },
-          ]}
+          columns={columns}
           items={docs}
-          getRowKey={(doc) => doc.id}
+          getRowKey={docKey}
+          row={rowConfig}
           emptyState={<EmptyState>לא נמצאו מסמכים</EmptyState>}
-          renderRow={(doc: DocItem) => {
-            const isSelected = selected.set.has(doc.id);
-            const isAdded = addedDocIds.has(doc.id);
-            const isExpanded = expanded === doc.id;
-
-            return (
-              <DocRow
-                doc={doc}
-                isSelected={isSelected}
-                isAdded={isAdded}
-                isExpanded={isExpanded}
-                onRowClick={handleRowClick(doc.id, isAdded)}
-                onCheckClick={handleCheckClick(doc.id, isAdded)}
-                onToggleExpand={handleToggleExpand(doc.id)}
-              />
-            );
-          }}
         />
       )}
 

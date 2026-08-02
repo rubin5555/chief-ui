@@ -98,8 +98,3 @@ export const NETWORK_FILTERS: Array<{ value: NetworkFilter; label: string }> = [
   { value: 'sodi', label: 'סודי' },
   { value: 'aman', label: 'אמ"ן' },
 ];
-
-export const DOC_GRID = '28px 1fr 64px 58px 58px 80px 80px 58px 24px';
-export const MEMBERS_GRID = '28px 1fr 80px 80px 32px';
-export const SUB_MEMBER_GRID = '28px 1fr 64px 80px 32px';
-export const MEMBER_EXPAND_GRID = '28px 1fr 64px 80px';

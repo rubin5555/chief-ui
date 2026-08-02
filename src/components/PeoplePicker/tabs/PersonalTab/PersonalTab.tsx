@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PERSONAL_LISTS_FALLBACK, usePersonalLists } from '@/api/personalLists';
-import { GridTable, GridTableRow } from '@/components/ui/GridTable';
+import type { ColumnDef, RowConfig } from '@/components/ui/GridTable';
+import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { SearchSlot } from '@/context/SearchSlotContext';
 import { useSearch } from '@/hooks/useSearch';
@@ -25,7 +26,7 @@ import {
 } from '../tabs.shared.styles';
 import { PERSONAL_TAB_IDS } from './PersonalTab.testids';
 
-const PERSONAL_GRID = '28px 1fr 24px';
+const listKey = (list: PersonalList) => list.id;
 
 interface PersonalTabProps {
   addedListIds: Set<string>;
@@ -63,6 +64,51 @@ export const PersonalTab = ({ addedListIds, onImport }: PersonalTabProps) => {
     (l) => l.tab === listTab && (debouncedSearch === '' || l.name.includes(debouncedSearch)),
   );
 
+  const columns: ColumnDef<PersonalList>[] = [
+    {
+      key: 'select',
+      width: '28px',
+      cell: (list) => (
+        <SelectionCheckbox
+          isSelected={selected.set.has(list.id)}
+          isAdded={addedListIds.has(list.id)}
+        />
+      ),
+    },
+    {
+      key: 'name',
+      width: '1fr',
+      header: 'שם הרשימה',
+      align: 'right',
+      cell: (list) => (
+        <NameCell>
+          {list.name}
+          <CountLabel>({list.members.length})</CountLabel>
+        </NameCell>
+      ),
+    },
+    {
+      key: 'actions',
+      width: '24px',
+      cell: (list) => (
+        <ExpandBtn
+          type="button"
+          data-testid={PERSONAL_TAB_IDS.rowExpand(list.id)}
+          onClick={handleToggleExpand(list.id)}
+        >
+          <ExpandChevron size={14} color={gray[400]} $isExpanded={expanded === list.id} />
+        </ExpandBtn>
+      ),
+    },
+  ];
+
+  const rowConfig = (list: PersonalList): RowConfig => ({
+    isSelected: selected.set.has(list.id),
+    isAdded: addedListIds.has(list.id),
+    onClick: handleRowClick(list.id, addedListIds.has(list.id)),
+    expansion: expanded === list.id ? <ExpandedMemberBlock members={list.members} /> : null,
+  });
+
   return (
     <TabRoot>
       <SubTabBar>
@@ -82,42 +128,11 @@ export const PersonalTab = ({ addedListIds, onImport }: PersonalTabProps) => {
         <InlineSpinner />
       ) : (
         <GridTable
-          columns={PERSONAL_GRID}
-          headers={[
-            { key: 'select' },
-            { key: 'name', label: 'שם הרשימה', align: 'right' },
-            { key: 'actions' },
-          ]}
+          columns={columns}
           items={filtered}
-          getRowKey={(list) => list.id}
+          getRowKey={listKey}
+          row={rowConfig}
           emptyState={<EmptyState>לא נמצאו רשימות</EmptyState>}
-          renderRow={(list: PersonalList) => {
-            const isSelected = selected.set.has(list.id);
-            const isAdded = addedListIds.has(list.id);
-            const isExpanded = expanded === list.id;
-
-            return (
-              <GridTableRow
-                isSelected={isSelected}
-                isAdded={isAdded}
-                onClick={handleRowClick(list.id, isAdded)}
-                expansion={isExpanded ? <ExpandedMemberBlock members={list.members} /> : null}
-              >
-                <SelectionCheckbox isSelected={isSelected} isAdded={isAdded} />
-                <NameCell>
-                  {list.name}
-                  <CountLabel>({list.members.length})</CountLabel>
-                </NameCell>
-                <ExpandBtn
-                  type="button"
-                  data-testid={PERSONAL_TAB_IDS.rowExpand(list.id)}
-                  onClick={handleToggleExpand(list.id)}
-                >
-                  <ExpandChevron size={14} color={gray[400]} $isExpanded={isExpanded} />
-                </ExpandBtn>
-              </GridTableRow>
-            );
-          }}
         />
       )}
 
