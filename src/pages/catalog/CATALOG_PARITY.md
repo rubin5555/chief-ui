@@ -103,27 +103,39 @@ Recorded here rather than fixed silently. Each was a decision, not an oversight.
 
 ## Status of the port
 
-Ported and wired: the route and its search-param schema, the department/folder
-sidebar with folder CRUD, the four shelves, search, the filter funnel and its
-chip row, the distribution sub-tabs, the pager, expandable child documents, the
-row menu with its three inline-progress actions, and the recycle bin.
+Every screen and dialog main draws is ported. The route and its search-param
+schema, the department/folder sidebar with folder CRUD, the four shelves,
+search, the filter funnel and its chip row, the distribution sub-tabs, the
+pager, expandable child documents, the row menu with its three inline-progress
+actions, the new-document flow, and the recycle bin.
 
 Row actions resolve through `documentCatalog.rowActions.ts` to: doc details
 (four modes), permissions, the approval round, delete, cancel + its progress
-toast, version history, read receipts, and share.
+toast, version history, read receipts, share, and the document hierarchy.
+`שייך לתיקייה` returns `null` — it is drawn in three of main's menus and opens
+nothing there either.
 
-**Not ported yet.** Each is drawn on main and has no equivalent here:
+### The new-document form is `EditDocDetailsModal`
 
-| main | what it is |
-| --- | --- |
-| `NewDocModal` (`Catalog.tsx:1440-1634`) + `NewDocDropdown` | the new-document form and the split button that opens it. Its local `FLabel`/`FInput`/`FSelect`/`Toggle` are already shared components, and its 165-line local `DateTimePicker` is a duplicate of `ui/DateTimePicker` — neither should be copied. |
-| `DuplicateSearchModal` (`1393-1439`) | picks an existing document to duplicate from; the other half of the new-document dropdown. |
-| `DocHierarchyModal` (`514-691`) | the `יצירת היררכית מסמכים` row action. |
-| `שייך לתיקייה` | drawn in the row menu on three shelves, opens nothing on main either. |
+main's `NewDocModal` (`Catalog.tsx:1440-1634`) and the document navbar's
+doc-details dialog are the same form. Eleven of its fourteen fields were
+already there, on TanStack Form and `ui/Modal`; rather than port a second copy,
+`EditDocDetailsModal` gained a `new` mode:
 
-The first two are one feature and should land together. `modalForAction`
-returns `null` for anything unported, so an unwired action closes the menu and
-does nothing rather than erroring.
+- The five facts across the top — classification, template, organisation, order
+  number, update number — become editable (`DocIdentityFields`) instead of
+  read-only (`DocFactsGrid`). Nothing has been decided about a document that
+  doesn't exist yet.
+- A classification tag appears beside the level, for the two levels that carry
+  one, and clears when the level changes.
+- Display name and summary appear, because they are collected once at creation
+  and never shown again. They are optional on `DocumentHeader` for that reason —
+  the document page neither sets nor reads them.
+
+`שכפול מסמך קיים` opens `DuplicateSearchModal` over the distributed and archive
+shelves, then seeds the same form with five fields from what was picked. The
+reference number and the dates deliberately don't carry across: a copy is a new
+document.
 
 ## Residual coupling
 

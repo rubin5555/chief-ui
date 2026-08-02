@@ -39,6 +39,28 @@ export const NameInput = styled.input<{ $needsRename?: boolean }>`
   }
 `;
 
+// The same field box as `NameInput` without its rename-warning border — used by
+// the creation-only text fields.
+export const PlainInput = styled.input`
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: ${radii.lg};
+  border: 1.5px solid ${gray[200]};
+  background-color: ${colors.surface};
+  font-size: 13px;
+  color: ${gray[700]};
+  transition: border-color 0.15s;
+
+  &::placeholder {
+    color: ${gray[400]};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${colors.primary};
+  }
+`;
+
 export const FieldHint = styled.span`
   font-size: 10px;
   font-weight: 400;

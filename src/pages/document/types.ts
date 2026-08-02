@@ -76,6 +76,12 @@ export interface DocumentHeader {
   cancelApproval: boolean;
   watermark: boolean;
   distributeNatzura: boolean;
+  // Collected when a document is created and not shown again afterwards, which
+  // is why they are optional — the document page neither sets nor reads them.
+  displayName?: string;
+  summary?: string;
+  // Only the two highest classifications carry a tag.
+  classificationTag?: string;
 }
 
 export interface DocumentDto {

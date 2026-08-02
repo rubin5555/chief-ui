@@ -7,4 +7,13 @@ export const CATALOG_MODAL_IDS = {
   history: 'catalog-history-modal',
   historyStatusFilter: 'catalog-history-status-filter',
   historyRow: (ver: string) => `catalog-history-row-${ver}`,
+  duplicateSearch: 'catalog-duplicate-search',
+  duplicateSearchInput: 'catalog-duplicate-search-input',
+  duplicateSearchRow: (id: string) => `catalog-duplicate-search-row-${id}`,
+  docCreatedToast: 'catalog-doc-created-toast',
+  hierarchy: 'catalog-hierarchy-modal',
+  hierarchyMode: (mode: string) => `catalog-hierarchy-mode-${mode}`,
+  hierarchySearchInput: 'catalog-hierarchy-search',
+  hierarchyResult: (id: string) => `catalog-hierarchy-result-${id}`,
+  hierarchyCompanion: (id: string) => `catalog-hierarchy-companion-${id}`,
 } as const;

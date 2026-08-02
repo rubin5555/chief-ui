@@ -15,6 +15,7 @@ import {
   FullWidthField,
   LabelRow,
   NameInput,
+  PlainInput,
 } from '../components.shared.styles';
 import { DocDetailField } from '../DocDetailField';
 import { EntitySelector } from '../EntitySelector';
@@ -23,6 +24,9 @@ export interface DocDetailsFieldsProps {
   form: DocDetailsForm;
   needsRename: boolean;
   isLimitedEdit: boolean;
+  // A document being created also collects a display name and a summary. They
+  // are never shown again, so they only appear here while creating.
+  isCreating: boolean;
   onNameTouched: () => void;
 }
 
@@ -30,6 +34,7 @@ export const DocDetailsFields = ({
   form,
   needsRename,
   isLimitedEdit,
+  isCreating,
   onNameTouched,
 }: DocDetailsFieldsProps) => (
   <FieldGrid>
@@ -70,6 +75,32 @@ export const DocDetailsFields = ({
         }}
       </form.Field>
     </FullWidthField>
+
+    {isCreating && (
+      <form.Field name="displayName">
+        {(field) => {
+          const handleChange = (event: ChangeEvent<HTMLInputElement>) =>
+            field.handleChange(event.target.value);
+
+          return (
+            <DocDetailField
+              name="displayName"
+              readOnly={false}
+              label="סוג המסמך — שם תצוגה"
+              value={field.state.value}
+            >
+              <PlainInput
+                dir="rtl"
+                placeholder="שם לתצוגה"
+                value={field.state.value}
+                data-testid={EDIT_DOC_DETAILS_MODAL_IDS.displayNameInput}
+                onChange={handleChange}
+              />
+            </DocDetailField>
+          );
+        }}
+      </form.Field>
+    )}
 
     <form.Field name="department">
       {(field) => (
@@ -150,6 +181,34 @@ export const DocDetailsFields = ({
         )}
       </form.Field>
     </FullWidthField>
+
+    {isCreating && (
+      <FullWidthField>
+        <form.Field name="summary">
+          {(field) => {
+            const handleChange = (event: ChangeEvent<HTMLInputElement>) =>
+              field.handleChange(event.target.value);
+
+            return (
+              <DocDetailField
+                name="summary"
+                readOnly={false}
+                label="עיקרי המסמך"
+                value={field.state.value}
+              >
+                <PlainInput
+                  dir="rtl"
+                  placeholder="תאר את עיקרי המסמך..."
+                  value={field.state.value}
+                  data-testid={EDIT_DOC_DETAILS_MODAL_IDS.summaryInput}
+                  onChange={handleChange}
+                />
+              </DocDetailField>
+            );
+          }}
+        </form.Field>
+      </FullWidthField>
+    )}
 
     <form.Field name="effectiveDate">
       {(field) => (

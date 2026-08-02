@@ -14,7 +14,8 @@ export type CatalogModalKind =
   | 'cancel'
   | 'history'
   | 'receipts'
-  | 'reshare';
+  | 'reshare'
+  | 'hierarchy';
 
 export interface CatalogModalState {
   kind: CatalogModalKind;
@@ -54,7 +55,9 @@ export const modalForAction = (label: string, doc: CatalogDoc): CatalogModalStat
       return { kind: 'history', doc };
     case RECEIPTS_ACTION:
       return { kind: 'receipts', doc };
-    // `שייך לתיקייה` and `יצירת היררכית מסמכים` are not ported yet.
+    case ROW_ACTION.buildHierarchy:
+      return { kind: 'hierarchy', doc };
+    // `שייך לתיקייה` opens nothing on main either.
     default:
       return null;
   }
@@ -82,4 +85,42 @@ export const catalogDocToHeader = (doc: CatalogDoc): DocumentHeader => ({
   cancelApproval: false,
   watermark: false,
   distributeNatzura: false,
+});
+
+// A blank document, for the `פתיחת מסמך חדש` form. Every field starts empty
+// rather than guessed — the dialog's own selects supply the options.
+export const emptyDocHeader = (): DocumentHeader => ({
+  name: '',
+  organization: '',
+  template: '',
+  orderNum: '1',
+  updateNum: '',
+  classification: '',
+  referenceNum: '',
+  department: '',
+  docType: '',
+  folder: '',
+  entityType: '',
+  entityName: '',
+  effectiveDate: '',
+  expiryDate: '',
+  pdfAccess: 'authorized',
+  cancelApproval: false,
+  watermark: false,
+  distributeNatzura: false,
+  displayName: '',
+  summary: '',
+  classificationTag: '',
+});
+
+// `שכפול מסמך קיים` seeds the same form from a document that already exists.
+// main carries five fields across; the reference number and the dates are
+// deliberately not among them, because a copy is a new document.
+export const duplicateHeader = (source: CatalogDoc): DocumentHeader => ({
+  ...emptyDocHeader(),
+  name: source.name,
+  organization: source.env ?? '',
+  department: source.dept ?? '',
+  docType: source.type,
+  orderNum: source.orderNum,
 });

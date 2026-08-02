@@ -21,6 +21,10 @@ import { CatalogPager } from './components/CatalogPager';
 import { CatalogTabs } from './components/CatalogTabs';
 import { ChildDocRows } from './components/ChildDocRows';
 import { DistributionSubTabs } from './components/DistributionSubTabs';
+import { DocCreatedToast } from './components/DocCreatedToast';
+import { DocHierarchyModal } from './components/DocHierarchyModal';
+import { DuplicateSearchModal } from './components/DuplicateSearchModal';
+import { NewDocDropdown } from './components/NewDocDropdown';
 import { ReceiptConfirmModal } from './components/ReceiptConfirmModal';
 import type { RowMenuAnchor } from './components/RowActionMenu';
 import {
@@ -58,7 +62,12 @@ import { DOCUMENT_CATALOG_IDS } from './DocumentCatalog.testids';
 import type { CatalogFilters } from './documentCatalog.filters';
 import { filterCatalogDocs, uniqueValues } from './documentCatalog.filters';
 import type { CatalogModalState } from './documentCatalog.rowActions';
-import { catalogDocToHeader, modalForAction } from './documentCatalog.rowActions';
+import {
+  catalogDocToHeader,
+  duplicateHeader,
+  emptyDocHeader,
+  modalForAction,
+} from './documentCatalog.rowActions';
 
 const docKey = (doc: CatalogDoc) => doc.id;
 
@@ -100,6 +109,14 @@ export const DocumentCatalog = ({
   // cancel flow's progress toast outlives its dialog, hence its own flag.
   const [modal, setModal] = useState<CatalogModalState | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  // Creating a document is its own small flow: optionally pick something to
+  // copy, fill the form, then confirm. Separate flags because each state is
+  // reachable on its own — the picker can be cancelled, and the confirmation
+  // outlives the form that produced it.
+  const [isPickingSource, setIsPickingSource] = useState(false);
+  const [newDocSource, setNewDocSource] = useState<CatalogDoc | null>(null);
+  const [isCreatingDoc, setIsCreatingDoc] = useState(false);
+  const [isCreated, setIsCreated] = useState(false);
   // The permissions dialog is opened through the provider the page wraps this
   // component in, the same way the document page opens it — that is where its
   // lazy chunk and its own state already live.
@@ -118,6 +135,8 @@ export const DocumentCatalog = ({
     trackReceiptsOpened,
     trackReshare,
     trackTrashOpened,
+    trackNewDocOpened,
+    trackDocCreated,
   } = useDocumentCatalogAnalytics();
 
   // The URL takes every keystroke; the filtering runs off the settled value.
@@ -204,6 +223,33 @@ export const DocumentCatalog = ({
   };
 
   const onCancelToastClose = () => setIsCancelling(false);
+
+  const onNewDocClick = () => {
+    setNewDocSource(null);
+    setIsCreatingDoc(true);
+    trackNewDocOpened('חדש');
+  };
+
+  const onDuplicateDocClick = () => setIsPickingSource(true);
+  const onPickSourceClose = () => setIsPickingSource(false);
+
+  // Picking a source closes the picker and opens the form seeded from it.
+  const onPickSource = (doc: CatalogDoc) => {
+    setIsPickingSource(false);
+    setNewDocSource(doc);
+    setIsCreatingDoc(true);
+    trackNewDocOpened('שכפול');
+  };
+
+  const onNewDocClose = () => setIsCreatingDoc(false);
+
+  const onNewDocCreated = () => {
+    setIsCreatingDoc(false);
+    setIsCreated(true);
+    trackDocCreated(newDocSource ? 'שכפול' : 'חדש');
+  };
+
+  const onCreatedToastClose = () => setIsCreated(false);
 
   const handleHistoryClick = (doc: CatalogDoc) => (event: MouseEvent) => {
     event.stopPropagation();
@@ -295,14 +341,17 @@ export const DocumentCatalog = ({
         </SearchPill>
 
         {tab === 'drafts' && (
-          <RoundIconButton
-            type="button"
-            title={TRASH_TITLE}
-            data-testid={DOCUMENT_CATALOG_IDS.trashBtn}
-            onClick={handleTrashClick}
-          >
-            <Trash2 size={16} />
-          </RoundIconButton>
+          <>
+            <RoundIconButton
+              type="button"
+              title={TRASH_TITLE}
+              data-testid={DOCUMENT_CATALOG_IDS.trashBtn}
+              onClick={handleTrashClick}
+            >
+              <Trash2 size={16} />
+            </RoundIconButton>
+            <NewDocDropdown onNew={onNewDocClick} onDuplicate={onDuplicateDocClick} />
+          </>
         )}
       </ToolbarRow>
 
@@ -374,9 +423,28 @@ export const DocumentCatalog = ({
 
       {modal?.kind === 'receipts' && <ReceiptConfirmModal doc={modal.doc} onClose={closeModal} />}
 
+      {modal?.kind === 'hierarchy' && <DocHierarchyModal doc={modal.doc} onClose={closeModal} />}
+
       {modal?.kind === 'reshare' && (
         <DistributeDoc docName={modal.doc.name} onClose={closeModal} onSend={closeModal} />
       )}
+
+      {isPickingSource && (
+        <DuplicateSearchModal onSelect={onPickSource} onClose={onPickSourceClose} />
+      )}
+
+      {isCreatingDoc && (
+        <EditDocDetailsModal
+          key={newDocSource?.id ?? 'blank'}
+          mode="new"
+          header={newDocSource ? duplicateHeader(newDocSource) : emptyDocHeader()}
+          docStatus=""
+          onClose={onNewDocClose}
+          onSave={onNewDocCreated}
+        />
+      )}
+
+      {isCreated && <DocCreatedToast onClose={onCreatedToastClose} />}
     </CatalogBody>
   );
 };

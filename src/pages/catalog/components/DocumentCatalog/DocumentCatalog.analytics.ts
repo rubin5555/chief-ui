@@ -12,6 +12,8 @@ const ACTIONS = {
   OPEN_RECEIPTS: 'צפייה בווידוא קבלה',
   RESHARE: 'שיתוף מחדש',
   OPEN_TRASH: 'פתיחת סל מחזור',
+  OPEN_NEW_DOC: 'פתיחת טופס מסמך חדש',
+  CREATE_DOC: 'יצירת מסמך',
 } as const;
 
 export const useDocumentCatalogAnalytics = () => {
@@ -69,6 +71,22 @@ export const useDocumentCatalogAnalytics = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.OPEN_TRASH });
   };
 
+  const trackNewDocOpened = (source: string) => {
+    analytics.trackEvent({
+      category: ANALYTICS_CATEGORY,
+      action: ACTIONS.OPEN_NEW_DOC,
+      label: source,
+    });
+  };
+
+  const trackDocCreated = (source: string) => {
+    analytics.trackEvent({
+      category: ANALYTICS_CATEGORY,
+      action: ACTIONS.CREATE_DOC,
+      label: source,
+    });
+  };
+
   return {
     trackTabChanged,
     trackDistSubTabChanged,
@@ -79,5 +97,7 @@ export const useDocumentCatalogAnalytics = () => {
     trackReceiptsOpened,
     trackReshare,
     trackTrashOpened,
+    trackNewDocOpened,
+    trackDocCreated,
   };
 };

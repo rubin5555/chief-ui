@@ -6,10 +6,12 @@ import { LIMITED_EDIT_STATUSES } from '@/pages/document/document.constants';
 import type { DocumentHeader } from '@/pages/document/types';
 import { DocDetailsFields } from './components/DocDetailsFields';
 import { DocFactsGrid } from './components/DocFactsGrid';
+import { DocIdentityFields } from './components/DocIdentityFields';
 import { DocOptionsCard } from './components/DocOptionsCard';
 import { useEditDocDetailsModalAnalytics } from './EditDocDetailsModal.analytics';
 import {
   type EditDocDetailsMode,
+  isCreationMode,
   MODAL_MAX_HEIGHT,
   MODAL_TITLES,
   MODAL_WIDTH,
@@ -46,6 +48,7 @@ export const EditDocDetailsModal = ({
 
   const isLimitedEdit = LIMITED_EDIT_STATUSES.has(docStatus);
   const needsRename = mode === 'duplicate' && !nameTouched;
+  const isCreating = isCreationMode(mode);
 
   const orderNum =
     mode === 'issue-new'
@@ -108,18 +111,23 @@ export const EditDocDetailsModal = ({
           </form.Subscribe>
         )}
 
-        <DocFactsGrid
-          classification={header.classification}
-          template={header.template}
-          organization={header.organization}
-          orderNum={orderNum}
-          updateNum={updateNum}
-        />
+        {isCreating ? (
+          <DocIdentityFields form={form} />
+        ) : (
+          <DocFactsGrid
+            classification={header.classification}
+            template={header.template}
+            organization={header.organization}
+            orderNum={orderNum}
+            updateNum={updateNum}
+          />
+        )}
 
         <DocDetailsFields
           form={form}
           needsRename={needsRename}
           isLimitedEdit={isLimitedEdit}
+          isCreating={isCreating}
           onNameTouched={handleNameTouched}
         />
 

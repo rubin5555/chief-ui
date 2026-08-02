@@ -8,6 +8,15 @@ export const useDocDetailsForm = (
   useForm({
     defaultValues: {
       name: header.name,
+      // Editable only while creating; settled facts everywhere else.
+      organization: header.organization,
+      classification: header.classification,
+      classificationTag: header.classificationTag ?? '',
+      template: header.template,
+      orderNum: header.orderNum,
+      updateNum: header.updateNum,
+      displayName: header.displayName ?? '',
+      summary: header.summary ?? '',
       department: header.department,
       docType: header.docType,
       folder: header.folder,
