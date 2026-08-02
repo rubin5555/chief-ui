@@ -7,15 +7,29 @@ import type { RowConfig } from '@/components/ui/GridTable';
 import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { useDebounce } from '@/hooks/useDebounce';
+import { ActiveCatalogFilters } from './components/ActiveCatalogFilters';
+import type { CatalogFilterValues } from './components/CatalogFilterFunnel';
+import { CatalogFilterFunnel } from './components/CatalogFilterFunnel';
 import { CatalogPager } from './components/CatalogPager';
 import { CatalogTabs } from './components/CatalogTabs';
 import { ChildDocRows } from './components/ChildDocRows';
 import { DistributionSubTabs } from './components/DistributionSubTabs';
+import type { RowMenuAnchor } from './components/RowActionMenu';
+import {
+  INLINE_PHASE_ACTIONS,
+  ROW_ACTIONS,
+  RowActionMenu,
+  rowMenuAnchor,
+  useRowActionPhase,
+} from './components/RowActionMenu';
 import { useDocumentCatalogAnalytics } from './DocumentCatalog.analytics';
 import { catalogColumns } from './DocumentCatalog.columns';
 import {
+  HISTORY_TITLE,
   NO_DOCS_TEXT,
   PAGE_SIZE,
+  RECEIPTS_ACTION,
+  RESHARE_ACTION,
   SEARCH_PLACEHOLDER,
   TRASH_TITLE,
 } from './DocumentCatalog.constants';
@@ -33,7 +47,7 @@ import {
 } from './DocumentCatalog.styles';
 import { DOCUMENT_CATALOG_IDS } from './DocumentCatalog.testids';
 import type { CatalogFilters } from './documentCatalog.filters';
-import { filterCatalogDocs } from './documentCatalog.filters';
+import { filterCatalogDocs, uniqueValues } from './documentCatalog.filters';
 
 const docKey = (doc: CatalogDoc) => doc.id;
 
@@ -44,13 +58,15 @@ export interface DocumentCatalogProps {
   onTabChange: (tab: CatalogTab) => void;
   onDistSubChange: (label: string) => void;
   onSearchChange: (value: string) => void;
+  onFiltersChange: (patch: Partial<CatalogFilterValues>) => void;
+  onClearFilters: () => void;
   onPageChange: (page: number) => void;
   onOpenDoc: (doc: CatalogDoc) => void;
   onOpenTrash: () => void;
-  onOpenHistory: (doc: CatalogDoc) => void;
-  onOpenRowMenu: (doc: CatalogDoc, event: MouseEvent) => void;
-  onOpenReceipts: (doc: CatalogDoc) => void;
-  onReshare: (doc: CatalogDoc) => void;
+  // What a row action ultimately opens is a modal, and those land with the
+  // modals themselves. Until then the label travels out so the wiring is
+  // visible rather than silently dropped.
+  onRowAction: (doc: CatalogDoc, label: string) => void;
 }
 
 export const DocumentCatalog = ({
@@ -60,17 +76,20 @@ export const DocumentCatalog = ({
   onTabChange,
   onDistSubChange,
   onSearchChange,
+  onFiltersChange,
+  onClearFilters,
   onPageChange,
   onOpenDoc,
   onOpenTrash,
-  onOpenHistory,
-  onOpenRowMenu,
-  onOpenReceipts,
-  onReshare,
+  onRowAction,
 }: DocumentCatalogProps) => {
   // Which parent rows are showing their children. Purely visual and per-visit,
   // so unlike the filters it stays out of the URL.
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  // The open row menu, and the document it belongs to. The trigger lives in
+  // this component's columns, so the menu's state and its render do too.
+  const [menuRow, setMenuRow] = useState<{ doc: CatalogDoc; anchor: RowMenuAnchor } | null>(null);
+  const { phase, start: startPhase, reset: resetPhase } = useRowActionPhase(() => setMenuRow(null));
 
   const { data, loading } = useCatalogDocs(tab);
   const docs = data ?? CATALOG_DOCS_FALLBACK[tab];
@@ -90,6 +109,20 @@ export const DocumentCatalog = ({
   // The URL takes every keystroke; the filtering runs off the settled value.
   const debouncedSearch = useDebounce(filters.search);
   const filtered = filterCatalogDocs(docs, { ...filters, search: debouncedSearch });
+
+  // Status and organisation offer only what this shelf actually holds, so a
+  // filter can never select something that would match nothing.
+  const statusOptions = uniqueValues(docs, (doc) => doc.status);
+  const orgOptions = uniqueValues(docs, (doc) => doc.env);
+
+  const filterValues: CatalogFilterValues = {
+    templates: filters.templates,
+    statuses: filters.statuses,
+    depts: filters.depts,
+    orgs: filters.orgs,
+    from: filters.from,
+    to: filters.to,
+  };
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   // A filter change can strand the reader past the last page; clamping on the
@@ -133,26 +166,43 @@ export const DocumentCatalog = ({
     trackChildrenToggled(id);
   };
 
+  const closeMenu = () => {
+    setMenuRow(null);
+    resetPhase();
+  };
+
   const handleHistoryClick = (doc: CatalogDoc) => (event: MouseEvent) => {
     event.stopPropagation();
-    onOpenHistory(doc);
+    onRowAction(doc, HISTORY_TITLE);
   };
 
   const handleMenuClick = (doc: CatalogDoc) => (event: MouseEvent) => {
     event.stopPropagation();
-    onOpenRowMenu(doc, event);
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    setMenuRow({ doc, anchor: rowMenuAnchor(rect) });
   };
 
   const handleReceiptClick = (doc: CatalogDoc) => (event: MouseEvent) => {
     event.stopPropagation();
-    onOpenReceipts(doc);
+    onRowAction(doc, RECEIPTS_ACTION);
     trackReceiptsOpened(doc.name);
   };
 
   const handleReshareClick = (doc: CatalogDoc) => (event: MouseEvent) => {
     event.stopPropagation();
-    onReshare(doc);
+    onRowAction(doc, RESHARE_ACTION);
     trackReshare(doc.name);
+  };
+
+  // An inline action reports progress in place and closes the menu when it is
+  // done; everything else is handed straight up.
+  const handleMenuAction = (label: string) => {
+    if (!menuRow) return;
+    if (INLINE_PHASE_ACTIONS.has(label)) {
+      startPhase(label);
+      return;
+    }
+    onRowAction(menuRow.doc, label);
   };
 
   const handleRowClick = (doc: CatalogDoc) => () => {
@@ -200,6 +250,14 @@ export const DocumentCatalog = ({
             />
           </SearchFieldWrap>
           <PillDivider />
+          <CatalogFilterFunnel
+            values={filterValues}
+            statusOptions={statusOptions}
+            orgOptions={orgOptions}
+            isAllDocs={filters.isAllDocs}
+            onChange={onFiltersChange}
+            onClearAll={onClearFilters}
+          />
         </SearchPill>
 
         {tab === 'drafts' && (
@@ -213,6 +271,12 @@ export const DocumentCatalog = ({
           </RoundIconButton>
         )}
       </ToolbarRow>
+
+      <ActiveCatalogFilters
+        values={filterValues}
+        isAllDocs={filters.isAllDocs}
+        onChange={onFiltersChange}
+      />
 
       {filters.isDistribution && (
         <DistributionSubTabs active={filters.distSub} onChange={handleDistSubChange} />
@@ -234,6 +298,16 @@ export const DocumentCatalog = ({
       </TableCard>
 
       <CatalogPager page={safePage} totalPages={totalPages} onPageChange={handlePageChange} />
+
+      {menuRow && (
+        <RowActionMenu
+          actions={ROW_ACTIONS[tab]}
+          anchor={menuRow.anchor}
+          phase={phase}
+          onAction={handleMenuAction}
+          onClose={closeMenu}
+        />
+      )}
     </CatalogBody>
   );
 };

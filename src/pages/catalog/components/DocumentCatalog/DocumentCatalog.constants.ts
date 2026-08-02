@@ -26,6 +26,29 @@ export const DIST_SUB_STATUS: Record<string, string> = {
   בוטלו: 'התבטלה',
 };
 
+// Filter option lists. Templates and departments are fixed; statuses and
+// organisations are derived from whatever the current shelf actually contains.
+export const TEMPLATE_OPTIONS = ['פקודה', 'הוראה', 'מסמך', 'נספח'];
+
+export const DEPARTMENT_OPTIONS = [
+  'משאבי אנוש',
+  'כספים',
+  'טכנולוגיה',
+  'תפעול',
+  'לוגיסטיקה',
+  'הנדסה',
+  'מודיעין',
+  'תקשוב',
+];
+
+export const FILTER_TITLES = {
+  template: 'תבנית',
+  status: 'סטטוס',
+  dept: 'מחלקה',
+  dateRange: 'מועד כניסה לתוקף',
+  org: 'שם ארגון',
+} as const;
+
 export const SEARCH_PLACEHOLDER = 'חיפוש לפי שם, מספר פקודה...';
 export const NO_DOCS_TEXT = 'לא נמצאו מסמכים';
 export const EXPAND_TITLE = 'הצג מסמכים תחת מסמך זה';
@@ -39,3 +62,9 @@ export const NO_RECEIPT = '—';
 // How many page buttons the pager shows at once, and the size of a page.
 export const PAGE_WINDOW = 5;
 export const PAGE_SIZE = 8;
+
+// The clock and the receipt/reshare cells aren't in the row menu, but they
+// resolve to the same modals, so they travel out through the same channel and
+// need names of their own.
+export const RECEIPTS_ACTION = 'צפייה בווידוא קבלה';
+export const RESHARE_ACTION = 'שיתוף מחדש למשתמשים חדשים';

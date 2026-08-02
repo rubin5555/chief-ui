@@ -10,7 +10,9 @@ import {
   buildCalendarGrid,
   clamp,
   computeDropPos,
+  formatDateLocal,
   formatDateTimeLocal,
+  formatDisplayDate,
   formatDisplayValue,
   pad,
   parseDateTimeLocal,
@@ -19,18 +21,31 @@ import {
 interface DateTimePickerProps {
   value: string;
   onChange: (value: string) => void;
+  // `date` drops the hour/minute row and emits `yyyy-mm-dd`; `datetime` keeps
+  // both and emits `yyyy-mm-ddThh:mm`. The catalog's effective-date filter
+  // compares plain dates, which is the whole reason the mode exists.
+  mode?: 'date' | 'datetime';
+  placeholder?: string;
   id?: string;
   'aria-label'?: string;
   'data-testid'?: string;
 }
 
+const DEFAULT_PLACEHOLDER: Record<'date' | 'datetime', string> = {
+  date: 'בחר תאריך',
+  datetime: 'בחר תאריך ושעה',
+};
+
 export const DateTimePicker = ({
   value,
   onChange,
+  mode = 'datetime',
+  placeholder,
   id,
   'aria-label': ariaLabel,
   'data-testid': testId,
 }: DateTimePickerProps) => {
+  const withTime = mode === 'datetime';
   const selectedDate = parseDateTimeLocal(value);
   const [isOpen, setIsOpen] = useState(false);
   const [dropPos, setDropPos] = useState<DropPos | null>(null);
@@ -55,7 +70,8 @@ export const DateTimePicker = ({
 
   const onTriggerClick = () => (isOpen ? closeDropdown() : openDropdown());
 
-  const commit = (date: Date) => onChange(formatDateTimeLocal(date));
+  const commit = (date: Date) =>
+    onChange(withTime ? formatDateTimeLocal(date) : formatDateLocal(date));
 
   const onSelectDay = (day: Date) => () => {
     const hours = clamp(0, 23, Number(hourInput) || 0);
@@ -127,7 +143,11 @@ export const DateTimePicker = ({
       >
         <CalendarIcon size={14} />
         <TriggerText>
-          {selectedDate ? formatDisplayValue(selectedDate) : 'בחר תאריך ושעה'}
+          {selectedDate
+            ? withTime
+              ? formatDisplayValue(selectedDate)
+              : formatDisplayDate(selectedDate)
+            : (placeholder ?? DEFAULT_PLACEHOLDER[mode])}
         </TriggerText>
       </Trigger>
 
@@ -136,6 +156,7 @@ export const DateTimePicker = ({
           <CalendarPanel
             dropRef={dropRef}
             dropPos={dropPos}
+            showTime={withTime}
             calendarNav={{
               viewMonth,
               days,

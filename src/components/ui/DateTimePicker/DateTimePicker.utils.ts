@@ -15,8 +15,14 @@ export const parseDateTimeLocal = (value: string): Date | null => {
 export const formatDateTimeLocal = (date: Date): string =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
+export const formatDateLocal = (date: Date): string =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
 export const formatDisplayValue = (date: Date): string =>
-  `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  `${formatDisplayDate(date)} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+
+export const formatDisplayDate = (date: Date): string =>
+  `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
 
 export const dayKey = (date: Date) =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;

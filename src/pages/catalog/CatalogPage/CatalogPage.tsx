@@ -1,10 +1,9 @@
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { Search } from 'lucide-react';
-import type { MouseEvent } from 'react';
 import type { CatalogDoc, CatalogTab } from '@/api/catalog';
 import { CatalogSidebar } from '../components/CatalogSidebar';
-import type { CatalogFilters } from '../components/DocumentCatalog';
-import { DocumentCatalog, parseCsv } from '../components/DocumentCatalog';
+import type { CatalogFilters, CatalogFilterValues } from '../components/DocumentCatalog';
+import { DocumentCatalog, parseCsv, toCsv } from '../components/DocumentCatalog';
 import { ALL_DOCS_DEPARTMENT, CATALOG_DEFAULTS, EMPTY_STATE_TEXT } from './CatalogPage.constants';
 import { EmptyState, EmptyStateIcon, EmptyStateText, PageRoot } from './CatalogPage.styles';
 import { CATALOG_PAGE_IDS } from './CatalogPage.testids';
@@ -90,6 +89,38 @@ export const CatalogPage = () => {
   const handleSearchChange = (q: string) =>
     navigate({ search: (prev) => ({ ...prev, q, page: CATALOG_DEFAULTS.page }), replace: true });
 
+  // The funnel and the chip row both hand back a patch of whichever filters
+  // they touched; the mapping to search-param keys lives here, once.
+  const handleFiltersChange = (patch: Partial<CatalogFilterValues>) =>
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        ...(patch.templates !== undefined ? { template: toCsv(patch.templates) } : {}),
+        ...(patch.statuses !== undefined ? { status: toCsv(patch.statuses) } : {}),
+        ...(patch.depts !== undefined ? { deptFilter: toCsv(patch.depts) } : {}),
+        ...(patch.orgs !== undefined ? { org: toCsv(patch.orgs) } : {}),
+        ...(patch.from !== undefined ? { from: patch.from } : {}),
+        ...(patch.to !== undefined ? { to: patch.to } : {}),
+        page: CATALOG_DEFAULTS.page,
+      }),
+      replace: true,
+    });
+
+  const handleClearFilters = () =>
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        template: '',
+        status: '',
+        deptFilter: '',
+        org: '',
+        from: '',
+        to: '',
+        page: CATALOG_DEFAULTS.page,
+      }),
+      replace: true,
+    });
+
   const handlePageChange = (nextPage: number) =>
     navigate({ search: (prev) => ({ ...prev, page: nextPage }), replace: true });
 
@@ -98,10 +129,11 @@ export const CatalogPage = () => {
   const handleOpenDoc = (doc: CatalogDoc) =>
     navigateApp({ to: '/document/$id', params: { id: doc.id } });
 
-  // Row-level actions land in the next slices of this migration — the row menu
-  // and the eight modals it opens.
-  const noop = (_doc: CatalogDoc) => {};
-  const noopWithEvent = (_doc: CatalogDoc, _event: MouseEvent) => {};
+  // Every row action resolves to a modal, and those land in the next slice of
+  // this migration. Until then the label is logged rather than swallowed, so
+  // an unwired action is visible instead of silently doing nothing.
+  const handleRowAction = (doc: CatalogDoc, label: string) =>
+    console.info('[catalog] row action not wired yet:', label, doc.id);
 
   const filters: CatalogFilters = {
     search: search.q,
@@ -139,13 +171,12 @@ export const CatalogPage = () => {
           onTabChange={handleTabChange}
           onDistSubChange={handleDistSubChange}
           onSearchChange={handleSearchChange}
+          onFiltersChange={handleFiltersChange}
+          onClearFilters={handleClearFilters}
           onPageChange={handlePageChange}
           onOpenDoc={handleOpenDoc}
           onOpenTrash={handleOpenTrash}
-          onOpenHistory={noop}
-          onOpenRowMenu={noopWithEvent}
-          onOpenReceipts={noop}
-          onReshare={noop}
+          onRowAction={handleRowAction}
         />
       ) : (
         <EmptyState data-testid={CATALOG_PAGE_IDS.emptyState}>
