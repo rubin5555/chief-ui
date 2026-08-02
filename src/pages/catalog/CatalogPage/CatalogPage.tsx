@@ -5,6 +5,7 @@ import { DocPermissionsProvider } from '@/modals/DocPermissionsModal';
 import { CatalogSidebar } from '../components/CatalogSidebar';
 import type { CatalogFilters, CatalogFilterValues } from '../components/DocumentCatalog';
 import { DocumentCatalog, parseCsv, toCsv } from '../components/DocumentCatalog';
+import { TrashCatalog } from '../components/TrashCatalog';
 import { ALL_DOCS_DEPARTMENT, CATALOG_DEFAULTS, EMPTY_STATE_TEXT } from './CatalogPage.constants';
 import { EmptyState, EmptyStateIcon, EmptyStateText, PageRoot } from './CatalogPage.styles';
 import { CATALOG_PAGE_IDS } from './CatalogPage.testids';
@@ -16,7 +17,7 @@ export const CatalogPage = () => {
   const navigate = routeApi.useNavigate();
   const navigateApp = useNavigate();
 
-  const { dept, folder, sub, envFolder, envDept, tab, page } = search;
+  const { dept, folder, sub, envFolder, envDept, tab, page, trash } = search;
   const isAllDocs = dept === ALL_DOCS_DEPARTMENT;
 
   // Picking a department resets everything scoped to the previous one — folder,
@@ -127,6 +128,8 @@ export const CatalogPage = () => {
 
   const handleOpenTrash = () => navigate({ search: (prev) => ({ ...prev, trash: true }) });
 
+  const handleCloseTrash = () => navigate({ search: (prev) => ({ ...prev, trash: false }) });
+
   const handleOpenDoc = (doc: CatalogDoc) =>
     navigateApp({ to: '/document/$id', params: { id: doc.id } });
 
@@ -158,7 +161,9 @@ export const CatalogPage = () => {
         onOpenCommandPage={handleOpenCommandPage}
       />
 
-      {dept ? (
+      {trash && dept ? <TrashCatalog onBack={handleCloseTrash} /> : null}
+
+      {dept && !trash ? (
         <DocPermissionsProvider isDistributed={tab === 'distributed' || tab === 'archive'}>
           <DocumentCatalog
             tab={tab}

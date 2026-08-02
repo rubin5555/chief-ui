@@ -50,8 +50,12 @@ behaviour shouldn't be shared.
 | `#c7d9ff` | `catColors.primarySoftBorder` | border on a `primaryLight` pill |
 | `#f0f4ff` | `catColors.selectedTileBg` | selected tile in the hierarchy picker |
 | `#fca5a5` | `catColors.invalidBorder` | duplicate-name validation border |
-| `#ef4444` | `catColors.expirySoon` | trash countdown before it turns urgent |
+| `#ef4444` | `catColors.dangerSoft` | trash countdown, delete menu items, clear-all hover — Tailwind's red-500, softer than `colors.danger` (#c4342b) |
+| `#fef2f2` | `catColors.dangerSoftBg` | hover fill behind those |
 | `#f0f4f8` | `catColors.childRowBg` | expanded child-document block |
+| `rgba(255,255,255,.6)` / `.7` | `catColors.hoverVeil` / `hoverVeilStrong` | sidebar row hovers — translucent because what shows through is the page gradient |
+| `rgba(239,246,255,.5)` | `catColors.dashedHoverBg` | the new-folder dashed button's hover |
+| the 6-stop ramp | `catColors.canvasGradient` | the page background. One stop shorter than the document's, which holds flat from 85%. |
 | `#e0f2fe` | `--cat-status-preparing-bg` | `בהכנה` |
 | `#f3e8ff` / `#7c3aed` | `--cat-status-in-approval-bg` / `-ink` | `בסבב אישורים` |
 | `#fee2e2` | `--cat-status-rejected-bg` | `נדחתה` |
@@ -92,3 +96,39 @@ Recorded here rather than fixed silently. Each was a decision, not an oversight.
 | `וידוא קבלה` and `נוספו משתמשים` read from hard-coded arrays indexed by the row's position in the mock list | `receiptStatus` / `hasNewViewers` fields on the document | In main the values follow the row slot, so filtering or sorting reassigns them to different documents. |
 | Modal chrome hand-rolled as `fixed inset-0 z-[99999]` | `ui/Modal` | Brings the focus trap, Escape-to-close and overlay click that main's cards never had. |
 | Tabs, search, filters and page in `useState` | route search params | Per `.claude/skills/router-state-splitting.md` — the view becomes bookmarkable and survives refresh. |
+| `CatalogDocModal` for drafts, `EditDocDetailsModal` for the other shelves | `EditDocDetailsModal` everywhere | Same fields; the shared one already carries all four modes and has the focus trap. |
+| Filter chip bordered `#c7d9ff` | `ui/FilterChip`'s computed tint | The app has one filter chip. A second one differing by a border tint is not worth the duplication. |
+| Distribution tab narrows its column gap to `0.6rem` | 16px on every shelf | `GridTable`'s density owns the gap, and a per-call override is exactly the escape hatch `.claude/skills/table-columns.md` rules out. |
+| Two `useEffect`s reset the page and clear filters | neither exists | The page is clamped to the last page on the way out, and a shelf change writes the reset into the URL. |
+
+## Status of the port
+
+Ported and wired: the route and its search-param schema, the department/folder
+sidebar with folder CRUD, the four shelves, search, the filter funnel and its
+chip row, the distribution sub-tabs, the pager, expandable child documents, the
+row menu with its three inline-progress actions, and the recycle bin.
+
+Row actions resolve through `documentCatalog.rowActions.ts` to: doc details
+(four modes), permissions, the approval round, delete, cancel + its progress
+toast, version history, read receipts, and share.
+
+**Not ported yet.** Each is drawn on main and has no equivalent here:
+
+| main | what it is |
+| --- | --- |
+| `NewDocModal` (`Catalog.tsx:1440-1634`) + `NewDocDropdown` | the new-document form and the split button that opens it. Its local `FLabel`/`FInput`/`FSelect`/`Toggle` are already shared components, and its 165-line local `DateTimePicker` is a duplicate of `ui/DateTimePicker` — neither should be copied. |
+| `DuplicateSearchModal` (`1393-1439`) | picks an existing document to duplicate from; the other half of the new-document dropdown. |
+| `DocHierarchyModal` (`514-691`) | the `יצירת היררכית מסמכים` row action. |
+| `שייך לתיקייה` | drawn in the row menu on three shelves, opens nothing on main either. |
+
+The first two are one feature and should land together. `modalForAction`
+returns `null` for anything unported, so an unwired action closes the menu and
+does nothing rather than erroring.
+
+## Residual coupling
+
+Four modals moved to `src/modals/` because the catalog opens them too. Six
+imports still point back at the document page — five types (`DocumentHeader`,
+`PdfAccess`, `Subject`) and one status set (`LIMITED_EDIT_STATUSES`). Lifting
+those out of `src/pages/document/` is a 32-file change and belongs to its own
+commit.
