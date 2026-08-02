@@ -11,7 +11,7 @@ const MARKED_PREFIX = 'הנחיות הבטיחות';
 
 const words = (text: string) => text.replace(/\s+/g, ' ').trim();
 
-const writePassage = async (page: Page, body: Locator) => {
+const writePassage = async (body: Locator) => {
   await body.click();
   const editable = body.locator('[contenteditable="true"]');
   await expect(editable).toBeVisible();
@@ -34,7 +34,7 @@ test('marking a passage quotes it, and the quote jumps back to it', async ({ pag
   await page.goto('/document/d1');
 
   const body = page.getByTestId(EDITABLE_SECTION_BODY_IDS.content(SECTION));
-  await writePassage(page, body);
+  await writePassage(body);
 
   await clickCentred(page.getByTestId(SECTION_CHAT_IDS.trigger(SECTION)));
   await expect(body.locator('[contenteditable="true"]')).toHaveCount(0);
