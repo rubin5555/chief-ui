@@ -8,7 +8,6 @@ import { useSearch } from '@/hooks/useSearch';
 import { ModalSearchInput } from '../../components/ModalSearchInput';
 import type { DocItem, Member } from '../../PeoplePicker.constants';
 import { DOC_GRID } from '../../PeoplePicker.constants';
-import { ColHeader } from '../../PeoplePicker.shared.styles';
 import { deduplicateMembers } from '../../utils/deduplicateMembers';
 import { TabImportBar } from '../components/TabImportBar';
 import { useTabSelection } from '../hooks/useTabSelection';
@@ -118,15 +117,15 @@ export const DocTab = ({ addedDocIds, onImport }: DocTabProps) => {
         <GridTable
           columns={DOC_GRID}
           headers={[
-            null,
-            <ColHeader $align="right">שם המסמך</ColHeader>,
-            <ColHeader>פקודה</ColHeader>,
-            <ColHeader>עדכון</ColHeader>,
-            <ColHeader>סוג</ColHeader>,
-            <ColHeader>ארגון</ColHeader>,
-            <ColHeader>תאריך</ColHeader>,
-            <ColHeader>מ"פ</ColHeader>,
-            null,
+            { key: 'select' },
+            { key: 'name', label: 'שם המסמך', align: 'right' },
+            { key: 'command', label: 'פקודה' },
+            { key: 'update', label: 'עדכון' },
+            { key: 'type', label: 'סוג' },
+            { key: 'organization', label: 'ארגון' },
+            { key: 'date', label: 'תאריך' },
+            { key: 'distribution', label: 'מ"פ' },
+            { key: 'actions' },
           ]}
           items={docs}
           getRowKey={(doc) => doc.id}

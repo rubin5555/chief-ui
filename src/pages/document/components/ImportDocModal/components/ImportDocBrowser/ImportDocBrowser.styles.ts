@@ -40,11 +40,6 @@ export const TableCard = styled.div`
 	box-shadow: ${shadows.card};
 `;
 
-export const HeadCell = styled.span<{ $center?: boolean }>`
-	display: block;
-	text-align: ${({ $center }) => ($center ? 'center' : 'right')};
-`;
-
 export const NameCell = styled.span`
 	font-size: 14px;
 	font-weight: 500;

@@ -1,8 +1,10 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
+import type { TableHeaderCell } from '../GridTable';
 import { SubTableContext } from './SubTable.context';
 import {
+  SubHeaderCell,
   SubTableHeader,
   SubTableScrollViewport,
   SubTableVirtualRow,
@@ -15,7 +17,7 @@ const ROW_OVERSCAN = 8;
 
 interface SubTableProps<T> {
   columns: string;
-  headers: ReactNode[];
+  headers: TableHeaderCell[];
   items: T[];
   getRowKey: (item: T, index: number) => string | number;
   renderRow: (item: T, index: number) => ReactNode;
@@ -45,8 +47,10 @@ export const SubTable = <T,>({
   return (
     <SubTableContext.Provider value={columns}>
       <SubTableHeader $columns={columns}>
-        {headers.map((header, i) => (
-          <span key={i}>{header}</span>
+        {headers.map(({ key, label, align }) => (
+          <SubHeaderCell key={key} $align={align}>
+            {label}
+          </SubHeaderCell>
         ))}
       </SubTableHeader>
       <SubTableScrollViewport ref={scrollRef} $maxHeight={maxHeight}>

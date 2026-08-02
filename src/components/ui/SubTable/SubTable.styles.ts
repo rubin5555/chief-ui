@@ -13,6 +13,12 @@ export const SubTableHeader = styled.div<{ $columns: string }>`
   column-gap: 6px;
 `;
 
+export const SubHeaderCell = styled.span<{ $align?: 'right' | 'center' }>`
+  display: block;
+  width: 100%;
+  text-align: ${({ $align }) => $align ?? 'center'};
+`;
+
 export const SubTableScrollViewport = styled.div<{ $maxHeight: number }>`
   max-height: ${({ $maxHeight }) => $maxHeight}px;
   overflow-y: auto;

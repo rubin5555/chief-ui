@@ -4,7 +4,6 @@ import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { SubTable, SubTableRow } from '@/components/ui/SubTable';
 import type { Member, PersonMember } from '../../PeoplePicker.constants';
 import { MEMBERS_GRID, SUB_MEMBER_GRID } from '../../PeoplePicker.constants';
-import { ColHeader } from '../../PeoplePicker.shared.styles';
 import { PEOPLE_PICKER_IDS } from '../../PeoplePicker.testids';
 import { ExpandedBlock } from '../components.shared.styles';
 import {
@@ -67,11 +66,11 @@ const MembersPanelComponent = ({ members, onRemove, title = 'נמענים' }: Me
       <GridTable
         columns={MEMBERS_GRID}
         headers={[
-          null,
-          <ColHeader $align="right">שם</ColHeader>,
-          <ColHeader>ת.ז.</ColHeader>,
-          <ColHeader>ארגון</ColHeader>,
-          null,
+          { key: 'select' },
+          { key: 'name', label: 'שם', align: 'right' },
+          { key: 'idNumber', label: 'ת.ז.' },
+          { key: 'organization', label: 'ארגון' },
+          { key: 'actions' },
         ]}
         items={members}
         getRowKey={(member) => member.id}
@@ -99,11 +98,11 @@ const MembersPanelComponent = ({ members, onRemove, title = 'נמענים' }: Me
                       <SubTable
                         columns={SUB_MEMBER_GRID}
                         headers={[
-                          null,
-                          <ColHeader $align="right">שם מלא</ColHeader>,
-                          <ColHeader>ת.ז.</ColHeader>,
-                          <ColHeader>ארגון</ColHeader>,
-                          null,
+                          { key: 'spacer' },
+                          { key: 'name', label: 'שם מלא', align: 'right' },
+                          { key: 'idNumber', label: 'ת.ז.' },
+                          { key: 'organization', label: 'ארגון' },
+                          { key: 'actions' },
                         ]}
                         items={member.groupMembers}
                         getRowKey={(m: PersonMember, i: number) => m.idNumber || i}

@@ -14,7 +14,6 @@ import {
 import { IMPORT_DOC_MODAL_IDS } from '../../ImportDocModal.testids';
 import {
   BrowserRoot,
-  HeadCell,
   MetaCell,
   NameCell,
   NoDocs,
@@ -73,14 +72,10 @@ export const ImportDocBrowser = ({
           <GridTable
             columns={DOC_TABLE_COLUMNS}
             headers={[
-              <HeadCell key="name">שם המסמך</HeadCell>,
-              <HeadCell key="org" $center>
-                ארגון
-              </HeadCell>,
-              <HeadCell key="date" $center>
-                תאריך
-              </HeadCell>,
-              <HeadCell key="status">סטטוס</HeadCell>,
+              { key: 'name', label: 'שם המסמך', align: 'right' },
+              { key: 'org', label: 'ארגון' },
+              { key: 'date', label: 'תאריך' },
+              { key: 'status', label: 'סטטוס', align: 'right' },
             ]}
             items={docs}
             getRowKey={(doc) => doc.id}

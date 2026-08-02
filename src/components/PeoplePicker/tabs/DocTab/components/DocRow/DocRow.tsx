@@ -5,7 +5,6 @@ import { gray } from '@/styles/theme';
 import { SelectionCheckbox } from '../../../../components/SelectionCheckbox';
 import type { DocItem, PersonMember } from '../../../../PeoplePicker.constants';
 import { DOC_GRID } from '../../../../PeoplePicker.constants';
-import { ColHeader } from '../../../../PeoplePicker.shared.styles';
 import {
   CheckboxCell,
   CountLabel,
@@ -44,11 +43,11 @@ export const DocRow = ({
         <SubTable
           columns={DOC_GRID}
           headers={[
-            null,
-            <ColHeader $align="right">שם מלא</ColHeader>,
-            <ColHeader>תעודת זהות</ColHeader>,
-            null,
-            <ColHeader>ארגון</ColHeader>,
+            { key: 'spacer' },
+            { key: 'name', label: 'שם מלא', align: 'right' },
+            { key: 'idNumber', label: 'תעודת זהות' },
+            { key: 'gap' },
+            { key: 'organization', label: 'ארגון' },
           ]}
           items={doc.distribution}
           getRowKey={(p: PersonMember, i: number) => p.idNumber || i}

@@ -1,13 +1,7 @@
 import { SubTable, SubTableRow } from '@/components/ui/SubTable';
 import type { PersonMember } from '../../PeoplePicker.constants';
 import { MEMBER_EXPAND_GRID } from '../../PeoplePicker.constants';
-import {
-  ColCenter,
-  ColRight,
-  MemberCell,
-  MemberExpandedBlock,
-  MemberNameCell,
-} from './ExpandedMemberBlock.styles';
+import { MemberCell, MemberExpandedBlock, MemberNameCell } from './ExpandedMemberBlock.styles';
 
 interface ExpandedMemberBlockProps {
   members: PersonMember[];
@@ -18,10 +12,10 @@ export const ExpandedMemberBlock = ({ members }: ExpandedMemberBlockProps) => (
     <SubTable
       columns={MEMBER_EXPAND_GRID}
       headers={[
-        null,
-        <ColRight>שם מלא</ColRight>,
-        <ColCenter>תעודת זהות</ColCenter>,
-        <ColCenter>ארגון</ColCenter>,
+        { key: 'spacer' },
+        { key: 'name', label: 'שם מלא', align: 'right' },
+        { key: 'idNumber', label: 'תעודת זהות' },
+        { key: 'organization', label: 'ארגון' },
       ]}
       items={members}
       getRowKey={(m, i) => m.idNumber || i}

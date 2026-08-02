@@ -9,7 +9,6 @@ import { ExpandedMemberBlock } from '../../components/ExpandedMemberBlock';
 import { ModalSearchInput } from '../../components/ModalSearchInput';
 import { SelectionCheckbox } from '../../components/SelectionCheckbox';
 import type { Member, PersonalList } from '../../PeoplePicker.constants';
-import { ColHeader } from '../../PeoplePicker.shared.styles';
 import { deduplicateMembers } from '../../utils/deduplicateMembers';
 import { TabImportBar } from '../components/TabImportBar';
 import { useTabSelection } from '../hooks/useTabSelection';
@@ -84,7 +83,11 @@ export const PersonalTab = ({ addedListIds, onImport }: PersonalTabProps) => {
       ) : (
         <GridTable
           columns={PERSONAL_GRID}
-          headers={[null, <ColHeader $align="right">שם הרשימה</ColHeader>, null]}
+          headers={[
+            { key: 'select' },
+            { key: 'name', label: 'שם הרשימה', align: 'right' },
+            { key: 'actions' },
+          ]}
           items={filtered}
           getRowKey={(list) => list.id}
           emptyState={<EmptyState>לא נמצאו רשימות</EmptyState>}

@@ -5,14 +5,6 @@ import { ExpandedBlock } from '../components.shared.styles';
 
 export const MemberExpandedBlock = styled(ExpandedBlock)``;
 
-export const ColRight = styled.span`
-	text-align: right;
-`;
-
-export const ColCenter = styled.span`
-	text-align: center;
-`;
-
 export const MemberNameCell = styled.span`
 	text-align: right;
 	font-size: 11px;

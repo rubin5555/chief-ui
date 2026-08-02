@@ -9,7 +9,6 @@ import { ExpandedMemberBlock } from '../../components/ExpandedMemberBlock';
 import { ModalSearchInput } from '../../components/ModalSearchInput';
 import { SelectionCheckbox } from '../../components/SelectionCheckbox';
 import type { Member, MirageGroup } from '../../PeoplePicker.constants';
-import { ColHeader } from '../../PeoplePicker.shared.styles';
 import { TabImportBar } from '../components/TabImportBar';
 import { useTabSelection } from '../hooks/useTabSelection';
 import {
@@ -89,7 +88,11 @@ export const MirageTab = ({ addedGroupIds, onImport }: MirageTabProps) => {
       ) : (
         <GridTable
           columns={MIRAGE_GRID}
-          headers={[null, <ColHeader $align="right">שם הקבוצה</ColHeader>, null]}
+          headers={[
+            { key: 'select' },
+            { key: 'name', label: 'שם הקבוצה', align: 'right' },
+            { key: 'actions' },
+          ]}
           items={filtered}
           getRowKey={(group) => group.id}
           emptyState={<EmptyState>לא נמצאו קבוצות</EmptyState>}

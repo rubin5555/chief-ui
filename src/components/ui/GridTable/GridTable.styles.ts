@@ -21,6 +21,12 @@ export const TableHeader = styled.div<{ $columns: string }>`
   z-index: 10;
 `;
 
+export const HeaderCell = styled.span<{ $align?: 'right' | 'center' }>`
+  display: block;
+  width: 100%;
+  text-align: ${({ $align }) => $align ?? 'center'};
+`;
+
 export const VirtualScrollSpacer = styled.div<{ $totalSize: number }>`
   position: relative;
   width: 100%;

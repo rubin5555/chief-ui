@@ -2,12 +2,6 @@ import styled from 'styled-components';
 import { flexBetween, flexGap, resetButton } from '@/styles/mixins';
 import { colors, gray, radii } from '@/styles/theme';
 
-export const ColHeader = styled.span<{ $align?: 'right' | 'center' }>`
-  display: block;
-  width: 100%;
-  text-align: ${(p) => p.$align ?? 'center'};
-`;
-
 export const PopoverHeader = styled.div`
   ${flexBetween}
   padding: 12px 16px 8px;

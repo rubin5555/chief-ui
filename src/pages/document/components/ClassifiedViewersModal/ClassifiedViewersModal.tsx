@@ -62,7 +62,12 @@ export const ClassifiedViewersModal = ({
         <TableWrap>
           <GridTable
             columns={GRID_COLUMNS}
-            headers={[null, 'שם מלא', 'ת.ז', 'סביבה']}
+            headers={[
+              { key: 'select' },
+              { key: 'name', label: 'שם מלא', align: 'right' },
+              { key: 'idNumber', label: 'ת.ז', align: 'right' },
+              { key: 'environment', label: 'סביבה', align: 'right' },
+            ]}
             items={filtered}
             getRowKey={(person) => person.id}
             emptyState={<EmptyState>לא נמצאו תוצאות</EmptyState>}

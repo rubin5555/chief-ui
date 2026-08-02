@@ -9,7 +9,6 @@ import { type Pos, useFloatingPanel } from '@/hooks/useFloatingPanel';
 import { useSearch } from '@/hooks/useSearch';
 import { ModalSearchInput } from '../../components/ModalSearchInput';
 import type { HamalGroup, Member, PersonMember } from '../../PeoplePicker.constants';
-import { ColHeader } from '../../PeoplePicker.shared.styles';
 import { TabImportBar } from '../components/TabImportBar';
 import { useTabSelection } from '../hooks/useTabSelection';
 import { ClearBtn, EmptyState, TabRoot } from '../tabs.shared.styles';
@@ -127,7 +126,12 @@ export const HamalTab = ({ addedGroupIds, onImport }: HamalTabProps) => {
       ) : (
         <GridTable
           columns={HAMAL_GRID}
-          headers={[null, <ColHeader $align="right">שם הקבוצה</ColHeader>, null, null]}
+          headers={[
+            { key: 'select' },
+            { key: 'name', label: 'שם הקבוצה', align: 'right' },
+            { key: 'count' },
+            { key: 'actions' },
+          ]}
           items={filtered}
           getRowKey={(group) => group.id}
           emptyState={<EmptyState>לא נמצאו קבוצות</EmptyState>}

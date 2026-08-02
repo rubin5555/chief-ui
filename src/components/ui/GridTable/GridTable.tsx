@@ -2,14 +2,21 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
 import { GridTableContext } from './GridTable.context';
-import { TableHeader, TableScrollBody, VirtualRow, VirtualScrollSpacer } from './GridTable.styles';
+import {
+  HeaderCell,
+  TableHeader,
+  TableScrollBody,
+  VirtualRow,
+  VirtualScrollSpacer,
+} from './GridTable.styles';
+import type { TableHeaderCell } from './GridTable.types';
 
 const DEFAULT_ROW_HEIGHT = 44;
 const ROW_OVERSCAN = 8;
 
 interface GridTableProps<T> {
   columns: string;
-  headers: ReactNode[];
+  headers: TableHeaderCell[];
   items: T[];
   getRowKey: (item: T, index: number) => string | number;
   renderRow: (item: T, index: number) => ReactNode;
@@ -40,8 +47,10 @@ export const GridTable = <T,>({
     <GridTableContext.Provider value={columns}>
       <TableScrollBody ref={scrollRef}>
         <TableHeader $columns={columns}>
-          {headers.map((header, i) => (
-            <span key={i}>{header}</span>
+          {headers.map(({ key, label, align }) => (
+            <HeaderCell key={key} $align={align}>
+              {label}
+            </HeaderCell>
           ))}
         </TableHeader>
         {items.length === 0 ? (

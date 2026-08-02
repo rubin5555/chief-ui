@@ -1,7 +1,6 @@
 import type { DirectoryUser } from '@/api/users';
 import { GridTable, GridTableRow } from '@/components/ui/GridTable';
 import { SelectionCheckbox } from '../../../../components/SelectionCheckbox';
-import { ColHeader } from '../../../../PeoplePicker.shared.styles';
 import { CheckboxCell, EmptyState } from '../../../tabs.shared.styles';
 import { EXCEL_PREVIEW_GRID } from '../../ExcelTab.constants';
 import { EXCEL_TAB_IDS } from '../../ExcelTab.testids';
@@ -35,10 +34,10 @@ export const ExcelFoundList = ({
       <GridTable
         columns={EXCEL_PREVIEW_GRID}
         headers={[
-          null,
-          <ColHeader $align="right">שם</ColHeader>,
-          <ColHeader>ת.ז.</ColHeader>,
-          <ColHeader>ארגון</ColHeader>,
+          { key: 'select' },
+          { key: 'name', label: 'שם', align: 'right' },
+          { key: 'idNumber', label: 'ת.ז.' },
+          { key: 'organization', label: 'ארגון' },
         ]}
         items={people}
         getRowKey={(person) => person.idNumber}
