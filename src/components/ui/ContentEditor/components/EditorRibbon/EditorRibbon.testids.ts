@@ -5,8 +5,6 @@ export const EDITOR_RIBBON_IDS = {
   colorChevron: (id: string) => `editor-ribbon-color-chevron-${id}`,
   colorMenu: (id: string) => `editor-ribbon-color-menu-${id}`,
   colorSwatch: (id: string, color: string) => `editor-ribbon-swatch-${id}-${color}`,
-  customColorTrigger: (id: string) => `editor-ribbon-custom-${id}`,
-  customColorPicker: 'editor-ribbon-custom-picker',
   indentDecrease: 'editor-ribbon-indent-decrease',
   indentIncrease: 'editor-ribbon-indent-increase',
   footnote: 'editor-ribbon-footnote',

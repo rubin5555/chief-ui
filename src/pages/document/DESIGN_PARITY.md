@@ -102,6 +102,14 @@ this feature where that is correct:
 Both palettes belong to `DocToolbar`, which lives in `parity/` rather than the
 live page (see `parity/README.md`).
 
+**main's custom picker is not ported.** `Edit.tsx:606-746` puts a
+saturation/hue/RGB picker behind a `התאמה אישית` row under each palette; the
+ribbon here offers the twelve swatches and stops. Removed on request, not by
+oversight — the twelve are the document's colours, and an arbitrary hex is a
+choice no other part of this app lets anyone make. The panel is sized from the
+grid it holds (`ColorPaletteMenu.constants.ts`) rather than from a number, so
+the swatches cannot end up wider than the box drawn around them.
+
 ## Geometry
 
 Colours are only half of parity. `document.measurements.ts` holds the layout
