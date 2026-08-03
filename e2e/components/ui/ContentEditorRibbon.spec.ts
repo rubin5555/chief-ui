@@ -1,8 +1,10 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
+import { TEXT_COLORS } from '../../../src/components/ui/ContentEditor/components/EditorRibbon/EditorRibbon.constants';
 import { EDITOR_RIBBON_IDS } from '../../../src/components/ui/ContentEditor/components/EditorRibbon/EditorRibbon.testids';
 import { TABLE_EDIT_BAR_IDS } from '../../../src/components/ui/ContentEditor/components/TableEditBar/TableEditBar.testids';
 import { EDITABLE_SECTION_BODY_IDS } from '../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
+import { PAPER_CANVAS_IDS } from '../../../src/pages/document/components/PaperCanvas/PaperCanvas.testids';
 
 const openSection = async (page: Page): Promise<Locator> => {
   const sectionContent = page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'));
@@ -60,6 +62,69 @@ test('picking a colour from the palette applies it to the selection', async ({ p
   await page.getByTestId(EDITOR_RIBBON_IDS.colorSwatch('text', '#dc2626')).click();
 
   await expect(editable.locator('span[style*="rgb(220, 38, 38)"]')).toHaveText('צבעוני');
+});
+
+test('the selection survives a pick, so the next colour lands on it too', async ({ page }) => {
+  await page.goto('/document/d1');
+  const editable = await openSection(page);
+
+  await typeAndSelectAll(page, 'צבעוני');
+
+  await page.getByTestId(EDITOR_RIBBON_IDS.colorChevron('text')).click();
+  await page.getByTestId(EDITOR_RIBBON_IDS.colorSwatch('text', '#dc2626')).click();
+  await expect(editable.locator('span[style*="rgb(220, 38, 38)"]')).toHaveText('צבעוני');
+
+  // No re-selecting in between. A swatch that took focus would drop the
+  // highlight — and the browser would grey out what was left of it — so the
+  // second colour would land on nothing.
+  await page.getByTestId(EDITOR_RIBBON_IDS.colorChevron('text')).click();
+  await page.getByTestId(EDITOR_RIBBON_IDS.colorSwatch('text', '#16a34a')).click();
+  await expect(editable.locator('span[style*="rgb(22, 163, 74)"]')).toHaveText('צבעוני');
+});
+
+test('the palette offers the document colours and nothing else', async ({ page }) => {
+  await page.goto('/document/d1');
+  await openSection(page);
+
+  await page.getByTestId(EDITOR_RIBBON_IDS.colorChevron('text')).click();
+
+  const menu = page.getByTestId(EDITOR_RIBBON_IDS.colorMenu('text'));
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole('button')).toHaveCount(TEXT_COLORS.length);
+});
+
+test('every swatch fits inside the palette that holds it', async ({ page }) => {
+  await page.goto('/document/d1');
+  await openSection(page);
+
+  await page.getByTestId(EDITOR_RIBBON_IDS.colorChevron('text')).click();
+  const menu = page.getByTestId(EDITOR_RIBBON_IDS.colorMenu('text'));
+  const menuBox = await menu.boundingBox();
+  if (!menuBox) throw new Error('the palette has no layout');
+
+  // The panel used to be given a width narrower than its own grid, so the
+  // swatches overflowed their tracks and the last column sat outside the box.
+  for (const color of TEXT_COLORS) {
+    const box = await page.getByTestId(EDITOR_RIBBON_IDS.colorSwatch('text', color)).boundingBox();
+    if (!box) throw new Error(`no layout for ${color}`);
+    expect(box.x).toBeGreaterThanOrEqual(menuBox.x);
+    expect(box.x + box.width).toBeLessThanOrEqual(menuBox.x + menuBox.width);
+  }
+
+  expect(await menu.evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
+});
+
+test('a palette does not outlive the field it formats', async ({ page }) => {
+  await page.goto('/document/d1');
+  await openSection(page);
+
+  await page.getByTestId(EDITOR_RIBBON_IDS.colorChevron('text')).click();
+  await expect(page.getByTestId(EDITOR_RIBBON_IDS.colorMenu('text'))).toBeVisible();
+
+  await page.getByTestId(PAPER_CANVAS_IDS.root).click({ position: { x: 4, y: 200 } });
+
+  await expect(page.getByTestId(EDITOR_RIBBON_IDS.toggle('bold'))).toBeDisabled();
+  await expect(page.getByTestId(EDITOR_RIBBON_IDS.colorMenu('text'))).toHaveCount(0);
 });
 
 test('find and replace runs against the field, not against a mock', async ({ page }) => {

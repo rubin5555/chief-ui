@@ -6,10 +6,16 @@ import { computeFloatingPos, estimatePos, measurePanel, samePos } from './floati
 
 export interface FloatingPanelOptions {
   focusOnOpen?: boolean;
+  // Shuts the panel the moment this turns true, for a panel that cannot
+  // outlive what it acts on. The ribbon's are the case: the editor they format
+  // is gone the instant the section deactivates, and a palette left hanging
+  // over the document applies its colours to nothing.
+  closeWhen?: boolean;
 }
 
 export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElement>({
   focusOnOpen = false,
+  closeWhen = false,
 }: FloatingPanelOptions = {}) => {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<Pos | null>(null);
@@ -37,6 +43,15 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
     document.addEventListener('mousedown', onMouseDown);
     return () => document.removeEventListener('mousedown', onMouseDown);
   }, []);
+
+  useEffect(() => {
+    if (!closeWhen) return;
+    // No refocus: whatever took the trigger's reason to exist has the focus
+    // now, and pulling it back onto a button that just went dead would be a
+    // second thing going wrong rather than a recovery.
+    suppressRefocusRef.current = true;
+    setOpen(false);
+  }, [closeWhen]);
 
   useEffect(() => {
     if (wasOpenRef.current && !open) {

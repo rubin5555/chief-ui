@@ -14,7 +14,7 @@ export interface TableSizePickerProps {
 }
 
 export const TableSizePicker = ({ disabled, onInsert }: TableSizePickerProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true, closeWhen: disabled });
   const [hover, setHover] = useState<{ rows: number; cols: number } | null>(null);
 
   const handleToggle = () => {

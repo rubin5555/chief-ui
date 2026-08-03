@@ -1,9 +1,15 @@
 import styled from 'styled-components';
-import { flexGap, resetButton } from '@/styles/mixins';
-import { colors, docColors, gray, radii } from '@/styles/theme';
+import { resetButton } from '@/styles/mixins';
+import { colors, gray, radii } from '@/styles/theme';
+import {
+  MENU_PADDING_X,
+  SWATCH_COLUMNS,
+  SWATCH_GAP,
+  SWATCH_SIZE,
+} from './ColorPaletteMenu.constants';
 
 export const MenuBody = styled.div`
-  padding: 10px 12px;
+  padding: 10px ${MENU_PADDING_X}px;
   direction: rtl;
 `;
 
@@ -14,45 +20,25 @@ export const MenuTitle = styled.p`
   color: ${gray[400]};
 `;
 
+// Tracks the exact width of a swatch, not `1fr`: a fractional track that came
+// out narrower than the swatch left every one of them spilling over its
+// neighbour and the last column outside the panel.
 export const SwatchGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
-  margin-bottom: 10px;
+  grid-template-columns: repeat(${SWATCH_COLUMNS}, ${SWATCH_SIZE}px);
+  gap: ${SWATCH_GAP}px;
 `;
 
 export const Swatch = styled.button<{ $color: string; $selected: boolean }>`
   ${resetButton}
-  width: 22px;
-  height: 22px;
+  width: ${SWATCH_SIZE}px;
+  height: ${SWATCH_SIZE}px;
   border-radius: ${radii.md};
   background: ${({ $color }) => $color};
   border: ${({ $selected }) =>
     $selected ? `2px solid ${colors.primary}` : `1px solid ${gray[200]}`};
-`;
 
-export const CustomRow = styled.div`
-  padding-top: 8px;
-  border-top: 1px solid ${docColors.hairline};
-`;
-
-export const CustomButton = styled.button`
-  ${resetButton}
-  ${flexGap(8)}
-  width: 100%;
-  padding: 2px 0;
-`;
-
-export const CustomPreview = styled.span<{ $color: string }>`
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  border-radius: ${radii.md};
-  border: 1px solid ${gray[200]};
-  background: ${({ $color }) => $color};
-`;
-
-export const CustomLabel = styled.span`
-  font-size: 11px;
-  color: ${gray[700]};
+  &:hover {
+    border-color: ${({ $selected }) => ($selected ? colors.primary : gray[400])};
+  }
 `;

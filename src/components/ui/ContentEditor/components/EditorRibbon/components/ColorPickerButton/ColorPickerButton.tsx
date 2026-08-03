@@ -1,13 +1,11 @@
 import { ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { useFloatingPanel } from '@/hooks/useFloatingPanel';
 import { gray } from '@/styles/theme';
 import { keepSelection } from '../../../../utils/keepSelection';
 import { RIBBON_MARKER_ATTR, TOOLBAR_ICON_SIZE, WHITE } from '../../EditorRibbon.constants';
 import { EDITOR_RIBBON_IDS } from '../../EditorRibbon.testids';
-import { CustomColorPicker } from '../CustomColorPicker';
 import {
   ChevronButton,
   SwatchBar,
@@ -16,9 +14,7 @@ import {
   SwatchLetter,
 } from './ColorPickerButton.styles';
 import { ColorPaletteMenu } from './components/ColorPaletteMenu';
-
-const MENU_WIDTH = 170;
-const MENU_GAP = 4;
+import { COLOR_MENU_WIDTH } from './components/ColorPaletteMenu/ColorPaletteMenu.constants';
 
 export interface ColorPickerButtonProps {
   id: string;
@@ -45,32 +41,18 @@ export const ColorPickerButton = ({
   onApply,
   icon,
 }: ColorPickerButtonProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true, closeWhen: disabled });
 
-  const [customPos, setCustomPos] = useState<{ top: number; right: number } | null>(null);
-
-  const handleToggle = () => panel.toggle(MENU_WIDTH);
+  const handleToggle = () => panel.toggle(COLOR_MENU_WIDTH);
 
   const handleApplyCurrent = () => onApply(value);
 
   const handlePick = (color: string) => {
     onChange(color);
+    // Closes back onto the chevron, so a keyboard user is left where they
+    // opened the menu. The swatch itself never took focus — see the mousedown
+    // it prevents — so the editor's selection is still live at this point.
     panel.close();
-    onApply(color);
-  };
-
-  const handleOpenCustom = () => {
-    const rect = panel.btnRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    panel.closeWithoutRefocus();
-    setCustomPos({ top: rect.bottom + MENU_GAP, right: window.innerWidth - rect.right });
-  };
-
-  const handleCloseCustom = () => setCustomPos(null);
-
-  const handleConfirmCustom = (color: string) => {
-    onChange(color);
-    setCustomPos(null);
     onApply(color);
   };
 
@@ -108,7 +90,7 @@ export const ColorPickerButton = ({
         <FloatingPanel
           ref={panel.panelRef}
           pos={panel.pos}
-          width={MENU_WIDTH}
+          width={COLOR_MENU_WIDTH}
           {...{ [RIBBON_MARKER_ATTR]: '' }}
           data-testid={EDITOR_RIBBON_IDS.colorMenu(id)}
         >
@@ -118,18 +100,8 @@ export const ColorPickerButton = ({
             palette={palette}
             value={value}
             onPick={handlePick}
-            onOpenCustom={handleOpenCustom}
           />
         </FloatingPanel>
-      )}
-
-      {customPos && (
-        <CustomColorPicker
-          initialColor={value}
-          position={customPos}
-          onConfirm={handleConfirmCustom}
-          onCancel={handleCloseCustom}
-        />
       )}
     </>
   );

@@ -1,14 +1,6 @@
+import { keepSelection } from '../../../../../../utils/keepSelection';
 import { EDITOR_RIBBON_IDS } from '../../../../EditorRibbon.testids';
-import {
-  CustomButton,
-  CustomLabel,
-  CustomPreview,
-  CustomRow,
-  MenuBody,
-  MenuTitle,
-  Swatch,
-  SwatchGrid,
-} from './ColorPaletteMenu.styles';
+import { MenuBody, MenuTitle, Swatch, SwatchGrid } from './ColorPaletteMenu.styles';
 
 export interface ColorPaletteMenuProps {
   id: string;
@@ -16,17 +8,9 @@ export interface ColorPaletteMenuProps {
   palette: string[];
   value: string;
   onPick: (color: string) => void;
-  onOpenCustom: () => void;
 }
 
-export const ColorPaletteMenu = ({
-  id,
-  title,
-  palette,
-  value,
-  onPick,
-  onOpenCustom,
-}: ColorPaletteMenuProps) => {
+export const ColorPaletteMenu = ({ id, title, palette, value, onPick }: ColorPaletteMenuProps) => {
   const handlePick = (color: string) => () => onPick(color);
 
   return (
@@ -43,22 +27,17 @@ export const ColorPaletteMenu = ({
             aria-pressed={color === value}
             $color={color}
             $selected={color === value}
+            // The swatch must not take focus: the selection it is about to
+            // colour lives in the editor, and a browser paints the selection of
+            // an unfocused element in its own washed-out grey — so the moment
+            // the mouse went down, the text you were aiming at stopped looking
+            // selected at all.
+            onMouseDown={keepSelection}
             onClick={handlePick(color)}
             data-testid={EDITOR_RIBBON_IDS.colorSwatch(id, color)}
           />
         ))}
       </SwatchGrid>
-
-      <CustomRow>
-        <CustomButton
-          type="button"
-          onClick={onOpenCustom}
-          data-testid={EDITOR_RIBBON_IDS.customColorTrigger(id)}
-        >
-          <CustomPreview $color={value} />
-          <CustomLabel>התאמה אישית</CustomLabel>
-        </CustomButton>
-      </CustomRow>
     </MenuBody>
   );
 };

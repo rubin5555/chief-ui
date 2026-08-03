@@ -29,7 +29,7 @@ export interface FindReplacePanelProps {
 }
 
 export const FindReplacePanel = ({ editor }: FindReplacePanelProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true, closeWhen: !editor });
   const [query, setQuery] = useState('');
   const [replacement, setReplacement] = useState('');
 

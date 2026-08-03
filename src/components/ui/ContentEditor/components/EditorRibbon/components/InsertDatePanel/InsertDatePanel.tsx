@@ -32,7 +32,7 @@ const TODAY: CalendarDate = {
 };
 
 export const InsertDatePanel = ({ disabled, onInsert }: InsertDatePanelProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true });
+  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true, closeWhen: disabled });
   const [view, setView] = useState<CalendarMonth>({ year: TODAY.year, month: TODAY.month });
   const [selected, setSelected] = useState<CalendarDate | null>(null);
   const [time, setTime] = useState(nowAsTime);
