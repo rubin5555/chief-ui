@@ -29,6 +29,18 @@ test('picking a department opens its catalog and puts it in the URL', async ({ p
   await expect.poll(() => new URL(page.url()).searchParams.get('dept')).toBe(A_DEPARTMENT);
 });
 
+test('only the params that differ from their default reach the URL', async ({ page }) => {
+  await page.goto('/catalog');
+  await expect(page).toHaveURL(/\/catalog$/);
+
+  await page.getByTestId(CATALOG_SIDEBAR_IDS.section('myEnvironment')).click();
+  await page.getByTestId(CATALOG_SIDEBAR_IDS.subItem(A_DEPARTMENT)).click();
+
+  // Picking a department writes all sixteen params, fifteen of them their own
+  // default. `stripSearchParams` keeps every one of those out of the URL.
+  await expect.poll(() => [...new URL(page.url()).searchParams.keys()]).toEqual(['dept']);
+});
+
 test('a department in the URL opens straight into its folders', async ({ page }) => {
   await page.goto(`/catalog?dept=${encodeURIComponent(A_DEPARTMENT)}`);
 

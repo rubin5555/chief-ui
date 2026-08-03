@@ -49,6 +49,15 @@ test('the zoom level can be typed straight in, and is clamped on commit', async 
   await expect(zoomValue).toHaveValue('200');
 });
 
+test('a zoom level back at the default drops out of the URL again', async ({ page }) => {
+  await page.goto('/document/d1?zoom=110');
+
+  await page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomOut).click();
+
+  await expect(page.getByTestId(DOC_ACTION_TOOLBAR_IDS.zoomValue)).toHaveValue('100');
+  await expect(page).not.toHaveURL(/zoom=/);
+});
+
 test('a bookmarked zoom level is restored on load', async ({ page }) => {
   await page.goto('/document/d1?zoom=75');
 
