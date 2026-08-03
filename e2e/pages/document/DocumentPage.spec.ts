@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { EDITOR_RIBBON_IDS } from '../../../src/components/ui/ContentEditor/components/EditorRibbon/EditorRibbon.testids';
+import { SEARCH_BAR_IDS } from '../../../src/components/ui/SearchBar/SearchBar.testids';
 import { DOC_PERMISSIONS_MODAL_IDS } from '../../../src/modals/DocPermissionsModal/DocPermissionsModal.testids';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from '../../../src/pages/document/components/ClassifiedViewersModal/ClassifiedViewersModal.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
@@ -153,6 +154,17 @@ test('classifying a section opens the viewers picker and gates its content', asy
 
   const viewersModal = page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.root);
   await expect(viewersModal).toBeVisible();
+
+  // The names used to inherit the document's 16px, because `GridTable` set no
+  // body size and this column was the one that forgot to bring its own — so
+  // they read larger than the search box directly above them.
+  const nameSize = await page
+    .getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.name('u1'))
+    .evaluate((el) => getComputedStyle(el).fontSize);
+  const searchSize = await viewersModal
+    .getByTestId(SEARCH_BAR_IDS.input)
+    .evaluate((el) => getComputedStyle(el).fontSize);
+  expect(nameSize).toBe(searchSize);
 
   const firstCheckbox = page.getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.checkbox('u1'));
   await firstCheckbox.click();

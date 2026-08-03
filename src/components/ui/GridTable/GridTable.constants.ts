@@ -13,6 +13,11 @@ interface DensityMetrics {
   rowPadding: string;
   rowRadius: string;
   rowDivider: string;
+  // What a cell reads at unless it says otherwise. Without this the rows
+  // inherited the document's 16px, so a table looked right only where every
+  // single column happened to remember to set a size — and the one that
+  // forgot rendered names half again as large as the search box above them.
+  rowFontSize: string;
   estimateRowHeight: number;
 }
 
@@ -30,6 +35,7 @@ export const DENSITY: Record<Density, DensityMetrics> = {
     rowPadding: '10px 12px',
     rowRadius: '0',
     rowDivider: gray[100],
+    rowFontSize: '14px',
     estimateRowHeight: 44,
   },
   comfortable: {
@@ -41,6 +47,7 @@ export const DENSITY: Record<Density, DensityMetrics> = {
     rowPadding: '12px 16px',
     rowRadius: radii.xl,
     rowDivider: tableColors.rowDivider,
+    rowFontSize: '14px',
     estimateRowHeight: 48,
   },
 };

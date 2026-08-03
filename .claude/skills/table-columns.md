@@ -217,6 +217,8 @@ Every metric lives in `GridTable.constants.ts`'s `DENSITY` map. A table picks on
 
 The two are not interchangeable looks: `comfortable` exists because main draws the catalog table (`Catalog.tsx:1980-2090`) and the import table (`Edit.tsx:1908-1940`) identically, and they must stay identical.
 
+**A cell needs a `font-size` only to differ from the row's.** `rowFontSize` (14px in both densities) is set on the row, so a cell that says nothing lands there. Reach for a size only for a column that is deliberately quieter — the 12px meta columns, the 11px sub-table cells — never to restate 14px. Before `rowFontSize` existed the rows inherited the document's 16px, so a table looked right only where every column happened to remember; `ClassifiedViewersModal`'s name column is the one that forgot, and it rendered names half again as large as the search box above them.
+
 ---
 
 ## 🚫 Guardrails

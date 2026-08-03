@@ -64,7 +64,11 @@ export const ClassifiedViewersModal = ({
       width: '1fr',
       header: 'שם מלא',
       align: 'right',
-      cell: (person) => <NameCell>{person.name}</NameCell>,
+      cell: (person) => (
+        <NameCell data-testid={CLASSIFIED_VIEWERS_MODAL_IDS.name(person.id)}>
+          {person.name}
+        </NameCell>
+      ),
     },
     {
       key: 'idNumber',

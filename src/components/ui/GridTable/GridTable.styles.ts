@@ -74,6 +74,7 @@ export const TableRow = styled.div<{
   align-items: center;
   padding: ${({ $density }) => DENSITY[$density].rowPadding};
   column-gap: ${({ $density }) => DENSITY[$density].columnGap};
+  font-size: ${({ $density }) => DENSITY[$density].rowFontSize};
   border-radius: ${({ $density }) => DENSITY[$density].rowRadius};
   border-bottom: 1px solid ${({ $density }) => DENSITY[$density].rowDivider};
   border-right: 3px solid ${({ $selected }) => ($selected ? colors.primary : 'transparent')};
