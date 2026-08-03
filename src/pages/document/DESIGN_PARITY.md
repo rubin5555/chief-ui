@@ -403,3 +403,9 @@ Then toggle the OS theme. Every element must have a sensible dark value: if
 something stays stubbornly light, a token was wired into `:root` only and not
 into the other two blocks of `theme.css` (`prefers-color-scheme: dark` and
 `[data-theme="dark"]`).
+
+Then toggle the *app's* theme against the opposite OS setting, which is the
+combination that catches the browser's own widgets — checkboxes, text fields,
+selects, scrollbars. Those are painted from `color-scheme`, which lives in the
+same three blocks for the same reason; a control that comes out dark on a light
+surface means the two disagree.

@@ -1,4 +1,11 @@
 :root {
+  /* Which palette the browser paints its own widgets with — checkboxes, text
+     fields, selects, scrollbars. It belongs beside the tokens rather than in
+     GlobalStyles, because those three blocks are what decide which theme is
+     live, and a `color-scheme` that disagrees with them puts dark native
+     controls on light surfaces. */
+  color-scheme: light;
+
   --color-primary: #1b3a6b;
   --color-primary-light: #eef4ff;
   --color-accent: #2d9b8a;
@@ -145,6 +152,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
     --color-primary: #6c93c7;
     --color-primary-light: #22344a;
     --color-accent: #45c2ac;
@@ -266,6 +275,8 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
+
   --color-primary: #6c93c7;
   --color-primary-light: #22344a;
   --color-accent: #45c2ac;

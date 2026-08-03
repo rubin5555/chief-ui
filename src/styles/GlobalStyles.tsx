@@ -9,7 +9,6 @@ export const GlobalStyles = createGlobalStyle`
     font-family: system-ui, -apple-system, sans-serif;
     font-size: 16px;
     background: ${colors.surface};
-    color-scheme: light dark;
   }
 
   button {
