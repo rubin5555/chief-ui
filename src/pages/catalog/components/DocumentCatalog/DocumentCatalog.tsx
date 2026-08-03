@@ -205,7 +205,10 @@ export const DocumentCatalog = ({
   const openFor = (doc: CatalogDoc, label: string) => {
     const next = modalForAction(label, doc);
     if (next?.kind === 'permissions') {
-      openDocPermissions();
+      // The catalog holds a shelf full of documents, so the dialog has to be
+      // told which row it was opened from — there is no `$id` in the route to
+      // fall back on the way there is on a document page.
+      openDocPermissions({ docId: doc.id });
       return;
     }
     setModal(next);

@@ -144,4 +144,13 @@ Four modals moved to `src/modals/` because the catalog opens them too. Six
 imports still point back at the document page — five types (`DocumentHeader`,
 `PdfAccess`, `Subject`) and one status set (`LIMITED_EDIT_STATUSES`). Lifting
 those out of `src/pages/document/` is a 32-file change and belongs to its own
-commit.
+commit. None of them couple at runtime: types are erased, and
+`LIMITED_EDIT_STATUSES` is a `Set` of strings.
+
+The one coupling that did bite was `DocPermissionsModal` reading its document
+from `getRouteApi('/document/$id').useParams()`. `/catalog` never matches that
+route, so opening the dialog from a row menu rendered nothing. The document is
+a prop now: `DocPermissionsProvider` takes a `docId` for a page that holds one
+document, and `openDocPermissions({ docId })` names it per row for a page that
+holds many. No file under `src/modals/` reads the router any more — which is
+what makes them shared rather than merely relocated.

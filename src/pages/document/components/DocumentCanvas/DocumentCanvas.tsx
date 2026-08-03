@@ -40,7 +40,7 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
 
   const canvasBody = (
     <ContentEditorProvider>
-      <DocPermissionsProvider isDistributed={isDistributed}>
+      <DocPermissionsProvider docId={data.id} isDistributed={isDistributed}>
         <DocumentActionsSlot overrides={overrides} />
 
         <BarRow>

@@ -1,4 +1,3 @@
-import { getRouteApi } from '@tanstack/react-router';
 import { useMemo, useRef, useState } from 'react';
 import { DOCUMENT_FALLBACK, useDocument } from '@/api/docs';
 import type { Member } from '@/components/PeoplePicker';
@@ -13,14 +12,15 @@ import { buildPermissionLevels } from './DocPermissionsModal.constants';
 import { PermissionBody, SideColumn } from './DocPermissionsModal.styles';
 import { DOC_PERMISSIONS_MODAL_IDS } from './DocPermissionsModal.testids';
 
-const routeApi = getRouteApi('/document/$id');
-
 const WIDTH = 1200;
 const WIDTH_WITH_SECTIONS = 1260;
 const MEMBERS_WIDTH = 240;
 const SECTIONS_WIDTH = 288;
 
 export interface DocPermissionsModalProps {
+  // Named by whoever opens the dialog, not read off the route: the catalog
+  // opens it for a row from `/catalog`, where there is no `$id` to read.
+  docId: string;
   isDistributed: boolean;
   initialLevelId?: string;
   initialSectionId?: string;
@@ -28,14 +28,14 @@ export interface DocPermissionsModalProps {
 }
 
 export const DocPermissionsModal = ({
+  docId,
   isDistributed,
   initialLevelId,
   initialSectionId,
   onClose,
 }: DocPermissionsModalProps) => {
   const modalRef = useRef<ModalHandle>(null);
-  const { id } = routeApi.useParams();
-  const { data } = useDocument(id);
+  const { data } = useDocument(docId);
   const subjects = data?.subjects ?? DOCUMENT_FALLBACK.subjects;
 
   const levels = useMemo(() => buildPermissionLevels(isDistributed), [isDistributed]);

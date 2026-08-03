@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
+import { DOC_PERMISSIONS_MODAL_IDS } from '../../../../src/modals/DocPermissionsModal/DocPermissionsModal.testids';
 import { CATALOG_MODAL_IDS } from '../../../../src/pages/catalog/components/DocumentCatalog/components/catalogModals.testids';
 import { DOCUMENT_CATALOG_IDS } from '../../../../src/pages/catalog/components/DocumentCatalog/DocumentCatalog.testids';
 import { TRASH_CATALOG_IDS } from '../../../../src/pages/catalog/components/TrashCatalog/TrashCatalog.constants';
@@ -63,6 +64,20 @@ test('the row menu opens and its entries match the shelf', async ({ page }) => {
 
   await expect(page.getByRole('button', { name: 'ביטול מסמך' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'יצירת היררכית מסמכים' })).toBeVisible();
+});
+
+test('the row menu opens the permissions dialog for that row', async ({ page }) => {
+  await page.getByTestId(DOCUMENT_CATALOG_IDS.rowMenu(PARENT_DOC)).click();
+  await page.getByRole('button', { name: 'הרשאות ובקרה' }).click();
+
+  // It used to read its document off `/document/$id`, which the catalog is not
+  // matched against — so from here it rendered nothing at all.
+  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.root)).toBeVisible();
+
+  // The section tree is drawn from the document the dialog was opened for, so
+  // reaching it proves the row's document actually loaded.
+  await page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.level('section-editors')).click();
+  await expect(page.getByTestId(DOC_PERMISSIONS_MODAL_IDS.sectionTree)).toBeVisible();
 });
 
 test('the clock opens version history', async ({ page }) => {
