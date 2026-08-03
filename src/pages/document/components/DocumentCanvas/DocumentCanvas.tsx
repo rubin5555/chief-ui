@@ -39,7 +39,7 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
   const profile = profileData ?? PROFILE_FALLBACK;
 
   const canvasBody = (
-    <ContentEditorProvider>
+    <ContentEditorProvider onAddFootnote={overrides.addFootnote}>
       <DocPermissionsProvider docId={data.id} isDistributed={isDistributed}>
         <DocumentActionsSlot overrides={overrides} />
 

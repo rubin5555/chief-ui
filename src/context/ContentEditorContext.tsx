@@ -17,6 +17,10 @@ const EMPTY_CURSORS = new Map<string, CursorPath | null>();
 export interface ContentEditorContextValue {
   toolbarId: string;
   activeId: string | null;
+  // The *field* being edited, as opposed to `activeId`'s editor instance. The
+  // toolbar acts on the editor for most things, but a footnote belongs to the
+  // section rather than to the text inside it.
+  activeFieldId: string | null;
   setActive: (id: string | null) => void;
   activeEditor: TinyMceEditor | null;
   setActiveEditor: (editor: TinyMceEditor | null) => void;
@@ -27,13 +31,30 @@ export interface ContentEditorContextValue {
   pushHistoryLevel: (id: string, value: string) => void;
   undoHistory: (id: string) => string | null;
   redoHistory: (id: string) => string | null;
+  // Whether this page holds footnotes at all — the document does, the share
+  // and template dialogs use the same editor and the same ribbon and do not.
+  // That is a different question from whether one can be added *right now*,
+  // which is what `addFootnoteToActive` being null answers.
+  supportsFootnotes: boolean;
+  // Returns the marker the new footnote is numbered with, so the caller can
+  // reference it from the text it was added for.
+  addFootnoteToActive: (() => string) | null;
 }
 
 const ContentEditorContext = createContext<ContentEditorContextValue | null>(null);
 
-export const ContentEditorProvider = ({ children }: { children: ReactNode }) => {
+export interface ContentEditorProviderProps {
+  // How the page adds a footnote to a field, if it can, returning the marker
+  // it was numbered with. Left out by a page whose editors have nothing under
+  // them to add one to.
+  onAddFootnote?: (fieldId: string) => string;
+  children: ReactNode;
+}
+
+export const ContentEditorProvider = ({ onAddFootnote, children }: ContentEditorProviderProps) => {
   const toolbarId = useRef(`ce-shared-tb-${self.crypto.randomUUID()}`);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   const [activeEditor, setActiveEditor] = useState<TinyMceEditor | null>(null);
   const historyRef = useRef(new Map<string, HistoryEntry>());
   const collab = useCollabContext();
@@ -85,30 +106,42 @@ export const ContentEditorProvider = ({ children }: { children: ReactNode }) => 
     return entry.stack[entry.pointer];
   }, []);
 
+  const setActive = useCallback((id: string | null) => {
+    setActiveId(id);
+    if (id === null) setActiveFieldId(null);
+  }, []);
+
   const requestActivate = useCallback(
     (fieldId: string, instanceId: string) => {
-      if (!collab) {
-        setActiveId(instanceId);
-        return;
-      }
       setActiveId(instanceId);
+      setActiveFieldId(fieldId);
+      if (!collab) return;
+
       collab.acquireLock(fieldId).then((granted) => {
-        if (!granted) {
-          setActiveId((current) => (current === instanceId ? null : current));
-        }
+        if (granted) return;
+        setActiveId((current) => (current === instanceId ? null : current));
+        setActiveFieldId((current) => (current === fieldId ? null : current));
       });
     },
     [collab],
+  );
+
+  const addFootnoteToActive = useMemo(
+    () => (onAddFootnote && activeFieldId ? () => onAddFootnote(activeFieldId) : null),
+    [onAddFootnote, activeFieldId],
   );
 
   const value = useMemo<ContentEditorContextValue>(
     () => ({
       toolbarId: toolbarId.current,
       activeId,
-      setActive: setActiveId,
+      activeFieldId,
+      setActive,
       activeEditor,
       setActiveEditor,
       requestActivate,
+      supportsFootnotes: onAddFootnote !== undefined,
+      addFootnoteToActive,
       lockState: collab?.lockState ?? EMPTY_LOCK_STATE,
       remoteCursors: collab?.remoteCursors ?? EMPTY_CURSORS,
       getHistoryValue,
@@ -118,9 +151,13 @@ export const ContentEditorProvider = ({ children }: { children: ReactNode }) => 
     }),
     [
       activeId,
+      activeFieldId,
+      setActive,
       activeEditor,
       collab,
       requestActivate,
+      onAddFootnote,
+      addFootnoteToActive,
       getHistoryValue,
       pushHistoryLevel,
       undoHistory,

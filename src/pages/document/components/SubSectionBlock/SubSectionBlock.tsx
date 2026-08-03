@@ -72,10 +72,7 @@ export const SubSectionBlock = ({
   const handleFootnotesChange = (footnotes: Footnote[]) =>
     overrides.patchMeta(subSection.id, { footnotes });
 
-  const handleAddFootnote = () =>
-    overrides.patchMeta(subSection.id, {
-      footnotes: [...meta.footnotes, { id: `footnote-${self.crypto.randomUUID()}`, text: '' }],
-    });
+  const handleAddFootnote = () => overrides.addFootnote(subSection.id);
 
   const handleInstructionsChange = (instructions: string) =>
     overrides.patchMeta(subSection.id, { instructions });

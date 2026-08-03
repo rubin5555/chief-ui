@@ -25,7 +25,6 @@ import {
 } from './EditorRibbon.constants';
 import { FootnoteGlyph, ToolbarRoot, ToolbarSeparator } from './EditorRibbon.styles';
 import { EDITOR_RIBBON_IDS } from './EditorRibbon.testids';
-import { nextFootnoteMarker } from './editorRibbon.utils';
 import { useFormatPainter } from './useFormatPainter';
 import { useRibbonState } from './useRibbonState';
 
@@ -33,9 +32,14 @@ export interface EditorRibbonProps {
   editor: TinyMceEditor | null;
   id?: string;
   flush?: boolean;
+  // A footnote belongs to the field, not to the text in it, so the ribbon
+  // cannot write one itself — it asks the page and gets back the marker to
+  // reference it by. Absent where the page has nowhere to put a footnote, and
+  // then the button is not drawn at all rather than drawn dead.
+  onAddFootnote?: (() => string) | null;
 }
 
-export const EditorRibbon = ({ editor, id, flush = false }: EditorRibbonProps) => {
+export const EditorRibbon = ({ editor, id, flush = false, onAddFootnote }: EditorRibbonProps) => {
   const [textColor, setTextColor] = useState(DEFAULT_TEXT_COLOR);
   const [highlightColor, setHighlightColor] = useState(DEFAULT_HIGHLIGHT_COLOR);
   const [fillColor, setFillColor] = useState(DEFAULT_FILL_COLOR);
@@ -61,9 +65,12 @@ export const EditorRibbon = ({ editor, id, flush = false }: EditorRibbonProps) =
   const handleInsertTable = (rows: number, cols: number) =>
     run('mceInsertTable', { rows, columns: cols });
 
+  // Adds the note under the section and drops its marker where the caret is,
+  // so the text carries the reference and the note itself sits with the rest
+  // of the section's.
   const handleInsertFootnote = () => {
-    if (!editor) return;
-    editor.insertContent(`<sup>${nextFootnoteMarker(editor)}</sup>`);
+    const marker = onAddFootnote?.();
+    if (marker) editor?.insertContent(`<sup>${marker}</sup>`);
   };
 
   return (
@@ -139,17 +146,21 @@ export const EditorRibbon = ({ editor, id, flush = false }: EditorRibbonProps) =
       />
       <ToolbarSeparator />
 
-      <ToolbarButton
-        title="הוסף הערת שוליים"
-        disabled={isDisabled}
-        onClick={handleInsertFootnote}
-        data-testid={EDITOR_RIBBON_IDS.footnote}
-      >
-        <FootnoteGlyph aria-hidden="true">
-          AB<sup>1</sup>
-        </FootnoteGlyph>
-      </ToolbarButton>
-      <ToolbarSeparator />
+      {onAddFootnote !== undefined && (
+        <>
+          <ToolbarButton
+            title="הוסף הערת שוליים"
+            disabled={isDisabled || !onAddFootnote}
+            onClick={handleInsertFootnote}
+            data-testid={EDITOR_RIBBON_IDS.footnote}
+          >
+            <FootnoteGlyph aria-hidden="true">
+              AB<sup>1</sup>
+            </FootnoteGlyph>
+          </ToolbarButton>
+          <ToolbarSeparator />
+        </>
+      )}
 
       <TableSizePicker disabled={isDisabled} onInsert={handleInsertTable} />
       <ColorPickerButton

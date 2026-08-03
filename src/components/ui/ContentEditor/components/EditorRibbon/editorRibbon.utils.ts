@@ -35,12 +35,3 @@ export const readRibbonState = (editor: TinyMceEditor): RibbonState => {
     isInTableCell: !!editor.dom.getParent(editor.selection.getNode(), 'td,th'),
   };
 };
-
-export const nextFootnoteMarker = (editor: TinyMceEditor): number => {
-  let highest = 0;
-  for (const sup of editor.getBody().querySelectorAll('sup')) {
-    const value = Number.parseInt(sup.textContent ?? '', 10);
-    if (Number.isFinite(value) && value > highest) highest = value;
-  }
-  return highest + 1;
-};

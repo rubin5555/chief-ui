@@ -103,10 +103,7 @@ export const SectionBlock = ({
   const handleFootnotesChange = (footnotes: Footnote[]) =>
     overrides.patchMeta(section.id, { footnotes });
 
-  const handleAddFootnote = () =>
-    overrides.patchMeta(section.id, {
-      footnotes: [...meta.footnotes, { id: `footnote-${self.crypto.randomUUID()}`, text: '' }],
-    });
+  const handleAddFootnote = () => overrides.addFootnote(section.id);
 
   const handleInstructionsChange = (instructions: string) =>
     overrides.patchMeta(section.id, { instructions });

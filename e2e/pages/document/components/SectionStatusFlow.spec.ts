@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { EDITOR_RIBBON_IDS } from '../../../../src/components/ui/ContentEditor/components/EditorRibbon/EditorRibbon.testids';
 import { OUTLINE_SECTION_ROW_IDS } from '../../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSectionRow/OutlineSectionRow.testids';
 import { FOOTNOTE_LIST_IDS } from '../../../../src/pages/document/components/EditableSectionBody/components/FootnoteList/FootnoteList.testids';
+import { EDITABLE_SECTION_BODY_IDS } from '../../../../src/pages/document/components/EditableSectionBody/EditableSectionBody.testids';
 import { SECTION_INSTRUCTIONS_TIP_IDS } from '../../../../src/pages/document/components/SectionBlock/components/SectionInstructionsTip/SectionInstructionsTip.testids';
 import { SECTION_STATUS_ACTIONS_IDS } from '../../../../src/pages/document/components/SectionBlock/components/SectionStatusActions/SectionStatusActions.testids';
 import { SECTION_CHAT_IDS } from '../../../../src/pages/document/components/SectionChat/SectionChat.testids';
@@ -120,4 +122,51 @@ test('footnotes are added from the menu and numbered by position', async ({ page
   await expect(list.getByRole('textbox')).toHaveCount(1);
   await expect(list.getByRole('textbox')).toHaveValue('הערה שנייה');
   await expect(list).not.toContainText('²');
+});
+
+test('the toolbar footnote lands under the section and is marked in the text', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  const footnote = page.getByTestId(EDITOR_RIBBON_IDS.footnote);
+  await expect(footnote).toBeDisabled();
+
+  const body = page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1'));
+  await body.click();
+  await expect(footnote).toBeEnabled();
+  await footnote.click();
+
+  // The note itself is the section's, the same one the menu adds…
+  const list = page.getByTestId(FOOTNOTE_LIST_IDS.root('s1-1'));
+  await expect(list).toBeVisible();
+  await expect(list).toContainText('¹');
+  await expect(list.getByRole('textbox')).toHaveCount(1);
+
+  // …and the text carries its marker, which is what the button used to write
+  // on its own without any note behind it.
+  await expect(body.locator('[contenteditable="true"] sup')).toHaveText('¹');
+
+  // A second one numbers on from the first, in the list and in the text alike.
+  await footnote.click();
+  await expect(list.getByRole('textbox')).toHaveCount(2);
+  await expect(body.locator('[contenteditable="true"] sup').nth(1)).toHaveText('²');
+});
+
+test('the toolbar footnote goes to the section being edited', async ({ page }) => {
+  await page.goto('/document/d1');
+  const footnote = page.getByTestId(EDITOR_RIBBON_IDS.footnote);
+
+  await page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-1')).click();
+  await footnote.click();
+
+  await page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('s1-2')).click();
+  await footnote.click();
+
+  // Not to whichever section happened to be first: the toolbar is shared, so
+  // it has to follow the field it is serving.
+  await expect(page.getByTestId(FOOTNOTE_LIST_IDS.root('s1-2')).getByRole('textbox')).toHaveCount(
+    1,
+  );
+  await expect(page.getByTestId(FOOTNOTE_LIST_IDS.root('s1-1')).getByRole('textbox')).toHaveCount(
+    1,
+  );
 });
