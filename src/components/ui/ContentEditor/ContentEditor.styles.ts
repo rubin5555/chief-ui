@@ -132,6 +132,14 @@ export const PreviewContent = styled.div<{
 	cursor: ${({ $disabled }) => ($disabled ? 'default' : 'text')};
 	word-break: break-word;
 
+	/* No ring of its own: focus is shown by the wrapper's border going from the
+	   hairline to gray-300, which is main's focus-within treatment for the same
+	   box. Two indicators on one control would be one too many. */
+	&:focus,
+	&:focus-visible {
+		outline: none;
+	}
+
 	${({ $isEmpty }) =>
     $isEmpty &&
     `

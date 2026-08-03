@@ -42,6 +42,17 @@ export const usePreviewActivation = (
     ctx.requestActivate(id, myId);
   };
 
+  // Enter starts editing, the way clicking does. Focus alone must not: tabbing
+  // through a document would then take — and hold — the lock on every section
+  // it passed.
+  const handlePreviewKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter') return;
+    if (disabled || !ctx || selectionOnly || lockedByOther) return;
+    e.preventDefault();
+    pendingSelectionRef.current = null;
+    ctx.requestActivate(id, myId);
+  };
+
   const handlePreviewDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     if (disabled || !e.dataTransfer.types.includes(CONTENT_CHIP_MIME)) return;
     e.preventDefault();
@@ -109,6 +120,7 @@ export const usePreviewActivation = (
     isDragOver,
     handlePreviewPointerDown,
     handlePreviewPointerUp,
+    handlePreviewKeyDown,
     handlePreviewDragOver,
     handlePreviewDragLeave,
     handlePreviewDrop,

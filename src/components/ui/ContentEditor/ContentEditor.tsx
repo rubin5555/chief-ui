@@ -1,5 +1,5 @@
 import { Editor } from '@tinymce/tinymce-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'tinymce/tinymce';
 import 'tinymce/icons/default';
 import 'tinymce/themes/silver';
@@ -59,6 +59,9 @@ export const ContentEditor = ({
   const localToolbarId = useRef(`ce-tb-${myId.current}`);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
+  // The editor this instance put into the context, so it can take that one
+  // back out again without stepping on whoever replaced it.
+  const ownedEditorRef = useRef<TinyMceEditor | null>(null);
 
   const [editorReady, setEditorReady] = useState(false);
 
@@ -69,11 +72,17 @@ export const ContentEditor = ({
 
   const isActive = !ctx || ctx.activeId === myId.current;
 
+  // Read inside effects that must not re-run when the context object changes
+  // identity — which it does on every activation, anywhere in the document.
+  const ctxRef = useRef(ctx);
+  ctxRef.current = ctx;
+
   const {
     previewRef,
     isDragOver,
     handlePreviewPointerDown,
     handlePreviewPointerUp,
+    handlePreviewKeyDown,
     handlePreviewDragOver,
     handlePreviewDragLeave,
     handlePreviewDrop,
@@ -92,9 +101,35 @@ export const ContentEditor = ({
     if (!ctx) return;
     ctx.setActive(null);
     ctx.setActiveEditor(null);
+    ownedEditorRef.current = null;
     setEditorReady(false);
     collab?.releaseLock(id);
   };
+
+  // The editor unmounts whenever this instance stops being the active one, and
+  // not every route there goes through `deactivate` — a denied lock has the
+  // context revoke it from the outside, and `handleBlur` has already bowed out
+  // by then because someone else is active. Left alone, the ribbon keeps
+  // driving an editor that no longer exists: every button still enabled, and
+  // none of them attached to anything.
+  useEffect(() => {
+    if (isActive) return;
+
+    setEditorReady(false);
+    const owned = ownedEditorRef.current;
+    ownedEditorRef.current = null;
+    // Only if the context still points at ours — if the next section has
+    // already claimed it, clearing would put the ribbon out for its editor.
+    if (owned && ctxRef.current?.activeEditor === owned) ctxRef.current.setActiveEditor(null);
+  }, [isActive]);
+
+  useEffect(
+    () => () => {
+      const owned = ownedEditorRef.current;
+      if (owned && ctxRef.current?.activeEditor === owned) ctxRef.current.setActiveEditor(null);
+    },
+    [],
+  );
 
   const handleInit = (_: unknown, editor: TinyMceEditor) => {
     setEditorReady(true);
@@ -104,6 +139,7 @@ export const ContentEditor = ({
       return;
     }
 
+    ownedEditorRef.current = editor;
     ctx.setActiveEditor(editor);
 
     ctx.getHistoryValue(id, value);
@@ -170,14 +206,23 @@ export const ContentEditor = ({
 
       {ctx && !isActive && (
         <PreviewWrapper>
+          {/* A tab stop, so the document can be walked without a mouse: main's
+              section body is a textarea and gets this for free, where an
+              inactive editor here is only a div. Focus draws the wrapper's
+              border but does not start editing — Enter does that. */}
           <PreviewContent
             ref={previewRef}
+            tabIndex={disabled ? -1 : 0}
+            role="textbox"
+            aria-readonly
+            aria-label={placeholder}
             $minHeight={minHeight}
             $isEmpty={!value}
             $disabled={disabled}
             $isDragOver={isDragOver}
             onPointerDown={handlePreviewPointerDown}
             onPointerUp={handlePreviewPointerUp}
+            onKeyDown={handlePreviewKeyDown}
             onDragOver={handlePreviewDragOver}
             onDragLeave={handlePreviewDragLeave}
             onDrop={handlePreviewDrop}
