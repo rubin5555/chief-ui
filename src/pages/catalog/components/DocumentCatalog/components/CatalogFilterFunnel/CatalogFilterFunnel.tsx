@@ -1,16 +1,15 @@
 import { Filter } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { TRIGGER_GAP, useFloatingPanel } from '@/hooks/useFloatingPanel';
 import {
   DEPARTMENT_OPTIONS,
   FILTER_TITLES,
   TEMPLATE_OPTIONS,
 } from '../../DocumentCatalog.constants';
+import { DOCUMENT_CATALOG_IDS } from '../../DocumentCatalog.testids';
 import {
   ActiveDot,
   ClearAllBtn,
   ClearAllWrap,
-  FunnelAnchor,
   FunnelPanel,
   FunnelTrigger,
   PanelDivider,
@@ -45,6 +44,11 @@ export const countActiveFilters = (values: CatalogFilterValues, isAllDocs: boole
   (values.from || values.to ? 1 : 0) +
   (isAllDocs ? values.orgs.length : 0);
 
+// The mock hangs the panel off the trigger's near edge (`left-0`), not centred
+// on it, so it opens across the search pill rather than over the toolbar's edge.
+const PANEL_WIDTH = 288;
+const panelSpec = (trigger: DOMRect) => ({ top: trigger.bottom + TRIGGER_GAP, left: trigger.left });
+
 export const CatalogFilterFunnel = ({
   values,
   statusOptions,
@@ -53,14 +57,11 @@ export const CatalogFilterFunnel = ({
   onChange,
   onClearAll,
 }: CatalogFilterFunnelProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const anchorRef = useRef<HTMLDivElement>(null);
-
-  useClickOutside([anchorRef], () => setIsOpen(false), isOpen);
+  const panel = useFloatingPanel<HTMLButtonElement>();
 
   const activeCount = countActiveFilters(values, isAllDocs);
 
-  const onToggle = () => setIsOpen((prev) => !prev);
+  const onToggle = () => panel.toggle(panelSpec);
 
   // Every section writes one key, so the six handlers are one factory.
   const handleListChange = (key: keyof CatalogFilterValues) => (selected: string[]) =>
@@ -71,18 +72,30 @@ export const CatalogFilterFunnel = ({
 
   const handleClearAll = () => {
     onClearAll();
-    setIsOpen(false);
+    panel.close();
   };
 
   return (
-    <FunnelAnchor ref={anchorRef}>
-      <FunnelTrigger type="button" title="סינון" onClick={onToggle}>
+    <>
+      <FunnelTrigger
+        ref={panel.btnRef}
+        type="button"
+        title="סינון"
+        data-testid={DOCUMENT_CATALOG_IDS.filterBtn}
+        onClick={onToggle}
+      >
         <Filter size={16} />
         {activeCount > 0 && <ActiveDot />}
       </FunnelTrigger>
 
-      {isOpen && (
-        <FunnelPanel dir="rtl">
+      {panel.open && panel.pos && (
+        <FunnelPanel
+          ref={panel.panelRef}
+          pos={panel.pos}
+          width={PANEL_WIDTH}
+          dir="rtl"
+          data-testid={DOCUMENT_CATALOG_IDS.filterPanel}
+        >
           <FilterCheckboxSection
             searchable
             title={FILTER_TITLES.template}
@@ -144,6 +157,6 @@ export const CatalogFilterFunnel = ({
           )}
         </FunnelPanel>
       )}
-    </FunnelAnchor>
+    </>
   );
 };

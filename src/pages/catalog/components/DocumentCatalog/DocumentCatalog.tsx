@@ -26,12 +26,10 @@ import { DocHierarchyModal } from './components/DocHierarchyModal';
 import { DuplicateSearchModal } from './components/DuplicateSearchModal';
 import { NewDocDropdown } from './components/NewDocDropdown';
 import { ReceiptConfirmModal } from './components/ReceiptConfirmModal';
-import type { RowMenuAnchor } from './components/RowActionMenu';
 import {
   INLINE_PHASE_ACTIONS,
   ROW_ACTIONS,
   RowActionMenu,
-  rowMenuAnchor,
   useRowActionPhase,
 } from './components/RowActionMenu';
 import { VersionHistoryModal } from './components/VersionHistoryModal';
@@ -103,7 +101,7 @@ export const DocumentCatalog = ({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   // The open row menu, and the document it belongs to. The trigger lives in
   // this component's columns, so the menu's state and its render do too.
-  const [menuRow, setMenuRow] = useState<{ doc: CatalogDoc; anchor: RowMenuAnchor } | null>(null);
+  const [menuRow, setMenuRow] = useState<{ doc: CatalogDoc; triggerRect: DOMRect } | null>(null);
   const { phase, start: startPhase, reset: resetPhase } = useRowActionPhase(() => setMenuRow(null));
   // Every row action resolves to at most one dialog, so one slot holds it. The
   // cancel flow's progress toast outlives its dialog, hence its own flag.
@@ -258,8 +256,7 @@ export const DocumentCatalog = ({
 
   const handleMenuClick = (doc: CatalogDoc) => (event: MouseEvent) => {
     event.stopPropagation();
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    setMenuRow({ doc, anchor: rowMenuAnchor(rect) });
+    setMenuRow({ doc, triggerRect: (event.currentTarget as HTMLElement).getBoundingClientRect() });
   };
 
   const handleReceiptClick = (doc: CatalogDoc) => (event: MouseEvent) => {
@@ -385,7 +382,7 @@ export const DocumentCatalog = ({
       {menuRow && (
         <RowActionMenu
           actions={ROW_ACTIONS[tab]}
-          anchor={menuRow.anchor}
+          triggerRect={menuRow.triggerRect}
           phase={phase}
           onAction={handleMenuAction}
           onClose={closeMenu}

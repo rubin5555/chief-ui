@@ -1,5 +1,5 @@
-export type { RowActionPhase, RowMenuAnchor } from './RowActionMenu';
-export { RowActionMenu, rowMenuAnchor } from './RowActionMenu';
+export type { RowActionPhase } from './RowActionMenu';
+export { RowActionMenu } from './RowActionMenu';
 export type { RowAction } from './RowActionMenu.constants';
 export {
   INLINE_PHASE_ACTIONS,

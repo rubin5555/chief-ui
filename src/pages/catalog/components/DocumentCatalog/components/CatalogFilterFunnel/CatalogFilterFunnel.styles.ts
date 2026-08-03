@@ -1,15 +1,12 @@
 import styled from 'styled-components';
+import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { flexCenter } from '@/styles/mixins';
-import { catColors, colors, gray, radii, shadows, transitions } from '@/styles/theme';
-
-export const FunnelAnchor = styled.div`
-  position: relative;
-  flex-shrink: 0;
-`;
+import { catColors, colors, gray, radii, transitions } from '@/styles/theme';
 
 export const FunnelTrigger = styled.button`
   ${flexCenter}
   position: relative;
+  flex-shrink: 0;
   padding: 8px;
   border-radius: ${radii.full};
   color: ${gray[600]};
@@ -31,20 +28,16 @@ export const ActiveDot = styled.span`
   background: ${colors.primary};
 `;
 
-export const FunnelPanel = styled.div`
-  position: absolute;
-  left: 0;
-  top: 100%;
-  z-index: 50;
-  width: 288px;
-  margin-top: 8px;
+// The panel is a portalled `FloatingPanel` rather than the mock's absolutely
+// positioned div: the catalog body clips its overflow, so an in-flow panel gets
+// cut off at the bottom of the page. Everything else about it — the width, the
+// vertical padding, the dividers — is the mock's.
+export const FunnelPanel = styled(FloatingPanel)`
+  /* Block, not the panel's own column flex: a scrolling list of sections must
+     overflow past the height cap, and flex items would shrink to fit it
+     instead — which is how a scrollbar goes missing and a section loses rows. */
+  display: block;
   padding: 12px 0;
-  max-height: 82vh;
-  overflow-y: auto;
-  border: 1px solid ${gray[100]};
-  border-radius: ${radii['2xl']};
-  background: ${colors.surface};
-  box-shadow: ${shadows.xl};
 `;
 
 export const PanelDivider = styled.div`

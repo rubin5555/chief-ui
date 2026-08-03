@@ -1,5 +1,6 @@
 import type { RefObject } from 'react';
 import { useEffect, useRef } from 'react';
+import { isOnLayerAbove } from '@/utils/layerStack';
 
 export const useClickOutside = (
   refs: RefObject<HTMLElement | null>[],
@@ -17,7 +18,12 @@ export const useClickOutside = (
 
     const handlePointerDown = (e: MouseEvent) => {
       const target = e.target as Node;
-      const isInside = refsRef.current.some((ref) => ref.current?.contains(target));
+      // A popover opened from inside one of these elements portals out to
+      // `body`, so containment alone would call its clicks "outside".
+      const isInside = refsRef.current.some(
+        (ref) =>
+          ref.current?.contains(target) || (ref.current && isOnLayerAbove(ref.current, target)),
+      );
       if (!isInside) onClickOutsideRef.current();
     };
 

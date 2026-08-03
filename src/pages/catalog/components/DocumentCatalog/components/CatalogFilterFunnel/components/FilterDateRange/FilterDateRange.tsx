@@ -1,5 +1,6 @@
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { FILTER_TITLES } from '../../../../DocumentCatalog.constants';
+import { DOCUMENT_CATALOG_IDS } from '../../../../DocumentCatalog.testids';
 import { SectionTitle } from '../components.shared.styles';
 import { RangeField, RangeFields, RangeLabel } from './FilterDateRange.styles';
 
@@ -16,11 +17,23 @@ export const FilterDateRange = ({ from, to, onFromChange, onToChange }: FilterDa
     <RangeFields>
       <RangeField>
         <RangeLabel>מ-</RangeLabel>
-        <DateTimePicker mode="date" placeholder="מ-" value={from} onChange={onFromChange} />
+        <DateTimePicker
+          mode="date"
+          placeholder="מ-"
+          value={from}
+          data-testid={DOCUMENT_CATALOG_IDS.filterDate('from')}
+          onChange={onFromChange}
+        />
       </RangeField>
       <RangeField>
         <RangeLabel>עד</RangeLabel>
-        <DateTimePicker mode="date" placeholder="עד" value={to} onChange={onToChange} />
+        <DateTimePicker
+          mode="date"
+          placeholder="עד"
+          value={to}
+          data-testid={DOCUMENT_CATALOG_IDS.filterDate('to')}
+          onChange={onToChange}
+        />
       </RangeField>
     </RangeFields>
   </div>

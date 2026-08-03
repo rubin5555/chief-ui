@@ -1,33 +1,16 @@
 import styled from 'styled-components';
-import {
-  catColors,
-  colors,
-  docStatusColors,
-  gray,
-  radii,
-  shadows,
-  transitions,
-} from '@/styles/theme';
+import { FloatingPanel } from '@/components/ui/FloatingPanel';
+import { catColors, colors, docStatusColors, gray, transitions } from '@/styles/theme';
 
-// Fixed rather than absolute: the trigger lives inside a virtualised, scrolling
-// table, so the menu is positioned against the viewport at the moment it opens.
-export const MenuLayer = styled.div<{ $top?: number; $bottom?: number; $left: number }>`
-  position: fixed;
-  z-index: 9998;
-  left: ${({ $left }) => $left}px;
-  ${({ $top }) => ($top !== undefined ? `top: ${$top}px;` : '')}
-  ${({ $bottom }) => ($bottom !== undefined ? `bottom: ${$bottom}px;` : '')}
-`;
-
-export const MenuPanel = styled.div`
-  min-width: 210px;
-  max-height: 80vh;
-  overflow-y: auto;
+// The trigger lives inside a virtualised, scrolling table, so the menu is
+// positioned against the viewport from the rect it was opened at — and it is
+// portalled, because the catalog body clips its overflow.
+export const MenuPanel = styled(FloatingPanel)`
+  /* Block, not the panel's own column flex: a distributed row's menu is
+     fourteen items tall, and flex items would shrink to fit the height cap
+     rather than let it scroll. */
+  display: block;
   padding: 6px 0;
-  border: 1px solid ${gray[100]};
-  border-radius: ${radii['2xl']};
-  background: ${colors.surface};
-  box-shadow: ${shadows.xl};
 `;
 
 export const MenuItem = styled.button<{ $danger?: boolean }>`

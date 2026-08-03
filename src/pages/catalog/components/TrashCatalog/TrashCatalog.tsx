@@ -6,12 +6,7 @@ import { TRASH_DOCS_FALLBACK, useTrashDocs } from '@/api/catalog';
 import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { useDebounce } from '@/hooks/useDebounce';
-import type { RowMenuAnchor } from '../DocumentCatalog/components/RowActionMenu';
-import {
-  RowActionMenu,
-  rowMenuAnchor,
-  TRASH_ROW_ACTIONS,
-} from '../DocumentCatalog/components/RowActionMenu';
+import { RowActionMenu, TRASH_ROW_ACTIONS } from '../DocumentCatalog/components/RowActionMenu';
 import { NO_DOCS_TEXT, SEARCH_PLACEHOLDER } from '../DocumentCatalog/DocumentCatalog.constants';
 import {
   CatalogBody,
@@ -45,7 +40,7 @@ interface TrashCatalogProps {
 // unlike the catalog's, there is no state around it worth sharing in a link.
 export const TrashCatalog = ({ onBack }: TrashCatalogProps) => {
   const [search, setSearch] = useState('');
-  const [menuRow, setMenuRow] = useState<{ doc: TrashDoc; anchor: RowMenuAnchor } | null>(null);
+  const [menuRow, setMenuRow] = useState<{ doc: TrashDoc; triggerRect: DOMRect } | null>(null);
 
   const { data, loading } = useTrashDocs();
   const docs = data ?? TRASH_DOCS_FALLBACK;
@@ -60,8 +55,7 @@ export const TrashCatalog = ({ onBack }: TrashCatalogProps) => {
 
   const handleMenuClick = (doc: TrashDoc) => (event: MouseEvent) => {
     event.stopPropagation();
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    setMenuRow({ doc, anchor: rowMenuAnchor(rect) });
+    setMenuRow({ doc, triggerRect: (event.currentTarget as HTMLElement).getBoundingClientRect() });
   };
 
   const closeMenu = () => setMenuRow(null);
@@ -118,7 +112,7 @@ export const TrashCatalog = ({ onBack }: TrashCatalogProps) => {
       {menuRow && (
         <RowActionMenu
           actions={TRASH_ROW_ACTIONS}
-          anchor={menuRow.anchor}
+          triggerRect={menuRow.triggerRect}
           phase={null}
           onAction={handleMenuAction}
           onClose={closeMenu}

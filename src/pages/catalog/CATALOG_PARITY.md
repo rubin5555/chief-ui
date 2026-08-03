@@ -100,6 +100,7 @@ Recorded here rather than fixed silently. Each was a decision, not an oversight.
 | Filter chip bordered `#c7d9ff` | `ui/FilterChip`'s computed tint | The app has one filter chip. A second one differing by a border tint is not worth the duplication. |
 | Distribution tab narrows its column gap to `0.6rem` | 16px on every shelf | `GridTable`'s density owns the gap, and a per-call override is exactly the escape hatch `.claude/skills/table-columns.md` rules out. |
 | Two `useEffect`s reset the page and clear filters | neither exists | The page is clamped to the last page on the way out, and a shelf change writes the reset into the URL. |
+| Filter funnel, new-document dropdown and row menu positioned `absolute`/`fixed` in the flow, hairline `border-gray-100` | portalled `ui/FloatingPanel`, hairline `colors.border` | The catalog body hides its overflow, so an in-flow panel is cut off at the page's bottom edge — and main's row menu flips on a `bottom > 55vh` guess that ignores how tall the menu actually is. All three now measure themselves and fit to the viewport. The hairline is the app's one semantic border token; the two shades differ by `#e5e5e5` vs `#f3f4f6`. |
 
 ## Status of the port
 

@@ -1,9 +1,7 @@
 import { Copy, FileText, Plus } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { TRIGGER_GAP, useFloatingPanel } from '@/hooks/useFloatingPanel';
 import { DOCUMENT_CATALOG_IDS } from '../../DocumentCatalog.testids';
 import {
-  DropdownAnchor,
   DropdownItem,
   DropdownItemIcon,
   DropdownPanel,
@@ -15,30 +13,37 @@ interface NewDocDropdownProps {
   onDuplicate: () => void;
 }
 
+// The mock hangs the panel off the button's near edge, and lets its two items
+// decide how wide it is.
+const PANEL_MIN_WIDTH = 200;
+const panelSpec = (trigger: DOMRect) => ({ top: trigger.bottom + TRIGGER_GAP, left: trigger.left });
+
 // Two ways to start a document: from nothing, or from one that already exists.
 // Both end in the same dialog — the second one seeds it.
 export const NewDocDropdown = ({ onNew, onDuplicate }: NewDocDropdownProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const anchorRef = useRef<HTMLDivElement>(null);
+  const panel = useFloatingPanel<HTMLButtonElement>();
 
-  useClickOutside([anchorRef], () => setIsOpen(false), isOpen);
-
-  const onToggle = () => setIsOpen((prev) => !prev);
+  const onToggle = () => panel.toggle(panelSpec);
 
   const runAndClose = (action: () => void) => () => {
-    setIsOpen(false);
+    panel.close();
     action();
   };
 
   return (
-    <DropdownAnchor ref={anchorRef}>
-      <NewDocButton type="button" data-testid={DOCUMENT_CATALOG_IDS.newDocBtn} onClick={onToggle}>
+    <>
+      <NewDocButton
+        ref={panel.btnRef}
+        type="button"
+        data-testid={DOCUMENT_CATALOG_IDS.newDocBtn}
+        onClick={onToggle}
+      >
         <Plus size={16} />
         <span>מסמך חדש</span>
       </NewDocButton>
 
-      {isOpen && (
-        <DropdownPanel dir="rtl">
+      {panel.open && panel.pos && (
+        <DropdownPanel ref={panel.panelRef} pos={panel.pos} minWidth={PANEL_MIN_WIDTH} dir="rtl">
           <DropdownItem
             type="button"
             data-testid={DOCUMENT_CATALOG_IDS.newDocOption}
@@ -61,6 +66,6 @@ export const NewDocDropdown = ({ onNew, onDuplicate }: NewDocDropdownProps) => {
           </DropdownItem>
         </DropdownPanel>
       )}
-    </DropdownAnchor>
+    </>
   );
 };

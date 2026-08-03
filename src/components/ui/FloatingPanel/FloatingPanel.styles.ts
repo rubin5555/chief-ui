@@ -9,11 +9,12 @@ interface FloatingPanelRootProps {
   'data-testid'?: string;
   $pos?: Pos | null;
   $width?: number;
+  $minWidth?: number;
 }
 
 export const FloatingPanelRoot = styled.div.attrs<FloatingPanelRootProps>((props) => ({
   'data-testid': props['data-testid'] ?? FLOATING_PANEL_IDS.root,
-  style: { ...props.$pos, width: props.$width },
+  style: { ...props.$pos, width: props.$width, minWidth: props.$minWidth },
 }))<FloatingPanelRootProps>`
   position: fixed;
   background: ${colors.surface};

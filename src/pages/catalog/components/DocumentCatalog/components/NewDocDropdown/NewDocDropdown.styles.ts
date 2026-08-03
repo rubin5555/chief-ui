@@ -1,13 +1,10 @@
 import styled from 'styled-components';
+import { FloatingPanel } from '@/components/ui/FloatingPanel';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
-
-export const DropdownAnchor = styled.div`
-  position: relative;
-  flex-shrink: 0;
-`;
 
 export const NewDocButton = styled.button`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
@@ -27,17 +24,11 @@ export const NewDocButton = styled.button`
   }
 `;
 
-export const DropdownPanel = styled.div`
-  position: absolute;
-  left: 0;
-  top: 100%;
-  z-index: 50;
-  min-width: 200px;
-  margin-top: 8px;
+// Portalled rather than absolutely positioned, for the same reason as the
+// filter funnel: the catalog body clips its overflow.
+export const DropdownPanel = styled(FloatingPanel)`
+  display: block;
   padding: 4px 0;
-  border: 1px solid ${gray[100]};
-  border-radius: ${radii['2xl']};
-  background: ${colors.surface};
   box-shadow: ${shadows.lg};
 `;
 
