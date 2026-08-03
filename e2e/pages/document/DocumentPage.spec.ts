@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 import { EDITOR_RIBBON_IDS } from '../../../src/components/ui/ContentEditor/components/EditorRibbon/EditorRibbon.testids';
-import { SEARCH_BAR_IDS } from '../../../src/components/ui/SearchBar/SearchBar.testids';
 import { DOC_PERMISSIONS_MODAL_IDS } from '../../../src/modals/DocPermissionsModal/DocPermissionsModal.testids';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from '../../../src/pages/document/components/ClassifiedViewersModal/ClassifiedViewersModal.testids';
 import { DOCUMENT_METADATA_PILL_IDS } from '../../../src/pages/document/components/DocumentMetadataPill/DocumentMetadataPill.testids';
@@ -161,8 +160,8 @@ test('classifying a section opens the viewers picker and gates its content', asy
   const nameSize = await page
     .getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.name('u1'))
     .evaluate((el) => getComputedStyle(el).fontSize);
-  const searchSize = await viewersModal
-    .getByTestId(SEARCH_BAR_IDS.input)
+  const searchSize = await page
+    .getByTestId(CLASSIFIED_VIEWERS_MODAL_IDS.search)
     .evaluate((el) => getComputedStyle(el).fontSize);
   expect(nameSize).toBe(searchSize);
 

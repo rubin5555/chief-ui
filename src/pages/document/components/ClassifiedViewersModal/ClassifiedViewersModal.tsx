@@ -2,13 +2,21 @@ import { useState } from 'react';
 import type { ClassifiedViewerDto } from '@/api/classifiedViewers';
 import { CLASSIFIED_VIEWER_POOL_FALLBACK, useClassifiedViewerPool } from '@/api/classifiedViewers';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { DialogSearchField } from '@/components/ui/DialogSearchField';
 import type { ColumnDef, RowConfig } from '@/components/ui/GridTable';
 import { GridTable } from '@/components/ui/GridTable';
 import { Modal } from '@/components/ui/Modal';
-import { SearchBar } from '@/components/ui/SearchBar';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useClassifiedViewersModalAnalytics } from './ClassifiedViewersModal.analytics';
-import { Body, EmptyState, MutedCell, NameCell, TableWrap } from './ClassifiedViewersModal.styles';
+import {
+  Body,
+  EmptyState,
+  MutedCell,
+  NameCell,
+  SearchStrip,
+  TableWrap,
+} from './ClassifiedViewersModal.styles';
 import { CLASSIFIED_VIEWERS_MODAL_IDS } from './ClassifiedViewersModal.testids';
 
 const personKey = (person: ClassifiedViewerDto) => person.id;
@@ -51,8 +59,7 @@ export const ClassifiedViewersModal = ({
       key: 'select',
       width: '28px',
       cell: (person) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selectedIds.includes(person.id)}
           onChange={handleToggle(person.id)}
           data-testid={CLASSIFIED_VIEWERS_MODAL_IDS.checkbox(person.id)}
@@ -75,7 +82,7 @@ export const ClassifiedViewersModal = ({
       width: '120px',
       header: 'ת.ז',
       align: 'right',
-      cell: (person) => <MutedCell>{person.idNumber}</MutedCell>,
+      cell: (person) => <MutedCell $tabular>{person.idNumber}</MutedCell>,
     },
     {
       key: 'environment',
@@ -105,7 +112,13 @@ export const ClassifiedViewersModal = ({
       }
     >
       <Body>
-        <SearchBar value={search} onChange={setSearch} placeholder="חיפוש..." />
+        <SearchStrip>
+          <DialogSearchField
+            value={search}
+            onChange={setSearch}
+            data-testid={CLASSIFIED_VIEWERS_MODAL_IDS.search}
+          />
+        </SearchStrip>
         <TableWrap>
           <GridTable
             columns={columns}

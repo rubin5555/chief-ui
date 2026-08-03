@@ -50,14 +50,6 @@ export const OptionRow = styled.label`
   }
 `;
 
-export const OptionCheckbox = styled.input`
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  border-radius: ${radii.sm};
-  accent-color: ${colors.primary};
-`;
-
 export const OptionLabel = styled.span<{ $checked: boolean }>`
   flex: 1;
   text-align: right;

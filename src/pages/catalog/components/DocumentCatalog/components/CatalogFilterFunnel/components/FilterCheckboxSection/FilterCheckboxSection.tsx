@@ -1,10 +1,10 @@
 import { Search } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { SectionTitle } from '../components.shared.styles';
 import {
   NoOptions,
-  OptionCheckbox,
   OptionLabel,
   OptionList,
   OptionRow,
@@ -64,11 +64,7 @@ export const FilterCheckboxSection = ({
       <OptionList $tall={!searchable}>
         {visible.map((option) => (
           <OptionRow key={option}>
-            <OptionCheckbox
-              type="checkbox"
-              checked={selected.includes(option)}
-              onChange={handleToggle(option)}
-            />
+            <Checkbox checked={selected.includes(option)} onChange={handleToggle(option)} />
             <OptionLabel $checked={selected.includes(option)}>{option}</OptionLabel>
           </OptionRow>
         ))}

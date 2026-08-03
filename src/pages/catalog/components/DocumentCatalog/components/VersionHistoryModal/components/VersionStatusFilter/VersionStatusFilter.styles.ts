@@ -32,14 +32,6 @@ export const StatusOption = styled.label`
   }
 `;
 
-export const StatusCheckbox = styled.input`
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  border-radius: ${radii.sm};
-  accent-color: ${colors.primary};
-`;
-
 export const StatusPill = styled.span<{ $bg: string; $ink: string }>`
   display: inline-flex;
   align-items: center;

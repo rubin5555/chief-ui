@@ -1,13 +1,13 @@
 import { Filter, X } from 'lucide-react';
 import type { MouseEvent } from 'react';
 import { useRef, useState } from 'react';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { useClickOutside } from '@/hooks/useClickOutside';
 import { catStatusColors, gray } from '@/styles/theme';
 import { CATALOG_MODAL_IDS } from '../../../catalogModals.testids';
 import { FilterBtn, FilterClear } from '../../VersionHistoryModal.styles';
 import {
   FilterAnchor,
-  StatusCheckbox,
   StatusOption,
   StatusPanel,
   StatusPill,
@@ -66,8 +66,7 @@ export const VersionStatusFilter = ({ options, selected, onChange }: VersionStat
             const palette = catStatusColors[status] ?? { bg: gray[100], ink: gray[500] };
             return (
               <StatusOption key={status}>
-                <StatusCheckbox
-                  type="checkbox"
+                <Checkbox
                   checked={selected.includes(status)}
                   onChange={handleToggleStatus(status)}
                 />

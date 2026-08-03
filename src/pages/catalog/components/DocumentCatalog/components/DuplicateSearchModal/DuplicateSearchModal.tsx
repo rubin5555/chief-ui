@@ -1,8 +1,7 @@
-import { Search } from 'lucide-react';
-import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import type { CatalogDoc } from '@/api/catalog';
 import { CATALOG_DOCS_FALLBACK } from '@/api/catalog';
+import { DialogSearchField } from '@/components/ui/DialogSearchField';
 import { Modal } from '@/components/ui/Modal';
 import { useDebounce } from '@/hooks/useDebounce';
 import { catStatusColors, gray } from '@/styles/theme';
@@ -15,9 +14,6 @@ import {
   ResultRow,
   ResultText,
   SearchField,
-  SearchFieldIcon,
-  SearchFieldInput,
-  SearchFieldWrap,
   StatusBadge,
   StatusBadgeDot,
 } from './DuplicateSearchModal.styles';
@@ -41,7 +37,6 @@ export const DuplicateSearchModal = ({ onSelect, onClose }: DuplicateSearchModal
     ? POOL.filter((doc) => doc.name.includes(query) || doc.orderNum.includes(query))
     : POOL.slice(0, UNSEARCHED_LIMIT);
 
-  const onSearchChange = (event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value);
   const handleSelect = (doc: CatalogDoc) => () => onSelect(doc);
 
   return (
@@ -53,20 +48,14 @@ export const DuplicateSearchModal = ({ onSelect, onClose }: DuplicateSearchModal
       data-testid={CATALOG_MODAL_IDS.duplicateSearch}
     >
       <SearchField>
-        <SearchFieldWrap>
-          <SearchFieldIcon>
-            <Search size={16} />
-          </SearchFieldIcon>
-          {/* The dialog exists to be typed into, so focus starts here. */}
-          <SearchFieldInput
-            autoFocus
-            dir="rtl"
-            value={search}
-            placeholder="חיפוש לפי שם מסמך, מספר פקודה..."
-            data-testid={CATALOG_MODAL_IDS.duplicateSearchInput}
-            onChange={onSearchChange}
-          />
-        </SearchFieldWrap>
+        {/* The dialog exists to be typed into, so focus starts here. */}
+        <DialogSearchField
+          autoFocus
+          value={search}
+          onChange={setSearch}
+          placeholder="חיפוש לפי שם מסמך, מספר פקודה..."
+          data-testid={CATALOG_MODAL_IDS.duplicateSearchInput}
+        />
       </SearchField>
 
       <ResultList>
