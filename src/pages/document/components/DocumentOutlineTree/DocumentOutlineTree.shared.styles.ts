@@ -1,16 +1,130 @@
-import styled from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import { ellipsis, flexCenter, resetButton, rtlTextInput } from '@/styles/mixins';
 import { colors, docColors, gray, radii, transitions } from '@/styles/theme';
 import type { DropEdge } from './DocumentOutlineTree.types';
 
-export const DropZone = styled.div<{ $edge: DropEdge; $dragging: boolean; $radius: number }>`
-  border-top: 2px solid
-    ${(props) => (props.$edge === 'top' ? colors.primary : 'transparent')};
-  border-bottom: 2px solid
-    ${(props) => (props.$edge === 'bottom' ? colors.primary : 'transparent')};
+const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+const dropLineIn = keyframes`
+  from {
+    opacity: 0;
+    transform: scaleX(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+`;
+
+const settleIn = keyframes`
+  from {
+    background-color: ${colors.primaryLight};
+    transform: scale(0.99);
+  }
+  to {
+    background-color: transparent;
+    transform: scale(1);
+  }
+`;
+
+const adoptIn = keyframes`
+  from {
+    box-shadow: 0 0 0 0 ${colors.primary};
+  }
+  to {
+    box-shadow: 0 0 0 2px ${colors.primary};
+  }
+`;
+
+export interface DropZoneProps {
+  $edge: DropEdge;
+  $dragging: boolean;
+  $settling: boolean;
+  $radius: number;
+}
+
+export const DropZone = styled.div<DropZoneProps>`
+  position: relative;
   border-radius: ${(props) => props.$radius}px;
-  opacity: ${(props) => (props.$dragging ? 0.4 : 1)};
-  transition: border-color 0.12s;
+  transition:
+    opacity 160ms ${EASE_OUT},
+    transform 160ms ${EASE_OUT};
+
+  /* The row itself steps aside to open the gap, while the zone keeps its box —
+     moving the drop target under the cursor makes the two rows fight. */
+  > * {
+    transition: transform 160ms ${EASE_OUT};
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline: 4px;
+    height: 2px;
+    border-radius: ${radii.full};
+    background-color: ${colors.primary};
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  ${(props) =>
+    props.$dragging &&
+    css`
+      opacity: 0.45;
+      transform: scale(0.985);
+    `}
+
+  ${(props) =>
+    props.$edge &&
+    css`
+      > * {
+        transform: translateY(${props.$edge === 'top' ? 2 : -2}px);
+      }
+
+      &::after {
+        opacity: 1;
+        ${props.$edge === 'top' ? 'top: -1px;' : 'bottom: -1px;'}
+        animation: ${dropLineIn} 140ms ${EASE_OUT};
+      }
+    `}
+
+  ${(props) =>
+    props.$settling &&
+    css`
+      animation: ${settleIn} 420ms ease-out;
+    `}
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    animation: none;
+
+    > * {
+      transition: none;
+      transform: none;
+    }
+
+    &::after {
+      animation: none;
+    }
+  }
+`;
+
+/* Sits between a row and its drop zone so the level below can be dropped into
+   it — a section onto a topic, a sub-section onto a section. */
+export const AdoptZone = styled.div<{ $active: boolean; $radius: number }>`
+  border-radius: ${(props) => props.$radius}px;
+
+  ${(props) =>
+    props.$active &&
+    css`
+      background-color: ${colors.primaryLight};
+      box-shadow: 0 0 0 2px ${colors.primary};
+      animation: ${adoptIn} 140ms ${EASE_OUT};
+
+      @media (prefers-reduced-motion: reduce) {
+        animation: none;
+      }
+    `}
 `;
 
 export const DragHandle = styled.span`

@@ -1,7 +1,7 @@
 import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual';
 import { lazy, Suspense, useRef, useState } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
-import { useDragReorder } from '@/hooks/useDragReorder';
+import { parseAppendTarget, useDragReorder } from '@/hooks/useDragReorder';
 import { chunkGuard } from '../../../../utils/chunkRecovery';
 import type { SectionMetaMap, Subject } from '../../types';
 import { OutlineRow } from './components/OutlineRow';
@@ -57,11 +57,17 @@ export const DocumentOutlineTree = ({
       trackNodesReordered('subject');
     }),
     sections: useDragReorder((draggedId, targetId) => {
-      tree.reorderSections(draggedId, targetId);
+      const appendTo = parseAppendTarget(targetId);
+      const subjectId = appendTo ?? targetId;
+      tree.moveSection(draggedId, subjectId, appendTo ? 'end' : 'before');
+      // A section dropped on a collapsed topic would land out of sight.
+      if (tree.subjects.some((subject) => subject.id === subjectId))
+        setExpandedSubjects((prev) => new Set(prev).add(subjectId));
       trackNodesReordered('section');
     }),
     subSections: useDragReorder((draggedId, targetId) => {
-      tree.reorderSubSections(draggedId, targetId);
+      const appendTo = parseAppendTarget(targetId);
+      tree.moveSubSection(draggedId, appendTo ?? targetId, appendTo ? 'end' : 'before');
       trackNodesReordered('subSection');
     }),
   };

@@ -64,6 +64,7 @@ export const AppendixList = ({
             data-testid={TEMPLATE_MODAL_IDS.appendix(appendix.id)}
             $isDragging={drag.draggedId === appendix.id}
             $isDragOver={drag.dragOverId === appendix.id}
+            $isSettling={drag.settledId === appendix.id}
             {...drag.getDropTargetProps(appendix.id)}
           >
             <DragHandle

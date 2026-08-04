@@ -1,6 +1,7 @@
 import { GripVertical, Plus, Trash2 } from 'lucide-react';
 import type { ChangeEvent } from 'react';
-import { useDragReorder } from '@/hooks/useDragReorder';
+import { appendTargetId, parseAppendTarget, useDragReorder } from '@/hooks/useDragReorder';
+import { radii } from '@/styles/theme';
 import type {
   DocumentTreeApi,
   PermissionsTarget,
@@ -11,6 +12,7 @@ import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
 import {
   AddChildLink,
   AddNodeButton,
+  AdoptZone,
   DragHandle,
   SmallIconBtn,
   TitleInput,
@@ -36,8 +38,17 @@ export const SubjectTree = ({
   onSubSectionAdded,
 }: SubjectTreeProps) => {
   const subjectDrag = useDragReorder(tree.reorderSubjects);
-  const sectionDrag = useDragReorder(tree.reorderSections);
-  const subSectionDrag = useDragReorder(tree.reorderSubSections);
+
+  // A drop on an "add" link names the parent whose list it closes, and asks for
+  // the end of that list rather than a place before one of its nodes.
+  const sectionDrag = useDragReorder((draggedId, targetId) => {
+    const appendTo = parseAppendTarget(targetId);
+    tree.moveSection(draggedId, appendTo ?? targetId, appendTo ? 'end' : 'before');
+  });
+  const subSectionDrag = useDragReorder((draggedId, targetId) => {
+    const appendTo = parseAppendTarget(targetId);
+    tree.moveSubSection(draggedId, appendTo ?? targetId, appendTo ? 'end' : 'before');
+  });
 
   const handleAddSubject = () => {
     tree.addSubject();
@@ -124,51 +135,67 @@ export const SubjectTree = ({
             data-testid={TEMPLATE_MODAL_IDS.subject(subject.id)}
             $isDragging={subjectDrag.draggedId === subject.id}
             $isDragOver={subjectDrag.dragOverId === subject.id}
+            $isSettling={subjectDrag.settledId === subject.id}
             {...subjectDrag.getDropTargetProps(subject.id)}
           >
-            <SubjectHeader>
-              <DragHandle
-                data-testid={TEMPLATE_MODAL_IDS.dragHandle(subject.id)}
-                {...subjectDrag.getDragHandleProps(subject.id)}
-              >
-                <GripVertical size={12} />
-              </DragHandle>
-              <SubjectDot />
-              <TitleInput
-                value={subject.title}
-                onChange={handleSubjectTitleChange(subject.id)}
-                placeholder={`נושא ${subjectIndex + 1}...`}
-                dir="rtl"
-              />
-              <SmallIconBtn type="button" onClick={handleRemoveSubject(subject.id)}>
-                <Trash2 size={12} />
-              </SmallIconBtn>
-            </SubjectHeader>
-
-            <SectionsList>
-              {subject.sections.map((section, sectionIndex) => (
-                <SectionRow
-                  key={section.id}
-                  section={section}
-                  sectionIndex={sectionIndex}
-                  activePermissionsId={activePermissionsId}
-                  sectionDrag={sectionDrag}
-                  subSectionDrag={subSectionDrag}
-                  onTitleChange={handleSectionTitleChange(subject.id, section.id)}
-                  onRemove={handleRemoveSection(subject.id, section.id)}
-                  onTogglePermissions={handleSectionPermissions(subject.id, section, sectionIndex)}
-                  onAddSubSection={onSubSectionAdd(section.id)}
-                  onSubSectionTitleChange={onSubSectionTitleChange(section.id)}
-                  onRemoveSubSection={onRemoveSubSection(section.id)}
-                  onSubSectionPermissions={onSubSectionPermissions(section.id)}
+            <AdoptZone
+              $active={sectionDrag.dragOverId === subject.id}
+              $radius={radii.xl}
+              {...sectionDrag.getDropTargetProps(subject.id)}
+            >
+              <SubjectHeader>
+                <DragHandle
+                  data-testid={TEMPLATE_MODAL_IDS.dragHandle(subject.id)}
+                  {...subjectDrag.getDragHandleProps(subject.id)}
+                >
+                  <GripVertical size={12} />
+                </DragHandle>
+                <SubjectDot />
+                <TitleInput
+                  value={subject.title}
+                  onChange={handleSubjectTitleChange(subject.id)}
+                  placeholder={`נושא ${subjectIndex + 1}...`}
+                  dir="rtl"
                 />
-              ))}
+                <SmallIconBtn type="button" onClick={handleRemoveSubject(subject.id)}>
+                  <Trash2 size={12} />
+                </SmallIconBtn>
+              </SubjectHeader>
 
-              <AddChildLink type="button" onClick={handleAddSection(subject.id)}>
-                <Plus size={12} />
-                הוספת סעיף
-              </AddChildLink>
-            </SectionsList>
+              <SectionsList>
+                {subject.sections.map((section, sectionIndex) => (
+                  <SectionRow
+                    key={section.id}
+                    section={section}
+                    sectionIndex={sectionIndex}
+                    activePermissionsId={activePermissionsId}
+                    sectionDrag={sectionDrag}
+                    subSectionDrag={subSectionDrag}
+                    onTitleChange={handleSectionTitleChange(subject.id, section.id)}
+                    onRemove={handleRemoveSection(subject.id, section.id)}
+                    onTogglePermissions={handleSectionPermissions(
+                      subject.id,
+                      section,
+                      sectionIndex,
+                    )}
+                    onAddSubSection={onSubSectionAdd(section.id)}
+                    onSubSectionTitleChange={onSubSectionTitleChange(section.id)}
+                    onRemoveSubSection={onRemoveSubSection(section.id)}
+                    onSubSectionPermissions={onSubSectionPermissions(section.id)}
+                  />
+                ))}
+
+                <AddChildLink
+                  type="button"
+                  $dropActive={sectionDrag.dragOverId === appendTargetId(subject.id)}
+                  onClick={handleAddSection(subject.id)}
+                  {...sectionDrag.getDropTargetProps(appendTargetId(subject.id))}
+                >
+                  <Plus size={12} />
+                  הוספת סעיף
+                </AddChildLink>
+              </SectionsList>
+            </AdoptZone>
           </SubjectCard>
         );
       })}

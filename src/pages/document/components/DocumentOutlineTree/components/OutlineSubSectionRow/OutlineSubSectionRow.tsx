@@ -77,6 +77,7 @@ export const OutlineSubSectionRow = ({
     <DropZone
       $edge={dropEdge}
       $dragging={isDragging}
+      $settling={drag.subSections.settledId === subSection.id}
       $radius={DROP_RADIUS}
       {...drag.subSections.getDropTargetProps(subSection.id)}
     >
