@@ -2,15 +2,14 @@ import styled from 'styled-components';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 import { squareToolButton } from '../components.shared.styles';
 
-export const BarRoot = styled.div<{ $top: number; $left: number; $width: number }>`
+export const BarRoot = styled.div<{ $top: number; $left: number; $ready: boolean }>`
   position: fixed;
   top: ${({ $top }) => $top}px;
   left: ${({ $left }) => $left}px;
-  width: ${({ $width }) => $width}px;
+  visibility: ${({ $ready }) => ($ready ? 'visible' : 'hidden')};
   z-index: 9990;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 1px;
   padding: 2px 6px;
   direction: rtl;
@@ -20,13 +19,14 @@ export const BarRoot = styled.div<{ $top: number; $left: number; $width: number 
   box-shadow: ${shadows.bubble};
 `;
 
-export const BarArrow = styled.span`
+export const BarArrow = styled.span<{ $flipped: boolean }>`
   position: absolute;
-  top: -6px;
+  ${({ $flipped }) => ($flipped ? 'bottom: -6px;' : 'top: -6px;')}
   right: 16px;
   width: 10px;
   height: 6px;
   overflow: hidden;
+  transform: ${({ $flipped }) => ($flipped ? 'rotate(180deg)' : 'none')};
 
   &::after {
     content: '';

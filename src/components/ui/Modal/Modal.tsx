@@ -37,6 +37,9 @@ interface ModalProps {
   height?: string;
   maxHeight?: string;
   noBodyPadding?: boolean;
+  // Stamped on the overlay, for callers whose dialog has to say in the DOM who
+  // it belongs to — a portal breaks the ancestry the owner would be found by.
+  overlayAttrs?: Record<string, string>;
   children: ReactNode;
   'data-testid'?: string;
 }
@@ -57,6 +60,7 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
       height,
       maxHeight,
       noBodyPadding,
+      overlayAttrs,
       children,
       'data-testid': testId,
     },
@@ -119,7 +123,12 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
 
     return (
       <ModalPortal>
-        <Overlay data-testid={`${base}-overlay`} onClick={onChromeClose} $closing={isClosing}>
+        <Overlay
+          {...overlayAttrs}
+          data-testid={`${base}-overlay`}
+          onClick={onChromeClose}
+          $closing={isClosing}
+        >
           <ModalCard
             ref={cardRef}
             data-testid={base}
