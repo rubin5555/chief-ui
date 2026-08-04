@@ -1,11 +1,14 @@
 import { GripVertical, Plus, Trash2, User } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 import type { useDragReorder } from '@/hooks/useDragReorder';
+import { appendTargetId } from '@/hooks/useDragReorder';
+import { radii } from '@/styles/theme';
 import type { Section, SubSection } from '../../../../TemplateModal.constants';
 import { HE_ALPHA } from '../../../../TemplateModal.constants';
 import { TEMPLATE_MODAL_IDS } from '../../../../TemplateModal.testids';
 import {
   AddChildLink,
+  AdoptZone,
   DragHandle,
   NodeIndex,
   SmallIconBtn,
@@ -53,37 +56,44 @@ export const SectionRow = ({
 
   return (
     <SectionBlock data-testid={TEMPLATE_MODAL_IDS.section(section.id)}>
-      <SectionRowBox
-        $isDragging={sectionDrag.draggedId === section.id}
-        $isDragOver={sectionDrag.dragOverId === section.id}
-        {...sectionDrag.getDropTargetProps(section.id)}
+      <AdoptZone
+        $active={subSectionDrag.dragOverId === section.id}
+        $radius={radii.lg}
+        {...subSectionDrag.getDropTargetProps(section.id)}
       >
-        <DragHandle
-          data-testid={TEMPLATE_MODAL_IDS.dragHandle(section.id)}
-          {...sectionDrag.getDragHandleProps(section.id)}
+        <SectionRowBox
+          $isDragging={sectionDrag.draggedId === section.id}
+          $isDragOver={sectionDrag.dragOverId === section.id}
+          $isSettling={sectionDrag.settledId === section.id}
+          {...sectionDrag.getDropTargetProps(section.id)}
         >
-          <GripVertical size={12} />
-        </DragHandle>
-        <NodeIndex>{sectionIndex + 1}.</NodeIndex>
-        <TitleInput
-          value={section.title}
-          onChange={onTitleChange}
-          placeholder="שם הסעיף..."
-          dir="rtl"
-        />
-        <SmallIconBtn
-          type="button"
-          data-testid={TEMPLATE_MODAL_IDS.permissionsBtn(section.id)}
-          $active={isActive}
-          $muted={!hasPerms}
-          onClick={onTogglePermissions}
-        >
-          <User size={12} />
-        </SmallIconBtn>
-        <SmallIconBtn type="button" onClick={onRemove}>
-          <Trash2 size={12} />
-        </SmallIconBtn>
-      </SectionRowBox>
+          <DragHandle
+            data-testid={TEMPLATE_MODAL_IDS.dragHandle(section.id)}
+            {...sectionDrag.getDragHandleProps(section.id)}
+          >
+            <GripVertical size={12} />
+          </DragHandle>
+          <NodeIndex>{sectionIndex + 1}.</NodeIndex>
+          <TitleInput
+            value={section.title}
+            onChange={onTitleChange}
+            placeholder="שם הסעיף..."
+            dir="rtl"
+          />
+          <SmallIconBtn
+            type="button"
+            data-testid={TEMPLATE_MODAL_IDS.permissionsBtn(section.id)}
+            $active={isActive}
+            $muted={!hasPerms}
+            onClick={onTogglePermissions}
+          >
+            <User size={12} />
+          </SmallIconBtn>
+          <SmallIconBtn type="button" onClick={onRemove}>
+            <Trash2 size={12} />
+          </SmallIconBtn>
+        </SectionRowBox>
+      </AdoptZone>
 
       {section.subSections.length > 0 && (
         <SubSectionsWrap>
@@ -98,6 +108,7 @@ export const SectionRow = ({
                 data-testid={TEMPLATE_MODAL_IDS.subSection(subSection.id)}
                 $isDragging={subSectionDrag.draggedId === subSection.id}
                 $isDragOver={subSectionDrag.dragOverId === subSection.id}
+                $isSettling={subSectionDrag.settledId === subSection.id}
                 {...subSectionDrag.getDropTargetProps(subSection.id)}
               >
                 <DragHandle
@@ -134,7 +145,12 @@ export const SectionRow = ({
         </SubSectionsWrap>
       )}
 
-      <AddChildLink type="button" onClick={onAddSubSection}>
+      <AddChildLink
+        type="button"
+        $dropActive={subSectionDrag.dragOverId === appendTargetId(section.id)}
+        onClick={onAddSubSection}
+        {...subSectionDrag.getDropTargetProps(appendTargetId(section.id))}
+      >
         <Plus size={11} />
         תת סעיף
       </AddChildLink>

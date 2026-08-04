@@ -4,6 +4,7 @@ import { CONFIRM_DELETE_MODAL_IDS } from '../../../../src/pages/document/compone
 import { OUTLINE_ROW_MENU_IDS } from '../../../../src/pages/document/components/DocumentOutlineTree/components/OutlineRowMenu/OutlineRowMenu.testids';
 import { OUTLINE_SECTION_ROW_IDS } from '../../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSectionRow/OutlineSectionRow.testids';
 import { OUTLINE_SUBJECT_ROW_IDS } from '../../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubjectRow/OutlineSubjectRow.testids';
+import { OUTLINE_SUB_SECTION_ROW_IDS } from '../../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubSectionRow/OutlineSubSectionRow.testids';
 import { ADD_MENU_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/components/AddMenu/AddMenu.testids';
 import { SUBJECT_BLOCK_IDS } from '../../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
 import { dragOnto, revealOutlineRow, scrollOutlineToEnd } from '../../../support/interactions';
@@ -172,6 +173,65 @@ test('dragging a section onto its sibling reorders both the outline and the pape
   await expect(s1SectionTitles.first()).toHaveValue('היסטוריית גרסאות');
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-2'))).toContainText('1.');
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-1'))).toContainText('2.');
+});
+
+test('dragging a section onto another topic hands it over to that topic', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  const s1Sections = page
+    .getByTestId(SUBJECT_BLOCK_IDS.root('s1'))
+    .getByRole('textbox', { name: 'שם הסעיף' });
+  const s2Sections = page
+    .getByTestId(SUBJECT_BLOCK_IDS.root('s2'))
+    .getByRole('textbox', { name: 'שם הסעיף' });
+  await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-1'))).toBeVisible();
+
+  await dragOnto(page, OUTLINE_SECTION_ROW_IDS.root('s1-1'), OUTLINE_SUBJECT_ROW_IDS.toggle('s2'));
+
+  await expect(s1Sections).toHaveCount(1);
+  await expect(s1Sections.first()).toHaveValue('היסטוריית גרסאות');
+  await expect(s2Sections).toHaveCount(3);
+  await expect(s2Sections.first()).toHaveValue('מטרת המסמך');
+});
+
+test("dropping a section on a topic's add link puts it last in that topic", async ({ page }) => {
+  await page.goto('/document/d1');
+
+  const s2Sections = page
+    .getByTestId(SUBJECT_BLOCK_IDS.root('s2'))
+    .getByRole('textbox', { name: 'שם הסעיף' });
+  await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-1'))).toBeVisible();
+
+  await dragOnto(page, OUTLINE_SECTION_ROW_IDS.root('s1-1'), ADD_NODE_LINK_IDS.addSection('s2'));
+
+  await expect(s2Sections).toHaveCount(3);
+  await expect(s2Sections.last()).toHaveValue('מטרת המסמך');
+});
+
+test('dragging a sub-section onto another section hands it over to that section', async ({
+  page,
+}) => {
+  await page.goto('/document/d1');
+
+  await page.getByTestId(ADD_NODE_LINK_IDS.addSubSection('s1-1')).click();
+
+  const subSectionRow = page.locator('[data-testid^="outline-sub-section-"]').first();
+  const subSectionId = await subSectionRow.evaluate((el) =>
+    (el.getAttribute('data-testid') ?? '').replace('outline-sub-section-', ''),
+  );
+
+  await dragOnto(
+    page,
+    OUTLINE_SUB_SECTION_ROW_IDS.root(subSectionId),
+    OUTLINE_SECTION_ROW_IDS.root('s2-2'),
+  );
+
+  await expect(
+    page.getByTestId(SUBJECT_BLOCK_IDS.root('s1')).getByRole('textbox', { name: 'שם תת הסעיף' }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByTestId(SUBJECT_BLOCK_IDS.root('s2')).getByRole('textbox', { name: 'שם תת הסעיף' }),
+  ).toHaveValue('תת סעיף א');
 });
 
 test('the outline holds the rows in the column and reaches the rest by scrolling', async ({

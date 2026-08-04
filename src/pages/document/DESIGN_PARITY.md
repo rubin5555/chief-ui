@@ -173,6 +173,14 @@ Phase 2 rebuilt the page skeleton to main's. The pieces that are easy to
   chevron and a title; sub-section rows have a Hebrew letter and a title. main
   puts the dot on the middle level alone (`Edit.tsx:3990`), and hides it entirely
   once the document has been distributed.
+- **Outline drags cross parents, not just siblings.** main's drag only reorders a
+  node among its own siblings. Here a section dropped on a topic row joins that
+  topic, and a sub-section dropped on a section row joins that section — dropped
+  on a sibling it still lands where that sibling stands, so plain reordering is
+  unchanged. The parent row rings itself while it is the one being aimed at, and
+  a collapsed topic opens when it takes a section in, so nothing lands out of
+  sight. The `+ הוספת סעיף` row takes drops too, and stands for the end of the
+  list it closes — the one place no node's id can name.
 - **The sidebar has no text buttons.** Importing and restoring are reached from
   the two round navy buttons at the foot of the column (`Edit.tsx:4082`) — the
   `+` opens a four-item menu, one of which is the importer.

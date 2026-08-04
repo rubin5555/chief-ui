@@ -4,7 +4,12 @@ import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import { SECTION_STATUS_COLOR } from '../../../../document.constants';
 import type { Section, SectionMetaMap } from '../../../../types';
 import { useSectionNavigation } from '../../../SectionNavigation';
-import { DragHandle, DropZone, StatusDot } from '../../DocumentOutlineTree.shared.styles';
+import {
+  AdoptZone,
+  DragHandle,
+  DropZone,
+  StatusDot,
+} from '../../DocumentOutlineTree.shared.styles';
 import type { DropEdge, OutlineDragApi, OutlineEditingApi } from '../../DocumentOutlineTree.types';
 import { OutlineRowMenu } from '../OutlineRowMenu';
 import {
@@ -77,57 +82,67 @@ export const OutlineSectionRow = ({
     <DropZone
       $edge={dropEdge}
       $dragging={isDragging}
+      $settling={drag.sections.settledId === section.id}
       $radius={DROP_RADIUS}
       {...drag.sections.getDropTargetProps(section.id)}
     >
-      <SectionRow
-        dir="rtl"
-        $active={nav?.activeNodeId === section.id}
-        {...(nav?.activeNodeId === section.id ? { 'aria-current': 'location' as const } : {})}
-        data-testid={OUTLINE_SECTION_ROW_IDS.root(section.id)}
-        onClick={handleRowClick}
-        {...(readOnly ? {} : drag.sections.getDragHandleProps(section.id))}
+      <AdoptZone
+        $active={drag.subSections.dragOverId === section.id}
+        $radius={DROP_RADIUS}
+        {...drag.subSections.getDropTargetProps(section.id)}
       >
-        {!readOnly && (
-          <DragHandle>
-            <GripHorizontal size={12} aria-hidden="true" />
-          </DragHandle>
-        )}
+        <SectionRow
+          dir="rtl"
+          $active={nav?.activeNodeId === section.id}
+          {...(nav?.activeNodeId === section.id ? { 'aria-current': 'location' as const } : {})}
+          data-testid={OUTLINE_SECTION_ROW_IDS.root(section.id)}
+          onClick={handleRowClick}
+          {...(readOnly ? {} : drag.sections.getDragHandleProps(section.id))}
+        >
+          {!readOnly && (
+            <DragHandle>
+              <GripHorizontal size={12} aria-hidden="true" />
+            </DragHandle>
+          )}
 
-        <SectionIndex $width={INDEX_WIDTH} data-testid={OUTLINE_SECTION_ROW_IDS.index(section.id)}>
-          {number}.
-        </SectionIndex>
+          <SectionIndex
+            $width={INDEX_WIDTH}
+            data-testid={OUTLINE_SECTION_ROW_IDS.index(section.id)}
+          >
+            {number}.
+          </SectionIndex>
 
-        {isRenaming ? (
-          <SectionRenameInput
-            autoFocus
-            defaultValue={section.title}
-            dir="rtl"
-            aria-label="שם הסעיף"
-            data-testid={OUTLINE_SECTION_ROW_IDS.renameInput(section.id)}
-            onBlur={commitRename}
-            onKeyDown={handleKeyDown}
-          />
-        ) : (
-          <SectionTitle>{section.title}</SectionTitle>
-        )}
+          {isRenaming ? (
+            <SectionRenameInput
+              autoFocus
+              defaultValue={section.title}
+              dir="rtl"
+              aria-label="שם הסעיף"
+              data-testid={OUTLINE_SECTION_ROW_IDS.renameInput(section.id)}
+              onBlur={commitRename}
+              onKeyDown={handleKeyDown}
+            />
+          ) : (
+            <SectionTitle>{section.title}</SectionTitle>
+          )}
 
-        {!isDistributed && (
-          <StatusDot
-            $color={SECTION_STATUS_COLOR[status]}
-            data-testid={OUTLINE_SECTION_ROW_IDS.statusDot(section.id)}
-          />
-        )}
+          {!isDistributed && (
+            <StatusDot
+              $color={SECTION_STATUS_COLOR[status]}
+              data-testid={OUTLINE_SECTION_ROW_IDS.statusDot(section.id)}
+            />
+          )}
 
-        {!readOnly && (
-          <OutlineRowMenu
-            nodeId={section.id}
-            iconSize={12}
-            onRename={handleStartRename}
-            onDelete={handleRequestDelete}
-          />
-        )}
-      </SectionRow>
+          {!readOnly && (
+            <OutlineRowMenu
+              nodeId={section.id}
+              iconSize={12}
+              onRename={handleStartRename}
+              onDelete={handleRequestDelete}
+            />
+          )}
+        </SectionRow>
+      </AdoptZone>
     </DropZone>
   );
 };

@@ -93,7 +93,14 @@ export const OutlineRow = ({
         editing.onNodeAdded('section');
       };
 
-      return <AddNodeLink variant="section" parentId={row.subjectId} onClick={handleAddSection} />;
+      return (
+        <AddNodeLink
+          variant="section"
+          parentId={row.subjectId}
+          drag={drag}
+          onClick={handleAddSection}
+        />
+      );
     }
 
     case 'addSubSection': {
@@ -108,7 +115,12 @@ export const OutlineRow = ({
       };
 
       return (
-        <AddNodeLink variant="subSection" parentId={row.sectionId} onClick={handleAddSubSection} />
+        <AddNodeLink
+          variant="subSection"
+          parentId={row.sectionId}
+          drag={drag}
+          onClick={handleAddSubSection}
+        />
       );
     }
   }

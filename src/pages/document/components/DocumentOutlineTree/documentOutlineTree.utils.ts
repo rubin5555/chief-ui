@@ -12,7 +12,10 @@ export const getDropEdge = (
   const from = ids.indexOf(drag.draggedId);
   const to = ids.indexOf(id);
 
-  if (from === -1 || to === -1) return null;
+  if (to === -1) return null;
+  // A node arriving from another parent isn't in this list yet, and lands where
+  // the row it was dropped on stands — above it.
+  if (from === -1) return 'top';
   return from > to ? 'top' : 'bottom';
 };
 

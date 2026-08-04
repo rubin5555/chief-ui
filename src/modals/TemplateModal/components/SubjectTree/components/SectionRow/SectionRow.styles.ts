@@ -1,33 +1,29 @@
 import styled from 'styled-components';
 import { flexGap } from '@/styles/mixins';
-import { colors, gray, radii, transitions } from '@/styles/theme';
+import { colors, gray, radii } from '@/styles/theme';
+import type { DragStateProps } from '../../../TemplateModal.shared.styles';
+import { dragMotion } from '../../../TemplateModal.shared.styles';
 
 export const SectionBlock = styled.div`
   padding-right: 8px;
 `;
 
-export const SectionRowBox = styled.div<{ $isDragging?: boolean; $isDragOver?: boolean }>`
+export const SectionRowBox = styled.div<DragStateProps>`
   ${flexGap(4)}
   padding: 6px 8px;
   background: ${gray[50]};
   border-radius: ${radii.lg};
   border: 1px solid ${({ $isDragOver }) => ($isDragOver ? colors.primary : gray[100])};
-  opacity: ${({ $isDragging }) => ($isDragging ? 0.4 : 1)};
-  transition:
-    border-color ${transitions.fast},
-    opacity ${transitions.fast};
+  ${dragMotion}
 `;
 
-export const SubSectionRowBox = styled.div<{ $isDragging?: boolean; $isDragOver?: boolean }>`
+export const SubSectionRowBox = styled.div<DragStateProps>`
   ${flexGap(4)}
   padding: 4px 8px;
   background: ${colors.surface};
   border-radius: ${radii.lg};
   border: 1px solid ${({ $isDragOver }) => ($isDragOver ? colors.primary : gray[100])};
-  opacity: ${({ $isDragging }) => ($isDragging ? 0.4 : 1)};
-  transition:
-    border-color ${transitions.fast},
-    opacity ${transitions.fast};
+  ${dragMotion}
 `;
 
 export const SubSectionsWrap = styled.div`

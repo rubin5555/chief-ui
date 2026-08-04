@@ -29,6 +29,24 @@ export interface Subject {
 
 const makeId = (prefix: string) => `${prefix}-${self.crypto.randomUUID()}`;
 
+export type InsertAt = 'before' | 'end';
+
+// Lands the node above the sibling it was dropped on; dropping on the parent
+// itself has no sibling to aim at, so it goes to the head of the list.
+const insertAt = <T extends { id: string }>(
+  items: T[],
+  item: T,
+  beforeId: string,
+  at: InsertAt,
+): T[] => {
+  if (at === 'end') return [...items, item];
+
+  const index = items.findIndex((candidate) => candidate.id === beforeId);
+  const next = [...items];
+  next.splice(index === -1 ? 0 : index, 0, item);
+  return next;
+};
+
 const emptySection = (title: string): Section => ({
   id: makeId('section'),
   title,
@@ -115,17 +133,44 @@ export const useDocumentTree = (initialSubjects: Subject[] = []) => {
       ),
     );
 
-  const reorderSections = (draggedId: string, targetId: string) =>
-    setSubjects((prev) =>
-      prev.map((subject) => {
-        const hasBoth =
-          subject.sections.some((section) => section.id === draggedId) &&
-          subject.sections.some((section) => section.id === targetId);
-        return hasBoth
-          ? { ...subject, sections: reorderById(subject.sections, draggedId, targetId) }
-          : subject;
-      }),
-    );
+  // The target is either a sibling section — a plain reorder — or the subject
+  // that should take the section in, which puts it at the head of its list, or
+  // at the tail when the drop asked for the end.
+  const moveSection = (draggedId: string, targetId: string, at: InsertAt = 'before') =>
+    setSubjects((prev) => {
+      const source = prev.find((subject) =>
+        subject.sections.some((section) => section.id === draggedId),
+      );
+      const moved = source?.sections.find((section) => section.id === draggedId);
+      if (!source || !moved) return prev;
+
+      if (source.sections.some((section) => section.id === targetId))
+        return prev.map((subject) =>
+          subject.id !== source.id
+            ? subject
+            : { ...subject, sections: reorderById(subject.sections, draggedId, targetId) },
+        );
+
+      const target = prev.find(
+        (subject) =>
+          subject.id === targetId || subject.sections.some((section) => section.id === targetId),
+      );
+      if (!target) return prev;
+
+      return prev.map((subject) => {
+        if (subject.id !== source.id && subject.id !== target.id) return subject;
+
+        const kept =
+          subject.id === source.id
+            ? subject.sections.filter((section) => section.id !== draggedId)
+            : subject.sections;
+
+        return {
+          ...subject,
+          sections: subject.id === target.id ? insertAt(kept, moved, targetId, at) : kept,
+        };
+      });
+    });
 
   const updateSectionTitle = (subjectId: string, sectionId: string, title: string) =>
     mapSection(subjectId, sectionId, (section) => ({ ...section, title }));
@@ -154,20 +199,49 @@ export const useDocumentTree = (initialSubjects: Subject[] = []) => {
       subSections: section.subSections.filter((subSection) => subSection.id !== subSectionId),
     }));
 
-  const reorderSubSections = (draggedId: string, targetId: string) =>
-    setSubjects((prev) =>
-      prev.map((subject) => ({
+  // Same targets one level down: a sibling sub-section, or the section that
+  // should take this one in.
+  const moveSubSection = (draggedId: string, targetId: string, at: InsertAt = 'before') =>
+    setSubjects((prev) => {
+      const sections = prev.flatMap((subject) => subject.sections);
+      const source = sections.find((section) =>
+        section.subSections.some((subSection) => subSection.id === draggedId),
+      );
+      const moved = source?.subSections.find((subSection) => subSection.id === draggedId);
+      if (!source || !moved) return prev;
+
+      const isSibling = source.subSections.some((subSection) => subSection.id === targetId);
+      const target = sections.find(
+        (section) =>
+          section.id === targetId ||
+          section.subSections.some((subSection) => subSection.id === targetId),
+      );
+      if (!target) return prev;
+
+      const mapSubSections = (section: Section): Section => {
+        if (isSibling)
+          return section.id !== source.id
+            ? section
+            : { ...section, subSections: reorderById(section.subSections, draggedId, targetId) };
+
+        if (section.id !== source.id && section.id !== target.id) return section;
+
+        const kept =
+          section.id === source.id
+            ? section.subSections.filter((subSection) => subSection.id !== draggedId)
+            : section.subSections;
+
+        return {
+          ...section,
+          subSections: section.id === target.id ? insertAt(kept, moved, targetId, at) : kept,
+        };
+      };
+
+      return prev.map((subject) => ({
         ...subject,
-        sections: subject.sections.map((section) => {
-          const hasBoth =
-            section.subSections.some((subSection) => subSection.id === draggedId) &&
-            section.subSections.some((subSection) => subSection.id === targetId);
-          return hasBoth
-            ? { ...section, subSections: reorderById(section.subSections, draggedId, targetId) }
-            : section;
-        }),
-      })),
-    );
+        sections: subject.sections.map(mapSubSections),
+      }));
+    });
 
   const updateSubSectionTitle = (
     subjectId: string,
@@ -209,13 +283,13 @@ export const useDocumentTree = (initialSubjects: Subject[] = []) => {
     updateSubjectTitle,
     addSection,
     removeSection,
-    reorderSections,
+    moveSection,
     updateSectionTitle,
     updateSectionContent,
     updateSectionPermissions,
     addSubSection,
     removeSubSection,
-    reorderSubSections,
+    moveSubSection,
     updateSubSectionTitle,
     updateSubSectionContent,
     updateSubSectionPermissions,

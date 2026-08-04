@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import { flexGap } from '@/styles/mixins';
-import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
+import { colors, gray, radii, shadows } from '@/styles/theme';
+import type { DragStateProps } from '../TemplateModal.shared.styles';
+import { dragMotion } from '../TemplateModal.shared.styles';
 
 export const SectionsList = styled.div`
   padding: 8px;
@@ -9,16 +11,13 @@ export const SectionsList = styled.div`
   gap: 6px;
 `;
 
-export const SubjectCard = styled.div<{ $isDragging?: boolean; $isDragOver?: boolean }>`
+export const SubjectCard = styled.div<DragStateProps>`
   background: ${colors.surface};
   border-radius: ${radii.xl};
   border: 1px solid ${({ $isDragOver }) => ($isDragOver ? colors.primary : gray[100])};
   overflow: hidden;
   box-shadow: ${shadows.sm};
-  opacity: ${({ $isDragging }) => ($isDragging ? 0.4 : 1)};
-  transition:
-    border-color ${transitions.fast},
-    opacity ${transitions.fast};
+  ${dragMotion}
 `;
 
 export const SubjectHeader = styled.div`

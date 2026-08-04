@@ -2,7 +2,7 @@ import { ChevronLeft, GripHorizontal } from 'lucide-react';
 import type { FocusEvent, KeyboardEvent } from 'react';
 import type { useDocumentTree } from '@/hooks/useDocumentTree';
 import type { Subject } from '../../../../types';
-import { DragHandle, DropZone } from '../../DocumentOutlineTree.shared.styles';
+import { AdoptZone, DragHandle, DropZone } from '../../DocumentOutlineTree.shared.styles';
 import type {
   DropEdge,
   OutlineDragApi,
@@ -68,49 +68,56 @@ export const OutlineSubjectRow = ({
     <DropZone
       $edge={dropEdge}
       $dragging={isDragging}
+      $settling={drag.subjects.settledId === subject.id}
       $radius={DROP_RADIUS}
       data-testid={OUTLINE_SUBJECT_ROW_IDS.root(subject.id)}
       {...drag.subjects.getDropTargetProps(subject.id)}
     >
-      <SubjectRow
-        dir="rtl"
-        data-testid={OUTLINE_SUBJECT_ROW_IDS.toggle(subject.id)}
-        onClick={handleToggle}
-        {...(readOnly ? {} : drag.subjects.getDragHandleProps(subject.id))}
+      <AdoptZone
+        $active={drag.sections.dragOverId === subject.id}
+        $radius={DROP_RADIUS}
+        {...drag.sections.getDropTargetProps(subject.id)}
       >
-        {!readOnly && (
-          <DragHandle>
-            <GripHorizontal size={14} aria-hidden="true" />
-          </DragHandle>
-        )}
+        <SubjectRow
+          dir="rtl"
+          data-testid={OUTLINE_SUBJECT_ROW_IDS.toggle(subject.id)}
+          onClick={handleToggle}
+          {...(readOnly ? {} : drag.subjects.getDragHandleProps(subject.id))}
+        >
+          {!readOnly && (
+            <DragHandle>
+              <GripHorizontal size={14} aria-hidden="true" />
+            </DragHandle>
+          )}
 
-        <Chevron $expanded={isExpanded}>
-          <ChevronLeft size={14} aria-hidden="true" />
-        </Chevron>
+          <Chevron $expanded={isExpanded}>
+            <ChevronLeft size={14} aria-hidden="true" />
+          </Chevron>
 
-        {isNew || isRenaming ? (
-          <SubjectRenameInput
-            autoFocus
-            defaultValue={subject.title}
-            dir="rtl"
-            placeholder={isNew ? 'שם הנושא...' : undefined}
-            aria-label="שם הנושא"
-            data-testid={OUTLINE_SUBJECT_ROW_IDS.renameInput(subject.id)}
-            onBlur={isNew ? commitNew : commitRename}
-            onKeyDown={handleKeyDown}
-          />
-        ) : (
-          <SubjectTitle>{subject.title}</SubjectTitle>
-        )}
+          {isNew || isRenaming ? (
+            <SubjectRenameInput
+              autoFocus
+              defaultValue={subject.title}
+              dir="rtl"
+              placeholder={isNew ? 'שם הנושא...' : undefined}
+              aria-label="שם הנושא"
+              data-testid={OUTLINE_SUBJECT_ROW_IDS.renameInput(subject.id)}
+              onBlur={isNew ? commitNew : commitRename}
+              onKeyDown={handleKeyDown}
+            />
+          ) : (
+            <SubjectTitle>{subject.title}</SubjectTitle>
+          )}
 
-        {!readOnly && (
-          <OutlineRowMenu
-            nodeId={subject.id}
-            onRename={handleStartRename}
-            onDelete={handleRequestDelete}
-          />
-        )}
-      </SubjectRow>
+          {!readOnly && (
+            <OutlineRowMenu
+              nodeId={subject.id}
+              onRename={handleStartRename}
+              onDelete={handleRequestDelete}
+            />
+          )}
+        </SubjectRow>
+      </AdoptZone>
     </DropZone>
   );
 };
