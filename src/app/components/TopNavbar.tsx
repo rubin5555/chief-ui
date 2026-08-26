@@ -1509,25 +1509,61 @@ export function TopNavbar({ showBackArrow = false, isPersonalAreaActive = false,
               </button>
               <h3 className="text-sm font-medium text-gray-900">שאלות נפוצות</h3>
             </div>
-            <div className="space-y-2">
-              {[
-                { q: 'איך מחפשים מסמך?', a: 'כדי לחפש מסמך, השתמש בשדה החיפוש בחלק העליון של המסך או עבור לתפריט "כל המסמכים" בסרגל הצד.' },
-                { q: 'איך מבקשים הרשאה?', a: 'לחץ על המסמך הרצוי, בחר "בקש הרשאה" מהתפריט, ובחר את סוג ההרשאה הנדרשת (צפייה או עריכה).' },
-                { q: 'איך יוצרים תיקייה חדשה?', a: 'לחץ על כפתור "+" בחלק העליון של רשימת המסמכים, בחר "תיקייה חדשה" והזן את שם התיקייה.' },
-              ].map((faq, i) => (
-                <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setExpandedFAQ(expandedFAQ === i ? null : i)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-right"
-                  >
-                    <span className="text-sm text-gray-700">{faq.q}</span>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${expandedFAQ === i ? 'rotate-180' : ''}`} />
-                  </button>
-                  {expandedFAQ === i && (
-                    <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                      <p className="text-sm text-gray-600 text-right">{faq.a}</p>
-                    </div>
-                  )}
+            <div className="space-y-4">
+              {([
+                {
+                  category: 'מסמכים שהופצו',
+                  items: [
+                    { q: 'איך מחפשים מסמך שהופץ?', a: 'השתמש בשדה החיפוש בחלק העליון של המסך או עבור לתפריט "כל המסמכים" בסרגל הצד.' },
+                    { q: 'איך יודעים מי קרא מסמך שהופץ?', a: 'פתח את המסמך ולחץ על "בקרת קריאה" בתפריט העליון לצפייה ברשימת הקוראים.' },
+                  ],
+                },
+                {
+                  category: 'מסמכים בטיוטה',
+                  items: [
+                    { q: 'איך שומרים טיוטה?', a: 'המסמך נשמר אוטומטית בעת העריכה. ניתן למצוא אותו תחת "הסביבה שלי" בסרגל הצד.' },
+                    { q: 'איך מפרסמים טיוטה?', a: 'בתוך המסמך לחץ על "הפצה" בפינה הימנית העליונה ובחר את רשימת התפוצה הרצויה.' },
+                  ],
+                },
+                {
+                  category: 'אזור אישי',
+                  items: [
+                    { q: 'איך משנים פרטי פרופיל?', a: 'לחץ על שם המשתמש בפינה הימנית העליונה ובחר "הגדרות פרופיל".' },
+                  ],
+                },
+                {
+                  category: 'כללי והרשאות',
+                  items: [
+                    { q: 'איך מבקשים הרשאה?', a: 'לחץ על המסמך הרצוי, בחר "בקש הרשאה" מהתפריט, ובחר את סוג ההרשאה הנדרשת.' },
+                    { q: 'איך יוצרים תיקייה חדשה?', a: 'לחץ על כפתור "+" בחלק העליון של רשימת המסמכים ובחר "תיקייה חדשה".' },
+                  ],
+                },
+              ] as { category: string; items: { q: string; a: string }[] }[]).map((section, si) => (
+                <div key={si}>
+                  <p className="text-xs font-semibold text-gray-400 mb-2 px-1 text-right" style={{ letterSpacing: '0.04em' }}>
+                    {section.category}
+                  </p>
+                  <div className="space-y-1.5">
+                    {section.items.map((faq, i) => {
+                      const idx = si * 10 + i;
+                      return (
+                        <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+                          <button
+                            onClick={() => setExpandedFAQ(expandedFAQ === idx ? null : idx)}
+                            className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-right"
+                          >
+                            <span className="text-sm text-gray-700">{faq.q}</span>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${expandedFAQ === idx ? 'rotate-180' : ''}`} />
+                          </button>
+                          {expandedFAQ === idx && (
+                            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                              <p className="text-sm text-gray-600 text-right">{faq.a}</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>

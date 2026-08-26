@@ -2018,7 +2018,7 @@ function DocumentCatalog({ department, tab, setTab, onEditDoc, onOpenTrash, fold
   const statusOptions = Array.from(new Set(allDocs.map(d => d.status)));
   const orgOptions    = Array.from(new Set(allDocs.flatMap(d => d.env ? [d.env] : [])));
 
-  const isAllDocs = department === 'כל המסמכים';
+  const isAllDocs = department === 'כל המסמכים' || department === 'מדיניות' || department === 'הוראות';
   const extraCols = (isAllDocs ? 2 : 0) + (tab === 'distribution' ? 3 : 0);
   const nameFr = tab === 'distribution' ? '2fr' : '3fr';
   const colGap = tab === 'distribution' ? '0.6rem' : '1rem';
