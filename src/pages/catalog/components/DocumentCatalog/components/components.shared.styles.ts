@@ -62,10 +62,3 @@ export const ConfirmPrimaryBtn = styled.button`
     opacity: 0.9;
   }
 `;
-
-// A dialog whose header carries a second line naming the document it is about.
-export const ModalSubtitle = styled.p`
-  margin-top: 2px;
-  font-size: 12px;
-  color: ${gray[500]};
-`;

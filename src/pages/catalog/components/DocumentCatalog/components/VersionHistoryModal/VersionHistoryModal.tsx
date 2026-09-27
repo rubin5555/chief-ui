@@ -5,7 +5,6 @@ import { GridTable } from '@/components/ui/GridTable';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { Modal } from '@/components/ui/Modal';
 import { CATALOG_MODAL_IDS } from '../catalogModals.testids';
-import { ModalSubtitle } from '../components.shared.styles';
 import { VersionStatusFilter } from './components/VersionStatusFilter';
 import { versionColumns } from './VersionHistoryModal.columns';
 import { HistoryTable, NoVersions } from './VersionHistoryModal.styles';
@@ -36,11 +35,12 @@ export const VersionHistoryModal = ({ doc, onClose }: VersionHistoryModalProps) 
   return (
     <Modal
       title="היסטוריית גרסאות"
+      subtitle={doc.name}
       width={760}
       maxHeight="80vh"
       noBodyPadding
       onClose={onClose}
-      headerSlot={
+      headerAside={
         <VersionStatusFilter
           options={statusOptions}
           selected={statusFilter}
@@ -49,8 +49,6 @@ export const VersionHistoryModal = ({ doc, onClose }: VersionHistoryModalProps) 
       }
       data-testid={CATALOG_MODAL_IDS.history}
     >
-      <ModalSubtitle>{doc.name}</ModalSubtitle>
-
       <HistoryTable>
         {loading ? (
           <InlineSpinner />

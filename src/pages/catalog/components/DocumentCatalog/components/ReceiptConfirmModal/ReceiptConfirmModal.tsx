@@ -4,7 +4,6 @@ import { HML_RECEIPTS_FALLBACK, useHmlReceipts } from '@/api/catalog';
 import { InlineSpinner } from '@/components/ui/InlineSpinner';
 import { Modal } from '@/components/ui/Modal';
 import { CATALOG_MODAL_IDS } from '../catalogModals.testids';
-import { ModalSubtitle } from '../components.shared.styles';
 import {
   ReceiptDetail,
   ReceiptDetails,
@@ -33,14 +32,13 @@ export const ReceiptConfirmModal = ({ doc, onClose }: ReceiptConfirmModalProps) 
   return (
     <Modal
       title="וידוא קבלה — חמ״לים מכותבים"
+      subtitle={doc.name}
       width={480}
       maxHeight="80vh"
       onClose={onClose}
-      headerSlot={<SeenCount>{`${seenCount}/${receipts.length}`}</SeenCount>}
+      headerEnd={<SeenCount>{`${seenCount}/${receipts.length}`}</SeenCount>}
       data-testid={CATALOG_MODAL_IDS.receipts}
     >
-      <ModalSubtitle>{doc.name}</ModalSubtitle>
-
       {loading ? (
         <InlineSpinner />
       ) : (

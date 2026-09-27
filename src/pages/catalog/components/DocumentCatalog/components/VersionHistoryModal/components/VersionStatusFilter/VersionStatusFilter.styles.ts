@@ -1,22 +1,10 @@
 import styled from 'styled-components';
-import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
+import { FloatingPanel } from '@/components/ui/FloatingPanel';
+import { gray, radii, transitions } from '@/styles/theme';
 
-export const FilterAnchor = styled.div`
-  position: relative;
-`;
-
-export const StatusPanel = styled.div`
-  position: absolute;
-  left: 0;
-  top: 100%;
-  z-index: 100;
-  min-width: 180px;
-  margin-top: 6px;
+export const StatusPanel = styled(FloatingPanel)`
   padding: 6px 0;
-  border: 1px solid ${gray[100]};
   border-radius: ${radii.xl};
-  background: ${colors.surface};
-  box-shadow: ${shadows.xl};
 `;
 
 export const StatusOption = styled.label`
@@ -40,6 +28,7 @@ export const StatusPill = styled.span<{ $bg: string; $ink: string }>`
   border-radius: ${radii.full};
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
   background: ${({ $bg }) => $bg};
   color: ${({ $ink }) => $ink};
 `;

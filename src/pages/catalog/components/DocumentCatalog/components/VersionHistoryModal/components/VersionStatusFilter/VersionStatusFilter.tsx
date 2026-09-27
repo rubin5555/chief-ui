@@ -1,18 +1,11 @@
 import { Filter, X } from 'lucide-react';
 import type { MouseEvent } from 'react';
-import { useRef, useState } from 'react';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { useClickOutside } from '@/hooks/useClickOutside';
+import { TRIGGER_GAP, useFloatingPanel } from '@/hooks/useFloatingPanel';
 import { catStatusColors, gray } from '@/styles/theme';
 import { CATALOG_MODAL_IDS } from '../../../catalogModals.testids';
 import { FilterBtn, FilterClear } from '../../VersionHistoryModal.styles';
-import {
-  FilterAnchor,
-  StatusOption,
-  StatusPanel,
-  StatusPill,
-  StatusPillDot,
-} from './VersionStatusFilter.styles';
+import { StatusOption, StatusPanel, StatusPill, StatusPillDot } from './VersionStatusFilter.styles';
 
 interface VersionStatusFilterProps {
   options: string[];
@@ -20,18 +13,22 @@ interface VersionStatusFilterProps {
   onChange: (selected: string[]) => void;
 }
 
-export const VersionStatusFilter = ({ options, selected, onChange }: VersionStatusFilterProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const anchorRef = useRef<HTMLDivElement>(null);
+const PANEL_MIN_WIDTH = 180;
 
-  useClickOutside([anchorRef], () => setIsOpen(false), isOpen);
+// main hangs the panel off the chip's left edge and lets it spill past the
+// dialog — which is why it cannot be an absolute child of a card that clips its
+// overflow to keep its corners round.
+const panelSpec = (trigger: DOMRect) => ({ top: trigger.bottom + TRIGGER_GAP, left: trigger.left });
+
+export const VersionStatusFilter = ({ options, selected, onChange }: VersionStatusFilterProps) => {
+  const { open, pos, btnRef, panelRef, toggle } = useFloatingPanel();
 
   const hasFilter = selected.length > 0;
 
-  const onToggle = () => setIsOpen((prev) => !prev);
+  const handleToggle = () => toggle(panelSpec);
 
   // Clearing lives inside the button, so its click must not also toggle the panel.
-  const onClear = (event: MouseEvent) => {
+  const handleClear = (event: MouseEvent) => {
     event.stopPropagation();
     onChange([]);
   };
@@ -44,30 +41,38 @@ export const VersionStatusFilter = ({ options, selected, onChange }: VersionStat
     );
 
   return (
-    <FilterAnchor ref={anchorRef}>
+    <>
       <FilterBtn
+        ref={btnRef}
         type="button"
         $active={hasFilter}
         data-testid={CATALOG_MODAL_IDS.historyStatusFilter}
-        onClick={onToggle}
+        onClick={handleToggle}
       >
         <Filter size={12} />
         <span>{hasFilter ? `סטטוס (${selected.length})` : 'סינון לפי סטטוס'}</span>
         {hasFilter && (
-          <FilterClear onClick={onClear}>
+          <FilterClear onClick={handleClear}>
             <X size={12} />
           </FilterClear>
         )}
       </FilterBtn>
 
-      {isOpen && (
-        <StatusPanel dir="rtl">
+      {open && (
+        <StatusPanel
+          ref={panelRef}
+          pos={pos}
+          minWidth={PANEL_MIN_WIDTH}
+          dir="rtl"
+          data-testid={CATALOG_MODAL_IDS.historyStatusPanel}
+        >
           {options.map((status) => {
             const palette = catStatusColors[status] ?? { bg: gray[100], ink: gray[500] };
             return (
               <StatusOption key={status}>
                 <Checkbox
                   checked={selected.includes(status)}
+                  data-testid={CATALOG_MODAL_IDS.historyStatusOption(status)}
                   onChange={handleToggleStatus(status)}
                 />
                 <StatusPill $bg={palette.bg} $ink={palette.ink}>
@@ -79,6 +84,6 @@ export const VersionStatusFilter = ({ options, selected, onChange }: VersionStat
           })}
         </StatusPanel>
       )}
-    </FilterAnchor>
+    </>
   );
 };

@@ -6,6 +6,8 @@ export const CATALOG_MODAL_IDS = {
   receiptRow: (name: string) => `catalog-receipt-row-${name}`,
   history: 'catalog-history-modal',
   historyStatusFilter: 'catalog-history-status-filter',
+  historyStatusPanel: 'catalog-history-status-panel',
+  historyStatusOption: (status: string) => `catalog-history-status-${status}`,
   historyRow: (ver: string) => `catalog-history-row-${ver}`,
   duplicateSearch: 'catalog-duplicate-search',
   duplicateSearchInput: 'catalog-duplicate-search-input',

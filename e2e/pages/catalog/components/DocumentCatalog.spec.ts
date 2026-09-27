@@ -88,7 +88,13 @@ test('the clock opens version history', async ({ page }) => {
 test('a receipt count opens the per-חמ״ל breakdown', async ({ page }) => {
   await gotoShelf(page, 'distribution');
   await page.getByTestId(DOCUMENT_CATALOG_IDS.rowReceipt(DISTRIBUTION_DOC)).click();
-  await expect(page.getByTestId(CATALOG_MODAL_IDS.receipts)).toBeVisible();
+
+  const dialog = page.getByTestId(CATALOG_MODAL_IDS.receipts);
+  await expect(dialog).toBeVisible();
+  // Titled, and named after the document — the count in the header is beside
+  // the close button, not in place of the title.
+  await expect(dialog).toContainText('וידוא קבלה');
+  await expect(dialog.getByTestId(`${CATALOG_MODAL_IDS.receipts}-subtitle`)).toBeVisible();
 });
 
 test('the hierarchy dialog refuses to save until a main document is picked', async ({ page }) => {

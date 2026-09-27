@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { dialogMotion, overlayMotion, widthMotion } from '@/styles/animations';
-import { flexBetween, flexCenter, flexGap } from '@/styles/mixins';
+import { ellipsis, flexBetween, flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 
 export const Overlay = styled.div<{ $closing?: boolean }>`
@@ -43,6 +43,24 @@ export const ModalHeader = styled.div`
 
 export const ModalHeaderLeft = styled.div`
   ${flexGap(8)}
+  min-width: 0;
+`;
+
+export const ModalHeaderRight = styled.div`
+  ${flexGap(12)}
+  flex-shrink: 0;
+`;
+
+export const ModalTitleBlock = styled.div`
+  min-width: 0;
+  text-align: right;
+`;
+
+export const ModalSubtitle = styled.p`
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: ${gray[500]};
+  ${ellipsis}
 `;
 
 export const ModalHeaderIcon = styled.div`

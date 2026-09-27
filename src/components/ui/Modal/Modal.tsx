@@ -14,7 +14,10 @@ import {
   ModalHeader,
   ModalHeaderIcon,
   ModalHeaderLeft,
+  ModalHeaderRight,
+  ModalSubtitle,
   ModalTitle,
+  ModalTitleBlock,
   Overlay,
 } from './Modal.styles';
 import { MODAL_IDS } from './Modal.testids';
@@ -25,11 +28,21 @@ export interface ModalHandle {
 
 interface ModalProps {
   title: string;
+  // A quieter second line under the title — what the dialog is about, usually
+  // the name of the thing it was opened from.
+  subtitle?: ReactNode;
   icon?: ReactNode;
   onClose: () => void;
   onRequestClose?: () => void;
   variant?: 'default' | 'confirm';
+  // Replaces the title outright, for a header that becomes something else — a
+  // drill-down's back navigation, say.
   headerSlot?: ReactNode;
+  // Beside the title, and before the close button respectively. Both keep the
+  // title, which is what a dialog with a control in its header nearly always
+  // wants.
+  headerAside?: ReactNode;
+  headerEnd?: ReactNode;
   footer?: ReactNode;
   footerAlign?: 'end' | 'between';
   width?: number;
@@ -48,11 +61,14 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
   (
     {
       title,
+      subtitle,
       icon,
       onClose,
       onRequestClose,
       variant = 'default',
       headerSlot,
+      headerAside,
+      headerEnd,
       footer,
       footerAlign = 'end',
       width,
@@ -153,11 +169,22 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
               <ModalHeader data-testid={`${base}-header`}>
                 <ModalHeaderLeft>
                   {icon && <ModalHeaderIcon>{icon}</ModalHeaderIcon>}
-                  {headerSlot ?? <ModalTitle>{title}</ModalTitle>}
+                  {headerSlot ?? (
+                    <ModalTitleBlock>
+                      <ModalTitle>{title}</ModalTitle>
+                      {subtitle && (
+                        <ModalSubtitle data-testid={`${base}-subtitle`}>{subtitle}</ModalSubtitle>
+                      )}
+                    </ModalTitleBlock>
+                  )}
+                  {headerAside}
                 </ModalHeaderLeft>
-                <CloseButton data-testid={`${base}-close`} onClick={onChromeClose}>
-                  <X size={20} />
-                </CloseButton>
+                <ModalHeaderRight>
+                  {headerEnd}
+                  <CloseButton data-testid={`${base}-close`} onClick={onChromeClose}>
+                    <X size={20} />
+                  </CloseButton>
+                </ModalHeaderRight>
               </ModalHeader>
             )}
             <ModalBody data-testid={`${base}-body`} $noPadding={noBodyPadding}>
