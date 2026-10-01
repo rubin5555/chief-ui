@@ -64,7 +64,7 @@ export const DataImportModal = ({
 
   useEffect(() => {
     trackModalOpened();
-  }, []);
+  }, [trackModalOpened]);
 
   const { isClosing, requestClose } = useDialogClose(onClose);
 

@@ -1,0 +1,1 @@
+export { DocHierarchyModal } from './DocHierarchyModal';

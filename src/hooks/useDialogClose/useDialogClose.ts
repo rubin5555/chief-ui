@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MODAL_EXIT_DURATION_MS } from '@/styles/animations';
 
-// Defers a dialog's real close (unmount) until its CSS exit animation has
-// played, so every modal gets a close animation without each call site
-// managing its own timer. Skips the delay under prefers-reduced-motion —
-// there's nothing to wait for once the animation itself is off.
 export const useDialogClose = (onClose: () => void) => {
   const [isClosing, setIsClosing] = useState(false);
   const onCloseRef = useRef(onClose);

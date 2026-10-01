@@ -1,30 +1,6 @@
-import { Editor } from '@tinymce/tinymce-react';
-import styled from 'styled-components';
-import 'tinymce/tinymce';
-import 'tinymce/icons/default';
-import 'tinymce/themes/silver';
-import 'tinymce/models/dom';
-import 'tinymce/plugins/lists/plugin';
-import 'tinymce/plugins/table/plugin';
-import 'tinymce/plugins/directionality/plugin';
-import 'tinymce/plugins/link/plugin';
-import 'tinymce/plugins/image/plugin';
-import 'tinymce/skins/ui/oxide/skin.min.css';
-import 'tinymce/skins/ui/oxide/content.inline.min.css';
-
 import { useContentEditorContext } from '@/context/ContentEditorContext';
-import { TINYMCE_INIT, TINYMCE_LICENSE_KEY } from '../../ContentEditor.constants';
-import { ToolbarContainer } from '../../ContentEditor.styles';
-import { CONTENT_EDITOR_IDS } from '../../ContentEditor.testids';
-
-const GhostEditorHost = styled.div`
-  position: fixed;
-  top: -2000px;
-  left: -2000px;
-  width: 300px;
-  height: 60px;
-  pointer-events: none;
-`;
+import { EditorRibbon } from '../EditorRibbon';
+import { TableEditBar } from '../TableEditBar';
 
 export const ContentEditorToolbar = () => {
   const ctx = useContentEditorContext();
@@ -32,22 +8,17 @@ export const ContentEditorToolbar = () => {
 
   return (
     <>
-      <ToolbarContainer id={ctx.toolbarId} data-testid={CONTENT_EDITOR_IDS.toolbar} />
-      {ctx.activeId === null && (
-        <GhostEditorHost>
-          <Editor
-            inline
-            disabled
-            value=""
-            licenseKey={TINYMCE_LICENSE_KEY}
-            onEditorChange={() => {}}
-            init={{
-              ...TINYMCE_INIT,
-              fixed_toolbar_container: `#${ctx.toolbarId}`,
-            }}
-          />
-        </GhostEditorHost>
-      )}
+      {/* `undefined` where the page has no footnotes at all, so the button is
+          left out; `null` where it has them but nothing is open, so the button
+          is there and dead. A toolbar whose buttons come and go is worse than
+          one with a disabled button on it. */}
+      <EditorRibbon
+        id={ctx.toolbarId}
+        editor={ctx.activeEditor}
+        onAddFootnote={ctx.supportsFootnotes ? ctx.addFootnoteToActive : undefined}
+      />
+
+      <TableEditBar editor={ctx.activeEditor} />
     </>
   );
 };

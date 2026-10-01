@@ -3,7 +3,7 @@ import { REALITY_MODE_OPTIONS } from '../../../../../src/components/layout/TopNa
 import { REALITY_MODE_SWITCH_IDS } from '../../../../../src/components/layout/TopNavbar/components/RealityModeSwitch/RealityModeSwitch.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${REALITY_MODE_SWITCH_IDS.root}"]`);
 });
 

@@ -44,7 +44,7 @@ export const SearchableSelect = ({
     } else {
       onClearSearch();
     }
-  }, [panel.open]);
+  }, [panel.open, onClearSearch]);
 
   const onTriggerClick = () => panel.toggle((r) => ({ top: r.bottom + 4, left: r.left }));
 
@@ -77,8 +77,8 @@ export const SearchableSelect = ({
         <Dropdown
           ref={panel.panelRef}
           data-testid={SEARCHABLE_SELECT_IDS.dropdown}
-          $pos={panel.pos}
-          $width={triggerWidth}
+          pos={panel.pos}
+          width={triggerWidth}
         >
           <SearchBox>
             <Search size={14} />

@@ -6,7 +6,7 @@ import { TEMPLATES_PANEL_IDS } from '../../../src/pages/profile/components/tabs/
 const TAB_LABELS = ['תבניות', 'חתימות', 'רשימות תפוצה'];
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${TEMPLATES_PANEL_IDS.root}"]`);
 });
 

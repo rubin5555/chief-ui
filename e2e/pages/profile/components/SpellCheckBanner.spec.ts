@@ -3,7 +3,7 @@ import { SPELL_CHECK_MODAL_IDS } from '../../../../src/modals/SpellCheckModal/Sp
 import { SPELL_CHECK_BANNER_IDS } from '../../../../src/pages/profile/components/SpellCheckBanner/SpellCheckBanner.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${SPELL_CHECK_BANNER_IDS.root}"]`);
 });
 

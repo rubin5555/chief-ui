@@ -1,12 +1,7 @@
 import type { ChangeEvent } from 'react';
 import { memo } from 'react';
-import {
-  FieldGrid,
-  FieldGroup,
-  FieldInput,
-  FieldLabel,
-} from '../../EnvironmentRequestModal.styles';
 import { ENV_REQUEST_MODAL_IDS } from '../../EnvironmentRequestModal.testids';
+import { FieldGrid, FieldGroup, FieldInput, FieldLabel } from '../components.shared.styles';
 
 interface PhoneFieldsProps {
   mobilePhone: string;

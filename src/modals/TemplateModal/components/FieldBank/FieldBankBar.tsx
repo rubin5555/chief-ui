@@ -13,7 +13,6 @@ import { FIELD_BANK_IDS } from './FieldBank.testids';
 const BAR_TITLE = 'ייבוא מידע ממערכת מקור';
 
 interface FieldBankBarProps {
-  // 'top' heads the expanded field bank; 'bottom' sits under the subject tree when collapsed.
   edge: 'top' | 'bottom';
   showFieldsToggle: boolean;
   onToggleFields: () => void;

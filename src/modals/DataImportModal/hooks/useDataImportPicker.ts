@@ -14,7 +14,6 @@ interface UseDataImportPickerArgs {
   onRemove: (field: DynamicField) => void;
 }
 
-// All selection state for the import picker: system → operation → instances → fields.
 export const useDataImportPicker = ({
   existingFields,
   onAdd,
@@ -57,7 +56,6 @@ export const useDataImportPicker = ({
     setIsInstancePanelOpen(false);
   };
 
-  // Re-clicking the open operation collapses/expands its panel instead of resetting it.
   const pickOperation = (operation: SourceOperation) => {
     if (selectedOperation?.id === operation.id) {
       setIsInstancePanelOpen((prev) => !prev);
@@ -88,7 +86,6 @@ export const useDataImportPicker = ({
       ),
     );
 
-  // Clicking a field links it for every selected instance; clicking a linked field unlinks it.
   const toggleField = (fieldName: string): { added: number; removed: number } => {
     if (!selectedSystem || !selectedOperation || selectedInstances.length === 0) {
       return { added: 0, removed: 0 };

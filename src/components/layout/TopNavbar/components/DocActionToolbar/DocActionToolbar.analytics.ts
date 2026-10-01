@@ -3,10 +3,10 @@ import { analytics } from '@/analytics';
 const ANALYTICS_CATEGORY = 'סרגל פעולות מסמך';
 
 const ACTIONS = {
-  FILTER_CLICKED: 'לחיצה על סינון',
   EDIT_DOC_CLICKED: 'לחיצה על עריכת פרטי מסמך',
   DUPLICATE_CLICKED: 'לחיצה על שכפול',
   PERMISSIONS_CLICKED: 'לחיצה על הרשאות מסמך',
+  COMPARE_CLICKED: 'לחיצה על השוואת גרסאות',
   EXPORT_STARTED: 'ניסיון ייצוא מסמך',
   ZOOM_CHANGED: 'שינוי רמת זום',
   SEARCH_OPENED: 'פתיחת חיפוש במסמך',
@@ -14,10 +14,6 @@ const ACTIONS = {
 } as const;
 
 export const useDocActionToolbarAnalytics = () => {
-  const trackFilterClicked = () => {
-    analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.FILTER_CLICKED });
-  };
-
   const trackEditDocClicked = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.EDIT_DOC_CLICKED });
   };
@@ -28,6 +24,10 @@ export const useDocActionToolbarAnalytics = () => {
 
   const trackPermissionsClicked = () => {
     analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.PERMISSIONS_CLICKED });
+  };
+
+  const trackCompareClicked = () => {
+    analytics.trackEvent({ category: ANALYTICS_CATEGORY, action: ACTIONS.COMPARE_CLICKED });
   };
 
   const trackExportStarted = (type: 'word' | 'pdf') => {
@@ -54,10 +54,10 @@ export const useDocActionToolbarAnalytics = () => {
   };
 
   return {
-    trackFilterClicked,
     trackEditDocClicked,
     trackDuplicateClicked,
     trackPermissionsClicked,
+    trackCompareClicked,
     trackExportStarted,
     trackZoomChanged,
     trackSearchToggled,

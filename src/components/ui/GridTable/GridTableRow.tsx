@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useGridTableColumns } from './GridTable.context';
+import { useGridTableLayout } from './GridTable.context';
 import { TableItem, TableRow } from './GridTable.styles';
 
 interface GridTableRowProps {
@@ -17,11 +17,12 @@ export const GridTableRow = ({
   expansion,
   children,
 }: GridTableRowProps) => {
-  const columns = useGridTableColumns();
+  const { template, density } = useGridTableLayout();
   return (
-    <TableItem>
+    <TableItem $density={density}>
       <TableRow
-        $columns={columns}
+        $columns={template}
+        $density={density}
         $selected={isSelected}
         $added={isAdded}
         $clickable={!!onClick}

@@ -1,0 +1,116 @@
+import { expect, test } from '@playwright/test';
+import { SELECT_IDS } from '../../../../src/components/ui/Select/Select.testids';
+import { APPROVAL_DETAILS_MODAL_IDS } from '../../../../src/modals/ApprovalDetailsModal/ApprovalDetailsModal.testids';
+import { DISTRIBUTE_DOC_IDS } from '../../../../src/modals/DistributeDoc/DistributeDoc.testids';
+import { EDIT_DOC_DETAILS_MODAL_IDS } from '../../../../src/modals/EditDocDetailsModal/EditDocDetailsModal.testids';
+import { APPROVAL_ROTATION_IDS } from '../../../../src/pages/document/components/ApprovalRotation/ApprovalRotation.testids';
+import { STATUS_FLOW_NAV_IDS } from '../../../../src/pages/document/components/ApprovalWorkflow/components/StatusFlowNav/StatusFlowNav.testids';
+import { DOC_STATUS_HEADER_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/DocStatusHeader/DocStatusHeader.testids';
+import { APPROVER_STAMP_LIST_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/ApproverStampList/ApproverStampList.testids';
+import { APPROVER_STAMP_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/ApproverStampList/components/ApproverStamp/ApproverStamp.testids';
+import { SIGNATURE_TEMPLATES_MODAL_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/SignatureTemplatesModal/SignatureTemplatesModal.testids';
+import { SIGNATURE_TEXTAREA_IDS } from '../../../../src/pages/document/components/SignaturesSection/components/SignatureTextarea/SignatureTextarea.testids';
+import { SIGNATURES_SECTION_IDS } from '../../../../src/pages/document/components/SignaturesSection/SignaturesSection.testids';
+
+const RANK = 'סא״ל';
+const USER = 'כהן א.';
+
+const advanceToApprovalStep = async (page: import('@playwright/test').Page) => {
+  const advance = page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn);
+  await advance.click();
+  await advance.click();
+  await expect(page.getByTestId(DOC_STATUS_HEADER_IDS.title)).toHaveText('מסמך בהכנה');
+};
+
+test('the signatures topic renders as a signature block, not as sections', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  const section = page.getByTestId(SIGNATURES_SECTION_IDS.root);
+  await expect(section).toBeVisible();
+
+  await expect(page.getByTestId(SIGNATURE_TEXTAREA_IDS.field(0))).toHaveValue('');
+  await expect(page.getByTestId(SIGNATURES_SECTION_IDS.templatesBtn)).toBeVisible();
+  await expect(page.getByTestId(SIGNATURES_SECTION_IDS.addBtn)).toBeVisible();
+
+  await page.getByTestId(SIGNATURES_SECTION_IDS.addBtn).click();
+  await expect(page.getByTestId(SIGNATURE_TEXTAREA_IDS.field(1))).toBeVisible();
+});
+
+test('a template fills the first empty block rather than appending another', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  await page.getByTestId(SIGNATURES_SECTION_IDS.templatesBtn).click();
+  await expect(page.getByTestId(SIGNATURE_TEMPLATES_MODAL_IDS.root)).toBeVisible();
+
+  await page.getByTestId(SIGNATURE_TEMPLATES_MODAL_IDS.template('sig-1')).click();
+  await expect(page.getByTestId(SIGNATURE_TEMPLATES_MODAL_IDS.root)).not.toBeVisible();
+
+  const first = page.getByTestId(SIGNATURE_TEXTAREA_IDS.field(0));
+  await expect(first).toContainText('מאשר ראשי');
+
+  await expect(page.getByTestId(SIGNATURE_TEXTAREA_IDS.field(1))).toHaveCount(0);
+});
+
+test('an unsigned document is refused an approval round, and says why', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  await advanceToApprovalStep(page);
+  await page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn).click();
+
+  await page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.submitBtn).click();
+
+  await expect(page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.root)).toHaveCount(0);
+  await expect(page.getByTestId(SIGNATURES_SECTION_IDS.requiredWarning)).toHaveText(
+    '⚠נדרש לחתום על מסמך זה',
+  );
+
+  await expect(page.getByTestId(SIGNATURE_TEXTAREA_IDS.field(0))).toHaveCSS(
+    'border-top-color',
+
+    'rgb(155, 28, 28)',
+  );
+
+  await page.getByTestId(SIGNATURE_TEXTAREA_IDS.field(0)).fill('בברכה, כהן');
+  await expect(page.getByTestId(SIGNATURES_SECTION_IDS.requiredWarning)).toHaveCount(0);
+
+  await page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn).click();
+  await page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.submitBtn).click();
+  await expect(page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.root)).toBeVisible();
+});
+
+test('approving a stage stamps the approver into the signatures block', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  await page.getByTestId(SIGNATURE_TEXTAREA_IDS.field(0)).fill('בברכה, כהן');
+  await advanceToApprovalStep(page);
+  await page.getByTestId(STATUS_FLOW_NAV_IDS.advanceBtn).click();
+  await page.getByTestId(EDIT_DOC_DETAILS_MODAL_IDS.submitBtn).click();
+
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.rankSelect).click();
+  await page.getByTestId(SELECT_IDS.option(RANK)).click();
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.addApprover(RANK)).click();
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.approverOption(RANK, USER)).click();
+  await page.getByTestId(APPROVAL_DETAILS_MODAL_IDS.submitBtn).click();
+
+  await expect(page.getByTestId(APPROVER_STAMP_LIST_IDS.root)).toHaveCount(0);
+
+  await page.getByTestId(APPROVAL_ROTATION_IDS.approveBtn).click();
+  await page.getByTestId(APPROVAL_ROTATION_IDS.distributeNowBtn).click();
+  await page.getByTestId(`${DISTRIBUTE_DOC_IDS.root}-close`).click();
+
+  const stamp = page.getByTestId(APPROVER_STAMP_IDS.root(USER));
+  await expect(stamp).toContainText(`${RANK} — ${USER}`);
+  await expect(stamp).toContainText('אושר');
+  await expect(page.getByTestId(APPROVER_STAMP_IDS.mark(USER))).toHaveCount(0);
+});
+
+test('renaming the signatures topic turns it back into an ordinary one', async ({ page }) => {
+  await page.goto('/document/d1');
+
+  await page
+    .getByTestId(SIGNATURES_SECTION_IDS.root)
+    .getByRole('textbox', { name: 'שם הנושא' })
+    .fill('נספח ז׳');
+
+  await expect(page.getByTestId(SIGNATURES_SECTION_IDS.root)).toHaveCount(0);
+});

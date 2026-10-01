@@ -9,7 +9,6 @@ export const GlobalStyles = createGlobalStyle`
     font-family: system-ui, -apple-system, sans-serif;
     font-size: 16px;
     background: ${colors.surface};
-    color-scheme: light dark;
   }
 
   button {
@@ -22,8 +21,23 @@ export const GlobalStyles = createGlobalStyle`
     font-family: inherit;
   }
 
-  input {
+  input,
+  textarea,
+  select {
     font-family: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid ${colors.primary};
+    outline-offset: 2px;
+  }
+
+  /* The app's own selection colour rather than the browser's. It has to stay
+     legible against the text it covers, which the UA blue does not once the
+     toolbar's colour swatches have put light text underneath it. */
+  ::selection {
+    background: ${colors.primaryLight};
+    color: ${gray[900]};
   }
 
   p,h1,h2,h3,h4,h5,h6 {
@@ -41,8 +55,6 @@ export const GlobalStyles = createGlobalStyle`
   ::-webkit-scrollbar-thumb:active { background-color: ${gray[500]}; }
   * { scrollbar-width: thin; scrollbar-color: ${gray[300]} transparent; }
 
-  /* TinyMCE's image/link/table dialogs portal to document.body outside any component's
-     scoped styles, and the oxide skin hardcodes them to a white panel. */
   .tox-dialog-wrap__backdrop {
     background: rgba(0, 0, 0, 0.5) !important;
   }

@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import type { Member } from '@/modals/MailingListModal';
+import type { Member } from '@/components/PeoplePicker';
 import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
@@ -38,12 +38,10 @@ export interface GetListsResult {
   deletedLists: DistributionListDto[];
 }
 
-// No `select`: the two collections travel together, so the envelope is the shape.
 export const useLists = () => useApiQuery<GetListsResult>(GET_LISTS_QUERY);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
-// catalog ProfilePage used to import directly. Delete this registration once
-// GetLists has a real resolver; call sites don't change.
+
 export const LISTS_FALLBACK: GetListsResult = {
   lists: [
     {

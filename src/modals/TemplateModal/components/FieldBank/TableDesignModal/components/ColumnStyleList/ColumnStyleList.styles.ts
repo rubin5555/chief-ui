@@ -4,4 +4,4 @@ export {
   DesignBlockName as BlockName,
   DesignListWrap as ListWrap,
   DesignRemoveBtn as RemoveBtn,
-} from '../../TableDesignModal.styles';
+} from '../../TableDesignModal.shared.styles';

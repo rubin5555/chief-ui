@@ -6,12 +6,9 @@ import { TrainingTriggerButton } from './controls/TrainingTriggerButton';
 import { useTrainingMenuAnalytics } from './TrainingMenu.analytics';
 import { FAQ_PANEL_WIDTH, TRAINING_PANEL_WIDTH } from './TrainingMenu.constants';
 
-// This component is the only place that owns analytics tracking for the menu — the
-// controls/ subcomponents are dumb (own only ephemeral UI state, e.g. which FAQ item is
-// expanded) and receive already-composed callbacks.
 export const TrainingMenu = () => {
   const [showFaq, setShowFaq] = useState(false);
-  const panel = useFloatingPanel();
+  const panel = useFloatingPanel({ focusOnOpen: true });
   const { trackPanelOpened, trackFaqOpened, trackFaqItemToggled, trackCourseOpened } =
     useTrainingMenuAnalytics();
 

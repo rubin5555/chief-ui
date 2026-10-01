@@ -1,42 +1,48 @@
 import { X } from 'lucide-react';
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { ModalPortal } from '@/components/ui/ModalPortal';
 import { useDialogClose } from '@/hooks/useDialogClose';
+import { getFocusable } from '@/utils/focusable';
 import {
   CloseButton,
+  ConfirmHeader,
+  ConfirmTitle,
   ModalBody,
   ModalCard,
   ModalFooter,
   ModalHeader,
   ModalHeaderIcon,
   ModalHeaderLeft,
+  ModalHeaderRight,
+  ModalSubtitle,
   ModalTitle,
+  ModalTitleBlock,
   Overlay,
 } from './Modal.styles';
 import { MODAL_IDS } from './Modal.testids';
 
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 export interface ModalHandle {
-  // Starts the close animation and, once it finishes, calls the `onClose` prop.
-  // Exposed for callers that need to trigger a close from outside the built-in
-  // header-close/overlay-click/Escape paths — e.g. a footer button, or a form
-  // submit handler that saves and then closes.
   requestClose: () => void;
 }
 
 interface ModalProps {
   title: string;
+  // A quieter second line under the title — what the dialog is about, usually
+  // the name of the thing it was opened from.
+  subtitle?: ReactNode;
   icon?: ReactNode;
   onClose: () => void;
-  // Fired when the built-in header-close button, overlay click, or Escape key
-  // requests a close — before the close animation starts. Lets a caller run a
-  // side effect (e.g. analytics) on every "user dismissed the dialog" path,
-  // not just the ones it renders itself. Defaults to starting the close
-  // animation immediately, with no side effect.
   onRequestClose?: () => void;
+  variant?: 'default' | 'confirm';
+  // Replaces the title outright, for a header that becomes something else — a
+  // drill-down's back navigation, say.
+  headerSlot?: ReactNode;
+  // Beside the title, and before the close button respectively. Both keep the
+  // title, which is what a dialog with a control in its header nearly always
+  // wants.
+  headerAside?: ReactNode;
+  headerEnd?: ReactNode;
   footer?: ReactNode;
   footerAlign?: 'end' | 'between';
   width?: number;
@@ -44,6 +50,9 @@ interface ModalProps {
   height?: string;
   maxHeight?: string;
   noBodyPadding?: boolean;
+  // Stamped on the overlay, for callers whose dialog has to say in the DOM who
+  // it belongs to — a portal breaks the ancestry the owner would be found by.
+  overlayAttrs?: Record<string, string>;
   children: ReactNode;
   'data-testid'?: string;
 }
@@ -52,9 +61,14 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
   (
     {
       title,
+      subtitle,
       icon,
       onClose,
       onRequestClose,
+      variant = 'default',
+      headerSlot,
+      headerAside,
+      headerEnd,
       footer,
       footerAlign = 'end',
       width,
@@ -62,6 +76,7 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
       height,
       maxHeight,
       noBodyPadding,
+      overlayAttrs,
       children,
       'data-testid': testId,
     },
@@ -81,11 +96,12 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
     useEffect(() => {
       previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
 
-      const focusable = cardRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      if (focusable && focusable.length > 0) {
+      const card = cardRef.current;
+      const focusable = card ? getFocusable(card) : [];
+      if (focusable.length > 0) {
         focusable[0].focus();
       } else {
-        cardRef.current?.focus();
+        card?.focus();
       }
 
       return () => {
@@ -101,10 +117,13 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
       return () => document.removeEventListener('keydown', onKeyDown);
     }, []);
 
+    const onCardClick = (e: MouseEvent<HTMLDivElement>) => e.stopPropagation();
+
     const onTrapFocus = (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key !== 'Tab') return;
-      const focusable = cardRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      if (!focusable || focusable.length === 0) return;
+      const card = cardRef.current;
+      const focusable = card ? getFocusable(card) : [];
+      if (focusable.length === 0) return;
 
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -120,11 +139,16 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
 
     return (
       <ModalPortal>
-        <Overlay data-testid={`${base}-overlay`} onClick={onChromeClose} $closing={isClosing}>
+        <Overlay
+          {...overlayAttrs}
+          data-testid={`${base}-overlay`}
+          onClick={onChromeClose}
+          $closing={isClosing}
+        >
           <ModalCard
             ref={cardRef}
             data-testid={base}
-            onClick={(e) => e.stopPropagation()}
+            onClick={onCardClick}
             onKeyDown={onTrapFocus}
             role="dialog"
             aria-modal="true"
@@ -137,15 +161,32 @@ export const Modal = forwardRef<ModalHandle, ModalProps>(
             $height={height}
             $maxHeight={maxHeight}
           >
-            <ModalHeader data-testid={`${base}-header`}>
-              <ModalHeaderLeft>
-                {icon && <ModalHeaderIcon>{icon}</ModalHeaderIcon>}
-                <ModalTitle>{title}</ModalTitle>
-              </ModalHeaderLeft>
-              <CloseButton data-testid={`${base}-close`} onClick={onChromeClose}>
-                <X size={20} />
-              </CloseButton>
-            </ModalHeader>
+            {variant === 'confirm' ? (
+              <ConfirmHeader data-testid={`${base}-header`}>
+                <ConfirmTitle>{title}</ConfirmTitle>
+              </ConfirmHeader>
+            ) : (
+              <ModalHeader data-testid={`${base}-header`}>
+                <ModalHeaderLeft>
+                  {icon && <ModalHeaderIcon>{icon}</ModalHeaderIcon>}
+                  {headerSlot ?? (
+                    <ModalTitleBlock>
+                      <ModalTitle>{title}</ModalTitle>
+                      {subtitle && (
+                        <ModalSubtitle data-testid={`${base}-subtitle`}>{subtitle}</ModalSubtitle>
+                      )}
+                    </ModalTitleBlock>
+                  )}
+                  {headerAside}
+                </ModalHeaderLeft>
+                <ModalHeaderRight>
+                  {headerEnd}
+                  <CloseButton data-testid={`${base}-close`} onClick={onChromeClose}>
+                    <X size={20} />
+                  </CloseButton>
+                </ModalHeaderRight>
+              </ModalHeader>
+            )}
             <ModalBody data-testid={`${base}-body`} $noPadding={noBodyPadding}>
               {children}
             </ModalBody>

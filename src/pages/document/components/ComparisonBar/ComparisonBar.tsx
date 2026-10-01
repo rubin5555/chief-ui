@@ -1,0 +1,111 @@
+import { getRouteApi } from '@tanstack/react-router';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { useState } from 'react';
+import { useComparisonBarAnalytics } from './ComparisonBar.analytics';
+import {
+  Bar,
+  Controls,
+  Divider,
+  IconBtn,
+  NavCounter,
+  NavGroup,
+  TogglePill,
+  VersionLabel,
+} from './ComparisonBar.styles';
+import { COMPARISON_BAR_IDS } from './ComparisonBar.testids';
+
+const routeApi = getRouteApi('/document/$id');
+
+const DIFFERENCE_COUNT = 0;
+
+export const ComparisonBar = () => {
+  const { compareVersion } = routeApi.useSearch();
+  const navigate = routeApi.useNavigate();
+
+  const [hideDeleted, setHideDeleted] = useState(false);
+  const [showHighlight, setShowHighlight] = useState(false);
+  const [navIndex, setNavIndex] = useState(1);
+  const { trackViewToggled } = useComparisonBarAnalytics();
+
+  const handleClose = () =>
+    navigate({ search: (prev) => ({ ...prev, compareVersion: '' }), replace: true });
+
+  const handleToggleHideDeleted = () => {
+    trackViewToggled('הסתרת תוכן מחוק', !hideDeleted);
+    setHideDeleted((prev) => !prev);
+  };
+  const handleToggleHighlight = () => {
+    trackViewToggled('הצגת מרקור טקסט', !showHighlight);
+    setShowHighlight((prev) => !prev);
+  };
+  const handlePrev = () => setNavIndex((prev) => Math.max(1, prev - 1));
+  const handleNext = () => setNavIndex((prev) => Math.min(DIFFERENCE_COUNT, prev + 1));
+
+  if (!compareVersion) return null;
+
+  return (
+    <Bar dir="rtl" data-testid={COMPARISON_BAR_IDS.root}>
+      <VersionLabel data-testid={COMPARISON_BAR_IDS.versionLabel}>
+        השוואה ל{compareVersion} בסטטוס מבצעית
+      </VersionLabel>
+
+      <Controls>
+        <TogglePill
+          type="button"
+          $active={hideDeleted}
+          aria-pressed={hideDeleted}
+          data-testid={COMPARISON_BAR_IDS.hideDeletedToggle}
+          onClick={handleToggleHideDeleted}
+        >
+          הסתרת תוכן מחוק
+        </TogglePill>
+        <TogglePill
+          type="button"
+          $active={showHighlight}
+          aria-pressed={showHighlight}
+          data-testid={COMPARISON_BAR_IDS.showHighlightToggle}
+          onClick={handleToggleHighlight}
+        >
+          הצגת מרקור טקסט
+        </TogglePill>
+
+        <Divider />
+
+        <NavGroup dir="ltr">
+          <IconBtn
+            type="button"
+            disabled={DIFFERENCE_COUNT === 0 || navIndex === 1}
+            aria-label="ההבדל הקודם"
+            data-testid={COMPARISON_BAR_IDS.prevBtn}
+            onClick={handlePrev}
+          >
+            <ChevronUp size={14} aria-hidden="true" />
+          </IconBtn>
+          <NavCounter data-testid={COMPARISON_BAR_IDS.navCounter}>
+            {DIFFERENCE_COUNT === 0 ? 0 : navIndex}/{DIFFERENCE_COUNT}
+          </NavCounter>
+          <IconBtn
+            type="button"
+            disabled={navIndex >= DIFFERENCE_COUNT}
+            aria-label="ההבדל הבא"
+            data-testid={COMPARISON_BAR_IDS.nextBtn}
+            onClick={handleNext}
+          >
+            <ChevronDown size={14} aria-hidden="true" />
+          </IconBtn>
+        </NavGroup>
+
+        <Divider />
+
+        <IconBtn
+          type="button"
+          aria-label="סגירת השוואת גרסאות"
+          data-testid={COMPARISON_BAR_IDS.closeBtn}
+          onClick={handleClose}
+        >
+          <X size={14} aria-hidden="true" />
+        </IconBtn>
+      </Controls>
+    </Bar>
+  );
+};

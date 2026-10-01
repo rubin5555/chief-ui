@@ -20,9 +20,6 @@ export const useFieldBank = (trackFieldsImported: (count: number) => void) => {
   const removeImportedField = (id: string) =>
     setImportedFields((prev) => prev.filter((field) => field.id !== id));
 
-  // List-shaped fields only: flips ul <-> ol for every future drag of this field (the
-  // field bank is the source of truth — a chip already dropped into a section keeps its
-  // own choice via the ↕ toggle inside the editor, see useTinyMceSetup).
   const toggleFieldOrdered = (id: string) =>
     setImportedFields((prev) =>
       prev.map((field) =>
@@ -30,8 +27,6 @@ export const useFieldBank = (trackFieldsImported: (count: number) => void) => {
       ),
     );
 
-  // Saved from TableDesignModal — table-shape fields always use it; list-shape fields
-  // only when the user opts into rendering as a styled table (renderAsTable).
   const updateFieldTableDesign = (
     id: string,
     tableDesign: TableDesignOptions,

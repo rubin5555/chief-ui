@@ -4,9 +4,6 @@ import { ellipsis, flexBetween, flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 import { NavRow } from './components/columns.shared.styles';
 
-// Centers the card over the hosting modal without dimming or blocking clicks around it.
-// No fade on the overlay itself (it's transparent/non-dimming already) — only
-// the card animates in.
 export const Overlay = styled.div`
   position: absolute;
   inset: 0;

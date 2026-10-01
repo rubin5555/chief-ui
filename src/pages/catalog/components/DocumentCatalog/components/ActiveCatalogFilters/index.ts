@@ -1,0 +1,1 @@
+export { ActiveCatalogFilters } from './ActiveCatalogFilters';

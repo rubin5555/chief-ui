@@ -50,7 +50,7 @@ export const SignatureModal = ({
 
   useEffect(() => {
     trackModalOpened(mode);
-  }, []);
+  }, [mode, trackModalOpened]);
 
   const modalRef = useRef<ModalHandle>(null);
 

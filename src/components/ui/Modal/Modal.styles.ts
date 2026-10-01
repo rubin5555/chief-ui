@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import { dialogMotion, overlayMotion } from '@/styles/animations';
-import { flexBetween, flexCenter, flexGap } from '@/styles/mixins';
+import { dialogMotion, overlayMotion, widthMotion } from '@/styles/animations';
+import { ellipsis, flexBetween, flexCenter, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows } from '@/styles/theme';
 
 export const Overlay = styled.div<{ $closing?: boolean }>`
@@ -29,6 +29,7 @@ export const ModalCard = styled.div<{
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  ${widthMotion}
   ${dialogMotion}
 `;
 
@@ -42,6 +43,24 @@ export const ModalHeader = styled.div`
 
 export const ModalHeaderLeft = styled.div`
   ${flexGap(8)}
+  min-width: 0;
+`;
+
+export const ModalHeaderRight = styled.div`
+  ${flexGap(12)}
+  flex-shrink: 0;
+`;
+
+export const ModalTitleBlock = styled.div`
+  min-width: 0;
+  text-align: right;
+`;
+
+export const ModalSubtitle = styled.p`
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: ${gray[500]};
+  ${ellipsis}
 `;
 
 export const ModalHeaderIcon = styled.div`
@@ -58,6 +77,19 @@ export const ModalTitle = styled.h2`
   font-weight: 700;
   color: ${gray[900]};
   margin: 0;
+`;
+
+export const ConfirmHeader = styled.div`
+  flex-shrink: 0;
+  padding: 28px 32px 0;
+`;
+
+export const ConfirmTitle = styled.h2`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: ${gray[900]};
+  text-align: center;
 `;
 
 export const CloseButton = styled.button`

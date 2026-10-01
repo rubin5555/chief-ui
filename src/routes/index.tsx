@@ -1,23 +1,17 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { z } from 'zod';
-import { ProfilePage } from '@/pages/profile/ProfilePage';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import type { CatalogSearch } from './catalog';
 
-// Tab ids kept as literals (not imported from ProfilePage.constants) so this route config,
-// which stays in the eager bundle, doesn't pull in that file's icons/mock-data.
-// Must match the PROFILE_TAB_IDS values.
-const PROFILE_TABS = ['templates', 'signatures', 'lists'] as const;
-const DEFAULT_TAB = 'templates' satisfies (typeof PROFILE_TABS)[number];
-
-const profileSearchSchema = z.object({
-  tab: z.enum(PROFILE_TABS).catch(DEFAULT_TAB),
-  q: z.string().catch(''),
-  dept: z.string().catch(''),
-  sub: z.string().catch(''),
-});
-
-export type ProfileSearch = z.infer<typeof profileSearchSchema>;
-
+// The catalog is where document work starts, the way main treats it, so `/`
+// forwards there. It used to forward to /profile — the personal area is still
+// reachable from the navbar, it just isn't the front door. The raw search is
+// handed straight over; /catalog's own schema is what validates it, so a stale
+// `?tab=` either survives the move or falls back.
 export const Route = createFileRoute('/')({
-  validateSearch: profileSearchSchema,
-  component: ProfilePage,
+  beforeLoad: ({ location }) => {
+    throw redirect({
+      to: '/catalog',
+      search: location.search as CatalogSearch,
+      replace: true,
+    });
+  },
 });

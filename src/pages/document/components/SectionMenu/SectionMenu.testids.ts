@@ -1,0 +1,11 @@
+export const SECTION_MENU_IDS = {
+  trigger: (sectionId: string) => `section-menu-trigger-${sectionId}`,
+  panel: (sectionId: string) => `section-menu-panel-${sectionId}`,
+  approversAction: 'section-menu-approvers',
+  editorsAction: 'section-menu-editors',
+  toggleHiddenAction: 'section-menu-toggle-hidden',
+  toggleClassifiedAction: 'section-menu-toggle-classified',
+  instructionsAction: 'section-menu-instructions',
+  addFootnoteAction: 'section-menu-add-footnote',
+  deleteAction: 'section-menu-delete',
+};

@@ -1,0 +1,17 @@
+export const APPROVAL_DETAILS_MODAL_IDS = {
+  root: 'approval-details-modal',
+  rankSelect: 'approval-details-rank-select',
+  timeline: 'approval-details-timeline',
+  stage: (rank: string) => `approval-details-stage-${rank}`,
+  addApprover: (rank: string) => `approval-details-add-approver-${rank}`,
+  approverPicker: (rank: string) => `approval-details-approver-picker-${rank}`,
+  approverOption: (rank: string, user: string) => `approval-details-approver-${rank}-${user}`,
+  approverChip: (rank: string, user: string) => `approval-details-chip-${rank}-${user}`,
+  hmlSelect: 'approval-details-hml-select',
+  hmlPanel: 'approval-details-hml-panel',
+  hmlOption: (id: string) => `approval-details-hml-${id}`,
+  hmlExpand: (id: string) => `approval-details-hml-expand-${id}`,
+  hmlDone: 'approval-details-hml-done',
+  notes: 'approval-details-notes',
+  submitBtn: 'approval-details-submit',
+};

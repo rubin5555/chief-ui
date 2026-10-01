@@ -29,9 +29,7 @@ export const useSourceSystems = () =>
   useApiQuery(GET_SOURCE_SYSTEMS_QUERY, (result: GetSourceSystemsResult) => result.sourceSystems);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
-// mock catalog DataImportModal used to import directly. Delete this
-// registration once GetSourceSystems has a real resolver; call sites don't
-// change.
+
 export const SOURCE_SYSTEMS_FALLBACK: GetSourceSystemsResult = {
   sourceSystems: [
     {

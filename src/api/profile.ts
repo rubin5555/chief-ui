@@ -2,9 +2,6 @@ import { gql } from '@apollo/client';
 import { useApiMutation, useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
-// DTO owned by the api layer, independent of ProfileSidebar's ProfileInfo prop
-// type — the two happen to match today, but a UI component's prop shape
-// shouldn't dictate the server contract.
 export interface ProfileDto {
   name: string;
   id: string;
@@ -53,9 +50,7 @@ export const useUpdateProfile = () =>
   );
 
 // ponytail: no backend/resolver yet — registered on stubLink instead of a
-// real resolver, so it still flows through useQuery/useMutation exactly like
-// the eventual real operation will. Delete this registration once GetProfile
-// has a real resolver; call sites don't change.
+
 export const PROFILE_FALLBACK: ProfileDto = {
   name: 'ישראל ישראלי',
   id: '1234567',

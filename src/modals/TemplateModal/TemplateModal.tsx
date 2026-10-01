@@ -1,4 +1,3 @@
-import { useForm } from '@tanstack/react-form';
 import type { FormEvent } from 'react';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -7,6 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ModalLoading } from '@/components/ui/ModalLoading';
 import { CollabProvider } from '@/context/CollabContext';
 import { useDocumentTree } from '@/hooks/useDocumentTree';
+import { chunkGuard } from '../../utils/chunkRecovery';
 import { DocumentDetailsForm } from './components/DocumentDetailsForm';
 import { PermissionsPopover } from './components/PermissionsPopover';
 import { TemplateModalBody } from './components/TemplateModalBody';
@@ -14,24 +14,23 @@ import { useAppendices } from './hooks/useAppendices';
 import { useEmphasis } from './hooks/useEmphasis';
 import { useFieldBank } from './hooks/useFieldBank';
 import { usePermissionsTarget } from './hooks/usePermissionsTarget';
+import { useTemplateForm } from './hooks/useTemplateForm';
 import { useTemplateModalAnalytics } from './TemplateModal.analytics';
 import type { TemplateDraft, TemplateModalMode } from './TemplateModal.constants';
-import { emptyTemplateFormValues, MODAL_TITLES, SAVE_LABELS } from './TemplateModal.constants';
+import { MODAL_TITLES, SAVE_LABELS } from './TemplateModal.constants';
 import { DetailsSection } from './TemplateModal.styles';
 import { TEMPLATE_MODAL_IDS } from './TemplateModal.testids';
 
-const DataImportModal = lazy(() =>
-  import('@/modals/DataImportModal').then((m) => ({ default: m.DataImportModal })),
+const DataImportModal = lazy(
+  chunkGuard(() =>
+    import('@/modals/DataImportModal').then((m) => ({ default: m.DataImportModal })),
+  ),
 );
 
 interface TemplateModalProps {
   mode?: TemplateModalMode;
   initialName?: string;
   departmentOptions: string[];
-  // Identifies this user on the collab server (plan §2/§6) — lock ownership
-  // and remote-cursor labels are keyed by this id. Undefined disables collab
-  // entirely (ContentEditorProvider degrades to its pre-collab local-only
-  // behavior), which is what standalone/unauthenticated callers get today.
   currentUserId?: string;
   onClose: () => void;
   onSave: (draft: TemplateDraft) => void;
@@ -47,10 +46,7 @@ export const TemplateModal = ({
   onClose,
   onSave,
 }: TemplateModalProps) => {
-  const form = useForm({
-    defaultValues: emptyTemplateFormValues(initialName),
-    onSubmit: () => {},
-  });
+  const form = useTemplateForm(initialName);
   const tree = useDocumentTree();
   const emphasis = useEmphasis();
 
@@ -72,11 +68,8 @@ export const TemplateModal = ({
 
   useEffect(() => {
     trackModalOpened(mode);
-  }, []);
+  }, [mode, trackModalOpened]);
 
-  // No backend yet, so every mode starts from an empty structure — any subject,
-  // appendix, imported field, or emphasis text present means the user changed
-  // something this session.
   const isStructureDirty =
     tree.subjects.length > 0 ||
     appendicesState.appendices.length > 0 ||
@@ -108,9 +101,6 @@ export const TemplateModal = ({
     modalRef.current?.requestClose();
   };
 
-  // ContentEditorProvider (inside TemplateModalBody) degrades to local-only
-  // activation (no lock gating/remote cursors) when it finds no CollabProvider
-  // above it — the wrapper is only mounted once a real user identity is available.
   const body = (
     <TemplateModalBody
       tree={tree}

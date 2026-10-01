@@ -1,0 +1,18 @@
+export const APPROVAL_ROTATION_IDS = {
+  root: 'approval-rotation-modal',
+  stageDot: (index: number) => `approval-rotation-stage-${index}`,
+  prevUserBtn: 'approval-rotation-prev-user',
+  nextUserBtn: 'approval-rotation-next-user',
+  pageDots: 'approval-rotation-page-dots',
+  fixNoteLink: 'approval-rotation-fix-note',
+  notes: 'approval-rotation-notes',
+  signatureTrigger: 'approval-rotation-signature-trigger',
+  signatureOption: (name: string) => `approval-rotation-signature-option-${name}`,
+  clearSignatureBtn: 'approval-rotation-clear-signature',
+  rejectBtn: 'approval-rotation-reject',
+  approveBtn: 'approval-rotation-approve',
+  rejectReason: 'approval-rotation-reject-reason',
+  confirmRejectBtn: 'approval-rotation-confirm-reject',
+  distributeNowBtn: 'approval-rotation-distribute-now',
+  distributeLaterBtn: 'approval-rotation-distribute-later',
+};

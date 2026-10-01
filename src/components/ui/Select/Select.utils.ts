@@ -15,8 +15,6 @@ export const computeDropPos = (rect: DOMRect): DropPos => {
   const spaceBelow = window.innerHeight - rect.bottom - GAP - EDGE_MARGIN;
   const spaceAbove = rect.top - GAP - EDGE_MARGIN;
 
-  // flip upward when there isn't enough room below but there's more room above — otherwise the
-  // dropdown renders past the viewport bottom with no way to reach its lower options
   if (spaceBelow < MIN_DROPDOWN_HEIGHT && spaceAbove > spaceBelow) {
     return {
       bottom: window.innerHeight - rect.top + GAP,

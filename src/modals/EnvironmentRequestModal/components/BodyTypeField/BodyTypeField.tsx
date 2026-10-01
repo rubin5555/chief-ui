@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { Select } from '@/components/ui/Select';
 import { BODY_TYPE_OPTIONS } from '../../EnvironmentRequestModal.constants';
-import { FieldGroup, FieldLabel } from '../../EnvironmentRequestModal.styles';
 import { ENV_REQUEST_MODAL_IDS } from '../../EnvironmentRequestModal.testids';
+import { FieldGroup, FieldLabel } from '../components.shared.styles';
 
 interface BodyTypeFieldProps {
   value: string;

@@ -1,0 +1,1 @@
+export { DocFactsGrid } from './DocFactsGrid';

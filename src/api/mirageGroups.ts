@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import type { MirageGroup } from '@/modals/MailingListModal';
+import type { MirageGroup } from '@/components/PeoplePicker';
 import { useApiQuery } from './hooks';
 import { registerStub } from './stubLink';
 
@@ -27,8 +27,7 @@ export const useMirageGroups = () =>
   useApiQuery(GET_MIRAGE_GROUPS_QUERY, (result: GetMirageGroupsResult) => result.mirageGroups);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
-// catalog MirageTab used to import directly. Delete this registration once
-// GetMirageGroups has a real resolver; call sites don't change.
+
 export const MIRAGE_GROUPS_FALLBACK: GetMirageGroupsResult = {
   mirageGroups: [
     {

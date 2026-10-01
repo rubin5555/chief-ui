@@ -1,5 +1,3 @@
-// caretRangeFromPoint is Chromium/WebKit-only and caretPositionFromPoint is its Firefox
-// counterpart — neither is guaranteed at runtime, so both are feature-detected.
 export const caretRangeAtPoint = (x: number, y: number): Range | null => {
   if (typeof document.caretRangeFromPoint === 'function') {
     return document.caretRangeFromPoint(x, y);
@@ -15,9 +13,6 @@ export const caretRangeAtPoint = (x: number, y: number): Range | null => {
   return null;
 };
 
-// Prefers a paint frame (TinyMCE re-normalises its body on init/focus, and running after
-// the next frame reliably lands past that), but rAF starves when the window isn't being
-// painted (hidden/occluded tab) — the timeout keeps the callback from being lost there.
 const AFTER_FRAME_FALLBACK_MS = 50;
 
 export const runAfterFrame = (callback: () => void) => {

@@ -1,11 +1,18 @@
 import { GripVertical, Plus, Trash2 } from 'lucide-react';
 import type { ChangeEvent } from 'react';
-import { useDragReorder } from '@/hooks/useDragReorder';
-import type { DocumentTreeApi, PermissionsTarget, SubSection } from '../../TemplateModal.constants';
+import { appendTargetId, parseAppendTarget, useDragReorder } from '@/hooks/useDragReorder';
+import { radii } from '@/styles/theme';
+import type {
+  DocumentTreeApi,
+  PermissionsTarget,
+  Section,
+  SubSection,
+} from '../../TemplateModal.constants';
 import { TEMPLATE_MODAL_IDS } from '../../TemplateModal.testids';
 import {
   AddChildLink,
   AddNodeButton,
+  AdoptZone,
   DragHandle,
   SmallIconBtn,
   TitleInput,
@@ -31,8 +38,17 @@ export const SubjectTree = ({
   onSubSectionAdded,
 }: SubjectTreeProps) => {
   const subjectDrag = useDragReorder(tree.reorderSubjects);
-  const sectionDrag = useDragReorder(tree.reorderSections);
-  const subSectionDrag = useDragReorder(tree.reorderSubSections);
+
+  // A drop on an "add" link names the parent whose list it closes, and asks for
+  // the end of that list rather than a place before one of its nodes.
+  const sectionDrag = useDragReorder((draggedId, targetId) => {
+    const appendTo = parseAppendTarget(targetId);
+    tree.moveSection(draggedId, appendTo ?? targetId, appendTo ? 'end' : 'before');
+  });
+  const subSectionDrag = useDragReorder((draggedId, targetId) => {
+    const appendTo = parseAppendTarget(targetId);
+    tree.moveSubSection(draggedId, appendTo ?? targetId, appendTo ? 'end' : 'before');
+  });
 
   const handleAddSubject = () => {
     tree.addSubject();
@@ -49,6 +65,31 @@ export const SubjectTree = ({
 
   const handleRemoveSubject = (subjectId: string) => () => tree.removeSubject(subjectId);
 
+  const handleSectionTitleChange =
+    (subjectId: string, sectionId: string) => (e: ChangeEvent<HTMLInputElement>) =>
+      tree.updateSectionTitle(subjectId, sectionId, e.target.value);
+
+  const handleRemoveSection = (subjectId: string, sectionId: string) => () =>
+    tree.removeSection(subjectId, sectionId);
+
+  const handleSectionPermissions =
+    (subjectId: string, section: Section, sectionIndex: number) => () =>
+      onTogglePermissions({
+        id: section.id,
+        label: `הרשאות סעיף ${sectionIndex + 1}`,
+        permissions: section.permissions,
+        onChangeApprovers: (approvers: string[]) =>
+          tree.updateSectionPermissions(subjectId, section.id, {
+            ...section.permissions,
+            approvers,
+          }),
+        onChangeEditors: (editors: string[]) =>
+          tree.updateSectionPermissions(subjectId, section.id, {
+            ...section.permissions,
+            editors,
+          }),
+      });
+
   return (
     <>
       <AddNodeButton
@@ -61,8 +102,6 @@ export const SubjectTree = ({
       </AddNodeButton>
 
       {tree.subjects.map((subject, subjectIndex) => {
-        // Bound to this subject once — every SectionRow below receives fully or
-        // partially applied callbacks, never a raw subjectId to re-curry itself with.
         const onSubSectionAdd = (sectionId: string) => () => {
           tree.addSubSection(subject.id, sectionId);
           onSubSectionAdded();
@@ -96,69 +135,67 @@ export const SubjectTree = ({
             data-testid={TEMPLATE_MODAL_IDS.subject(subject.id)}
             $isDragging={subjectDrag.draggedId === subject.id}
             $isDragOver={subjectDrag.dragOverId === subject.id}
+            $isSettling={subjectDrag.settledId === subject.id}
             {...subjectDrag.getDropTargetProps(subject.id)}
           >
-            <SubjectHeader>
-              <DragHandle
-                data-testid={TEMPLATE_MODAL_IDS.dragHandle(subject.id)}
-                {...subjectDrag.getDragHandleProps(subject.id)}
-              >
-                <GripVertical size={12} />
-              </DragHandle>
-              <SubjectDot />
-              <TitleInput
-                value={subject.title}
-                onChange={handleSubjectTitleChange(subject.id)}
-                placeholder={`נושא ${subjectIndex + 1}...`}
-                dir="rtl"
-              />
-              <SmallIconBtn type="button" onClick={handleRemoveSubject(subject.id)}>
-                <Trash2 size={12} />
-              </SmallIconBtn>
-            </SubjectHeader>
-
-            <SectionsList>
-              {subject.sections.map((section, sectionIndex) => (
-                <SectionRow
-                  key={section.id}
-                  section={section}
-                  sectionIndex={sectionIndex}
-                  activePermissionsId={activePermissionsId}
-                  sectionDrag={sectionDrag}
-                  subSectionDrag={subSectionDrag}
-                  onTitleChange={(e) =>
-                    tree.updateSectionTitle(subject.id, section.id, e.target.value)
-                  }
-                  onRemove={() => tree.removeSection(subject.id, section.id)}
-                  onTogglePermissions={() =>
-                    onTogglePermissions({
-                      id: section.id,
-                      label: `הרשאות סעיף ${sectionIndex + 1}`,
-                      permissions: section.permissions,
-                      onChangeApprovers: (v) =>
-                        tree.updateSectionPermissions(subject.id, section.id, {
-                          ...section.permissions,
-                          approvers: v,
-                        }),
-                      onChangeEditors: (v) =>
-                        tree.updateSectionPermissions(subject.id, section.id, {
-                          ...section.permissions,
-                          editors: v,
-                        }),
-                    })
-                  }
-                  onAddSubSection={onSubSectionAdd(section.id)}
-                  onSubSectionTitleChange={onSubSectionTitleChange(section.id)}
-                  onRemoveSubSection={onRemoveSubSection(section.id)}
-                  onSubSectionPermissions={onSubSectionPermissions(section.id)}
+            <AdoptZone
+              $active={sectionDrag.dragOverId === subject.id}
+              $radius={radii.xl}
+              {...sectionDrag.getDropTargetProps(subject.id)}
+            >
+              <SubjectHeader>
+                <DragHandle
+                  data-testid={TEMPLATE_MODAL_IDS.dragHandle(subject.id)}
+                  {...subjectDrag.getDragHandleProps(subject.id)}
+                >
+                  <GripVertical size={12} />
+                </DragHandle>
+                <SubjectDot />
+                <TitleInput
+                  value={subject.title}
+                  onChange={handleSubjectTitleChange(subject.id)}
+                  placeholder={`נושא ${subjectIndex + 1}...`}
+                  dir="rtl"
                 />
-              ))}
+                <SmallIconBtn type="button" onClick={handleRemoveSubject(subject.id)}>
+                  <Trash2 size={12} />
+                </SmallIconBtn>
+              </SubjectHeader>
 
-              <AddChildLink type="button" onClick={handleAddSection(subject.id)}>
-                <Plus size={12} />
-                הוספת סעיף
-              </AddChildLink>
-            </SectionsList>
+              <SectionsList>
+                {subject.sections.map((section, sectionIndex) => (
+                  <SectionRow
+                    key={section.id}
+                    section={section}
+                    sectionIndex={sectionIndex}
+                    activePermissionsId={activePermissionsId}
+                    sectionDrag={sectionDrag}
+                    subSectionDrag={subSectionDrag}
+                    onTitleChange={handleSectionTitleChange(subject.id, section.id)}
+                    onRemove={handleRemoveSection(subject.id, section.id)}
+                    onTogglePermissions={handleSectionPermissions(
+                      subject.id,
+                      section,
+                      sectionIndex,
+                    )}
+                    onAddSubSection={onSubSectionAdd(section.id)}
+                    onSubSectionTitleChange={onSubSectionTitleChange(section.id)}
+                    onRemoveSubSection={onRemoveSubSection(section.id)}
+                    onSubSectionPermissions={onSubSectionPermissions(section.id)}
+                  />
+                ))}
+
+                <AddChildLink
+                  type="button"
+                  $dropActive={sectionDrag.dragOverId === appendTargetId(subject.id)}
+                  onClick={handleAddSection(subject.id)}
+                  {...sectionDrag.getDropTargetProps(appendTargetId(subject.id))}
+                >
+                  <Plus size={12} />
+                  הוספת סעיף
+                </AddChildLink>
+              </SectionsList>
+            </AdoptZone>
           </SubjectCard>
         );
       })}

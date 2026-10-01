@@ -15,7 +15,13 @@ declare module '@tanstack/react-router' {
   }
 }
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  throw new Error('לא נמצא אלמנט השורש #root — בדוק את תבנית ה-HTML');
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <ApolloProvider client={apolloClient}>
       <GlobalStyles />

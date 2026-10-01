@@ -3,10 +3,8 @@ import { SUPPORT_MENU_IDS } from '../../src/components/layout/TopNavbar/componen
 import { ORG_CONTACTS } from '../../src/modals/ContactPermissionsModal/ContactPermissionsModal.constants';
 import { CONTACT_PERMISSIONS_MODAL_IDS } from '../../src/modals/ContactPermissionsModal/ContactPermissionsModal.testids';
 
-// Reached via the support menu's "permissions" option - there is no other real UI path
-// that renders this modal.
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.getByTestId(SUPPORT_MENU_IDS.trigger).click();
   await page.getByTestId(SUPPORT_MENU_IDS.permissionsOption).click();
   await page.waitForSelector(`[data-testid="${CONTACT_PERMISSIONS_MODAL_IDS.root}"]`);

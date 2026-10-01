@@ -24,6 +24,9 @@ import {
 interface CalendarPanelProps {
   dropRef: Ref<HTMLDivElement>;
   dropPos: DropPos;
+  // A date-only picker hides the hour/minute row and labels the shortcut
+  // `היום` rather than `עכשיו`, since there is no time for it to set.
+  showTime: boolean;
   calendarNav: {
     viewMonth: Date;
     days: CalendarDay[];
@@ -51,6 +54,7 @@ interface CalendarPanelProps {
 export const CalendarPanel = ({
   dropRef,
   dropPos,
+  showTime,
   calendarNav,
   timeInputs,
   actions,
@@ -103,27 +107,29 @@ export const CalendarPanel = ({
         ))}
       </DayGrid>
 
-      <TimeRow>
-        <TimeInput
-          value={timeInputs.hourInput}
-          data-testid={DATE_TIME_PICKER_IDS.hourInput}
-          onChange={timeInputs.onHourChange}
-          onBlur={timeInputs.onHourBlur}
-          onKeyDown={timeInputs.onTimeInputKeyDown}
-          inputMode="numeric"
-          aria-label="שעה"
-        />
-        <TimeColon>:</TimeColon>
-        <TimeInput
-          value={timeInputs.minuteInput}
-          data-testid={DATE_TIME_PICKER_IDS.minuteInput}
-          onChange={timeInputs.onMinuteChange}
-          onBlur={timeInputs.onMinuteBlur}
-          onKeyDown={timeInputs.onTimeInputKeyDown}
-          inputMode="numeric"
-          aria-label="דקות"
-        />
-      </TimeRow>
+      {showTime && (
+        <TimeRow>
+          <TimeInput
+            value={timeInputs.hourInput}
+            data-testid={DATE_TIME_PICKER_IDS.hourInput}
+            onChange={timeInputs.onHourChange}
+            onBlur={timeInputs.onHourBlur}
+            onKeyDown={timeInputs.onTimeInputKeyDown}
+            inputMode="numeric"
+            aria-label="שעה"
+          />
+          <TimeColon>:</TimeColon>
+          <TimeInput
+            value={timeInputs.minuteInput}
+            data-testid={DATE_TIME_PICKER_IDS.minuteInput}
+            onChange={timeInputs.onMinuteChange}
+            onBlur={timeInputs.onMinuteBlur}
+            onKeyDown={timeInputs.onTimeInputKeyDown}
+            inputMode="numeric"
+            aria-label="דקות"
+          />
+        </TimeRow>
+      )}
 
       <PanelFooter>
         <ClearBtn
@@ -134,7 +140,7 @@ export const CalendarPanel = ({
           נקה
         </ClearBtn>
         <NowBtn type="button" data-testid={DATE_TIME_PICKER_IDS.nowBtn} onClick={actions.onNow}>
-          עכשיו
+          {showTime ? 'עכשיו' : 'היום'}
         </NowBtn>
         <ApplyBtn
           type="button"

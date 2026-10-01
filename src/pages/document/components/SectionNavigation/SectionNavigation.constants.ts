@@ -1,0 +1,5 @@
+export const REVEAL_FLASH_MS = 1600;
+
+export const ACTIVE_LINE_OFFSET = 96;
+
+export const REVEAL_SCROLL_PADDING = ACTIVE_LINE_OFFSET - 8;

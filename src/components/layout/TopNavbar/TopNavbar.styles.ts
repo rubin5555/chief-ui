@@ -10,7 +10,7 @@ export const Nav = styled.nav`
 `;
 
 export const NavStart = styled.div`
-  ${flexGap(12)}
+  ${flexGap(16)}
 `;
 
 export const NavCenter = styled.div`
