@@ -94,5 +94,19 @@ export const createMemoryStore = (): CollabStore => {
   };
 };
 
-// One shared instance for the process — the "database" for this in-memory pass.
-export const store = createMemoryStore();
+import { createSqliteStore } from './sqliteStore.js';
+
+// Shared instance for the process. Defaults to SQLite store (using :memory: in test
+// or collab.db in dev/production), falling back to plain Maps when COLLAB_STORE=memory.
+const isTest = Boolean(process.env.NODE_TEST_CONTEXT || process.env.NODE_ENV === 'test');
+const defaultDbPath = isTest ? ':memory:' : (process.env.DB_PATH ?? 'collab.db');
+export let store: CollabStore =
+  process.env.COLLAB_STORE === 'memory'
+    ? createMemoryStore()
+    : createSqliteStore(defaultDbPath);
+
+
+export const setStore = (newStore: CollabStore) => {
+  store = newStore;
+};
+

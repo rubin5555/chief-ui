@@ -1,7 +1,28 @@
 import type { CursorPath } from '@/collab/types';
 
-const isInsignificantTextNode = (node: Node): boolean =>
-  node.nodeType === Node.TEXT_NODE && !(node as Text).data.trim();
+const isInsignificantTextNode = (node: Node): boolean => {
+  if (node.nodeType !== Node.TEXT_NODE) return false;
+  const text = (node as Text).data;
+  if (text.trim().length > 0) return false;
+  const parent = node.parentNode;
+  if (!parent) return false;
+  const tag = parent.nodeName.toUpperCase();
+  if (
+    tag === 'P' ||
+    tag === 'SPAN' ||
+    tag === 'LI' ||
+    tag === 'TD' ||
+    tag === 'TH' ||
+    tag === 'A' ||
+    tag === 'STRONG' ||
+    tag === 'EM' ||
+    tag === 'B' ||
+    tag === 'I'
+  ) {
+    return false;
+  }
+  return true;
+};
 
 const significantChildren = (node: Node): Node[] =>
   Array.prototype.filter.call(node.childNodes, (child: Node) => !isInsignificantTextNode(child));
@@ -36,10 +57,17 @@ export const clampOffset = (node: Node, offset: number): number => {
 
 export const serializeSelection = (
   root: Node | null,
-  selection: Selection | null,
+  selectionOrRange: Selection | Range | null,
 ): CursorPath | null => {
-  if (!root || !selection || selection.rangeCount === 0) return null;
-  const range = selection.getRangeAt(0);
+  if (!root || !selectionOrRange) return null;
+  let range: Range | null = null;
+  if ('getRangeAt' in selectionOrRange) {
+    if (selectionOrRange.rangeCount === 0) return null;
+    range = selectionOrRange.getRangeAt(0);
+  } else {
+    range = selectionOrRange;
+  }
+  if (!range) return null;
   if (!root.contains(range.startContainer) || !root.contains(range.endContainer)) return null;
   const startPath = getNodePath(root, range.startContainer);
   const endPath = getNodePath(root, range.endContainer);

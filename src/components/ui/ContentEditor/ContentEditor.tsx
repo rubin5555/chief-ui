@@ -43,6 +43,7 @@ export interface ContentEditorProps {
   disabled?: boolean;
   selectionOnly?: boolean;
   inset?: boolean;
+  disableBlurDeactivate?: boolean;
 }
 
 export const ContentEditor = ({
@@ -54,21 +55,23 @@ export const ContentEditor = ({
   disabled = false,
   selectionOnly = false,
   inset = false,
+  disableBlurDeactivate = false,
 }: ContentEditorProps) => {
   const myId = useRef(`ce-${self.crypto.randomUUID()}`);
   const localToolbarId = useRef(`ce-tb-${myId.current}`);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const editorBodyRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
   // The editor this instance put into the context, so it can take that one
   // back out again without stepping on whoever replaced it.
   const ownedEditorRef = useRef<TinyMceEditor | null>(null);
 
   const [editorReady, setEditorReady] = useState(false);
-
   const [localEditor, setLocalEditor] = useState<TinyMceEditor | null>(null);
+  const [activeEditorInstance, setActiveEditorInstance] = useState<TinyMceEditor | null>(null);
 
-  const { ctx, collab, remoteLock, isLockHolderRef, lockedByOther, remoteCursorPath } =
-    useContentEditorCollab(id, onChangeRef);
+  const { ctx, collab, remoteLock, isLockHolderRef, lockedByOther, remoteCursor, broadcastChange } =
+    useContentEditorCollab(id, onChangeRef, value);
 
   const isActive = !ctx || ctx.activeId === myId.current;
 
@@ -93,7 +96,7 @@ export const ContentEditor = ({
 
   const handleEditorChange = (newValue: string) => {
     onChange(newValue);
-    if (collab && isLockHolderRef.current) collab.sendContent(id, newValue);
+    broadcastChange(newValue);
   };
   onChangeRef.current = handleEditorChange;
 
@@ -102,8 +105,11 @@ export const ContentEditor = ({
     ctx.setActive(null);
     ctx.setActiveEditor(null);
     ownedEditorRef.current = null;
+    setActiveEditorInstance(null);
     setEditorReady(false);
-    collab?.releaseLock(id);
+    if (!collab?.locklessMode) {
+      collab?.releaseLock(id);
+    }
   };
 
   // The editor unmounts whenever this instance stops being the active one, and
@@ -116,6 +122,7 @@ export const ContentEditor = ({
     if (isActive) return;
 
     setEditorReady(false);
+    setActiveEditorInstance(null);
     const owned = ownedEditorRef.current;
     ownedEditorRef.current = null;
     // Only if the context still points at ours — if the next section has
@@ -125,6 +132,7 @@ export const ContentEditor = ({
 
   useEffect(
     () => () => {
+      setActiveEditorInstance(null);
       const owned = ownedEditorRef.current;
       if (owned && ctxRef.current?.activeEditor === owned) ctxRef.current.setActiveEditor(null);
     },
@@ -133,6 +141,7 @@ export const ContentEditor = ({
 
   const handleInit = (_: unknown, editor: TinyMceEditor) => {
     setEditorReady(true);
+    setActiveEditorInstance(editor);
 
     if (!ctx) {
       setLocalEditor(editor);
@@ -149,6 +158,11 @@ export const ContentEditor = ({
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (disableBlurDeactivate) return;
+    // During the mount transition from preview to editor, unmounting the preview
+    // element fires blur before TinyMCE initializes and focuses.
+    if (!editorReady) return;
+
     const next = e.relatedTarget as Element | null;
     if (next && wrapperRef.current?.contains(next)) return;
     if (next?.closest('.tox-tinymce-aux, .tox-dialog, .tox-pop')) return;
@@ -174,7 +188,7 @@ export const ContentEditor = ({
       )}
 
       {isActive && (
-        <EditorBody>
+        <EditorBody ref={editorBodyRef}>
           <EditorContent $minHeight={minHeight} data-testid={CONTENT_EDITOR_IDS.content}>
             <Editor
               inline
@@ -201,6 +215,15 @@ export const ContentEditor = ({
               dangerouslySetInnerHTML={{ __html: value }}
             />
           )}
+
+          {remoteCursor && (
+            <CursorOverlay
+              containerRef={editorBodyRef}
+              contentRef={activeEditorInstance?.getBody() ?? null}
+              path={remoteCursor.path}
+              label={remoteCursor.userId}
+            />
+          )}
         </EditorBody>
       )}
 
@@ -222,6 +245,7 @@ export const ContentEditor = ({
             $isDragOver={isDragOver}
             onPointerDown={handlePreviewPointerDown}
             onPointerUp={handlePreviewPointerUp}
+            onClick={handlePreviewPointerUp}
             onKeyDown={handlePreviewKeyDown}
             onDragOver={handlePreviewDragOver}
             onDragLeave={handlePreviewDragLeave}
@@ -235,11 +259,12 @@ export const ContentEditor = ({
               בעריכה על ידי {remoteLock.holderId}
             </LockBadge>
           )}
-          {remoteLock && remoteCursorPath && (
+          {remoteCursor && (
             <CursorOverlay
               containerRef={previewRef}
-              path={remoteCursorPath}
-              label={remoteLock.holderId}
+              contentRef={previewRef}
+              path={remoteCursor.path}
+              label={remoteCursor.userId || remoteLock?.holderId || ''}
             />
           )}
         </PreviewWrapper>

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { CollabContextValue } from '@/context/CollabContext';
 import type { ContentEditorContextValue } from '@/context/ContentEditorContext';
 import { CONTENT_CHIP_HTML_MIME, CONTENT_CHIP_MIME } from '../ContentEditor.constants';
@@ -13,6 +14,9 @@ export const useTinyMceSetup = (
   isLockHolderRef: React.RefObject<boolean>,
   onChangeRef: React.RefObject<(v: string) => void>,
 ) => {
+  const collabRef = useRef(collab);
+  collabRef.current = collab;
+
   const handleUndoRedoSetup = (editor: TinyMceEditor) => {
     if (!ctx) return;
 
@@ -79,17 +83,24 @@ export const useTinyMceSetup = (
   };
 
   const handleCursorSetup = (editor: TinyMceEditor) => {
-    if (!collab) return;
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    editor.on('SelectionChange', () => {
-      if (!isLockHolderRef.current) return;
+    const send = () => {
+      const current = collabRef.current;
+      if (!current) return;
+      const isLockless = current.locklessMode;
+      if (!isLockless && !isLockHolderRef.current) return;
+
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         const body = editor.getBody();
-        const path = serializeSelection(body, window.getSelection());
-        if (path) collab.sendCursor(id, path);
+        if (!body) return;
+        const rng = editor.selection?.getRng() ?? window.getSelection();
+        const path = serializeSelection(body, rng);
+        if (path) current.sendCursor(id, path);
       }, CURSOR_SEND_DEBOUNCE_MS);
-    });
+    };
+
+    editor.on('SelectionChange NodeChange keyup mouseup click', send);
   };
 
   const handleEditorSetup = (editor: TinyMceEditor) => {

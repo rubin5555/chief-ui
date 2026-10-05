@@ -105,6 +105,18 @@ export const useCatalogDocs = (tab: CatalogTab) =>
 export const CATALOG_DOCS_FALLBACK: Record<CatalogTab, CatalogDoc[]> = {
   drafts: [
     {
+      id: 'd-large',
+      name: 'פקודת מבצע "חומת מגן 2026" – תוכנית אב כוללת (Large Mock Dataset)',
+      type: 'פקודה',
+      orderNum: '2026-999',
+      updateNum: '4',
+      effectiveDate: '01/11/2026',
+      refNum: 'פ.מ. 999/2026',
+      status: 'בהכנה',
+      env: 'הסביבה שלי',
+      dept: 'תכנון מבצעי',
+    },
+    {
       id: 'd1',
       name: 'פקודת הכשרת אנשי צוות',
       type: 'פקודה',

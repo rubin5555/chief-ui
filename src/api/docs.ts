@@ -10,6 +10,7 @@ import {
   type SourceOrigin,
 } from '@/pages/document/types';
 import { useApiMutation, useApiQuery } from './hooks';
+import { LARGE_MOCK_DOCUMENT } from './mockLargeDocument';
 import { registerStub } from './stubLink';
 
 export const GET_DOCS_QUERY = gql`
@@ -43,6 +44,22 @@ export const useDocs = () => useApiQuery(GET_DOCS_QUERY, (result: GetDocsResult)
 
 export const DOCS_FALLBACK: GetDocsResult = {
   docs: [
+    {
+      id: 'd-large',
+      name: 'פקודת מבצע "חומת מגן 2026" – תוכנית אב כוללת (Large Mock Dataset)',
+      cmdNum: '999',
+      update: 'גרסה 4',
+      environment: 'פיקוד מרכז',
+      docType: 'פקודה',
+      lastUpdate: '05/10/2026',
+      refNum: 'פ.מ. 999/2026',
+      status: 'בהכנה',
+      distribution: [
+        { name: 'אלוף יאיר כהן', idNumber: '012345678', environment: 'פיקוד מרכז' },
+        { name: 'תא״ל יובל רז', idNumber: '023456789', environment: 'אג״ם מבצעים' },
+        { name: 'אל״ם דן שגב', idNumber: '034567890', environment: 'חטיבת התכנון' },
+      ],
+    },
     {
       id: 'd1',
       name: 'נוהל בטיחות 2026',
@@ -429,6 +446,12 @@ const documentStore: Record<string, DocumentDto> = {};
 const getOrCreateDocument = (id: string): DocumentDto => {
   const existing = documentStore[id];
   if (existing) return existing;
+
+  if (id === 'd-large' || id === LARGE_MOCK_DOCUMENT.id) {
+    const created: DocumentDto = JSON.parse(JSON.stringify(LARGE_MOCK_DOCUMENT));
+    documentStore[id] = created;
+    return created;
+  }
 
   const matchingDoc = DOCS_FALLBACK.docs.find((doc) => doc.id === id);
   const created: DocumentDto = matchingDoc

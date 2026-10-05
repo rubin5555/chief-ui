@@ -298,7 +298,7 @@ test('cursor messages relay to everyone else in the room, excluding the sender',
   };
   rooms.handleMessage(alice, cursor);
 
-  assert.deepEqual(bob.received, [cursor]);
+  assert.deepEqual(bob.received, [{ ...cursor, userId: 'alice' }]);
   assert.deepEqual(alice.received, []);
 });
 

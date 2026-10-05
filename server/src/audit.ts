@@ -9,11 +9,9 @@ interface AuditEntryInput {
   metadata?: Record<string, unknown>;
 }
 
-let nextAuditId = 1;
-
 export const writeAuditLog = (entry: AuditEntryInput): void => {
   store.addAuditEntry({
-    id: `audit-${nextAuditId++}`,
+    id: `audit-${crypto.randomUUID()}`,
     fieldId: entry.fieldId,
     actorId: entry.actorId,
     action: entry.action,
@@ -22,3 +20,4 @@ export const writeAuditLog = (entry: AuditEntryInput): void => {
     metadata: entry.metadata ?? null,
   });
 };
+

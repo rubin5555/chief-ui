@@ -14,6 +14,7 @@ const RECONNECT_DELAY_MS = 2000;
 export class CollabClient {
   private socket: WebSocket | null = null;
   private readonly listeners = new Set<CollabMessageListener>();
+  private readonly sendQueue: CollabMessage[] = [];
   private closedByCaller = false;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -27,7 +28,13 @@ export class CollabClient {
     const socket = new WebSocket(url.toString());
     this.socket = socket;
 
-    socket.addEventListener('open', () => this.options.onOpen?.());
+    socket.addEventListener('open', () => {
+      this.options.onOpen?.();
+      while (this.sendQueue.length > 0) {
+        const message = this.sendQueue.shift();
+        if (message) socket.send(JSON.stringify(message));
+      }
+    });
 
     socket.addEventListener('message', (event) => {
       let message: CollabMessage;
@@ -52,7 +59,10 @@ export class CollabClient {
   }
 
   send(message: CollabMessage): void {
-    if (this.socket?.readyState !== WebSocket.OPEN) return;
+    if (this.socket?.readyState !== WebSocket.OPEN) {
+      this.sendQueue.push(message);
+      return;
+    }
     this.socket.send(JSON.stringify(message));
   }
 

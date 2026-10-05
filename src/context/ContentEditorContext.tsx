@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import type { CursorPath } from '@/collab/types';
+import type { RemoteCursorInfo } from '@/collab/types';
 import type { TinyMceEditor } from '@/components/ui/ContentEditor/ContentEditor.types';
 import { type LockInfo, useCollabContext } from './CollabContext';
 
@@ -12,7 +12,7 @@ interface HistoryEntry {
 }
 
 const EMPTY_LOCK_STATE = new Map<string, LockInfo | null>();
-const EMPTY_CURSORS = new Map<string, CursorPath | null>();
+const EMPTY_CURSORS = new Map<string, RemoteCursorInfo | null>();
 
 export interface ContentEditorContextValue {
   toolbarId: string;
@@ -26,7 +26,7 @@ export interface ContentEditorContextValue {
   setActiveEditor: (editor: TinyMceEditor | null) => void;
   requestActivate: (fieldId: string, instanceId: string) => void;
   lockState: Map<string, LockInfo | null>;
-  remoteCursors: Map<string, CursorPath | null>;
+  remoteCursors: Map<string, RemoteCursorInfo | null>;
   getHistoryValue: (id: string, initialValue: string) => string;
   pushHistoryLevel: (id: string, value: string) => void;
   undoHistory: (id: string) => string | null;
@@ -115,7 +115,7 @@ export const ContentEditorProvider = ({ onAddFootnote, children }: ContentEditor
     (fieldId: string, instanceId: string) => {
       setActiveId(instanceId);
       setActiveFieldId(fieldId);
-      if (!collab) return;
+      if (!collab || collab.locklessMode) return;
 
       collab.acquireLock(fieldId).then((granted) => {
         if (granted) return;

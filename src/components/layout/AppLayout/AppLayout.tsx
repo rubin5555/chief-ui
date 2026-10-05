@@ -1,4 +1,5 @@
 import { Outlet, useRouterState } from '@tanstack/react-router';
+import { Users } from 'lucide-react';
 import { useState } from 'react';
 import type { Canvas } from '@/components/layout/AppShell';
 import { AppShell } from '@/components/layout/AppShell';
@@ -11,7 +12,7 @@ import { ThemeToggle } from '@/components/layout/TopNavbar/components/ThemeToggl
 import { TrainingMenu } from '@/components/layout/TopNavbar/components/TrainingMenu';
 import { NavToolbarSlotProvider } from '@/context/NavToolbarSlotContext';
 import { CATALOG_ROUTE, DOCUMENT_ROUTE } from './AppLayout.constants';
-import { BrandLink, NavToolbarHost } from './AppLayout.styles';
+import { BrandLink, CollabDemoLink, NavToolbarHost } from './AppLayout.styles';
 import { useOverflowTitles } from './useOverflowTitles';
 
 const isUnder = (pathname: string, route: string) =>
@@ -45,6 +46,10 @@ export const AppLayout = () => {
             <>
               <BrandLink to="/">Chief</BrandLink>
               <RealityModeSwitch />
+              <CollabDemoLink to="/collab">
+                <Users size={12} />
+                מעבדת שיתוף
+              </CollabDemoLink>
               <NavToolbarHost ref={setNavToolbarNode} />
             </>
           }

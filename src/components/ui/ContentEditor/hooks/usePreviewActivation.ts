@@ -22,7 +22,11 @@ export const usePreviewActivation = (
 
   const handlePreviewPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (disabled || selectionOnly) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Synthetic or unattached pointer events may reject capture
+    }
   };
 
   const handlePreviewPointerUp = () => {
