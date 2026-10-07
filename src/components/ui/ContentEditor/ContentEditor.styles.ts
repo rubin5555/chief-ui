@@ -165,13 +165,35 @@ export const EditorContent = styled.div<{ $minHeight: number }>`
 	direction: rtl;
 	padding: 10px 14px;
 
+	.ql-container {
+		border: none;
+		font-family: inherit;
+		font-size: inherit;
+		height: auto;
+	}
+
+	.ql-editor,
 	.mce-content-body {
+		padding: 0;
 		outline: none;
 		font-size: 13px;
 		line-height: 1.75;
 		color: ${gray[700]};
 		font-family: inherit;
 		word-break: break-word;
+		text-align: right;
+		direction: rtl;
+		min-height: ${({ $minHeight }) => $minHeight - 20}px;
+
+		&.ql-blank::before {
+			right: 0;
+			left: auto;
+			color: ${gray[400]};
+			font-style: normal;
+			position: absolute;
+			pointer-events: none;
+			font-size: 13px;
+		}
 
 		&[data-mce-placeholder]:not(.mce-visualblocks)::before {
 			content: attr(data-mce-placeholder);

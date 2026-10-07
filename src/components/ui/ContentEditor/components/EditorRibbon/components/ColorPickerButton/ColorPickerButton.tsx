@@ -41,7 +41,7 @@ export const ColorPickerButton = ({
   onApply,
   icon,
 }: ColorPickerButtonProps) => {
-  const panel = useFloatingPanel<HTMLButtonElement>({ focusOnOpen: true, closeWhen: disabled });
+  const panel = useFloatingPanel<HTMLButtonElement>({ closeWhen: disabled });
 
   const handleToggle = () => panel.toggle(COLOR_MENU_WIDTH);
 

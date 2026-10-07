@@ -30,7 +30,7 @@ export const TableSizePicker = ({ disabled, onInsert }: TableSizePickerProps) =>
 
   const handlePick = (rows: number, cols: number) => () => {
     setHover(null);
-    panel.close();
+    panel.closeWithoutRefocus();
     onInsert(rows, cols);
   };
 

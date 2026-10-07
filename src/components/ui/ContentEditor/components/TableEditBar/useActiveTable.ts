@@ -10,7 +10,11 @@ export const useActiveTable = (editor: TinyMceEditor | null): HTMLElement | null
       return;
     }
 
-    const read = () => setTable(editor.dom.getParent(editor.selection.getNode(), 'table'));
+    const read = () => {
+      const node = editor.selection.getNode();
+      if (!editor.getBody().contains(node)) return;
+      setTable(editor.dom.getParent(node, 'table'));
+    };
 
     read();
     editor.on('NodeChange', read);

@@ -61,13 +61,17 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
     wasOpenRef.current = open;
   }, [open]);
 
+  const openedAtRef = useRef(0);
+
   useEffect(() => {
     if (!open) return;
+    openedAtRef.current = Date.now();
 
     const onScroll = (e: Event) => {
       const panel = panelRef.current;
       const target = e.target as Node;
       if (panel && (panel.contains(target) || isOnLayerAbove(panel, target))) return;
+      if (Date.now() - openedAtRef.current < 200) return;
       suppressRefocusRef.current = true;
       setOpen(false);
     };
@@ -107,7 +111,7 @@ export const useFloatingPanel = <TTrigger extends HTMLElement = HTMLButtonElemen
     const panel = panelRef.current;
     if (!panel) return;
     const [first] = getFocusable(panel);
-    (first ?? panel).focus();
+    (first ?? panel).focus({ preventScroll: true });
   }, [open, focusOnOpen]);
 
   useLayoutEffect(() => {

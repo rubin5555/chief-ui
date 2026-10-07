@@ -31,26 +31,27 @@ interface PropsDialog {
 export const TableEditBar = ({ editor }: TableEditBarProps) => {
   const table = useActiveTable(editor);
   const [bar, setBar] = useState<HTMLDivElement | null>(null);
-  const anchor = useTableAnchor(table, bar);
   const [dialog, setDialog] = useState<PropsDialog | null>(null);
+  // Whatever was being described is preserved while the dialog is open so
+  // it never unmounts prematurely when focus moves into the modal inputs.
+  const activeTable = table ?? dialog?.table ?? null;
+  const anchor = useTableAnchor(activeTable, bar);
+  const openDialog = dialog && activeTable && dialog.table === activeTable ? dialog : null;
 
-  // Whatever was being described is gone the moment the caret leaves for
-  // another table, and so is the element the dialog holds.
-  const openDialog = dialog?.table === table ? dialog : null;
-
-  if (!editor || !table) return null;
+  if (!editor || !activeTable) return null;
 
   const run = (command: string) => () => editor.execCommand(command);
 
-  const openProps = (target: TablePropsTarget) => () =>
+  const openProps = (target: TablePropsTarget) => () => {
+    const node = editor.selection.getNode();
+    const cell = (editor.dom.getParent(node, 'td,th') ||
+      activeTable.querySelector('td,th')) as HTMLTableCellElement | null;
     setDialog({
       target,
-      table,
-      cell: editor.dom.getParent(
-        editor.selection.getNode(),
-        'td,th',
-      ) as HTMLTableCellElement | null,
+      table: activeTable,
+      cell,
     });
+  };
 
   const closeProps = () => setDialog(null);
 
@@ -155,7 +156,7 @@ export const TableEditBar = ({ editor }: TableEditBarProps) => {
       {openDialog && (
         <TablePropsModal
           target={openDialog.target}
-          table={table as HTMLTableElement}
+          table={activeTable as HTMLTableElement}
           cell={openDialog.cell}
           onSaved={handleSaved}
           onClose={closeProps}

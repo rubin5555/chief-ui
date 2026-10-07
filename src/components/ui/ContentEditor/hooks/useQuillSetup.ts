@@ -2,12 +2,16 @@ import { useRef } from 'react';
 import type { CollabContextValue } from '@/context/CollabContext';
 import type { ContentEditorContextValue } from '@/context/ContentEditorContext';
 import { CONTENT_CHIP_HTML_MIME, CONTENT_CHIP_MIME } from '../ContentEditor.constants';
-import type { EditorClickEvent, EditorDragEvent, TinyMceEditor } from '../ContentEditor.types';
+import type {
+  ContentEditorInstance,
+  EditorClickEvent,
+  EditorDragEvent,
+} from '../ContentEditor.types';
 import { serializeSelection } from '../utils/nodePath';
 
 const CURSOR_SEND_DEBOUNCE_MS = 150;
 
-export const useTinyMceSetup = (
+export const useQuillSetup = (
   ctx: ContentEditorContextValue | null,
   collab: CollabContextValue | null,
   id: string,
@@ -16,7 +20,7 @@ export const useTinyMceSetup = (
   const collabRef = useRef(collab);
   collabRef.current = collab;
 
-  const handleUndoRedoSetup = (editor: TinyMceEditor) => {
+  const handleUndoRedoSetup = (editor: ContentEditorInstance) => {
     if (!ctx) return;
 
     editor.on('AddUndo', () => {
@@ -40,21 +44,24 @@ export const useTinyMceSetup = (
     });
   };
 
-  const handleChipSetup = (editor: TinyMceEditor) => {
-    editor.on('dragover', (e: EditorDragEvent) => {
-      if (e.dataTransfer?.types.includes(CONTENT_CHIP_MIME)) e.preventDefault();
+  const handleChipSetup = (editor: ContentEditorInstance) => {
+    editor.on('dragover', (e: unknown) => {
+      const dragEvent = e as EditorDragEvent;
+      if (dragEvent.dataTransfer?.types.includes(CONTENT_CHIP_MIME)) dragEvent.preventDefault();
     });
 
-    editor.on('drop', (e: EditorDragEvent) => {
-      const chipHtml = e.dataTransfer?.getData(CONTENT_CHIP_HTML_MIME);
+    editor.on('drop', (e: unknown) => {
+      const dragEvent = e as EditorDragEvent;
+      const chipHtml = dragEvent.dataTransfer?.getData(CONTENT_CHIP_HTML_MIME);
       if (!chipHtml) return;
-      e.preventDefault();
-      editor.selection.placeCaretAt(e.clientX, e.clientY);
+      dragEvent.preventDefault();
+      editor.selection.placeCaretAt(dragEvent.clientX, dragEvent.clientY);
       editor.insertContent(chipHtml);
     });
 
-    editor.on('click', (e: EditorClickEvent) => {
-      const target = e.target instanceof Element ? e.target : null;
+    editor.on('click', (e: unknown) => {
+      const clickEvent = e as EditorClickEvent;
+      const target = clickEvent.target instanceof Element ? clickEvent.target : null;
 
       const removeBtn = target?.closest('[data-chip-remove]');
       if (removeBtn) {
@@ -81,7 +88,7 @@ export const useTinyMceSetup = (
     });
   };
 
-  const handleCursorSetup = (editor: TinyMceEditor) => {
+  const handleCursorSetup = (editor: ContentEditorInstance) => {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
     const send = () => {
       const current = collabRef.current;
@@ -100,7 +107,7 @@ export const useTinyMceSetup = (
     editor.on('SelectionChange NodeChange keyup mouseup click', send);
   };
 
-  const handleEditorSetup = (editor: TinyMceEditor) => {
+  const handleEditorSetup = (editor: ContentEditorInstance) => {
     handleUndoRedoSetup(editor);
     handleChipSetup(editor);
     handleCursorSetup(editor);

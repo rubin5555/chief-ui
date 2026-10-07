@@ -51,3 +51,5 @@ export interface TinyMceEditor {
   };
   plugins: { searchreplace?: SearchReplaceApi };
 }
+
+export type ContentEditorInstance = TinyMceEditor;

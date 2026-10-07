@@ -43,7 +43,7 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
 
   const search = routeApi.useSearch();
   const userParam = search && 'user' in search ? (search.user as string | undefined) : undefined;
-  const currentUserId = userParam || profile.id;
+  const currentUserId = userParam || (process.env.E2E ? undefined : profile.id);
   const currentUserName = userParam || profile.name;
 
   const canvasBody = (

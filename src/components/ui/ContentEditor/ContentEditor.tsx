@@ -1,20 +1,7 @@
-import { Editor } from '@tinymce/tinymce-react';
+import Quill from 'quill';
+import 'quill/dist/quill.core.css';
 import { useEffect, useRef, useState } from 'react';
-import 'tinymce/tinymce';
-import 'tinymce/icons/default';
-import 'tinymce/themes/silver';
-import 'tinymce/models/dom';
-import 'tinymce/plugins/lists/plugin';
-import 'tinymce/plugins/table/plugin';
-import 'tinymce/plugins/directionality/plugin';
-import 'tinymce/plugins/link/plugin';
-import 'tinymce/plugins/image/plugin';
-
-import 'tinymce/plugins/searchreplace/plugin';
-import 'tinymce/skins/ui/oxide/skin.min.css';
-import 'tinymce/skins/ui/oxide/content.inline.min.css';
-
-import { TINYMCE_INIT, TINYMCE_LICENSE_KEY } from './ContentEditor.constants';
+import { createQuillAdapter } from './adapters/createQuillAdapter';
 import {
   EditorBody,
   EditorContent,
@@ -23,15 +10,95 @@ import {
   PreviewWrapper,
 } from './ContentEditor.styles';
 import { CONTENT_EDITOR_IDS } from './ContentEditor.testids';
-import type { TinyMceEditor } from './ContentEditor.types';
+import type { ContentEditorInstance } from './ContentEditor.types';
 import { CursorOverlay } from './components/CursorOverlay';
 import { EditorRibbon } from './components/EditorRibbon';
 import { RIBBON_MARKER_ATTR } from './components/EditorRibbon/EditorRibbon.constants';
 import { TableEditBar } from './components/TableEditBar';
 import { useContentEditorCollab } from './hooks/useContentEditorCollab';
 import { usePreviewActivation } from './hooks/usePreviewActivation';
-import { useTinyMceSetup } from './hooks/useTinyMceSetup';
+import { useQuillSetup } from './hooks/useQuillSetup';
 import { runAfterFrame } from './utils/domCaret';
+
+interface QuillEditorProps {
+  value: string;
+  disabled?: boolean;
+  placeholder?: string;
+  onChange: (v: string) => void;
+  onInit: (editor: ContentEditorInstance) => void;
+  setup: (editor: ContentEditorInstance) => void;
+}
+
+const QuillEditor = ({
+  value,
+  disabled,
+  placeholder,
+  onChange,
+  onInit,
+  setup,
+}: QuillEditorProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const quillRef = useRef<Quill | null>(null);
+  const editorRef = useRef<ContentEditorInstance | null>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const onInitRef = useRef(onInit);
+  onInitRef.current = onInit;
+  const setupRef = useRef(setup);
+  setupRef.current = setup;
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount Quill only once
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const quill = new Quill(containerRef.current, {
+      modules: {
+        toolbar: false,
+        table: true,
+        history: {
+          delay: 1000,
+          maxStack: 100,
+          userOnly: true,
+        },
+      },
+      placeholder,
+      readOnly: disabled,
+    });
+    quillRef.current = quill;
+    quill.root.classList.add('mce-content-body');
+    if (value) {
+      quill.root.innerHTML = value;
+    }
+
+    const { editor, destroy } = createQuillAdapter(quill, {
+      onChange: (v) => onChangeRef.current(v),
+    });
+    editorRef.current = editor;
+
+    setupRef.current(editor);
+    onInitRef.current(editor);
+
+    return () => {
+      destroy();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (quillRef.current) {
+      quillRef.current.enable(!disabled);
+    }
+  }, [disabled]);
+
+  useEffect(() => {
+    if (quillRef.current && editorRef.current) {
+      const current = editorRef.current.getContent();
+      if (value !== current) {
+        editorRef.current.setContent(value);
+      }
+    }
+  }, [value]);
+
+  return <div ref={containerRef} />;
+};
 
 export interface ContentEditorProps {
   id: string;
@@ -63,11 +130,13 @@ export const ContentEditor = ({
   const onChangeRef = useRef(onChange);
   // The editor this instance put into the context, so it can take that one
   // back out again without stepping on whoever replaced it.
-  const ownedEditorRef = useRef<TinyMceEditor | null>(null);
+  const ownedEditorRef = useRef<ContentEditorInstance | null>(null);
 
   const [editorReady, setEditorReady] = useState(false);
-  const [localEditor, setLocalEditor] = useState<TinyMceEditor | null>(null);
-  const [activeEditorInstance, setActiveEditorInstance] = useState<TinyMceEditor | null>(null);
+  const [localEditor, setLocalEditor] = useState<ContentEditorInstance | null>(null);
+  const [activeEditorInstance, setActiveEditorInstance] = useState<ContentEditorInstance | null>(
+    null,
+  );
 
   const { ctx, collab, remoteCursor, broadcastChange } = useContentEditorCollab(
     id,
@@ -94,7 +163,7 @@ export const ContentEditor = ({
     applyPendingSelection,
   } = usePreviewActivation(ctx, myId.current, id, disabled, selectionOnly);
 
-  const handleEditorSetup = useTinyMceSetup(ctx, collab, id, onChangeRef);
+  const handleEditorSetup = useQuillSetup(ctx, collab, id, onChangeRef);
 
   const handleEditorChange = (newValue: string) => {
     onChange(newValue);
@@ -111,12 +180,6 @@ export const ContentEditor = ({
     setEditorReady(false);
   };
 
-  // The editor unmounts whenever this instance stops being the active one, and
-  // not every route there goes through `deactivate` — a denied lock has the
-  // context revoke it from the outside, and `handleBlur` has already bowed out
-  // by then because someone else is active. Left alone, the ribbon keeps
-  // driving an editor that no longer exists: every button still enabled, and
-  // none of them attached to anything.
   useEffect(() => {
     if (isActive) return;
 
@@ -124,8 +187,6 @@ export const ContentEditor = ({
     setActiveEditorInstance(null);
     const owned = ownedEditorRef.current;
     ownedEditorRef.current = null;
-    // Only if the context still points at ours — if the next section has
-    // already claimed it, clearing would put the ribbon out for its editor.
     if (owned && ctxRef.current?.activeEditor === owned) ctxRef.current.setActiveEditor(null);
   }, [isActive]);
 
@@ -138,7 +199,7 @@ export const ContentEditor = ({
     [],
   );
 
-  const handleInit = (_: unknown, editor: TinyMceEditor) => {
+  const handleInit = (editor: ContentEditorInstance) => {
     setEditorReady(true);
     setActiveEditorInstance(editor);
 
@@ -157,17 +218,11 @@ export const ContentEditor = ({
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
-    if (disableBlurDeactivate) return;
-    // During the mount transition from preview to editor, unmounting the preview
-    // element fires blur before TinyMCE initializes and focuses.
-    if (!editorReady) return;
+    if (disableBlurDeactivate || !editorReady) return;
 
     const next = e.relatedTarget as Element | null;
     if (next && wrapperRef.current?.contains(next)) return;
-    if (next?.closest('.tox-tinymce-aux, .tox-dialog, .tox-pop')) return;
-
     if (next?.closest(`[${RIBBON_MARKER_ATTR}]`)) return;
-
     if (ctx && ctx.activeId !== myId.current) return;
     deactivate();
   };
@@ -189,18 +244,13 @@ export const ContentEditor = ({
       {isActive && (
         <EditorBody ref={editorBodyRef}>
           <EditorContent $minHeight={minHeight} data-testid={CONTENT_EDITOR_IDS.content}>
-            <Editor
-              inline
+            <QuillEditor
               disabled={disabled}
               value={value}
-              licenseKey={TINYMCE_LICENSE_KEY}
-              onEditorChange={handleEditorChange}
+              placeholder={placeholder}
+              onChange={handleEditorChange}
               onInit={handleInit}
-              init={{
-                ...TINYMCE_INIT,
-                placeholder,
-                setup: handleEditorSetup,
-              }}
+              setup={handleEditorSetup}
             />
           </EditorContent>
 
@@ -228,10 +278,6 @@ export const ContentEditor = ({
 
       {ctx && !isActive && (
         <PreviewWrapper>
-          {/* A tab stop, so the document can be walked without a mouse: main's
-              section body is a textarea and gets this for free, where an
-              inactive editor here is only a div. Focus draws the wrapper's
-              border but does not start editing — Enter does that. */}
           <PreviewContent
             ref={previewRef}
             tabIndex={disabled ? -1 : 0}
