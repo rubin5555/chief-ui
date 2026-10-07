@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 import { colors, gray, radii, transitions } from '@/styles/theme';
 
-export const SubSectionRoot = styled.div<{ $revealed: boolean }>`
-  margin-bottom: 5px;
+export const SubSectionRoot = styled.div<{ $revealed: boolean; $isLast?: boolean }>`
+  margin-bottom: ${({ $isLast }) => ($isLast ? '5mm' : '5px')};
   padding-inline-end: 14px;
   border-radius: ${radii.lg};
 

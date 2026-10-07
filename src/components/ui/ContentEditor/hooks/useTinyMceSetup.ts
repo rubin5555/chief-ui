@@ -11,7 +11,6 @@ export const useTinyMceSetup = (
   ctx: ContentEditorContextValue | null,
   collab: CollabContextValue | null,
   id: string,
-  isLockHolderRef: React.RefObject<boolean>,
   onChangeRef: React.RefObject<(v: string) => void>,
 ) => {
   const collabRef = useRef(collab);
@@ -87,8 +86,6 @@ export const useTinyMceSetup = (
     const send = () => {
       const current = collabRef.current;
       if (!current) return;
-      const isLockless = current.locklessMode;
-      if (!isLockless && !isLockHolderRef.current) return;
 
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {

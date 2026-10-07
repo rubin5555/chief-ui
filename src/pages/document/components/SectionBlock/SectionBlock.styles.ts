@@ -1,8 +1,12 @@
 import styled from 'styled-components';
 import { colors, docColors, radii, transitions } from '@/styles/theme';
 
-export const SectionRoot = styled.div<{ $highlighted: boolean; $revealed: boolean }>`
-  margin-bottom: 5mm;
+export const SectionRoot = styled.div<{
+  $highlighted: boolean;
+  $revealed: boolean;
+  $hasSubSections?: boolean;
+}>`
+  margin-bottom: ${({ $hasSubSections }) => ($hasSubSections ? '6px' : '5mm')};
   border-radius: ${radii.lg};
   outline: ${({ $highlighted }) => ($highlighted ? `2px solid ${docColors.searchHit}` : 'none')};
   outline-offset: 2px;

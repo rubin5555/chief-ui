@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import type { RemoteCursorInfo } from '@/collab/types';
 import type { TinyMceEditor } from '@/components/ui/ContentEditor/ContentEditor.types';
-import { type LockInfo, useCollabContext } from './CollabContext';
+import { useCollabContext } from './CollabContext';
 
 const MAX_HISTORY_LENGTH = 100;
 
@@ -11,7 +11,6 @@ interface HistoryEntry {
   pointer: number;
 }
 
-const EMPTY_LOCK_STATE = new Map<string, LockInfo | null>();
 const EMPTY_CURSORS = new Map<string, RemoteCursorInfo | null>();
 
 export interface ContentEditorContextValue {
@@ -25,7 +24,6 @@ export interface ContentEditorContextValue {
   activeEditor: TinyMceEditor | null;
   setActiveEditor: (editor: TinyMceEditor | null) => void;
   requestActivate: (fieldId: string, instanceId: string) => void;
-  lockState: Map<string, LockInfo | null>;
   remoteCursors: Map<string, RemoteCursorInfo | null>;
   getHistoryValue: (id: string, initialValue: string) => string;
   pushHistoryLevel: (id: string, value: string) => void;
@@ -111,20 +109,10 @@ export const ContentEditorProvider = ({ onAddFootnote, children }: ContentEditor
     if (id === null) setActiveFieldId(null);
   }, []);
 
-  const requestActivate = useCallback(
-    (fieldId: string, instanceId: string) => {
-      setActiveId(instanceId);
-      setActiveFieldId(fieldId);
-      if (!collab || collab.locklessMode) return;
-
-      collab.acquireLock(fieldId).then((granted) => {
-        if (granted) return;
-        setActiveId((current) => (current === instanceId ? null : current));
-        setActiveFieldId((current) => (current === fieldId ? null : current));
-      });
-    },
-    [collab],
-  );
+  const requestActivate = useCallback((fieldId: string, instanceId: string) => {
+    setActiveId(instanceId);
+    setActiveFieldId(fieldId);
+  }, []);
 
   const addFootnoteToActive = useMemo(
     () => (onAddFootnote && activeFieldId ? () => onAddFootnote(activeFieldId) : null),
@@ -142,7 +130,6 @@ export const ContentEditorProvider = ({ onAddFootnote, children }: ContentEditor
       requestActivate,
       supportsFootnotes: onAddFootnote !== undefined,
       addFootnoteToActive,
-      lockState: collab?.lockState ?? EMPTY_LOCK_STATE,
       remoteCursors: collab?.remoteCursors ?? EMPTY_CURSORS,
       getHistoryValue,
       pushHistoryLevel,

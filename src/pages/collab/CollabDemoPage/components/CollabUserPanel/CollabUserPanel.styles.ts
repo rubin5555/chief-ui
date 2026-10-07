@@ -101,30 +101,23 @@ export const PanelBody = styled.div`
   overflow-y: auto;
 `;
 
-export const SectionCard = styled.div<{ $isHeldByMe: boolean; $isHeldByOther: boolean }>`
+export const SectionCard = styled.div`
   display: flex;
   flex-direction: column;
   background: ${colors.surface};
-  border: 1.5px solid
-    ${({ $isHeldByMe, $isHeldByOther }) =>
-      $isHeldByMe ? colors.primary : $isHeldByOther ? colors.accent : colors.border};
+  border: 1px solid ${colors.border};
   border-radius: ${radii.lg};
   overflow: hidden;
   box-shadow: ${shadows.sm};
   transition: all ${transitions.normal};
 `;
 
-export const SectionCardHeader = styled.div<{ $isHeldByMe: boolean; $isHeldByOther: boolean }>`
+export const SectionCardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: ${({ $isHeldByMe, $isHeldByOther }) =>
-    $isHeldByMe
-      ? 'color-mix(in srgb, var(--color-primary-light) 30%, var(--color-surface))'
-      : $isHeldByOther
-        ? 'color-mix(in srgb, var(--color-accent) 10%, var(--color-surface))'
-        : gray[50]};
+  background: ${gray[50]};
   border-bottom: 1px solid ${colors.border};
 `;
 
@@ -139,41 +132,6 @@ export const SectionActions = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-`;
-
-export const LockStateBadge = styled.span<{ $type: 'mine' | 'other' | 'free' }>`
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: ${radii.full};
-  background: ${({ $type }) =>
-    $type === 'mine'
-      ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)'
-      : $type === 'other'
-        ? 'color-mix(in srgb, var(--color-accent) 15%, transparent)'
-        : gray[200]};
-  color: ${({ $type }) =>
-    $type === 'mine' ? colors.primary : $type === 'other' ? colors.accent : gray[600]};
-`;
-
-export const ReleaseBtn = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: ${radii.md};
-  background: ${colors.dangerLight};
-  color: ${colors.danger};
-  border: 1px solid ${colors.danger};
-  cursor: pointer;
-  transition: all ${transitions.fast};
-
-  &:hover {
-    background: ${colors.danger};
-    color: ${colors.surface};
-  }
 `;
 
 export const EditorArea = styled.div`

@@ -80,25 +80,6 @@ export const ResetBtn = styled.button`
   }
 `;
 
-export const ModeSwitchBtn = styled.button<{ $active: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: ${radii.lg};
-  cursor: pointer;
-  transition: all ${transitions.fast};
-  background: ${({ $active }) => ($active ? '#2563eb' : gray[100])};
-  color: ${({ $active }) => ($active ? '#ffffff' : gray[800])};
-  border: 1px solid ${({ $active }) => ($active ? '#1d4ed8' : gray[300])};
-
-  &:hover {
-    background: ${({ $active }) => ($active ? '#1d4ed8' : gray[200])};
-  }
-`;
-
 export const FeaturePillsRow = styled.div`
   display: flex;
   flex-wrap: wrap;

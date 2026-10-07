@@ -1,5 +1,4 @@
 import styled, { css } from 'styled-components';
-import { flexGap } from '@/styles/mixins';
 import { colors, docColors, gray, radii, shadows } from '@/styles/theme';
 
 const richTextContent = css`
@@ -157,21 +156,6 @@ export const PreviewContent = styled.div<{
 
 export const PreviewWrapper = styled.div`
 	position: relative;
-`;
-
-export const LockBadge = styled.div`
-	position: absolute;
-	top: 6px;
-	left: 8px;
-	z-index: 2;
-	${flexGap(4)}
-	background: color-mix(in srgb, ${colors.accent} 12%, ${colors.surface});
-	color: ${colors.accent};
-	font-size: 10.5px;
-	font-weight: 600;
-	padding: 3px 8px;
-	border-radius: ${radii.full};
-	pointer-events: none;
 `;
 
 export const EditorContent = styled.div<{ $minHeight: number }>`

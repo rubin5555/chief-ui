@@ -12,28 +12,13 @@ import { CollabClient } from '@/collab/CollabClient';
 import { COLLAB_WS_URL } from '@/collab/collabConfig';
 import type { CollabMessage, CursorPath, RemoteCursorInfo } from '@/collab/types';
 
-export interface LockInfo {
-  holderId: string;
-}
-
-interface RemoteContentUpdate {
-  html: string;
-  receivedAt: number;
-}
-
 export interface CollabContextValue {
   userId: string;
+  userName?: string;
   connected: boolean;
-  locklessMode: boolean;
-  lockState: Map<string, LockInfo | null>;
   remoteCursors: Map<string, RemoteCursorInfo | null>;
-  remoteContent: Map<string, RemoteContentUpdate>;
   joinField: (fieldId: string) => void;
   leaveField: (fieldId: string) => void;
-  acquireLock: (fieldId: string) => Promise<boolean>;
-  releaseLock: (fieldId: string) => void;
-  sendHeartbeat: (fieldId: string) => void;
-  sendContent: (fieldId: string, html: string) => void;
   sendCursor: (fieldId: string, path: CursorPath) => void;
   sendYjsUpdate: (fieldId: string, update: number[]) => void;
   sendYjsSync: (fieldId: string) => void;
@@ -42,11 +27,7 @@ export interface CollabContextValue {
 
 const CollabContext = createContext<CollabContextValue | null>(null);
 
-const ACQUIRE_TIMEOUT_MS = 5000;
-
-const EMPTY_LOCK_STATE = new Map<string, LockInfo | null>();
 const EMPTY_CURSORS = new Map<string, RemoteCursorInfo | null>();
-const EMPTY_CONTENT = new Map<string, RemoteContentUpdate>();
 
 export interface CollabEventLogItem {
   id: string;
@@ -58,14 +39,14 @@ export interface CollabEventLogItem {
 
 export interface CollabProviderProps {
   userId: string;
-  locklessMode?: boolean;
+  userName?: string;
   onCollabEvent?: (event: CollabEventLogItem) => void;
   children: ReactNode;
 }
 
 export const CollabProvider = ({
   userId,
-  locklessMode = false,
+  userName,
   onCollabEvent,
   children,
 }: CollabProviderProps) => {
@@ -73,14 +54,10 @@ export const CollabProvider = ({
   const onCollabEventRef = useRef(onCollabEvent);
   onCollabEventRef.current = onCollabEvent;
 
-  const pendingAcquiresRef = useRef(new Map<string, (granted: boolean) => void>());
   const yjsListenersRef = useRef(new Map<string, Set<(update: Uint8Array) => void>>());
   const [connected, setConnected] = useState(false);
-  const [lockState, setLockState] = useState<Map<string, LockInfo | null>>(EMPTY_LOCK_STATE);
   const [remoteCursors, setRemoteCursors] =
     useState<Map<string, RemoteCursorInfo | null>>(EMPTY_CURSORS);
-  const [remoteContent, setRemoteContent] =
-    useState<Map<string, RemoteContentUpdate>>(EMPTY_CONTENT);
 
   const emitEvent = useCallback(
     (direction: 'in' | 'out', message: CollabMessage) => {
@@ -113,6 +90,7 @@ export const CollabProvider = ({
         setConnected(true);
         for (const fieldId of joinedFieldsRef.current) {
           send({ type: 'join', fieldId });
+          send({ type: 'yjs:sync', fieldId });
         }
       },
       onClose: () => setConnected(false),
@@ -121,36 +99,12 @@ export const CollabProvider = ({
 
     for (const fieldId of joinedFieldsRef.current) {
       send({ type: 'join', fieldId });
+      send({ type: 'yjs:sync', fieldId });
     }
-
-    const settleAcquire = (fieldId: string, granted: boolean) => {
-      const resolve = pendingAcquiresRef.current.get(fieldId);
-      if (!resolve) return;
-      pendingAcquiresRef.current.delete(fieldId);
-      resolve(granted);
-    };
 
     const unsubscribe = client.onMessage((message: CollabMessage) => {
       emitEvent('in', message);
       switch (message.type) {
-        case 'lock:granted':
-          setLockState((prev) =>
-            new Map(prev).set(message.fieldId, { holderId: message.holderId }),
-          );
-          settleAcquire(message.fieldId, message.holderId === userId);
-          return;
-        case 'lock:denied':
-          settleAcquire(message.fieldId, false);
-          return;
-        case 'lock:released':
-          setLockState((prev) => new Map(prev).set(message.fieldId, null));
-          setRemoteCursors((prev) => new Map(prev).set(message.fieldId, null));
-          return;
-        case 'content':
-          setRemoteContent((prev) =>
-            new Map(prev).set(message.fieldId, { html: message.html, receivedAt: Date.now() }),
-          );
-          return;
         case 'cursor':
           if (message.userId && message.userId === userId) return;
           setRemoteCursors((prev) =>
@@ -199,32 +153,8 @@ export const CollabProvider = ({
     [send],
   );
 
-  const acquireLock = (fieldId: string): Promise<boolean> => {
-    if (locklessMode) return Promise.resolve(true);
-    return new Promise((resolve) => {
-      const settle = (granted: boolean) => {
-        pendingAcquiresRef.current.delete(fieldId);
-        resolve(granted);
-      };
-      pendingAcquiresRef.current.set(fieldId, settle);
-      send({ type: 'lock:acquire', fieldId });
-      setTimeout(() => {
-        if (pendingAcquiresRef.current.get(fieldId) === settle) settle(false);
-      }, ACQUIRE_TIMEOUT_MS);
-    });
-  };
-
-  const releaseLock = (fieldId: string) => {
-    if (locklessMode) return;
-    send({ type: 'lock:release', fieldId });
-  };
-
-  const sendHeartbeat = (fieldId: string) => send({ type: 'lock:heartbeat', fieldId });
-
-  const sendContent = (fieldId: string, html: string) => send({ type: 'content', fieldId, html });
-
   const sendCursor = (fieldId: string, path: CursorPath) =>
-    send({ type: 'cursor', fieldId, path, userId });
+    send({ type: 'cursor', fieldId, path, userId: userName || userId });
 
   const sendYjsUpdate = useCallback(
     (fieldId: string, update: number[]) => {
@@ -260,17 +190,11 @@ export const CollabProvider = ({
   const value = useMemo<CollabContextValue>(
     () => ({
       userId,
+      userName,
       connected,
-      locklessMode,
-      lockState,
       remoteCursors,
-      remoteContent,
       joinField,
       leaveField,
-      acquireLock,
-      releaseLock,
-      sendHeartbeat,
-      sendContent,
       sendCursor,
       sendYjsUpdate,
       sendYjsSync,
@@ -278,11 +202,9 @@ export const CollabProvider = ({
     }),
     [
       userId,
+      userName,
       connected,
-      locklessMode,
-      lockState,
       remoteCursors,
-      remoteContent,
       joinField,
       leaveField,
       sendYjsUpdate,

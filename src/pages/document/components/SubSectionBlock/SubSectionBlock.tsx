@@ -23,16 +23,19 @@ export interface SubSectionBlockProps {
   sectionId: string;
   subSection: SubSection;
   index: number;
+  isLast?: boolean;
   tree: ReturnType<typeof useDocumentTree>;
   overrides: ReturnType<typeof useDocumentOverrides>;
   readOnly: boolean;
 }
 
+// ponytail: SubSectionBlock is an independent single-render virtual item.
 export const SubSectionBlock = ({
   subjectId,
   sectionId,
   subSection,
   index,
+  isLast,
   tree,
   overrides,
   readOnly,
@@ -82,6 +85,8 @@ export const SubSectionBlock = ({
   return (
     <SubSectionRoot
       $revealed={nav?.revealedNodeId === subSection.id}
+      $isLast={isLast}
+      data-subject-id={subjectId}
       {...{ [OUTLINE_NODE_ATTR]: subSection.id }}
       data-testid={SUB_SECTION_BLOCK_IDS.root(subSection.id)}
     >

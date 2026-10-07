@@ -1,17 +1,13 @@
-import { Lock, Unlock } from 'lucide-react';
 import { ContentEditor, ContentEditorToolbar } from '@/components/ui/ContentEditor';
 import { type CollabEventLogItem, CollabProvider, useCollabContext } from '@/context/CollabContext';
-import { ContentEditorProvider, useContentEditorContext } from '@/context/ContentEditorContext';
+import { ContentEditorProvider } from '@/context/ContentEditorContext';
 import type { DemoSectionDef } from '../../CollabDemoPage.constants';
 import { COLLAB_DEMO_IDS } from '../../CollabDemoPage.testids';
 import {
   EditorArea,
-  LockStateBadge,
   PanelBody,
   PanelContainer,
   PanelHeader,
-  ReleaseBtn,
-  SectionActions,
   SectionCard,
   SectionCardHeader,
   SectionTitle,
@@ -32,7 +28,6 @@ export interface CollabUserPanelProps {
   accentColor: string;
   sections: DemoSectionDef[];
   values: Record<string, string>;
-  locklessMode?: boolean;
   onValueChange: (fieldId: string, value: string) => void;
   onCollabEvent?: (event: CollabEventLogItem) => void;
 }
@@ -57,16 +52,9 @@ const UserPanelInner = ({
   onValueChange,
 }: UserPanelInnerProps) => {
   const collab = useCollabContext();
-  const ctx = useContentEditorContext();
 
   const handleSectionChange = (fieldId: string) => (newValue: string) => {
     onValueChange(fieldId, newValue);
-  };
-
-  const handleReleaseLock = (fieldId: string) => () => {
-    ctx?.setActive(null);
-    ctx?.setActiveEditor(null);
-    collab?.releaseLock(fieldId);
   };
 
   const isConnected = collab?.connected ?? false;
@@ -93,70 +81,27 @@ const UserPanelInner = ({
       </ToolbarSlot>
 
       <PanelBody>
-        {sections.map((section) => {
-          const isLockless = collab?.locklessMode ?? false;
-          const lock = collab?.lockState.get(section.id);
-          const isHeldByMe = !isLockless && !!lock && lock.holderId === userId;
-          const isHeldByOther = !isLockless && !!lock && lock.holderId !== userId;
-          const lockType: 'mine' | 'other' | 'free' = isLockless
-            ? 'mine'
-            : isHeldByMe
-              ? 'mine'
-              : isHeldByOther
-                ? 'other'
-                : 'free';
+        {sections.map((section) => (
+          <SectionCard
+            key={section.id}
+            data-testid={COLLAB_DEMO_IDS.sectionCard(userId, section.id)}
+          >
+            <SectionCardHeader>
+              <SectionTitle>{section.title}</SectionTitle>
+            </SectionCardHeader>
 
-          return (
-            <SectionCard
-              key={section.id}
-              $isHeldByMe={isHeldByMe}
-              $isHeldByOther={isHeldByOther}
-              data-testid={COLLAB_DEMO_IDS.sectionCard(userId, section.id)}
-            >
-              <SectionCardHeader $isHeldByMe={isHeldByMe} $isHeldByOther={isHeldByOther}>
-                <SectionTitle>{section.title}</SectionTitle>
-
-                <SectionActions>
-                  <LockStateBadge
-                    $type={lockType}
-                    data-testid={COLLAB_DEMO_IDS.lockStatusBadge(userId, section.id)}
-                  >
-                    {isLockless
-                      ? '⚡ עריכה מקבילית (CRDT Lockless)'
-                      : isHeldByMe
-                        ? 'עריכה פעילה (נעילה מוחזקת)'
-                        : isHeldByOther
-                          ? `נעול ע״י ${lock.holderId}`
-                          : 'פנוי לעריכה (לחצו להתחלה)'}
-                  </LockStateBadge>
-
-                  {!isLockless && isHeldByMe && (
-                    <ReleaseBtn
-                      type="button"
-                      data-testid={COLLAB_DEMO_IDS.releaseBtn(userId, section.id)}
-                      onClick={handleReleaseLock(section.id)}
-                    >
-                      <Unlock size={12} />
-                      שחרר נעילה
-                    </ReleaseBtn>
-                  )}
-                  {!isLockless && isHeldByOther && <Lock size={13} color="var(--color-accent)" />}
-                </SectionActions>
-              </SectionCardHeader>
-
-              <EditorArea>
-                <ContentEditor
-                  id={section.id}
-                  value={values[section.id] ?? ''}
-                  onChange={handleSectionChange(section.id)}
-                  placeholder={`הזן תוכן עבור ${section.title}...`}
-                  minHeight={90}
-                  disableBlurDeactivate={true}
-                />
-              </EditorArea>
-            </SectionCard>
-          );
-        })}
+            <EditorArea>
+              <ContentEditor
+                id={section.id}
+                value={values[section.id] ?? ''}
+                onChange={handleSectionChange(section.id)}
+                placeholder={`הזן תוכן עבור ${section.title}...`}
+                minHeight={90}
+                disableBlurDeactivate={true}
+              />
+            </EditorArea>
+          </SectionCard>
+        ))}
       </PanelBody>
     </PanelContainer>
   );
@@ -169,12 +114,11 @@ export const CollabUserPanel = ({
   accentColor,
   sections,
   values,
-  locklessMode = false,
   onValueChange,
   onCollabEvent,
 }: CollabUserPanelProps) => {
   return (
-    <CollabProvider userId={userId} locklessMode={locklessMode} onCollabEvent={onCollabEvent}>
+    <CollabProvider userId={userId} userName={userName} onCollabEvent={onCollabEvent}>
       <ContentEditorProvider>
         <UserPanelInner
           userId={userId}

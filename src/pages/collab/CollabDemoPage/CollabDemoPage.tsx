@@ -2,7 +2,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Database,
-  Lock,
   MousePointer,
   RotateCcw,
   Sparkles,
@@ -22,7 +21,6 @@ import {
   FeaturePillsRow,
   HeaderActions,
   HeaderTopRow,
-  ModeSwitchBtn,
   ResetBtn,
   ServerAlertBanner,
   ServerAlertText,
@@ -48,7 +46,6 @@ export const CollabDemoPage = () => {
   const [bobValues, setBobValues] = useState<Record<string, string>>(() =>
     buildInitialValues(DEMO_SECTIONS),
   );
-  const [locklessMode, setLocklessMode] = useState(true);
 
   const [events, setEvents] = useState<CollabEventLogItem[]>([]);
   const [serverHealthy, setServerHealthy] = useState<boolean | null>(null);
@@ -97,33 +94,15 @@ export const CollabDemoPage = () => {
           <TitleGroup>
             <DemoTitle>
               <Users size={22} color="var(--color-primary)" />
-              מעבדת שיתוף פעולה בזמן אמת — Collab Service & TinyEditor
+              מעבדת שיתוף פעולה בזמן אמת — Multiple Editors & Yjs CRDT
             </DemoTitle>
             <DemoSubtitle>
-              בדיקה והדגמה אינטראקטיבית של שירות השיתוף (WebSocket) עם רכיבי העריכה של המערכת
-              (TinyMCE inline). שני המשתמשים מחוברים בו-זמנית לאותו שרת ופועלים על אותם סעיפים.
+              עריכה שיתופית מקבילית בזמן אמת (WebSocket + Yjs CRDT + SQLite autosave). כל המשתמשים
+              עורכים במקביל ובחופשיות ללא נעילות עם סנכרון מיידי וסמנים חיים.
             </DemoSubtitle>
           </TitleGroup>
 
           <HeaderActions>
-            <ModeSwitchBtn
-              type="button"
-              $active={locklessMode}
-              onClick={() => setLocklessMode((prev) => !prev)}
-            >
-              {locklessMode ? (
-                <>
-                  <Zap size={14} color="#f59e0b" />
-                  מצב: עריכה מקבילית חופשית (Yjs CRDT + SQLite Autosave)
-                </>
-              ) : (
-                <>
-                  <Lock size={14} />
-                  מצב: נעילת סעיפים בלעדית (Exclusive Single-Writer Lock)
-                </>
-              )}
-            </ModeSwitchBtn>
-
             <ResetBtn type="button" data-testid={COLLAB_DEMO_IDS.resetBtn} onClick={handleReset}>
               <RotateCcw size={14} />
               איפוס תוכן הדגמה
@@ -132,45 +111,22 @@ export const CollabDemoPage = () => {
         </HeaderTopRow>
 
         <FeaturePillsRow>
-          {locklessMode ? (
-            <>
-              <FeaturePill>
-                <Zap size={13} color="#f59e0b" />
-                עריכה מקבילית ללא נעילות (Yjs CRDT Concurrent)
-              </FeaturePill>
-              <FeaturePill>
-                <Database size={13} color="#10b981" />
-                שמירה אוטומטית למסד נתונים (SQLite 500ms Debounced Autosave)
-              </FeaturePill>
-              <FeaturePill>
-                <Sparkles size={13} color="#6366f1" />
-                מיזוג שינויים מתמטי ללא התנגשויות (Conflict-Free Convergence)
-              </FeaturePill>
-              <FeaturePill>
-                <MousePointer size={13} color="#2563eb" />
-                מעקב סמנים חי ותיעוד פעילות שרת בזמן אמת
-              </FeaturePill>
-            </>
-          ) : (
-            <>
-              <FeaturePill>
-                <Lock size={13} color="var(--color-primary)" />
-                נעילת סעיפים בלעדית (Single-writer per section)
-              </FeaturePill>
-              <FeaturePill>
-                <Zap size={13} color="#059669" />
-                עריכה מקבילית בסעיפים שונים
-              </FeaturePill>
-              <FeaturePill>
-                <Sparkles size={13} color="#d97706" />
-                סנכרון תוכן מושהה (500ms debounce broadcast)
-              </FeaturePill>
-              <FeaturePill>
-                <MousePointer size={13} color="#2563eb" />
-                מעקב סמן חי ותגיות עריכה (Remote cursor & badges)
-              </FeaturePill>
-            </>
-          )}
+          <FeaturePill>
+            <Zap size={13} color="#f59e0b" />
+            עריכה מקבילית חופשית (Yjs CRDT Concurrent)
+          </FeaturePill>
+          <FeaturePill>
+            <Database size={13} color="#10b981" />
+            שמירה אוטומטית למסד נתונים (SQLite 500ms Debounced Autosave)
+          </FeaturePill>
+          <FeaturePill>
+            <Sparkles size={13} color="#6366f1" />
+            מיזוג שינויים מתמטי ללא התנגשויות (Conflict-Free Convergence)
+          </FeaturePill>
+          <FeaturePill>
+            <MousePointer size={13} color="#2563eb" />
+            מעקב סמנים חי ותיעוד פעילות שרת בזמן אמת
+          </FeaturePill>
         </FeaturePillsRow>
 
         <ServerAlertBanner
@@ -207,7 +163,6 @@ export const CollabDemoPage = () => {
           accentColor={DEMO_USERS.alice.accentColor}
           sections={DEMO_SECTIONS}
           values={aliceValues}
-          locklessMode={locklessMode}
           onValueChange={handleAliceChange}
           onCollabEvent={handleCollabEvent}
         />
@@ -219,7 +174,6 @@ export const CollabDemoPage = () => {
           accentColor={DEMO_USERS.bob.accentColor}
           sections={DEMO_SECTIONS}
           values={bobValues}
-          locklessMode={locklessMode}
           onValueChange={handleBobChange}
           onCollabEvent={handleCollabEvent}
         />

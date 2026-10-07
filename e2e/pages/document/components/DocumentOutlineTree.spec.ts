@@ -6,6 +6,7 @@ import { OUTLINE_SECTION_ROW_IDS } from '../../../../src/pages/document/componen
 import { OUTLINE_SUBJECT_ROW_IDS } from '../../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubjectRow/OutlineSubjectRow.testids';
 import { OUTLINE_SUB_SECTION_ROW_IDS } from '../../../../src/pages/document/components/DocumentOutlineTree/components/OutlineSubSectionRow/OutlineSubSectionRow.testids';
 import { ADD_MENU_IDS } from '../../../../src/pages/document/components/DocumentSidebar/components/SidebarFabRow/components/AddMenu/AddMenu.testids';
+import { SECTION_BLOCK_IDS } from '../../../../src/pages/document/components/SectionBlock/SectionBlock.testids';
 import { SUBJECT_BLOCK_IDS } from '../../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
 import { dragOnto, revealOutlineRow, scrollOutlineToEnd } from '../../../support/interactions';
 
@@ -25,10 +26,7 @@ test('renaming a section from its row menu updates the paper too', async ({ page
   );
 
   await expect(
-    page
-      .getByTestId(SUBJECT_BLOCK_IDS.root('s1'))
-      .getByRole('textbox', { name: 'שם הסעיף' })
-      .first(),
+    page.getByTestId(SECTION_BLOCK_IDS.root('s1-1')).getByRole('textbox', { name: 'שם הסעיף' }),
   ).toHaveValue('מטרת המסמך המעודכנת');
 });
 
@@ -53,7 +51,7 @@ test('adding a section names it for its position, as main does', async ({ page }
   await page.getByTestId(ADD_NODE_LINK_IDS.addSection('s1')).click();
 
   const s1Sections = page
-    .getByTestId(SUBJECT_BLOCK_IDS.root('s1'))
+    .locator('[data-subject-id="s1"]')
     .getByRole('textbox', { name: 'שם הסעיף' });
   await expect(s1Sections).toHaveCount(3);
   await expect(s1Sections.last()).toHaveValue('סעיף 3');
@@ -65,7 +63,7 @@ test('adding a sub-section names it for the Hebrew letter it renders under', asy
   await page.getByTestId(ADD_NODE_LINK_IDS.addSubSection('s1-1')).click();
 
   await expect(
-    page.getByTestId(SUBJECT_BLOCK_IDS.root('s1')).getByRole('textbox', { name: 'שם תת הסעיף' }),
+    page.locator('[data-subject-id="s1"]').getByRole('textbox', { name: 'שם תת הסעיף' }),
   ).toHaveValue('תת סעיף א');
 });
 
@@ -164,7 +162,7 @@ test('dragging a section onto its sibling reorders both the outline and the pape
   await page.goto('/document/d1');
 
   const s1SectionTitles = page
-    .getByTestId(SUBJECT_BLOCK_IDS.root('s1'))
+    .locator('[data-subject-id="s1"]')
     .getByRole('textbox', { name: 'שם הסעיף' });
   await expect(s1SectionTitles.first()).toHaveValue('מטרת המסמך');
 
@@ -179,10 +177,10 @@ test('dragging a section onto another topic hands it over to that topic', async 
   await page.goto('/document/d1');
 
   const s1Sections = page
-    .getByTestId(SUBJECT_BLOCK_IDS.root('s1'))
+    .locator('[data-subject-id="s1"]')
     .getByRole('textbox', { name: 'שם הסעיף' });
   const s2Sections = page
-    .getByTestId(SUBJECT_BLOCK_IDS.root('s2'))
+    .locator('[data-subject-id="s2"]')
     .getByRole('textbox', { name: 'שם הסעיף' });
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-1'))).toBeVisible();
 
@@ -198,7 +196,7 @@ test("dropping a section on a topic's add link puts it last in that topic", asyn
   await page.goto('/document/d1');
 
   const s2Sections = page
-    .getByTestId(SUBJECT_BLOCK_IDS.root('s2'))
+    .locator('[data-subject-id="s2"]')
     .getByRole('textbox', { name: 'שם הסעיף' });
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.root('s1-1'))).toBeVisible();
 
@@ -227,10 +225,10 @@ test('dragging a sub-section onto another section hands it over to that section'
   );
 
   await expect(
-    page.getByTestId(SUBJECT_BLOCK_IDS.root('s1')).getByRole('textbox', { name: 'שם תת הסעיף' }),
+    page.locator('[data-subject-id="s1"]').getByRole('textbox', { name: 'שם תת הסעיף' }),
   ).toHaveCount(0);
   await expect(
-    page.getByTestId(SUBJECT_BLOCK_IDS.root('s2')).getByRole('textbox', { name: 'שם תת הסעיף' }),
+    page.locator('[data-subject-id="s2"]').getByRole('textbox', { name: 'שם תת הסעיף' }),
   ).toHaveValue('תת סעיף א');
 });
 
@@ -256,7 +254,7 @@ test('outline section numbers run on across topics, and agree with the sheet', a
   await revealOutlineRow(page, OUTLINE_SECTION_ROW_IDS.root('s3-1'));
   await expect(page.getByTestId(OUTLINE_SECTION_ROW_IDS.index('s3-1'))).toHaveText('5.');
 
-  await expect(page.getByTestId(SUBJECT_BLOCK_IDS.root('s3'))).toContainText('5.');
+  await expect(page.getByTestId(SECTION_BLOCK_IDS.root('s3-1'))).toContainText('5.');
 });
 
 test('sub-section letters restart in every section, as they do on the sheet', async ({ page }) => {

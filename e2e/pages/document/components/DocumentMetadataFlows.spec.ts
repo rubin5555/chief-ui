@@ -10,7 +10,6 @@ import { FILTER_PANEL_IDS } from '../../../../src/pages/document/components/Filt
 import { IMPORT_DOC_MODAL_IDS } from '../../../../src/pages/document/components/ImportDocModal/ImportDocModal.testids';
 import { RESTORE_MODAL_IDS } from '../../../../src/pages/document/components/RestoreModal/RestoreModal.testids';
 import { SECTION_MENU_IDS } from '../../../../src/pages/document/components/SectionMenu/SectionMenu.testids';
-import { SUBJECT_BLOCK_IDS } from '../../../../src/pages/document/components/SubjectBlock/SubjectBlock.testids';
 import { clickCentred } from '../../../support/interactions';
 
 test('editing document details updates the header, with a dirty warning', async ({ page }) => {
@@ -45,7 +44,7 @@ test('importing sections from another document adds them to the tree', async ({ 
   await expect(page.getByTestId(IMPORT_DOC_MODAL_IDS.root)).not.toBeVisible();
 
   const s1SectionTitles = page
-    .getByTestId(SUBJECT_BLOCK_IDS.root('s1'))
+    .locator('[data-subject-id="s1"]')
     .getByRole('textbox', { name: 'שם הסעיף' });
   await expect(s1SectionTitles.last()).toHaveValue('מטרה ורקע');
 });

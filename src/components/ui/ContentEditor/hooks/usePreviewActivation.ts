@@ -11,7 +11,6 @@ export const usePreviewActivation = (
   myId: string,
   id: string,
   disabled: boolean,
-  lockedByOther: boolean,
   selectionOnly: boolean,
 ) => {
   const previewRef = useRef<HTMLDivElement>(null);
@@ -34,8 +33,6 @@ export const usePreviewActivation = (
 
     if (selectionOnly) return;
 
-    if (lockedByOther) return;
-
     pendingSelectionRef.current = null;
     const root = previewRef.current;
     const selection = window.getSelection();
@@ -46,12 +43,10 @@ export const usePreviewActivation = (
     ctx.requestActivate(id, myId);
   };
 
-  // Enter starts editing, the way clicking does. Focus alone must not: tabbing
-  // through a document would then take — and hold — the lock on every section
-  // it passed.
+  // Enter starts editing, the way clicking does.
   const handlePreviewKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Enter') return;
-    if (disabled || !ctx || selectionOnly || lockedByOther) return;
+    if (disabled || !ctx || selectionOnly) return;
     e.preventDefault();
     pendingSelectionRef.current = null;
     ctx.requestActivate(id, myId);
@@ -68,7 +63,7 @@ export const usePreviewActivation = (
 
   const handlePreviewDrop = (e: React.DragEvent<HTMLDivElement>) => {
     setIsDragOver(false);
-    if (disabled || !ctx || lockedByOther) return;
+    if (disabled || !ctx) return;
     const chipHtml = e.dataTransfer.getData(CONTENT_CHIP_HTML_MIME);
     if (!chipHtml) return;
     e.preventDefault();

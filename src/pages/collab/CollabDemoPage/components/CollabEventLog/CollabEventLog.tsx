@@ -38,18 +38,6 @@ const describeMessage = (msg: CollabEventLogItem['message']): string => {
       return `fieldId: "${msg.fieldId}"`;
     case 'leave':
       return `fieldId: "${msg.fieldId}"`;
-    case 'lock:acquire':
-      return `בקשת נעילה לסעיף: "${msg.fieldId}"`;
-    case 'lock:release':
-      return `שחרור נעילה לסעיף: "${msg.fieldId}"`;
-    case 'lock:heartbeat':
-      return `heartbeat בסעיף: "${msg.fieldId}"`;
-    case 'lock:granted':
-      return `נעילה הוענקה למשתמש: ${msg.holderId} [${msg.fieldId}]`;
-    case 'lock:denied':
-      return `נעילה נדחתה [${msg.fieldId}], מוחזק ע״י: ${msg.holderId} (סיבה: ${msg.reason})`;
-    case 'lock:released':
-      return `נעילה שוחררה מסעיף: "${msg.fieldId}" (שוחרר ע״י: ${msg.holderId})`;
     case 'content':
       return `שידור תוכן מעודכן (${msg.html.length} תווים) [${msg.fieldId}]`;
     case 'cursor':

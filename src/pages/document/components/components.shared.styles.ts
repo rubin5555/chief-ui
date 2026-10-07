@@ -16,8 +16,8 @@ export const BodyRow = styled.div`
   overflow: hidden;
 `;
 
-export const SubjectRoot = styled.section<{ $highlighted: boolean }>`
-  margin-bottom: 10mm;
+export const SubjectRoot = styled.section<{ $highlighted: boolean; $isFirst?: boolean }>`
+  ${({ $isFirst }) => (!$isFirst ? 'margin-top: 5mm;' : '')}
   border-radius: ${radii.lg};
   outline: ${({ $highlighted }) => ($highlighted ? `2px solid ${docColors.searchHit}` : 'none')};
   outline-offset: 4px;

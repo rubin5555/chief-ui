@@ -1,3 +1,4 @@
+import { getRouteApi } from '@tanstack/react-router';
 import { useState } from 'react';
 import { PROFILE_FALLBACK, useProfile } from '@/api/profile';
 import { ContentEditorProvider } from '@/components/ui/ContentEditor';
@@ -19,6 +20,8 @@ import { SignatureGateProvider } from '../SignaturesSection';
 import { SourceSystemsNotice } from '../SourceSystemsNotice';
 import { DOCUMENT_CANVAS_IDS } from './DocumentCanvas.testids';
 
+const routeApi = getRouteApi('/document/$id');
+
 export interface DocumentCanvasProps {
   data: DocumentDto;
 }
@@ -37,6 +40,11 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
 
   const { data: profileData } = useProfile();
   const profile = profileData ?? PROFILE_FALLBACK;
+
+  const search = routeApi.useSearch();
+  const userParam = search && 'user' in search ? (search.user as string | undefined) : undefined;
+  const currentUserId = userParam || profile.id;
+  const currentUserName = userParam || profile.name;
 
   const canvasBody = (
     <ContentEditorProvider onAddFootnote={overrides.addFootnote}>
@@ -83,8 +91,10 @@ export const DocumentCanvas = ({ data }: DocumentCanvasProps) => {
     </ContentEditorProvider>
   );
 
-  return profile.id ? (
-    <CollabProvider userId={profile.id}>{canvasBody}</CollabProvider>
+  return currentUserId ? (
+    <CollabProvider userId={currentUserId} userName={currentUserName}>
+      {canvasBody}
+    </CollabProvider>
   ) : (
     canvasBody
   );

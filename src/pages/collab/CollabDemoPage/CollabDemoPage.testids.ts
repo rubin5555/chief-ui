@@ -5,9 +5,6 @@ export const COLLAB_DEMO_IDS = {
   userPanel: (userId: string) => `collab-user-panel-${userId}`,
   userStatus: (userId: string) => `collab-user-status-${userId}`,
   sectionCard: (userId: string, sectionId: string) => `collab-section-${userId}-${sectionId}`,
-  lockStatusBadge: (userId: string, sectionId: string) =>
-    `collab-lock-status-${userId}-${sectionId}`,
-  releaseBtn: (userId: string, sectionId: string) => `collab-release-btn-${userId}-${sectionId}`,
   resetBtn: 'collab-demo-reset-btn',
   eventLog: 'collab-demo-event-log',
   eventItem: (id: string) => `collab-event-${id}`,

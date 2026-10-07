@@ -11,6 +11,7 @@ const DEFAULTS = {
   zoom: ZOOM_DEFAULT,
   q: '',
   compareVersion: '',
+  user: '',
 } as const;
 
 const documentSearchSchema = z.object({
@@ -18,6 +19,7 @@ const documentSearchSchema = z.object({
   zoom: z.number().min(ZOOM_MIN).max(ZOOM_MAX).catch(DEFAULTS.zoom),
   q: z.string().catch(DEFAULTS.q),
   compareVersion: z.string().catch(DEFAULTS.compareVersion),
+  user: z.string().optional().catch(undefined),
 });
 
 export type DocumentSearch = z.infer<typeof documentSearchSchema>;

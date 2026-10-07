@@ -13,7 +13,6 @@ import {
 import { EditableSectionBody } from '../EditableSectionBody';
 import { useSectionChatCoordination } from '../SectionChat';
 import { useSectionNavigation } from '../SectionNavigation';
-import { SubSectionBlock } from '../SubSectionBlock';
 import { SectionHeader } from './components/SectionHeader';
 import { SectionStatusActions } from './components/SectionStatusActions';
 import { useSectionBlockAnalytics } from './SectionBlock.analytics';
@@ -24,7 +23,7 @@ export interface SectionBlockProps {
   subjectId: string;
   section: Section;
   number: number;
-  filteredSectionIds: Set<string>;
+  hasSubSections?: boolean;
   searchMatchIds: Set<string>;
   tree: ReturnType<typeof useDocumentTree>;
   overrides: ReturnType<typeof useDocumentOverrides>;
@@ -33,11 +32,12 @@ export interface SectionBlockProps {
   isDistributed: boolean;
 }
 
+// ponytail: SectionBlock is a single virtual item. Subsections are independent nodes in the virtual list.
 export const SectionBlock = ({
   subjectId,
   section,
   number,
-  filteredSectionIds,
+  hasSubSections,
   searchMatchIds,
   tree,
   overrides,
@@ -112,6 +112,8 @@ export const SectionBlock = ({
     <SectionRoot
       $highlighted={searchMatchIds.has(section.id)}
       $revealed={nav?.revealedNodeId === section.id}
+      $hasSubSections={hasSubSections}
+      data-subject-id={subjectId}
       {...{ [OUTLINE_NODE_ATTR]: section.id }}
       data-testid={SECTION_BLOCK_IDS.root(section.id)}
     >
@@ -155,22 +157,6 @@ export const SectionBlock = ({
           onRequestFix={handleRequestFix}
         />
       )}
-
-      {!meta.hidden &&
-        section.subSections.map((subSection, subSectionIndex) =>
-          filteredSectionIds.has(subSection.id) ? null : (
-            <SubSectionBlock
-              key={subSection.id}
-              subjectId={subjectId}
-              sectionId={section.id}
-              subSection={subSection}
-              index={subSectionIndex}
-              tree={tree}
-              overrides={overrides}
-              readOnly={readOnly}
-            />
-          ),
-        )}
     </SectionRoot>
   );
 };

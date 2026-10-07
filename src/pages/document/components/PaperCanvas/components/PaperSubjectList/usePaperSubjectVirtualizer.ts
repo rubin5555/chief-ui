@@ -2,9 +2,9 @@ import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual';
 import type { RefObject } from 'react';
 import { useLayoutEffect, useState } from 'react';
 
-const ESTIMATED_SUBJECT_HEIGHT = 420;
+const ESTIMATED_DEFAULT_HEIGHT = 140;
 
-const OVERSCAN = 2;
+const OVERSCAN = 8;
 
 interface PaperSubjectVirtualizerOptions {
   ids: string[];
@@ -12,6 +12,7 @@ interface PaperSubjectVirtualizerOptions {
   listRef: RefObject<HTMLElement | null>;
   zoomFactor: number;
   pinnedIndexes: number[];
+  estimateSize?: (index: number) => number;
 }
 
 export const usePaperSubjectVirtualizer = ({
@@ -20,6 +21,7 @@ export const usePaperSubjectVirtualizer = ({
   listRef,
   zoomFactor,
   pinnedIndexes,
+  estimateSize,
 }: PaperSubjectVirtualizerOptions) => {
   const [scrollMargin, setScrollMargin] = useState(0);
 
@@ -42,7 +44,8 @@ export const usePaperSubjectVirtualizer = ({
     getItemKey: (index) => ids[index],
 
     measureElement: (element) => element.getBoundingClientRect().height,
-    estimateSize: () => ESTIMATED_SUBJECT_HEIGHT * zoomFactor,
+    estimateSize: (index) =>
+      (estimateSize ? estimateSize(index) : ESTIMATED_DEFAULT_HEIGHT) * zoomFactor,
     overscan: OVERSCAN,
     scrollMargin,
 

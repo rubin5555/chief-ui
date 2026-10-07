@@ -19,7 +19,6 @@ import {
   EditorBody,
   EditorContent,
   EditorWrapper,
-  LockBadge,
   PreviewContent,
   PreviewWrapper,
 } from './ContentEditor.styles';
@@ -70,8 +69,11 @@ export const ContentEditor = ({
   const [localEditor, setLocalEditor] = useState<TinyMceEditor | null>(null);
   const [activeEditorInstance, setActiveEditorInstance] = useState<TinyMceEditor | null>(null);
 
-  const { ctx, collab, remoteLock, isLockHolderRef, lockedByOther, remoteCursor, broadcastChange } =
-    useContentEditorCollab(id, onChangeRef, value);
+  const { ctx, collab, remoteCursor, broadcastChange } = useContentEditorCollab(
+    id,
+    onChangeRef,
+    value,
+  );
 
   const isActive = !ctx || ctx.activeId === myId.current;
 
@@ -90,9 +92,9 @@ export const ContentEditor = ({
     handlePreviewDragLeave,
     handlePreviewDrop,
     applyPendingSelection,
-  } = usePreviewActivation(ctx, myId.current, id, disabled, lockedByOther, selectionOnly);
+  } = usePreviewActivation(ctx, myId.current, id, disabled, selectionOnly);
 
-  const handleEditorSetup = useTinyMceSetup(ctx, collab, id, isLockHolderRef, onChangeRef);
+  const handleEditorSetup = useTinyMceSetup(ctx, collab, id, onChangeRef);
 
   const handleEditorChange = (newValue: string) => {
     onChange(newValue);
@@ -107,9 +109,6 @@ export const ContentEditor = ({
     ownedEditorRef.current = null;
     setActiveEditorInstance(null);
     setEditorReady(false);
-    if (!collab?.locklessMode) {
-      collab?.releaseLock(id);
-    }
   };
 
   // The editor unmounts whenever this instance stops being the active one, and
@@ -254,17 +253,12 @@ export const ContentEditor = ({
             data-placeholder={placeholder}
             dangerouslySetInnerHTML={{ __html: value }}
           />
-          {remoteLock && (
-            <LockBadge data-testid={CONTENT_EDITOR_IDS.lockBadge}>
-              בעריכה על ידי {remoteLock.holderId}
-            </LockBadge>
-          )}
           {remoteCursor && (
             <CursorOverlay
               containerRef={previewRef}
               contentRef={previewRef}
               path={remoteCursor.path}
-              label={remoteCursor.userId || remoteLock?.holderId || ''}
+              label={remoteCursor.userId}
             />
           )}
         </PreviewWrapper>

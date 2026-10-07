@@ -128,7 +128,7 @@ test('the sheet places its topics in order and stays as long as the whole docume
 test('a topic being edited survives scrolling away from it', async ({ page }) => {
   await page.goto('/document/d1');
 
-  const title = page.getByTestId(SUBJECT_BLOCK_IDS.root('s1')).getByRole('textbox', {
+  const title = page.getByTestId(SECTION_BLOCK_IDS.root('s1-1')).getByRole('textbox', {
     name: 'שם הסעיף',
   });
   await title.first().fill('מטרת המסמך המעודכנת');

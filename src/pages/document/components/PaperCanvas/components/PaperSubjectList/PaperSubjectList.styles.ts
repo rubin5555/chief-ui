@@ -12,4 +12,5 @@ export const VirtualSubject = styled.div<{ $top: number }>`
 	inset-inline-start: 0;
 	width: 100%;
 	transform: translateY(${({ $top }) => $top}px);
+	display: flow-root;
 `;
