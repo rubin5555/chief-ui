@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  base: '/chief-ui/',
   plugins: [
     react(),
     tailwindcss(),
@@ -14,4 +15,8 @@ export default defineConfig({
     },
   },
   assetsInclude: ['**/*.svg', '**/*.csv'],
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+  },
 })
