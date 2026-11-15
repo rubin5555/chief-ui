@@ -35,6 +35,8 @@ interface TablePropertiesModalProps {
     options: {
       withHeader: boolean;
       striped: boolean;
+      width?: string;
+      height?: string;
     }
   ) => void;
 }
@@ -103,6 +105,8 @@ export const TablePropertiesModal: React.FC<TablePropertiesModalProps> = ({
 
   const [customRows, setCustomRows] = useState(4);
   const [customCols, setCustomCols] = useState(4);
+  const [customWidth, setCustomWidth] = useState('100%');
+  const [customHeight, setCustomHeight] = useState('');
   const [customWithHeader, setCustomWithHeader] = useState(true);
   const [customStriped, setCustomStriped] = useState(true);
   const [sourceCode, setSourceCode] = useState('');
@@ -137,7 +141,7 @@ export const TablePropertiesModal: React.FC<TablePropertiesModalProps> = ({
       }}
       className="tiny-quill-root fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs"
     >
-      <div className="w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <div className="w-[520px] max-w-[95vw] max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3.5">
           <div className="flex items-center gap-2.5">
@@ -227,11 +231,15 @@ export const TablePropertiesModal: React.FC<TablePropertiesModalProps> = ({
             <CustomTableDialog
               rows={customRows}
               cols={customCols}
+              width={customWidth}
+              height={customHeight}
               withHeader={customWithHeader}
               striped={customStriped}
               translations={translations}
               onChangeRows={setCustomRows}
               onChangeCols={setCustomCols}
+              onChangeWidth={setCustomWidth}
+              onChangeHeight={setCustomHeight}
               onChangeWithHeader={setCustomWithHeader}
               onChangeStriped={setCustomStriped}
             />
@@ -264,6 +272,8 @@ export const TablePropertiesModal: React.FC<TablePropertiesModalProps> = ({
                 onInsertCustomTable(customRows, customCols, {
                   withHeader: customWithHeader,
                   striped: customStriped,
+                  width: customWidth,
+                  height: customHeight,
                 });
               }
               onClose();

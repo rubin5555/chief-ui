@@ -79,6 +79,8 @@ export function useTableActions({
       options?: {
         withHeader?: boolean;
         striped?: boolean;
+        width?: string;
+        height?: string;
       }
     ) => {
       const quill = quillInstanceRef.current;
@@ -87,6 +89,8 @@ export function useTableActions({
       const html = createNewTableHTML(rows, cols, {
         withHeader: options?.withHeader ?? false,
         striped: options?.striped ?? false,
+        width: options?.width,
+        height: options?.height,
       });
       const range = quill.getSelection(true) || { index: Math.max(0, quill.getLength() - 1), length: 0 };
 

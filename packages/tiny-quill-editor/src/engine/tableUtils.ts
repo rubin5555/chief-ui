@@ -155,11 +155,15 @@ export function createNewTableHTML(
   options?: {
     withHeader?: boolean;
     striped?: boolean;
+    width?: string;
+    height?: string;
   }
 ): string {
   const tableId = generateTableId();
   const withHeader = options?.withHeader ?? true;
   const striped = options?.striped ?? false;
+  const width = options?.width || '100%';
+  const heightStyle = options?.height ? `height: ${options.height};` : '';
 
   const colPct = `${(100 / cols).toFixed(2)}%`;
   const colgroupHTML = `<colgroup>${Array.from({ length: cols }, () => `<col style="width: ${colPct};">`).join('')}</colgroup>`;
@@ -188,7 +192,7 @@ export function createNewTableHTML(
   const classes = ['ql-tiny-table', 'ql-tiny-table-hover'];
   if (striped) classes.push('ql-tiny-table-striped');
 
-  return `<table data-table-id="${tableId}" class="${classes.join(' ')}" style="width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1;">${colgroupHTML}${theadHTML}<tbody>${tbodyRows}</tbody></table>`;
+  return `<table data-table-id="${tableId}" class="${classes.join(' ')}" style="width: ${width}; ${heightStyle} border-collapse: collapse; border: 1px solid #cbd5e1;">${colgroupHTML}${theadHTML}<tbody>${tbodyRows}</tbody></table>`;
 }
 
 /**
