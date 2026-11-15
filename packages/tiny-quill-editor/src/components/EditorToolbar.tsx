@@ -123,8 +123,9 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onOpenModal,
 }) => {
   const btnClass =
-    'rounded-md p-1.5 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none';
-  const activeBtnClass = 'rounded-md p-1.5 bg-blue-50 text-blue-600 disabled:opacity-40 disabled:pointer-events-none';
+    'rounded-md p-1.5 text-slate-700 hover:bg-slate-100 disabled:text-slate-300 disabled:cursor-not-allowed';
+  const activeBtnClass =
+    'rounded-md p-1.5 bg-blue-50 text-blue-600 disabled:text-slate-300 disabled:cursor-not-allowed';
 
   return (
     <div
@@ -167,7 +168,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         onClick={() => onTriggerFormatPainter(false)}
         onDoubleClick={() => onTriggerFormatPainter(true)}
         title={t.toolbar.formatPainterTitle}
-        className={`relative rounded-md p-1.5 transition disabled:opacity-40 disabled:pointer-events-none ${
+        className={`relative rounded-md p-1.5 transition disabled:text-slate-300 disabled:cursor-not-allowed ${
           isFormatPainterActive
             ? 'bg-blue-600 text-white shadow-xs'
             : 'text-slate-700 hover:bg-slate-100'
@@ -183,7 +184,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         disabled={disabled}
         defaultValue="P"
         onChange={(e) => onApplyFormat('formatBlock', e.target.value)}
-        className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 hover:border-slate-300 focus:border-blue-500 focus:outline-none disabled:opacity-40"
+        className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 hover:border-slate-300 focus:border-blue-500 focus:outline-none disabled:text-slate-300 disabled:cursor-not-allowed"
       >
         <option value="P">{t.toolbar.paragraph}</option>
         <option value="H1">{t.toolbar.heading1}</option>
@@ -276,7 +277,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           title={t.toolbar.textColor}
           className={`flex items-center ${btnClass}`}
         >
-          <Baseline className="h-4 w-4 text-blue-600" />
+          <Baseline className={`h-4 w-4 ${disabled ? 'text-slate-300' : 'text-blue-600'}`} />
         </button>
         {showTextColorPopover && !disabled && (
           <div
@@ -320,7 +321,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           title={t.toolbar.highlightColor}
           className={`flex items-center ${btnClass}`}
         >
-          <PaintBucket className="h-4 w-4 text-amber-500" />
+          <PaintBucket className={`h-4 w-4 ${disabled ? 'text-slate-300' : 'text-amber-500'}`} />
         </button>
         {showBgColorPopover && !disabled && (
           <div
@@ -447,7 +448,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           title={t.menubar.insertCallout}
           className={btnClass}
         >
-          <Info className="h-4 w-4 text-blue-600" />
+          <Info className={`h-4 w-4 ${disabled ? 'text-slate-300' : 'text-blue-600'}`} />
         </button>
       )}
       {onInsertDivider && (
@@ -472,13 +473,13 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           data-testid="editor-ribbon-table"
           onClick={() => setShowTablePicker((v) => !v)}
           title={t.toolbar.insertTable}
-          className={`flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold transition disabled:opacity-40 disabled:pointer-events-none ${
+          className={`flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold transition disabled:text-slate-300 disabled:cursor-not-allowed ${
             showTablePicker || activeTable
               ? 'border-blue-300 bg-blue-50 text-blue-700'
               : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
           }`}
         >
-          <TableIcon className="h-3.5 w-3.5 text-blue-600" />
+          <TableIcon className={`h-3.5 w-3.5 ${disabled ? 'text-slate-300' : 'text-blue-600'}`} />
           <span>{t.menubar.table} ▾</span>
         </button>
 
@@ -517,7 +518,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         disabled={disabled}
         onClick={() => setShowVisualAids((v) => !v)}
         title={t.menubar.visualAids}
-        className={`rounded-md p-1.5 text-xs disabled:opacity-40 disabled:pointer-events-none ${
+        className={`rounded-md p-1.5 text-xs disabled:text-slate-300 disabled:cursor-not-allowed ${
           showVisualAids
             ? 'bg-blue-50 text-blue-600'
             : 'text-slate-500 hover:bg-slate-100'
@@ -533,7 +534,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         data-testid="editor-ribbon-find-replace"
         onClick={() => setShowFindReplace((v) => !v)}
         title={t.menubar.findReplace}
-        className={`rounded-md p-1.5 disabled:opacity-40 disabled:pointer-events-none ${
+        className={`rounded-md p-1.5 disabled:text-slate-300 disabled:cursor-not-allowed ${
           showFindReplace
             ? 'bg-blue-50 text-blue-600'
             : 'text-slate-600 hover:bg-slate-100'

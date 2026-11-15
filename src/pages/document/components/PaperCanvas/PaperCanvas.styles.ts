@@ -30,6 +30,7 @@ export const StickyToolbar = styled.div<{ $zoom: number }>`
   top: 0;
   z-index: 100;
   width: ${PAPER_WIDTH};
+  background-color: ${colors.surface};
   overflow: visible;
   zoom: ${({ $zoom }) => $zoom / 100};
   ${zoomMotion}
