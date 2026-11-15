@@ -86,6 +86,9 @@ export const StatusDot = styled.span<{ $connected: boolean }>`
 `;
 
 export const ToolbarSlot = styled.div`
+  position: relative;
+  z-index: 20;
+  overflow: visible;
   padding: 8px 14px;
   background: ${colors.surface};
   border-bottom: 1px solid ${colors.border};

@@ -28,6 +28,7 @@ export const TableGridPicker: React.FC<TableGridPickerProps> = ({
 
   return (
     <div
+      data-editor-ribbon=""
       data-testid="editor-ribbon-table-picker"
       style={{ zIndex: 99999 }}
       onMouseDown={(e) => e.preventDefault()}

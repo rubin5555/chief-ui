@@ -28,9 +28,9 @@ export const Centered = styled.div`
 export const StickyToolbar = styled.div<{ $zoom: number }>`
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 100;
   width: ${PAPER_WIDTH};
-  overflow: hidden;
+  overflow: visible;
   zoom: ${({ $zoom }) => $zoom / 100};
   ${zoomMotion}
 
@@ -41,6 +41,7 @@ export const StickyToolbar = styled.div<{ $zoom: number }>`
 
 export const Paper = styled.div<{ $zoom: number }>`
   position: relative;
+  z-index: 1;
   width: ${PAPER_WIDTH};
   min-height: ${PAPER_MIN_HEIGHT};
   background-color: ${colors.surface};

@@ -280,6 +280,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         </button>
         {showTextColorPopover && !disabled && (
           <div
+            data-editor-ribbon=""
             data-testid="editor-ribbon-color-menu-text"
             style={{ zIndex: 99999 }}
             className="absolute top-full ltr:left-0 rtl:right-0 mt-1 w-44 rounded-xl border border-slate-200 bg-white p-2.5 shadow-xl z-50"
@@ -323,6 +324,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         </button>
         {showBgColorPopover && !disabled && (
           <div
+            data-editor-ribbon=""
             data-testid="editor-ribbon-color-menu-highlight"
             style={{ zIndex: 99999 }}
             className="absolute top-full ltr:left-0 rtl:right-0 mt-1 w-44 rounded-xl border border-slate-200 bg-white p-2.5 shadow-xl z-50"
@@ -481,7 +483,11 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
         </button>
 
         {showTablePicker && !disabled && (
-          <div style={{ zIndex: 99999 }} className="absolute top-full ltr:left-0 rtl:right-0 mt-1.5 z-50">
+          <div
+            data-editor-ribbon=""
+            style={{ zIndex: 99999 }}
+            className="absolute top-full ltr:left-0 rtl:right-0 mt-1.5 z-50"
+          >
             <TableGridPicker
               translations={t}
               onSelectGrid={(r, c) => onInsertTable(r, c, { withHeader: false })}

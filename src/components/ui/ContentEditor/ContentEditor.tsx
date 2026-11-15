@@ -90,6 +90,7 @@ export const ContentEditor = ({
 
   const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
     if (disableBlurDeactivate) return;
+    if (document.querySelector('[data-modal-container="true"]')) return;
 
     const next = e.relatedTarget as Element | null;
     if (next && wrapperRef.current?.contains(next)) return;
