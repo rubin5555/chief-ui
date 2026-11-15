@@ -73,3 +73,19 @@ test('leaving the section takes the ribbon down with it', async ({ page }) => {
   await expect(body.locator('[contenteditable="true"]')).toHaveCount(0);
   await expect(bold).toBeDisabled();
 });
+
+test('focusing a large multi-hundred-row table section does not crash', async ({ page }) => {
+  await page.goto('/document/d-large');
+
+  const largeBody = page.getByTestId(EDITABLE_SECTION_BODY_IDS.content('sec-2-1'));
+  await expect(largeBody).toBeVisible();
+
+  await largeBody.locator('td').first().click();
+  await expect(largeBody.getByTestId('tiny-quill-editor-root')).toBeVisible();
+  await expect(largeBody.locator('table.ql-tiny-table tr')).toHaveCount(232);
+
+  const firstDataCell = largeBody.locator('table.ql-tiny-table td').first();
+  await firstDataCell.click();
+  await expect(firstDataCell).toHaveClass(/ql-tiny-cell-selected/);
+  await expect(firstDataCell.locator('.ql-tiny-cell-editor')).toHaveCount(1);
+});

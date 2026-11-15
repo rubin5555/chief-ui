@@ -4,6 +4,15 @@ import { applyTextDiff } from '@/collab/yjsUtils';
 import { useCollabContext } from '@/context/CollabContext';
 import { useContentEditorContext } from '@/context/ContentEditorContext';
 
+// ponytail: deterministic clientID=1 seed makes initial HTML idempotent across peers
+const seedYDoc = (ydoc: Y.Doc, text: string) => {
+  if (!text || ydoc.getText('content').length > 0) return;
+  const seed = new Y.Doc();
+  seed.clientID = 1;
+  seed.getText('content').insert(0, text);
+  Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(seed), 'seed');
+};
+
 export const useContentEditorCollab = (
   id: string,
   onChangeRef: React.RefObject<(v: string) => void>,
@@ -24,10 +33,11 @@ export const useContentEditorCollab = (
   const ydocRef = useRef<Y.Doc | null>(null);
   if (!ydocRef.current) {
     ydocRef.current = new Y.Doc();
+    seedYDoc(ydocRef.current, initialValue);
   }
 
   const isApplyingRemoteRef = useRef(false);
-  const hasSyncedRef = useRef(false);
+  const serverHasStateRef = useRef(false);
 
   useEffect(() => {
     if (!collabRef.current) return;
@@ -46,19 +56,16 @@ export const useContentEditorCollab = (
 
       isApplyingRemoteRef.current = true;
       try {
-        Y.applyUpdate(ydoc, update, 'remote');
-        hasSyncedRef.current = true;
-        const currentLen = ydoc.getText('content').length;
-
-        // If doc is still empty after first server sync and we have initial content, seed it
-        if (currentLen === 0 && initialValueRef.current) {
-          ydoc.getText('content').insert(0, initialValueRef.current);
-          const seedUpdate = Y.encodeStateAsUpdate(ydoc);
-          collab.sendYjsUpdate(id, Array.from(seedUpdate));
-        } else if (currentLen > 0) {
-          const mergedHtml = ydoc.getText('content').toString();
-          onChangeRef.current(mergedHtml);
+        const incomingDoc = new Y.Doc();
+        Y.applyUpdate(incomingDoc, update);
+        if (incomingDoc.getText('content').length === 0) {
+          seedYDoc(ydoc, initialValueRef.current);
+          return;
         }
+        serverHasStateRef.current = true;
+        Y.applyUpdate(ydoc, update, 'remote');
+        const mergedHtml = ydoc.getText('content').toString();
+        onChangeRef.current(mergedHtml);
       } finally {
         isApplyingRemoteRef.current = false;
       }
@@ -67,31 +74,22 @@ export const useContentEditorCollab = (
     return unsubscribe;
   }, [collab, id, onChangeRef]);
 
-  // Fallback: If no server update arrives after 400ms on initial mount, seed initialValue
-  useEffect(() => {
-    if (!collab) return;
-    const timer = setTimeout(() => {
-      if (!hasSyncedRef.current) {
-        const ydoc = ydocRef.current;
-        if (ydoc && ydoc.getText('content').length === 0 && initialValueRef.current) {
-          ydoc.getText('content').insert(0, initialValueRef.current);
-          const seedUpdate = Y.encodeStateAsUpdate(ydoc);
-          collab.sendYjsUpdate(id, Array.from(seedUpdate));
-        }
-        hasSyncedRef.current = true;
-      }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [collab, id]);
-
   const broadcastChange = (newValue: string) => {
     if (!collab) return;
     if (isApplyingRemoteRef.current) return;
     const ydoc = ydocRef.current;
     if (!ydoc) return;
+    seedYDoc(ydoc, initialValueRef.current);
     const ytext = ydoc.getText('content');
     const oldStr = ytext.toString();
     if (oldStr === newValue) return;
+
+    if (!serverHasStateRef.current) {
+      applyTextDiff(ytext, oldStr, newValue);
+      serverHasStateRef.current = true;
+      collab.sendYjsUpdate(id, Array.from(Y.encodeStateAsUpdate(ydoc)));
+      return;
+    }
 
     ydoc.once('update', (update: Uint8Array, origin: unknown) => {
       if (origin === 'local') {

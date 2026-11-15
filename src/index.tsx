@@ -6,6 +6,8 @@ import { apolloClient } from './api/client';
 import { routeTree } from './routeTree.gen';
 import { GlobalStyles } from './styles/GlobalStyles';
 import './styles/theme.css';
+import 'quill/dist/quill.core.css';
+import '@workspace/tiny-quill-editor/styles.css';
 
 const router = createRouter({ routeTree });
 

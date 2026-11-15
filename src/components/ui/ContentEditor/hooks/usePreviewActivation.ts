@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import type { CursorPath } from '@/collab/types';
 import type { ContentEditorContextValue } from '@/context/ContentEditorContext';
 import { CONTENT_CHIP_HTML_MIME, CONTENT_CHIP_MIME } from '../ContentEditor.constants';
-import type { TinyMceEditor } from '../ContentEditor.types';
 import { caretRangeAtPoint } from '../utils/domCaret';
 import { clampOffset, getNodePath, resolveNodePath, serializeSelection } from '../utils/nodePath';
 
@@ -87,31 +86,39 @@ export const usePreviewActivation = (
     ctx.requestActivate(id, myId);
   };
 
-  const applyPendingSelection = (editor: TinyMceEditor) => {
+  const applyPendingSelection = (body: HTMLElement, insertHTML?: (html: string) => void) => {
     const pending = pendingSelectionRef.current;
     pendingSelectionRef.current = null;
     const pendingInsert = pendingInsertHtmlRef.current;
     pendingInsertHtmlRef.current = null;
     if (!pending && !pendingInsert) return;
 
-    const body = editor.getBody();
-    if (!body) return;
-
     if (pending) {
       const startNode = resolveNodePath(body, pending.startPath);
       const endNode = resolveNodePath(body, pending.endPath);
-      if (startNode && endNode) {
+      const startEl =
+        startNode === body
+          ? (body.childNodes[clampOffset(body, pending.startOffset)] as Element | undefined)
+          : startNode instanceof Element
+            ? startNode
+            : startNode?.parentElement;
+      // ponytail: skip restoring preview selection when it lands on non-editable table wrapper
+      const inNonEditable =
+        Boolean(startEl?.closest?.('[contenteditable="false"]')) &&
+        !startEl?.closest?.('.ql-tiny-cell-editor');
+      if (startNode && endNode && !inNonEditable) {
         try {
           const range = document.createRange();
           range.setStart(startNode, clampOffset(startNode, pending.startOffset));
           range.setEnd(endNode, clampOffset(endNode, pending.endOffset));
-          editor.selection.setRng(range);
-          editor.nodeChanged();
+          const sel = window.getSelection();
+          sel?.removeAllRanges();
+          sel?.addRange(range);
         } catch {}
       }
     }
 
-    if (pendingInsert) editor.insertContent(pendingInsert);
+    if (pendingInsert && insertHTML) insertHTML(pendingInsert);
   };
 
   return {

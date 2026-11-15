@@ -51,6 +51,7 @@ export class RoomManager {
     let doc = this.ydocs.get(fieldId);
     if (!doc) {
       doc = new Y.Doc();
+      doc.clientID = 1;
       const existing = store.getField(fieldId);
       if (existing?.content) {
         doc.getText('content').insert(0, existing.content);

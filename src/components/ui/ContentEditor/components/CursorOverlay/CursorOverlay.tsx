@@ -97,9 +97,12 @@ export const CursorOverlay = ({
 
     updateRect();
     const raf = requestAnimationFrame(updateRect);
+    const observer = new MutationObserver(updateRect);
+    observer.observe(contentEl, { childList: true, subtree: true, characterData: true });
     window.addEventListener('resize', updateRect);
     return () => {
       cancelAnimationFrame(raf);
+      observer.disconnect();
       window.removeEventListener('resize', updateRect);
     };
   }, [path, contentRef, containerRef]);

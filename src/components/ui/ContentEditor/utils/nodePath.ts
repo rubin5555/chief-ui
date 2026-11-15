@@ -42,7 +42,9 @@ export const getNodePath = (root: Node, node: Node): number[] | null => {
 export const resolveNodePath = (root: Node, path: number[]): Node | null => {
   let current: Node = root;
   for (const index of path) {
-    const child = significantChildren(current)[index];
+    const children = significantChildren(current);
+    if (children.length === 0) return null;
+    const child = children[Math.min(index, children.length - 1)];
     if (!child) return null;
     current = child;
   }

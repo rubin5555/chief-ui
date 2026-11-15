@@ -20,6 +20,9 @@ importers:
       '@tanstack/react-virtual':
         specifier: ^3.14.9
         version: 3.14.9(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@workspace/tiny-quill-editor':
+        specifier: workspace:*
+        version: link:packages/tiny-quill-editor
       graphql:
         specifier: ^16.14.2
         version: 16.14.2
@@ -65,7 +68,7 @@ importers:
         version: 2.0.2(@rspack/core@2.1.8)(react-refresh@0.16.0)
       '@tanstack/react-form-devtools':
         specifier: ^0.2.32
-        version: 0.2.32(@types/react@19.2.18)(csstype@3.2.3)(react@19.2.7)(solid-js@1.9.14)
+        version: 0.2.32(@types/react@19.2.18)(csstype@3.2.3)(preact@10.29.8)(react@19.2.7)(solid-js@1.9.14)
       '@tanstack/react-router-devtools':
         specifier: ^1.167.0
         version: 1.167.0(@tanstack/react-router@1.170.18(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(@tanstack/router-core@1.171.15)(csstype@3.2.3)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -90,6 +93,31 @@ importers:
       typescript:
         specifier: 7.0.1-rc
         version: 7.0.1-rc
+
+  packages/tiny-quill-editor:
+    dependencies:
+      lucide-react:
+        specifier: '>=0.300.0 || ^1.0.0'
+        version: 0.487.0(react@19.2.7)
+      quill:
+        specifier: ^2.0.0
+        version: 2.0.3
+      react:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.7
+      react-dom:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@types/react':
+        specifier: ^19
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.4(@types/react@19.2.18)
+      typescript:
+        specifier: ^5
+        version: 5.9.3
 
 packages:
 
@@ -1125,6 +1153,14 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
+  preact@10.29.8:
+    resolution: {integrity: sha512-ej2aVZ+vZ8WO7tvlQWRM9N63A0KzF9q4mWJfDUHgYaIofWY9hu74QdnQrjoPMmZi2/nZ5gN0bJCQF49xQqx09Q==}
+    peerDependencies:
+      preact-render-to-string: '>=5'
+    peerDependenciesMeta:
+      preact-render-to-string:
+        optional: true
+
   prettier@3.9.6:
     resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
     engines: {node: '>=14'}
@@ -1267,6 +1303,11 @@ packages:
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   typescript@7.0.1-rc:
     resolution: {integrity: sha512-drEP77wK7CCDlPfXZH4e008UUQOsw1DFmHmZOZjuNA+yoDLLnSNMZRXi90NbV/1LVo7SbNLq1bs3jjvk49TEqQ==}
@@ -1778,9 +1819,10 @@ snapshots:
     transitivePeerDependencies:
       - csstype
 
-  '@tanstack/devtools-utils@0.4.0(@types/react@19.2.18)(react@19.2.7)(solid-js@1.9.14)':
+  '@tanstack/devtools-utils@0.4.0(@types/react@19.2.18)(preact@10.29.8)(react@19.2.7)(solid-js@1.9.14)':
     optionalDependencies:
       '@types/react': 19.2.18
+      preact: 10.29.8
       react: 19.2.7
       solid-js: 1.9.14
 
@@ -1790,10 +1832,10 @@ snapshots:
       '@tanstack/pacer-lite': 0.1.1
       '@tanstack/store': 0.11.0
 
-  '@tanstack/form-devtools@0.2.32(@types/react@19.2.18)(csstype@3.2.3)(react@19.2.7)(solid-js@1.9.14)':
+  '@tanstack/form-devtools@0.2.32(@types/react@19.2.18)(csstype@3.2.3)(preact@10.29.8)(react@19.2.7)(solid-js@1.9.14)':
     dependencies:
       '@tanstack/devtools-ui': 0.5.3(csstype@3.2.3)(solid-js@1.9.14)
-      '@tanstack/devtools-utils': 0.4.0(@types/react@19.2.18)(react@19.2.7)(solid-js@1.9.14)
+      '@tanstack/devtools-utils': 0.4.0(@types/react@19.2.18)(preact@10.29.8)(react@19.2.7)(solid-js@1.9.14)
       '@tanstack/form-core': 1.33.3
       clsx: 2.1.1
       dayjs: 1.11.21
@@ -1810,10 +1852,10 @@ snapshots:
 
   '@tanstack/pacer-lite@0.1.1': {}
 
-  '@tanstack/react-form-devtools@0.2.32(@types/react@19.2.18)(csstype@3.2.3)(react@19.2.7)(solid-js@1.9.14)':
+  '@tanstack/react-form-devtools@0.2.32(@types/react@19.2.18)(csstype@3.2.3)(preact@10.29.8)(react@19.2.7)(solid-js@1.9.14)':
     dependencies:
-      '@tanstack/devtools-utils': 0.4.0(@types/react@19.2.18)(react@19.2.7)(solid-js@1.9.14)
-      '@tanstack/form-devtools': 0.2.32(@types/react@19.2.18)(csstype@3.2.3)(react@19.2.7)(solid-js@1.9.14)
+      '@tanstack/devtools-utils': 0.4.0(@types/react@19.2.18)(preact@10.29.8)(react@19.2.7)(solid-js@1.9.14)
+      '@tanstack/form-devtools': 0.2.32(@types/react@19.2.18)(csstype@3.2.3)(preact@10.29.8)(react@19.2.7)(solid-js@1.9.14)
       react: 19.2.7
     transitivePeerDependencies:
       - '@types/react'
@@ -2282,6 +2324,9 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.2
 
+  preact@10.29.8:
+    optional: true
+
   prettier@3.9.6: {}
 
   prop-types@15.8.1:
@@ -2393,6 +2438,8 @@ snapshots:
       tslib: 2.8.1
 
   tslib@2.8.1: {}
+
+  typescript@5.9.3: {}
 
   typescript@7.0.1-rc:
     optionalDependencies:

@@ -42,6 +42,14 @@ const richTextContent = css`
 			background: ${gray[50]};
 			font-weight: 600;
 		}
+		td[data-selected-cell='true'],
+		th[data-selected-cell='true'],
+		td[data-mce-selected='1'],
+		th[data-mce-selected='1'] {
+			outline: 2px solid ${colors.primary};
+			outline-offset: -2px;
+			box-shadow: inset 0 0 0 9999px color-mix(in srgb, ${colors.primary} 25%, transparent);
+		}
 	}
 
 	caption.jt-caption {
@@ -82,7 +90,7 @@ export const EditorWrapper = styled.div<{ $inset: boolean }>`
 	flex-direction: column;
 	border: 1px solid ${({ $inset }) => ($inset ? docColors.hairline : gray[200])};
 	border-radius: ${radii.xl};
-	overflow: hidden;
+	overflow: visible;
 	box-shadow: ${({ $inset }) => ($inset ? 'none' : shadows.sm)};
 	background: ${({ $inset }) => ($inset ? gray[50] : colors.surface)};
 	transition:

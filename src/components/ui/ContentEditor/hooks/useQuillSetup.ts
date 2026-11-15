@@ -1,18 +1,13 @@
+import { exportCleanHTML } from '@workspace/tiny-quill-editor';
 import { useRef } from 'react';
 import type { CollabContextValue } from '@/context/CollabContext';
-import type { ContentEditorContextValue } from '@/context/ContentEditorContext';
 import { CONTENT_CHIP_HTML_MIME, CONTENT_CHIP_MIME } from '../ContentEditor.constants';
-import type {
-  ContentEditorInstance,
-  EditorClickEvent,
-  EditorDragEvent,
-} from '../ContentEditor.types';
+import { caretRangeAtPoint } from '../utils/domCaret';
 import { serializeSelection } from '../utils/nodePath';
 
 const CURSOR_SEND_DEBOUNCE_MS = 150;
 
 export const useQuillSetup = (
-  ctx: ContentEditorContextValue | null,
   collab: CollabContextValue | null,
   id: string,
   onChangeRef: React.RefObject<(v: string) => void>,
@@ -20,55 +15,37 @@ export const useQuillSetup = (
   const collabRef = useRef(collab);
   collabRef.current = collab;
 
-  const handleUndoRedoSetup = (editor: ContentEditorInstance) => {
-    if (!ctx) return;
-
-    editor.on('AddUndo', () => {
-      ctx.pushHistoryLevel(id, editor.getContent());
+  const handleEditorSetup = (
+    body: HTMLElement,
+    // biome-ignore lint/suspicious/noExplicitAny: Quill instance
+    quill: any,
+    insertHTML: (html: string) => void,
+  ) => {
+    body.addEventListener('dragover', (e: DragEvent) => {
+      if (e.dataTransfer?.types.includes(CONTENT_CHIP_MIME)) e.preventDefault();
     });
 
-    editor.addCommand('Undo', () => {
-      const prev = ctx.undoHistory(id);
-      if (prev === null) return;
-      editor.undoManager.ignore(() => editor.setContent(prev));
-      onChangeRef.current(prev);
-      editor.nodeChanged();
-    });
-
-    editor.addCommand('Redo', () => {
-      const next = ctx.redoHistory(id);
-      if (next === null) return;
-      editor.undoManager.ignore(() => editor.setContent(next));
-      onChangeRef.current(next);
-      editor.nodeChanged();
-    });
-  };
-
-  const handleChipSetup = (editor: ContentEditorInstance) => {
-    editor.on('dragover', (e: unknown) => {
-      const dragEvent = e as EditorDragEvent;
-      if (dragEvent.dataTransfer?.types.includes(CONTENT_CHIP_MIME)) dragEvent.preventDefault();
-    });
-
-    editor.on('drop', (e: unknown) => {
-      const dragEvent = e as EditorDragEvent;
-      const chipHtml = dragEvent.dataTransfer?.getData(CONTENT_CHIP_HTML_MIME);
+    body.addEventListener('drop', (e: DragEvent) => {
+      const chipHtml = e.dataTransfer?.getData(CONTENT_CHIP_HTML_MIME);
       if (!chipHtml) return;
-      dragEvent.preventDefault();
-      editor.selection.placeCaretAt(dragEvent.clientX, dragEvent.clientY);
-      editor.insertContent(chipHtml);
+      e.preventDefault();
+      const range = caretRangeAtPoint(e.clientX, e.clientY);
+      if (range && body.contains(range.startContainer)) {
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
+      insertHTML(chipHtml);
     });
 
-    editor.on('click', (e: unknown) => {
-      const clickEvent = e as EditorClickEvent;
-      const target = clickEvent.target instanceof Element ? clickEvent.target : null;
+    body.addEventListener('click', (e: MouseEvent) => {
+      const target = e.target instanceof Element ? e.target : null;
 
       const removeBtn = target?.closest('[data-chip-remove]');
       if (removeBtn) {
         removeBtn.closest('[data-chip-id]')?.remove();
-
-        editor.undoManager.add();
-        onChangeRef.current(editor.getContent());
+        quill?.update?.('silent');
+        onChangeRef.current(exportCleanHTML(body));
         return;
       }
 
@@ -82,35 +59,29 @@ export const useQuillSetup = (
         replacement.append(...Array.from(listEl.childNodes));
         listEl.replaceWith(replacement);
         container.setAttribute('data-chip-ordered', String(nextOrdered));
-        editor.undoManager.add();
-        onChangeRef.current(editor.getContent());
+        quill?.update?.('silent');
+        onChangeRef.current(exportCleanHTML(body));
       }
     });
-  };
 
-  const handleCursorSetup = (editor: ContentEditorInstance) => {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    const send = () => {
+    let lastValidPath: ReturnType<typeof serializeSelection> = null;
+    const sendCursor = () => {
       const current = collabRef.current;
       if (!current) return;
-
+      const immediatePath = serializeSelection(body, window.getSelection());
+      if (immediatePath) lastValidPath = immediatePath;
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        const body = editor.getBody();
-        if (!body) return;
-        const rng = editor.selection?.getRng() ?? window.getSelection();
-        const path = serializeSelection(body, rng);
+        const path = serializeSelection(body, window.getSelection()) ?? lastValidPath;
         if (path) current.sendCursor(id, path);
       }, CURSOR_SEND_DEBOUNCE_MS);
     };
 
-    editor.on('SelectionChange NodeChange keyup mouseup click', send);
-  };
-
-  const handleEditorSetup = (editor: ContentEditorInstance) => {
-    handleUndoRedoSetup(editor);
-    handleChipSetup(editor);
-    handleCursorSetup(editor);
+    body.addEventListener('keyup', sendCursor);
+    body.addEventListener('mouseup', sendCursor);
+    body.addEventListener('click', sendCursor);
+    quill?.on?.('editor-change', sendCursor);
   };
 
   return handleEditorSetup;

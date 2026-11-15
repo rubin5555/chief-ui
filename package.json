@@ -21,6 +21,7 @@
 		"@tanstack/react-form": "^1.33.3",
 		"@tanstack/react-router": "^1.170.18",
 		"@tanstack/react-virtual": "^3.14.9",
+		"@workspace/tiny-quill-editor": "workspace:*",
 		"graphql": "^16.14.2",
 		"lucide-react": "^0.487.0",
 		"quill": "^2.0.3",

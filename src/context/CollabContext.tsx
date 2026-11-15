@@ -97,11 +97,6 @@ export const CollabProvider = ({
     });
     clientRef.current = client;
 
-    for (const fieldId of joinedFieldsRef.current) {
-      send({ type: 'join', fieldId });
-      send({ type: 'yjs:sync', fieldId });
-    }
-
     const unsubscribe = client.onMessage((message: CollabMessage) => {
       emitEvent('in', message);
       switch (message.type) {
