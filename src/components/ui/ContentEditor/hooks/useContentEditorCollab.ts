@@ -1,75 +1,110 @@
 import { useEffect, useRef } from 'react';
+import * as Y from 'yjs';
+import { applyTextDiff } from '@/collab/yjsUtils';
 import { useCollabContext } from '@/context/CollabContext';
 import { useContentEditorContext } from '@/context/ContentEditorContext';
 
-const HEARTBEAT_INTERVAL_MS = 8000;
+// ponytail: deterministic clientID=1 seed makes initial HTML idempotent across peers
+const seedYDoc = (ydoc: Y.Doc, text: string) => {
+  if (!text || ydoc.getText('content').length > 0) return;
+  const seed = new Y.Doc();
+  seed.clientID = 1;
+  seed.getText('content').insert(0, text);
+  Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(seed), 'seed');
+};
 
-// Owns every effect that keeps a single field's collab room membership, lock
-// state, and remote-content sync alive. Standalone (no ContentEditorProvider
-// above) degrades to ctx/collab both null and every derived value below to
-// its non-collaborative default.
 export const useContentEditorCollab = (
   id: string,
   onChangeRef: React.RefObject<(v: string) => void>,
+  initialValue = '',
 ) => {
   const ctx = useContentEditorContext();
   const collab = useCollabContext();
 
-  const remoteLock = ctx?.lockState.get(id) ?? null;
-  const isLockHolder = !!collab && remoteLock?.holderId === collab.userId;
-  const lockedByOther = !!remoteLock && !isLockHolder;
-  const remoteCursorPath = ctx?.remoteCursors.get(id) ?? null;
+  const remoteCursor = ctx?.remoteCursors.get(id) ?? null;
+  const remoteCursorPath = remoteCursor?.path ?? null;
 
-  const isLockHolderRef = useRef(isLockHolder);
-  isLockHolderRef.current = isLockHolder;
-
-  // CollabContext's value is a plain object recomputed whenever lockState/remoteCursors/
-  // remoteContent change (i.e. on every incoming WS message) — its identity is not stable
-  // across renders. Effects below need a `collab` reference but must NOT re-run every time
-  // a message arrives (a join/leave effect keyed on the object itself would re-fire on
-  // every message its own join triggers a response for, looping forever), so they read it
-  // through this ref and key their dependency arrays on collab?.userId instead, which only
-  // actually changes when the connection itself is torn down and rebuilt.
   const collabRef = useRef(collab);
   collabRef.current = collab;
 
-  const lastAppliedRemoteAtRef = useRef(0);
+  const initialValueRef = useRef(initialValue);
+  initialValueRef.current = initialValue;
 
-  // Every mounted field (active or previewing) joins its own collab room, so
-  // remote content/cursor/lock updates reach the preview even when this
-  // client never activates the field itself.
+  const ydocRef = useRef<Y.Doc | null>(null);
+  if (!ydocRef.current) {
+    ydocRef.current = new Y.Doc();
+    seedYDoc(ydocRef.current, initialValue);
+  }
+
+  const isApplyingRemoteRef = useRef(false);
+  const serverHasStateRef = useRef(false);
+
   useEffect(() => {
     if (!collabRef.current) return;
     collabRef.current.joinField(id);
+    collabRef.current.sendYjsSync(id);
     return () => collabRef.current?.leaveField(id);
   }, [id]);
 
-  // A remote content push (only ever sent to non-holders — see RoomManager's
-  // authorization check server-side) is applied the same way a local edit
-  // is: through onChange, so it flows into the parent's document tree and
-  // the preview re-renders from the updated `value` like any other change.
-  const remoteUpdate = collab?.remoteContent.get(id);
+  // Handle Yjs remote updates
   useEffect(() => {
-    if (!remoteUpdate || remoteUpdate.receivedAt <= lastAppliedRemoteAtRef.current) return;
-    lastAppliedRemoteAtRef.current = remoteUpdate.receivedAt;
-    onChangeRef.current(remoteUpdate.html);
-  }, [remoteUpdate]);
+    if (!collab) return;
 
-  // Keeps the server from auto-releasing this lock for silence (plan §3's
-  // 30s timeout) while we're still the active holder.
-  useEffect(() => {
-    if (!collabRef.current || !isLockHolder) return;
-    const interval = setInterval(() => collabRef.current?.sendHeartbeat(id), HEARTBEAT_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [isLockHolder, id]);
+    const unsubscribe = collab.registerYjsListener(id, (update) => {
+      const ydoc = ydocRef.current;
+      if (!ydoc) return;
+
+      isApplyingRemoteRef.current = true;
+      try {
+        const incomingDoc = new Y.Doc();
+        Y.applyUpdate(incomingDoc, update);
+        if (incomingDoc.getText('content').length === 0) {
+          seedYDoc(ydoc, initialValueRef.current);
+          return;
+        }
+        serverHasStateRef.current = true;
+        Y.applyUpdate(ydoc, update, 'remote');
+        const mergedHtml = ydoc.getText('content').toString();
+        onChangeRef.current(mergedHtml);
+      } finally {
+        isApplyingRemoteRef.current = false;
+      }
+    });
+
+    return unsubscribe;
+  }, [collab, id, onChangeRef]);
+
+  const broadcastChange = (newValue: string) => {
+    if (!collab) return;
+    if (isApplyingRemoteRef.current) return;
+    const ydoc = ydocRef.current;
+    if (!ydoc) return;
+    seedYDoc(ydoc, initialValueRef.current);
+    const ytext = ydoc.getText('content');
+    const oldStr = ytext.toString();
+    if (oldStr === newValue) return;
+
+    if (!serverHasStateRef.current) {
+      applyTextDiff(ytext, oldStr, newValue);
+      serverHasStateRef.current = true;
+      collab.sendYjsUpdate(id, Array.from(Y.encodeStateAsUpdate(ydoc)));
+      return;
+    }
+
+    ydoc.once('update', (update: Uint8Array, origin: unknown) => {
+      if (origin === 'local') {
+        collab.sendYjsUpdate(id, Array.from(update));
+      }
+    });
+
+    applyTextDiff(ytext, oldStr, newValue);
+  };
 
   return {
     ctx,
     collab,
-    remoteLock,
-    isLockHolder,
-    isLockHolderRef,
-    lockedByOther,
+    remoteCursor,
     remoteCursorPath,
+    broadcastChange,
   };
 };

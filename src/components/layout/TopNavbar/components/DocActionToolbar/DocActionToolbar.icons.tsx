@@ -1,7 +1,14 @@
 import { colors, gray } from '@/styles/theme';
 
 export const WordIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    aria-hidden="true"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <path
       d="M2 2.5 C2 1.67 2.67 1 3.5 1 H10 L14 5 V13.5 C14 14.33 13.33 15 12.5 15 H3.5 C2.67 15 2 14.33 2 13.5 Z"
       stroke={gray[500]}
@@ -30,7 +37,14 @@ export const WordIcon = () => (
 );
 
 export const PdfIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    aria-hidden="true"
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <path
       d="M2 2.5 C2 1.67 2.67 1 3.5 1 H10 L14 5 V13.5 C14 14.33 13.33 15 12.5 15 H3.5 C2.67 15 2 14.33 2 13.5 Z"
       stroke={gray[500]}

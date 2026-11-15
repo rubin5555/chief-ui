@@ -28,7 +28,6 @@ interface OperationParamsProps {
   picker: DataImportPicker;
 }
 
-// Delays closing the dropdown so an option's mousedown wins over the input's blur.
 const NAME_DROPDOWN_BLUR_DELAY_MS = 150;
 
 export const OperationParams = ({ operation, picker }: OperationParamsProps) => {

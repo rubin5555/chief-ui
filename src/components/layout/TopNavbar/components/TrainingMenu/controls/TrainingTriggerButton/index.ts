@@ -1,0 +1,1 @@
+export { TrainingTriggerButton } from './TrainingTriggerButton';

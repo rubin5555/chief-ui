@@ -4,8 +4,6 @@ import { flexBetween, flexGap, flexScroll } from '@/styles/mixins';
 
 import { colors, gray, radii } from '@/styles/theme';
 
-// A native <button> can't legally contain the nested remove-<button> rendered by each
-// FilterChip, so the trigger is a div with an explicit combobox role/keyboard handler instead.
 export const Trigger = styled.div<{ $noBorder?: boolean }>`
 	width: 100%;
 	${flexBetween}
@@ -29,8 +27,6 @@ export const Trigger = styled.div<{ $noBorder?: boolean }>`
 	}
 `;
 
-// Stops a chip's remove-click from bubbling to the Trigger's open/close handler, without
-// affecting layout (display: contents removes this wrapper from the flex box entirely).
 export const ChipClickGuard = styled.span`
 	display: contents;
 `;

@@ -1,46 +1,30 @@
-import { Editor } from '@tinymce/tinymce-react';
-import { useRef, useState } from 'react';
-import 'tinymce/tinymce';
-import 'tinymce/icons/default';
-import 'tinymce/themes/silver';
-import 'tinymce/models/dom';
-import 'tinymce/plugins/lists/plugin';
-import 'tinymce/plugins/table/plugin';
-import 'tinymce/plugins/directionality/plugin';
-import 'tinymce/plugins/link/plugin';
-import 'tinymce/plugins/image/plugin';
-import 'tinymce/skins/ui/oxide/skin.min.css';
-import 'tinymce/skins/ui/oxide/content.inline.min.css';
-
-import { TINYMCE_INIT, TINYMCE_LICENSE_KEY } from './ContentEditor.constants';
+import { TinyQuillEditor, type TinyQuillToolbarState } from '@workspace/tiny-quill-editor';
+import { useEffect, useRef, useState } from 'react';
 import {
   EditorBody,
   EditorContent,
   EditorWrapper,
-  LockBadge,
   PreviewContent,
   PreviewWrapper,
-  ToolbarContainer,
 } from './ContentEditor.styles';
 import { CONTENT_EDITOR_IDS } from './ContentEditor.testids';
-import type { TinyMceEditor } from './ContentEditor.types';
 import { CursorOverlay } from './components/CursorOverlay';
+import { EditorRibbon } from './components/EditorRibbon';
+import { RIBBON_MARKER_ATTR } from './components/EditorRibbon/EditorRibbon.constants';
 import { useContentEditorCollab } from './hooks/useContentEditorCollab';
 import { usePreviewActivation } from './hooks/usePreviewActivation';
-import { useTinyMceSetup } from './hooks/useTinyMceSetup';
-import { runAfterFrame } from './utils/domCaret';
+import { useQuillSetup } from './hooks/useQuillSetup';
 
 export interface ContentEditorProps {
-  // Stable identity for the field's content (e.g. a section id), used to keep undo/redo
-  // history alive across the TinyMCE instance being unmounted and remounted — such as
-  // when this field scrolls out of and back into a virtualised list. Also the collab
-  // layer's room id (plan §3): one lock, one set of remote cursors/content per id.
   id: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   minHeight?: number;
   disabled?: boolean;
+  selectionOnly?: boolean;
+  inset?: boolean;
+  disableBlurDeactivate?: boolean;
 }
 
 export const ContentEditor = ({
@@ -50,128 +34,134 @@ export const ContentEditor = ({
   placeholder,
   minHeight = 120,
   disabled = false,
+  selectionOnly = false,
+  inset = false,
+  disableBlurDeactivate = false,
 }: ContentEditorProps) => {
   const myId = useRef(`ce-${self.crypto.randomUUID()}`);
   const localToolbarId = useRef(`ce-tb-${myId.current}`);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const editorBodyRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
 
-  const [editorReady, setEditorReady] = useState(false);
+  const [localTinyToolbar, setLocalTinyToolbar] = useState<TinyQuillToolbarState | null>(null);
+  const [editorBodyEl, setEditorBodyEl] = useState<HTMLElement | null>(null);
 
-  const { ctx, collab, remoteLock, isLockHolderRef, lockedByOther, remoteCursorPath } =
-    useContentEditorCollab(id, onChangeRef);
+  const { ctx, collab, remoteCursor, broadcastChange } = useContentEditorCollab(
+    id,
+    onChangeRef,
+    value,
+  );
 
-  // Standalone: TinyMCE always mounted, always "active".
-  // Shared: active only when this instance owns the context focus.
   const isActive = !ctx || ctx.activeId === myId.current;
-  const toolbarContainerId = ctx ? ctx.toolbarId : localToolbarId.current;
 
   const {
     previewRef,
     isDragOver,
     handlePreviewPointerDown,
     handlePreviewPointerUp,
+    handlePreviewKeyDown,
     handlePreviewDragOver,
     handlePreviewDragLeave,
     handlePreviewDrop,
     applyPendingSelection,
-  } = usePreviewActivation(ctx, myId.current, id, disabled, lockedByOther);
+  } = usePreviewActivation(ctx, myId.current, id, disabled, selectionOnly);
 
-  const handleEditorSetup = useTinyMceSetup(ctx, collab, id, isLockHolderRef, onChangeRef);
+  const handleEditorSetup = useQuillSetup(collab, id, onChangeRef);
 
-  // Pushes local edits into collab too, but only while this client actually
-  // holds the field's lock — with no collab wired up, or while just viewing
-  // a remote push (see useContentEditorCollab's remote-content effect), this
-  // is identical to the original plain onChange.
   const handleEditorChange = (newValue: string) => {
     onChange(newValue);
-    if (collab && isLockHolderRef.current) collab.sendContent(id, newValue);
+    broadcastChange(newValue);
   };
   onChangeRef.current = handleEditorChange;
 
   const deactivate = () => {
     if (!ctx) return;
     ctx.setActive(null);
-    setEditorReady(false);
-    collab?.releaseLock(id);
+    ctx.setActiveTinyToolbar(null);
+    setEditorBodyEl(null);
   };
 
-  const handleInit = (_: unknown, editor: TinyMceEditor) => {
-    setEditorReady(true);
-
-    // Standalone: user clicks directly into the contenteditable — no auto-focus needed.
-    if (!ctx) return;
-
-    // Seed this field's undo/redo history on first mount; a no-op if it already
-    // exists from a prior mount (e.g. scrolling back into a virtualised list).
-    ctx.getHistoryValue(id, value);
-
-    editor.focus();
-    runAfterFrame(() => applyPendingSelection(editor));
-  };
+  useEffect(() => {
+    if (!isActive) {
+      setEditorBodyEl(null);
+    }
+  }, [isActive]);
 
   const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (disableBlurDeactivate) return;
+    if (document.querySelector('[data-modal-container="true"]')) return;
+
     const next = e.relatedTarget as Element | null;
     if (next && wrapperRef.current?.contains(next)) return;
-    if (next?.closest('.tox-tinymce-aux, .tox-dialog, .tox-pop')) return;
-    if (ctx && next?.closest(`#${ctx.toolbarId}`)) return;
-    // Ignore stale focusout events fired when TinyMCE's contenteditable is removed
-    // from the DOM after another editor has already become active.
+    if (next?.closest(`[${RIBBON_MARKER_ATTR}]`)) return;
     if (ctx && ctx.activeId !== myId.current) return;
     deactivate();
   };
 
   return (
-    <EditorWrapper ref={wrapperRef} data-testid={CONTENT_EDITOR_IDS.root} onBlur={handleBlur}>
-      {/* Standalone: toolbar is always visible, not gated by active state */}
-      {!ctx && (
-        <ToolbarContainer id={localToolbarId.current} data-testid={CONTENT_EDITOR_IDS.toolbar} />
-      )}
+    <EditorWrapper
+      ref={wrapperRef}
+      $inset={inset}
+      data-testid={CONTENT_EDITOR_IDS.root}
+      onBlur={handleBlur}
+    >
+      {!ctx && <EditorRibbon flush id={localToolbarId.current} tinyToolbar={localTinyToolbar} />}
 
-      {/* Editor body: always mounted in standalone, only when active in shared */}
       {isActive && (
-        <EditorBody>
+        <EditorBody ref={editorBodyRef}>
           <EditorContent $minHeight={minHeight} data-testid={CONTENT_EDITOR_IDS.content}>
-            <Editor
-              inline
-              disabled={disabled}
+            <TinyQuillEditor
+              embedded
+              hideToolbar
+              minHeight={Math.max(40, minHeight - 20)}
+              locale="he"
+              direction="rtl"
               value={value}
-              licenseKey={TINYMCE_LICENSE_KEY}
-              onEditorChange={handleEditorChange}
-              onInit={handleInit}
-              init={{
-                ...TINYMCE_INIT,
-                placeholder,
-                fixed_toolbar_container: `#${toolbarContainerId}`,
-                setup: handleEditorSetup,
+              initialValue={value}
+              placeholder={placeholder}
+              onChange={handleEditorChange}
+              onToolbarStateChange={ctx ? ctx.setActiveTinyToolbar : setLocalTinyToolbar}
+              onReady={(root, quill, insertHTML) => {
+                root.classList.add('mce-content-body');
+                if (disabled) quill.enable(false);
+                setEditorBodyEl(root);
+                handleEditorSetup(root, quill, insertHTML);
+                if (ctx) {
+                  quill.focus();
+                  applyPendingSelection(root, insertHTML);
+                }
               }}
             />
           </EditorContent>
-          {/* Overlay during TinyMCE initialisation — pointer-events:none so clicks pass through */}
-          {!editorReady && (
-            <PreviewContent
-              $overlay
-              $minHeight={minHeight}
-              $isEmpty={!value}
-              $disabled={disabled}
-              data-placeholder={placeholder}
-              dangerouslySetInnerHTML={{ __html: value }}
+
+          {remoteCursor && (
+            <CursorOverlay
+              containerRef={editorBodyRef}
+              contentRef={editorBodyEl}
+              path={remoteCursor.path}
+              label={remoteCursor.userId}
             />
           )}
         </EditorBody>
       )}
 
-      {/* Shared mode inactive state */}
       {ctx && !isActive && (
         <PreviewWrapper>
           <PreviewContent
             ref={previewRef}
+            tabIndex={disabled ? -1 : 0}
+            role="textbox"
+            aria-readonly
+            aria-label={placeholder}
             $minHeight={minHeight}
             $isEmpty={!value}
             $disabled={disabled}
             $isDragOver={isDragOver}
             onPointerDown={handlePreviewPointerDown}
             onPointerUp={handlePreviewPointerUp}
+            onClick={handlePreviewPointerUp}
+            onKeyDown={handlePreviewKeyDown}
             onDragOver={handlePreviewDragOver}
             onDragLeave={handlePreviewDragLeave}
             onDrop={handlePreviewDrop}
@@ -179,16 +169,12 @@ export const ContentEditor = ({
             data-placeholder={placeholder}
             dangerouslySetInnerHTML={{ __html: value }}
           />
-          {remoteLock && (
-            <LockBadge data-testid={CONTENT_EDITOR_IDS.lockBadge}>
-              בעריכה על ידי {remoteLock.holderId}
-            </LockBadge>
-          )}
-          {remoteLock && remoteCursorPath && (
+          {remoteCursor && (
             <CursorOverlay
               containerRef={previewRef}
-              path={remoteCursorPath}
-              label={remoteLock.holderId}
+              contentRef={previewRef}
+              path={remoteCursor.path}
+              label={remoteCursor.userId}
             />
           )}
         </PreviewWrapper>

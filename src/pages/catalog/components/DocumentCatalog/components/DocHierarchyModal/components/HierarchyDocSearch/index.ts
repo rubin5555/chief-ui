@@ -1,0 +1,1 @@
+export { HierarchyDocSearch } from './HierarchyDocSearch';

@@ -2,8 +2,8 @@ import { memo } from 'react';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
 import type { ApproverRank } from '../../EnvironmentRequestModal.constants';
 import { APPROVER_RANKS } from '../../EnvironmentRequestModal.constants';
-import { RankField, RankLabel, RankRow, RanksList } from '../../EnvironmentRequestModal.styles';
 import { ENV_REQUEST_MODAL_IDS } from '../../EnvironmentRequestModal.testids';
+import { RankField, RankLabel, RankRow, RanksList } from '../components.shared.styles';
 
 interface ApproversByRankFieldProps {
   value: Record<ApproverRank, string[]>;

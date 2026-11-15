@@ -7,8 +7,7 @@ import {
   ENABLE_TABLE_DESIGN,
   type TableDesignOptions,
 } from '@/modals/DataImportModal/DataImportModal.constants';
-// Deep import keeps the DataImportModal component itself out of this chunk — the modal
-// is lazy-loaded by TemplateModal, and pulling its barrel here would defeat that split.
+
 import { buildFieldContentHtml } from '@/modals/DataImportModal/utils/fieldChipHtml';
 import {
   AddMoreBtn,

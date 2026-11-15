@@ -1,0 +1,1 @@
+export { CatalogDeleteModal } from './CatalogDeleteModal';

@@ -3,7 +3,7 @@ import { SUPPORT_MENU_IDS } from '../../../../../src/components/layout/TopNavbar
 import { CONTACT_PERMISSIONS_MODAL_IDS } from '../../../../../src/modals/ContactPermissionsModal/ContactPermissionsModal.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${SUPPORT_MENU_IDS.trigger}"]`);
 });
 

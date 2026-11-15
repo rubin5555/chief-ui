@@ -3,32 +3,34 @@
 ## Filters, Tabs & Search State Live in the URL
 
 - **Never back visible filter/tab state with local `useState`.** Anything that changes what's rendered — active tab, sub-tab, search text, dropdown filters — must live in the route's search params via TanStack Router, not component state. This makes the view bookmarkable, shareable, and survives refresh/back-forward.
-- **Define the shape once, in the route file.** Add a `validateSearch` function to the route's `src/routes/*.tsx` file that parses `Record<string, unknown>` into a typed, defaulted object. Never import feature-level constants/JSX files into a route file for this — the route config stays in the eager bundle, so pulling in icons or mock data there defeats code splitting. Duplicate the literal default value instead, with a comment noting what it must match.
+- **Define the shape once, in the route file.** Add a zod `validateSearch` schema to the route's `src/routes/*.tsx` file, with `.catch(...)` on every key so a junk or missing param falls back instead of throwing. Never import feature-level constants/JSX files into a route file for this — the route config stays in the eager bundle, so pulling in icons or mock data there defeats code splitting. Duplicate the literal default value instead, with a comment noting what it must match.
+- **A param at its default never reaches the URL.** Collect the defaults in one `DEFAULTS` object, feed it to both the schema's `.catch(...)` calls and `stripSearchParams`, and register that as a search middleware. Without it every navigation serializes the whole validated object, so one click on a filter writes out `?tab=templates&q=&dept=&sub=` — sixteen params on the catalog, fifteen of them empty. The middleware only affects what gets written; `validateSearch` still hands the component a fully-defaulted object to read, so no call site changes.
 
 ```tsx
-// src/routes/index.tsx
-export interface ProfileSearch {
-  tab: string;
-  q: string;
-  dept: string;
-  sub: string;
-}
+// src/routes/profile.tsx
+const DEFAULTS = { tab: 'templates', q: '', dept: '', sub: '' } as const;
 
-const validateSearch = (search: Record<string, unknown>): ProfileSearch => ({
-  tab: typeof search.tab === 'string' ? search.tab : 'templates',
-  q: typeof search.q === 'string' ? search.q : '',
-  dept: typeof search.dept === 'string' ? search.dept : '',
-  sub: typeof search.sub === 'string' ? search.sub : '',
+const profileSearchSchema = z.object({
+  tab: z.enum(PROFILE_TABS).catch(DEFAULTS.tab),
+  q: z.string().catch(DEFAULTS.q),
+  dept: z.string().catch(DEFAULTS.dept),
+  sub: z.string().catch(DEFAULTS.sub),
 });
 
-export const Route = createFileRoute('/')({ validateSearch, component: ProfilePage });
+export type ProfileSearch = z.infer<typeof profileSearchSchema>;
+
+export const Route = createFileRoute('/profile')({
+  validateSearch: profileSearchSchema,
+  search: { middlewares: [stripSearchParams(DEFAULTS)] },
+  component: ProfilePage,
+});
 ```
 
-- **Read/write search params with `getRouteApi`, not a direct `Route` import.** The route file imports the page component, so the page importing `Route` back would be circular. `getRouteApi('/')` resolves the route by id at render time instead:
+- **Read/write search params with `getRouteApi`, not a direct `Route` import.** The route file imports the page component, so the page importing `Route` back would be circular. `getRouteApi('/profile')` resolves the route by id at render time instead:
 
 ```tsx
 import { getRouteApi } from '@tanstack/react-router';
-const routeApi = getRouteApi('/');
+const routeApi = getRouteApi('/profile');
 
 const { tab: activeTab } = routeApi.useSearch();
 const navigate = routeApi.useNavigate();

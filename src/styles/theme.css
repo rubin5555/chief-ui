@@ -1,4 +1,11 @@
 :root {
+  /* Which palette the browser paints its own widgets with — checkboxes, text
+     fields, selects, scrollbars. It belongs beside the tokens rather than in
+     GlobalStyles, because those three blocks are what decide which theme is
+     live, and a `color-scheme` that disagrees with them puts dark native
+     controls on light surfaces. */
+  color-scheme: light;
+
   --color-primary: #1b3a6b;
   --color-primary-light: #eef4ff;
   --color-accent: #2d9b8a;
@@ -20,10 +27,133 @@
   --gray-700: #374151;
   --gray-800: #1f2937;
   --gray-900: #111827;
+
+  /* The Excel import source (main's TopNavbar.tsx:471-798): the brand green its
+     chip and button carry, and the palette of the little example spreadsheet
+     drawn beneath them. Not in `--doc-*` because the people picker is shared —
+     the mailing-list form draws the same tab. */
+  --excel-green: #1d6f42;
+  --excel-chrome-bg: #f8f9fa;
+  --excel-grid-line: #e2e4e7;
+  --excel-zebra-bg: #fafafa;
+  --excel-header-ink: #555555;
+  --excel-gutter-ink: #aaaaaa;
+  --excel-cell-ink: #1a1a1a;
+  --excel-active-cell-bg: #ebf0fa;
+
+  /* Shared table chrome. main draws the catalog table (Catalog.tsx:1980-2090)
+     and the import-document table (Edit.tsx:1908-1940) with the same header bar
+     and the same row separator, so these belong to `GridTable`'s comfortable
+     density rather than to either page. Same light values as
+     `--doc-neutral-bar` / `--doc-row-divider` and deliberately separate tokens:
+     a table header and a metadata pill are different roles, and a divider that
+     has to stay visible against a white card needn't darken like a pill does. */
+  --table-header-bar: #ebebeb;
+  --table-row-divider: #f5f5f5;
+
+  /* Document-page tokens. Every light value below is a literal from main's
+     Edit.tsx, kept byte-identical on purpose — these exist precisely because
+     no base token above matched, and snapping to a near-miss would have
+     recoloured the page. See src/pages/document/DESIGN_PARITY.md. */
+  --doc-canvas-gradient: linear-gradient(
+    135deg,
+    #f6f9fc 0%,
+    #f8fafb 20%,
+    #faf8fa 35%,
+    #fbf7f9 50%,
+    #faf5f1 65%,
+    #f9f3ed 85%,
+    #f9f3ed 100%
+  );
+  --doc-neutral-bar: #ebebeb;
+  --doc-page-break-line: #cbd5e1;
+  --doc-hairline: #f1f5f9;
+  --doc-surface-subtle: #f8fafc;
+  --doc-letterhead-bg: #fafafa;
+  --doc-row-divider: #f5f5f5;
+  --doc-ink: #1e293b;
+  --doc-ink-inverse: #f8fafc;
+  --doc-placeholder-ink: #c4c9d4;
+  --doc-primary-hover: #152e54;
+  --doc-primary-light-border: #c7d7f5;
+  --doc-status-approved: #16a34a;
+  --doc-status-fix: #dc2626;
+  --doc-status-idle: #94a3b8;
+  --doc-status-preparing: #f59e0b;
+  --doc-status-in-approval: #3b82f6;
+  --doc-status-awaiting-distribution: #10b981;
+  --doc-status-import-preparing: #0284c7;
+  --doc-amber-ink: #92400e;
+  --doc-amber-icon: #b45309;
+  --doc-amber-border: #fcd34d;
+  --doc-compare-bg: #dbeafe;
+  --doc-compare-border: #93c5fd;
+  --doc-search-hit: #fbbf24;
+  --doc-progress-amber: #fbbf24;
+  --doc-warning-strong: #9b1c1c;
+  --doc-stamp-ink: #1a1a1a;
+  --doc-chat-own-accent: #93afd4;
+  --doc-chat-arrow-border: #e2e8f0;
+  --doc-cell-active-bg: #eff6ff;
+  --doc-cell-active-border: #3b82f6;
+  --doc-selection-bg: #dbeafe;
+  --doc-selection-border: #93c5fd;
+  --doc-translucent-hover: rgba(255, 255, 255, 0.7);
+  --doc-icon-hover: rgba(229, 231, 235, 0.7);
+  --doc-amber-hover: #fef3c7;
+
+  /* Catalog tokens. Light values are literals from main's Catalog.tsx, kept
+     byte-identical. See src/pages/catalog/CATALOG_PARITY.md for which of
+     main's 44 hex values reuse a base token instead of appearing here. */
+  --cat-canvas-gradient: linear-gradient(
+    135deg,
+    #f6f9fc 0%,
+    #f8fafb 20%,
+    #faf8fa 35%,
+    #fbf7f9 50%,
+    #faf5f1 65%,
+    #f9f3ed 100%
+  );
+  --cat-outline-border: #c4c8ce;
+  --cat-primary-soft-border: #c7d9ff;
+  --cat-selected-tile-bg: #f0f4ff;
+  --cat-invalid-border: #fca5a5;
+  --cat-danger-soft: #ef4444;
+  --cat-danger-soft-bg: #fef2f2;
+  --cat-hover-veil: rgba(255, 255, 255, 0.6);
+  --cat-hover-veil-strong: rgba(255, 255, 255, 0.7);
+  --cat-dashed-hover-bg: rgba(239, 246, 255, 0.5);
+  --cat-child-row-bg: #f0f4f8;
+  --cat-child-row-accent: #cbd5e1;
+  --cat-child-row-divider: #e2e8f0;
+
+  /* The ten status pills, as one family. A pill's background and its ink are
+     a pair, so both sides live here even where a light value happens to equal
+     an existing token — `--cat-status-frozen-bg` and `--doc-amber-hover` are
+     both #fef3c7 today, but a pill and a hover state have no reason to darken
+     together. Inks that are genuinely the same role as a document status
+     (`מבצעית`, `נדחתה`, `בהכנה`, `נצורה`) reuse `docStatusColors` instead of
+     appearing here — see theme.ts. */
+  --cat-status-preparing-bg: #e0f2fe;
+  --cat-status-in-approval-bg: #f3e8ff;
+  --cat-status-in-approval-ink: #7c3aed;
+  --cat-status-rejected-bg: #fee2e2;
+  --cat-status-superseded-bg: #fce7f3;
+  --cat-status-superseded-ink: #db2777;
+  --cat-status-awaiting-bg: #fefce8;
+  --cat-status-awaiting-ink: #ca8a04;
+  --cat-status-active-bg: #dcfce7;
+  --cat-status-frozen-bg: #fef3c7;
+  --cat-status-finished-bg: #f0fdf4;
+  --cat-status-finished-ink: #15803d;
+  --cat-status-cancelled-bg: #f1f5f9;
+  --cat-status-cancelled-ink: #64748b;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
     --color-primary: #6c93c7;
     --color-primary-light: #22344a;
     --color-accent: #45c2ac;
@@ -45,10 +175,108 @@
     --gray-700: #e5e7eb;
     --gray-800: #f3f4f6;
     --gray-900: #f9fafb;
+
+    --excel-green: #2f8f5b;
+    --excel-chrome-bg: #232830;
+    --excel-grid-line: #333a45;
+    --excel-zebra-bg: #1e232a;
+    --excel-header-ink: #b8bfc9;
+    --excel-gutter-ink: #79818d;
+    --excel-cell-ink: #e8ecf2;
+    --excel-active-cell-bg: #1f2a3b;
+
+    --table-header-bar: #252a33;
+    --table-row-divider: #242a33;
+
+    --doc-canvas-gradient: linear-gradient(
+      135deg,
+      #14181f 0%,
+      #161a21 20%,
+      #1a1820 35%,
+      #1c1a20 50%,
+      #1c1a17 65%,
+      #1b1915 85%,
+      #1b1915 100%
+    );
+    --doc-neutral-bar: #252a33;
+    --doc-page-break-line: #3a4250;
+    --doc-hairline: #282e38;
+    --doc-surface-subtle: #1f242c;
+    --doc-letterhead-bg: #1e232a;
+    --doc-row-divider: #242a33;
+    --doc-ink: #e8ecf2;
+    --doc-ink-inverse: #151a21;
+    --doc-placeholder-ink: #5b6472;
+    --doc-primary-hover: #8fb0dc;
+    --doc-primary-light-border: #33455e;
+    --doc-status-approved: #4ade80;
+    --doc-status-fix: #f87171;
+    --doc-status-idle: #7b8697;
+    --doc-status-preparing: #fbbf24;
+    --doc-status-in-approval: #7aa7f5;
+    --doc-status-awaiting-distribution: #34d399;
+    --doc-status-import-preparing: #38bdf8;
+    --doc-amber-ink: #e0a86a;
+    --doc-amber-icon: #d99a4e;
+    --doc-amber-border: #5c4a1e;
+    --doc-compare-bg: #1e2c3f;
+    --doc-compare-border: #3c5a80;
+    --doc-search-hit: #d9a13c;
+    --doc-progress-amber: #d9a13c;
+    --doc-warning-strong: #f0928a;
+    --doc-stamp-ink: #e2e6ec;
+    --doc-chat-own-accent: #4d6a94;
+    --doc-chat-arrow-border: #2b313b;
+    --doc-cell-active-bg: #1c2634;
+    --doc-cell-active-border: #5b8de8;
+    --doc-selection-bg: #1e2c3f;
+    --doc-selection-border: #3c5a80;
+    --doc-translucent-hover: rgba(255, 255, 255, 0.08);
+    --doc-icon-hover: rgba(55, 65, 81, 0.7);
+    --doc-amber-hover: #4a3b1a;
+
+    --cat-canvas-gradient: linear-gradient(
+      135deg,
+      #14181f 0%,
+      #161a21 20%,
+      #1a1820 35%,
+      #1c1a20 50%,
+      #1c1a17 65%,
+      #1b1915 100%
+    );
+    --cat-outline-border: #454b55;
+    --cat-primary-soft-border: #2c3d5c;
+    --cat-selected-tile-bg: #1b2437;
+    --cat-invalid-border: #7f2c2c;
+    --cat-danger-soft: #f87171;
+    --cat-danger-soft-bg: #3a1f1f;
+    --cat-hover-veil: rgba(255, 255, 255, 0.06);
+    --cat-hover-veil-strong: rgba(255, 255, 255, 0.09);
+    --cat-dashed-hover-bg: rgba(28, 38, 52, 0.5);
+    --cat-child-row-bg: #1d222a;
+    --cat-child-row-accent: #3a4250;
+    --cat-child-row-divider: #2a303a;
+
+    --cat-status-preparing-bg: #0c2a3a;
+    --cat-status-in-approval-bg: #2a1f3d;
+    --cat-status-in-approval-ink: #a78bfa;
+    --cat-status-rejected-bg: #3a1a1a;
+    --cat-status-superseded-bg: #3a1a2c;
+    --cat-status-superseded-ink: #f472b6;
+    --cat-status-awaiting-bg: #332b12;
+    --cat-status-awaiting-ink: #eab308;
+    --cat-status-active-bg: #12301d;
+    --cat-status-frozen-bg: #33270f;
+    --cat-status-finished-bg: #0f2a1c;
+    --cat-status-finished-ink: #34d399;
+    --cat-status-cancelled-bg: #22262c;
+    --cat-status-cancelled-ink: #94a3b8;
   }
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
+
   --color-primary: #6c93c7;
   --color-primary-light: #22344a;
   --color-accent: #45c2ac;
@@ -70,4 +298,100 @@
   --gray-700: #e5e7eb;
   --gray-800: #f3f4f6;
   --gray-900: #f9fafb;
+
+  --excel-green: #2f8f5b;
+  --excel-chrome-bg: #232830;
+  --excel-grid-line: #333a45;
+  --excel-zebra-bg: #1e232a;
+  --excel-header-ink: #b8bfc9;
+  --excel-gutter-ink: #79818d;
+  --excel-cell-ink: #e8ecf2;
+  --excel-active-cell-bg: #1f2a3b;
+
+  --table-header-bar: #252a33;
+  --table-row-divider: #242a33;
+
+  --doc-canvas-gradient: linear-gradient(
+    135deg,
+    #14181f 0%,
+    #161a21 20%,
+    #1a1820 35%,
+    #1c1a20 50%,
+    #1c1a17 65%,
+    #1b1915 85%,
+    #1b1915 100%
+  );
+  --doc-neutral-bar: #252a33;
+  --doc-page-break-line: #3a4250;
+  --doc-hairline: #282e38;
+  --doc-surface-subtle: #1f242c;
+  --doc-letterhead-bg: #1e232a;
+  --doc-row-divider: #242a33;
+  --doc-ink: #e8ecf2;
+  --doc-ink-inverse: #151a21;
+  --doc-placeholder-ink: #5b6472;
+  --doc-primary-hover: #8fb0dc;
+  --doc-primary-light-border: #33455e;
+  --doc-status-approved: #4ade80;
+  --doc-status-fix: #f87171;
+  --doc-status-idle: #7b8697;
+  --doc-status-preparing: #fbbf24;
+  --doc-status-in-approval: #7aa7f5;
+  --doc-status-awaiting-distribution: #34d399;
+  --doc-status-import-preparing: #38bdf8;
+  --doc-amber-ink: #e0a86a;
+  --doc-amber-icon: #d99a4e;
+  --doc-amber-border: #5c4a1e;
+  --doc-compare-bg: #1e2c3f;
+  --doc-compare-border: #3c5a80;
+  --doc-search-hit: #d9a13c;
+  --doc-progress-amber: #d9a13c;
+  --doc-warning-strong: #f0928a;
+  --doc-stamp-ink: #e2e6ec;
+  --doc-chat-own-accent: #4d6a94;
+  --doc-chat-arrow-border: #2b313b;
+  --doc-cell-active-bg: #1c2634;
+  --doc-cell-active-border: #5b8de8;
+  --doc-selection-bg: #1e2c3f;
+  --doc-selection-border: #3c5a80;
+  --doc-translucent-hover: rgba(255, 255, 255, 0.08);
+  --doc-icon-hover: rgba(55, 65, 81, 0.7);
+  --doc-amber-hover: #4a3b1a;
+
+  --cat-canvas-gradient: linear-gradient(
+    135deg,
+    #14181f 0%,
+    #161a21 20%,
+    #1a1820 35%,
+    #1c1a20 50%,
+    #1c1a17 65%,
+    #1b1915 100%
+  );
+  --cat-outline-border: #454b55;
+  --cat-primary-soft-border: #2c3d5c;
+  --cat-selected-tile-bg: #1b2437;
+  --cat-invalid-border: #7f2c2c;
+  --cat-danger-soft: #f87171;
+  --cat-danger-soft-bg: #3a1f1f;
+  --cat-hover-veil: rgba(255, 255, 255, 0.06);
+  --cat-hover-veil-strong: rgba(255, 255, 255, 0.09);
+  --cat-dashed-hover-bg: rgba(28, 38, 52, 0.5);
+  --cat-child-row-bg: #1d222a;
+  --cat-child-row-accent: #3a4250;
+  --cat-child-row-divider: #2a303a;
+
+  --cat-status-preparing-bg: #0c2a3a;
+  --cat-status-in-approval-bg: #2a1f3d;
+  --cat-status-in-approval-ink: #a78bfa;
+  --cat-status-rejected-bg: #3a1a1a;
+  --cat-status-superseded-bg: #3a1a2c;
+  --cat-status-superseded-ink: #f472b6;
+  --cat-status-awaiting-bg: #332b12;
+  --cat-status-awaiting-ink: #eab308;
+  --cat-status-active-bg: #12301d;
+  --cat-status-frozen-bg: #33270f;
+  --cat-status-finished-bg: #0f2a1c;
+  --cat-status-finished-ink: #34d399;
+  --cat-status-cancelled-bg: #22262c;
+  --cat-status-cancelled-ink: #94a3b8;
 }

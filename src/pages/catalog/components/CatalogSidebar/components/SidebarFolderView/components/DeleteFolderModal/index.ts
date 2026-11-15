@@ -1,0 +1,1 @@
+export { DeleteFolderModal } from './DeleteFolderModal';

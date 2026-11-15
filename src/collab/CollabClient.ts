@@ -9,16 +9,12 @@ interface CollabClientOptions {
   onClose?: () => void;
 }
 
-// A single WebSocket connection to the collab server (plan §2 — one
-// connection per open document, multiplexed across every field in it via
-// each message's own fieldId). Auto-reconnects with a fixed delay on an
-// unexpected close; a reconnect doesn't replay anything — re-joining fields
-// after one is CollabContext's job (it already has the field list).
 const RECONNECT_DELAY_MS = 2000;
 
 export class CollabClient {
   private socket: WebSocket | null = null;
   private readonly listeners = new Set<CollabMessageListener>();
+  private readonly sendQueue: CollabMessage[] = [];
   private closedByCaller = false;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -32,14 +28,20 @@ export class CollabClient {
     const socket = new WebSocket(url.toString());
     this.socket = socket;
 
-    socket.addEventListener('open', () => this.options.onOpen?.());
+    socket.addEventListener('open', () => {
+      this.options.onOpen?.();
+      while (this.sendQueue.length > 0) {
+        const message = this.sendQueue.shift();
+        if (message) socket.send(JSON.stringify(message));
+      }
+    });
 
     socket.addEventListener('message', (event) => {
       let message: CollabMessage;
       try {
         message = JSON.parse(event.data as string) as CollabMessage;
       } catch {
-        return; // ignore malformed frames rather than throwing
+        return;
       }
       for (const listener of this.listeners) listener(message);
     });
@@ -57,7 +59,10 @@ export class CollabClient {
   }
 
   send(message: CollabMessage): void {
-    if (this.socket?.readyState !== WebSocket.OPEN) return;
+    if (this.socket?.readyState !== WebSocket.OPEN) {
+      this.sendQueue.push(message);
+      return;
+    }
     this.socket.send(JSON.stringify(message));
   }
 

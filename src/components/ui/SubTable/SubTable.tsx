@@ -1,6 +1,8 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import type { ReactNode } from 'react';
 import { useRef } from 'react';
+import { renderBodyCells, renderHeaderCells } from '../GridTable/GridTable.cells';
+import type { ColumnDef } from '../GridTable/GridTable.types';
+import { gridTemplateOf } from '../GridTable/GridTable.types';
 import { SubTableContext } from './SubTable.context';
 import {
   SubTableHeader,
@@ -8,31 +10,29 @@ import {
   SubTableVirtualRow,
   SubTableVirtualSpacer,
 } from './SubTable.styles';
+import { SubTableRow } from './SubTableRow';
 
 const DEFAULT_ROW_HEIGHT = 32;
 const DEFAULT_MAX_HEIGHT = 240;
 const ROW_OVERSCAN = 8;
 
 interface SubTableProps<T> {
-  columns: string;
-  headers: ReactNode[];
+  columns: ColumnDef<T>[];
   items: T[];
   getRowKey: (item: T, index: number) => string | number;
-  renderRow: (item: T, index: number) => ReactNode;
   estimateRowHeight?: number;
   maxHeight?: number;
 }
 
 export const SubTable = <T,>({
   columns,
-  headers,
   items,
   getRowKey,
-  renderRow,
   estimateRowHeight = DEFAULT_ROW_HEIGHT,
   maxHeight = DEFAULT_MAX_HEIGHT,
 }: SubTableProps<T>) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const template = gridTemplateOf(columns);
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
@@ -43,12 +43,8 @@ export const SubTable = <T,>({
   });
 
   return (
-    <SubTableContext.Provider value={columns}>
-      <SubTableHeader $columns={columns}>
-        {headers.map((header, i) => (
-          <span key={i}>{header}</span>
-        ))}
-      </SubTableHeader>
+    <SubTableContext.Provider value={template}>
+      <SubTableHeader $columns={template}>{renderHeaderCells(columns)}</SubTableHeader>
       <SubTableScrollViewport ref={scrollRef} $maxHeight={maxHeight}>
         <SubTableVirtualSpacer $totalSize={rowVirtualizer.getTotalSize()}>
           {rowVirtualizer.getVirtualItems().map((virtualRow) => (
@@ -58,7 +54,9 @@ export const SubTable = <T,>({
               ref={rowVirtualizer.measureElement}
               $start={virtualRow.start}
             >
-              {renderRow(items[virtualRow.index], virtualRow.index)}
+              <SubTableRow>
+                {renderBodyCells(columns, items[virtualRow.index], virtualRow.index)}
+              </SubTableRow>
             </SubTableVirtualRow>
           ))}
         </SubTableVirtualSpacer>

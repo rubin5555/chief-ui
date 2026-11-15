@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { CursorPath } from '@/collab/types';
-import { CursorBar, CursorLabel } from '../../ContentEditor.styles';
+import { CONTENT_EDITOR_IDS } from '../../ContentEditor.testids';
 import { resolveCursorPath } from '../../utils/nodePath';
+import { CursorBar, CursorLabel } from './CursorOverlay.styles';
 
 interface CursorRect {
   top: number;
@@ -10,45 +11,113 @@ interface CursorRect {
 }
 
 interface CursorOverlayProps {
-  containerRef: React.RefObject<HTMLElement | null>;
+  containerRef?: React.RefObject<HTMLElement | null> | HTMLElement | null;
+  contentRef?: React.RefObject<HTMLElement | null> | HTMLElement | null;
   path: CursorPath | null;
   label: string;
+  color?: string;
 }
 
-// Renders a remote collaborator's cursor as a thin bar + name tag, positioned
-// over `containerRef` by resolving the same structural path the collab layer
-// broadcasts (see nodePath.ts). Only ever shown over an inactive preview —
-// under section-level locking, the only client who could be actively typing
-// in a field is whoever holds its lock, and that's never the local viewer of
-// this overlay by construction (see ContentEditor.tsx).
-export const CursorOverlay = ({ containerRef, path, label }: CursorOverlayProps) => {
+const getRefEl = (
+  ref?: React.RefObject<HTMLElement | null> | HTMLElement | null,
+): HTMLElement | null => {
+  if (!ref) return null;
+  if ('current' in ref) return ref.current;
+  return ref;
+};
+
+const getRangeRect = (
+  range: Range,
+): DOMRect | { top: number; left: number; width: number; height: number } | null => {
+  const rects = range.getClientRects();
+  if (rects.length > 0) {
+    const r = rects[0];
+    if (r && (r.width > 0 || r.height > 0)) return r;
+  }
+  const bound = range.getBoundingClientRect();
+  if (bound && (bound.width > 0 || bound.height > 0)) return bound;
+
+  // Fallback for collapsed range on Element or empty paragraph
+  const node = range.startContainer;
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    const el = node as HTMLElement;
+    const child = el.childNodes[range.startOffset] || el.childNodes[range.startOffset - 1];
+    if (child && child.nodeType === Node.ELEMENT_NODE) {
+      const childRect = (child as HTMLElement).getBoundingClientRect();
+      if (childRect.height > 0) return childRect;
+    }
+    return el.getBoundingClientRect();
+  }
+  if (node.parentElement) {
+    return node.parentElement.getBoundingClientRect();
+  }
+  return null;
+};
+
+export const CursorOverlay = ({
+  containerRef,
+  contentRef,
+  path,
+  label,
+  color,
+}: CursorOverlayProps) => {
   const [rect, setRect] = useState<CursorRect | null>(null);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!path || !container) {
+    const containerEl = getRefEl(containerRef);
+    const directContentEl = getRefEl(contentRef);
+    const contentEl =
+      directContentEl ??
+      containerEl?.querySelector<HTMLElement>('.mce-content-body') ??
+      containerEl;
+
+    if (!path || !contentEl || !containerEl) {
       setRect(null);
       return;
     }
-    const range = resolveCursorPath(container, path);
-    const rangeRect = range?.getClientRects()[0];
-    if (!rangeRect) {
-      setRect(null);
-      return;
-    }
-    const containerRect = container.getBoundingClientRect();
-    setRect({
-      top: rangeRect.top - containerRect.top,
-      left: rangeRect.left - containerRect.left,
-      height: rangeRect.height || 16,
-    });
-  }, [path, containerRef]);
+
+    const updateRect = () => {
+      const range = resolveCursorPath(contentEl, path);
+      if (!range) {
+        setRect(null);
+        return;
+      }
+      const rangeRect = getRangeRect(range);
+      if (!rangeRect) {
+        setRect(null);
+        return;
+      }
+      const containerRect = containerEl.getBoundingClientRect();
+      setRect({
+        top: Math.round(rangeRect.top - containerRect.top),
+        left: Math.round(rangeRect.left - containerRect.left),
+        height: Math.max(16, Math.round(rangeRect.height)),
+      });
+    };
+
+    updateRect();
+    const raf = requestAnimationFrame(updateRect);
+    const observer = new MutationObserver(updateRect);
+    observer.observe(contentEl, { childList: true, subtree: true, characterData: true });
+    window.addEventListener('resize', updateRect);
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      window.removeEventListener('resize', updateRect);
+    };
+  }, [path, contentRef, containerRef]);
 
   if (!rect) return null;
 
   return (
-    <CursorBar style={{ top: rect.top, left: rect.left, height: rect.height }}>
-      <CursorLabel>{label}</CursorLabel>
+    <CursorBar
+      $top={rect.top}
+      $left={rect.left}
+      $height={rect.height}
+      $color={color}
+      data-testid={CONTENT_EDITOR_IDS.cursor}
+    >
+      <CursorLabel $color={color}>{label}</CursorLabel>
     </CursorBar>
   );
 };

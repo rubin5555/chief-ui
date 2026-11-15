@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { IconAction, SpinningLoader } from '../../DocActionToolbar.styles';
+import { IconAction, SpinningLoader } from '../controls.shared.styles';
 
 interface ExportButtonProps {
   title: string;
@@ -11,7 +11,7 @@ interface ExportButtonProps {
 }
 
 export const ExportButton = ({ title, testId, isLoading, icon, onClick }: ExportButtonProps) => (
-  <IconAction type="button" title={title} data-testid={testId} onClick={onClick}>
+  <IconAction type="button" title={title} aria-label={title} data-testid={testId} onClick={onClick}>
     {isLoading ? (
       <SpinningLoader>
         <Loader2 size={16} />

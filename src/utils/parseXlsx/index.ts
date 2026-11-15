@@ -1,0 +1,1 @@
+export { parseXlsxColumn } from './parseXlsx';

@@ -25,7 +25,7 @@ export const EnvironmentRequestModal = ({ onClose, onSubmit }: EnvironmentReques
 
   useEffect(() => {
     trackModalOpened();
-  }, []);
+  }, [trackModalOpened]);
 
   const modalRef = useRef<ModalHandle>(null);
 
@@ -34,9 +34,6 @@ export const EnvironmentRequestModal = ({ onClose, onSubmit }: EnvironmentReques
     modalRef.current?.requestClose();
   };
 
-  // Stable identities (useCallback, empty deps — all use the functional setState form) so the
-  // memoized field components in EnvironmentRequestFormFields only re-render for the one field
-  // whose own value actually changed, not on every keystroke across the whole form.
   const onBodyTypeChange = useCallback(
     (bodyType: string) => setForm((f) => ({ ...f, bodyType })),
     [],

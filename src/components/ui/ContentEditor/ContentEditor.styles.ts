@@ -1,9 +1,6 @@
 import styled, { css } from 'styled-components';
-import { flexGap } from '@/styles/mixins';
-import { colors, gray, radii, shadows } from '@/styles/theme';
+import { colors, docColors, gray, radii, shadows } from '@/styles/theme';
 
-// Shared between the live TinyMCE body and the inactive-state preview (see
-// ContentEditor.tsx) so both render identical typography for the same HTML string.
 const richTextContent = css`
 	p {
 		margin: 0 0 6px;
@@ -45,10 +42,16 @@ const richTextContent = css`
 			background: ${gray[50]};
 			font-weight: 600;
 		}
+		td[data-selected-cell='true'],
+		th[data-selected-cell='true'],
+		td[data-mce-selected='1'],
+		th[data-mce-selected='1'] {
+			outline: 2px solid ${colors.primary};
+			outline-offset: -2px;
+			box-shadow: inset 0 0 0 9999px color-mix(in srgb, ${colors.primary} 25%, transparent);
+		}
 	}
 
-	/* json-table's own semantic classes (see src/lib/json-table) — the base table/td/th
-	   rules above already cover layout, these just tune the fine-grained cell kinds. */
 	caption.jt-caption {
 		caption-side: top;
 		text-align: right;
@@ -82,100 +85,22 @@ const richTextContent = css`
 	}
 `;
 
-export const EditorWrapper = styled.div`
+export const EditorWrapper = styled.div<{ $inset: boolean }>`
 	display: flex;
 	flex-direction: column;
-	border: 1px solid ${gray[200]};
+	border: 1px solid ${({ $inset }) => ($inset ? docColors.hairline : gray[200])};
 	border-radius: ${radii.xl};
-	overflow: hidden;
-	box-shadow: ${shadows.sm};
-	background: ${colors.surface};
+	overflow: visible;
+	box-shadow: ${({ $inset }) => ($inset ? 'none' : shadows.sm)};
+	background: ${({ $inset }) => ($inset ? gray[50] : colors.surface)};
 	transition:
 		border-color 0.15s ease,
 		box-shadow 0.15s ease;
 
 	&:focus-within {
-		border-color: ${colors.primary};
-		box-shadow: 0 0 0 3px color-mix(in srgb, ${colors.primaryLight} 30%, transparent);
-	}
-`;
-
-export const ToolbarContainer = styled.div`
-	min-height: 42px;
-	background: ${gray[50]};
-	border-bottom: 1px solid ${gray[100]};
-	direction: rtl;
-
-	/* Strip TinyMCE's own wrapper chrome so it blends into our container */
-	.tox.tox-tinymce-inline,
-	.tox.tox-tinymce-aux,
-	.tox .tox-editor-header {
-		border: none !important;
-		box-shadow: none !important;
-		background: transparent !important;
-	}
-
-	.tox .tox-toolbar,
-	.tox .tox-toolbar__primary,
-	.tox .tox-toolbar-overlord {
-		background: transparent !important;
-		border: none !important;
-		padding: 2px 4px !important;
-	}
-
-	/* Toolbar buttons */
-	.tox .tox-tbtn {
-		border-radius: ${radii.lg} !important;
-		color: ${gray[600]} !important;
-		background: transparent !important;
-
-		&:hover {
-			background: ${gray[200]} !important;
-			color: ${gray[900]} !important;
-		}
-
-		&.tox-tbtn--enabled,
-		&.tox-tbtn--active {
-			background: ${colors.primaryLight} !important;
-			color: ${colors.primary} !important;
-		}
-
-		svg {
-			fill: currentColor !important;
-		}
-	}
-
-	/* Dividers between groups */
-	.tox .tox-toolbar__group:not(:last-of-type) {
-		border-right: 1px solid ${gray[200]} !important;
-		border-left: none !important;
-	}
-
-	/* Color picker swatches */
-	.tox .tox-split-button {
-		border-radius: ${radii.lg} !important;
-
-		&:hover > .tox-tbtn {
-			background: ${gray[200]} !important;
-		}
-	}
-
-	/* Floating menus/popups (color swatches, table grid picker, overflow toolbar) render
-	   into a portalled sink rather than staying nested under the toolbar chrome above, but
-	   TinyMCE's oxide skin still hardcodes them to a white panel — override to match. */
-	.tox .tox-menu {
-		background: ${colors.surface} !important;
-		border-color: ${gray[200]} !important;
-		box-shadow: ${shadows.md} !important;
-	}
-
-	.tox .tox-collection__item {
-		color: ${gray[700]} !important;
-	}
-
-	.tox .tox-collection__item--active,
-	.tox .tox-collection__item:hover {
-		background: ${gray[100]} !important;
+		border-color: ${({ $inset }) => ($inset ? gray[300] : colors.primary)};
+		box-shadow: ${({ $inset }) =>
+      $inset ? 'none' : `0 0 0 3px color-mix(in srgb, ${colors.primaryLight} 30%, transparent)`};
 	}
 `;
 
@@ -214,6 +139,14 @@ export const PreviewContent = styled.div<{
 	cursor: ${({ $disabled }) => ($disabled ? 'default' : 'text')};
 	word-break: break-word;
 
+	/* No ring of its own: focus is shown by the wrapper's border going from the
+	   hairline to gray-300, which is main's focus-within treatment for the same
+	   box. Two indicators on one control would be one too many. */
+	&:focus,
+	&:focus-visible {
+		outline: none;
+	}
+
 	${({ $isEmpty }) =>
     $isEmpty &&
     `
@@ -233,45 +166,6 @@ export const PreviewWrapper = styled.div`
 	position: relative;
 `;
 
-// A remote collaborator's caret — solid, not blinking (this app's animation
-// convention is deliberately subtle; see the dialog entrance keyframes).
-export const CursorBar = styled.div`
-	position: absolute;
-	width: 2px;
-	background: ${colors.accent};
-	pointer-events: none;
-	z-index: 2;
-`;
-
-export const CursorLabel = styled.span`
-	position: absolute;
-	top: -18px;
-	right: -2px;
-	background: ${colors.accent};
-	color: ${colors.surface};
-	font-size: 10px;
-	font-weight: 600;
-	padding: 1px 6px;
-	border-radius: ${radii.lg};
-	white-space: nowrap;
-	pointer-events: none;
-`;
-
-export const LockBadge = styled.div`
-	position: absolute;
-	top: 6px;
-	left: 8px;
-	z-index: 2;
-	${flexGap(4)}
-	background: color-mix(in srgb, ${colors.accent} 12%, ${colors.surface});
-	color: ${colors.accent};
-	font-size: 10.5px;
-	font-weight: 600;
-	padding: 3px 8px;
-	border-radius: ${radii.full};
-	pointer-events: none;
-`;
-
 export const EditorContent = styled.div<{ $minHeight: number }>`
 	position: relative;
 	min-height: ${({ $minHeight }) => $minHeight}px;
@@ -279,16 +173,36 @@ export const EditorContent = styled.div<{ $minHeight: number }>`
 	direction: rtl;
 	padding: 10px 14px;
 
-	/* The contenteditable div TinyMCE creates in inline mode */
+	.ql-container {
+		border: none;
+		font-family: inherit;
+		font-size: inherit;
+		height: auto;
+	}
+
+	.ql-editor,
 	.mce-content-body {
+		padding: 0;
 		outline: none;
 		font-size: 13px;
 		line-height: 1.75;
 		color: ${gray[700]};
 		font-family: inherit;
 		word-break: break-word;
+		text-align: right;
+		direction: rtl;
+		min-height: ${({ $minHeight }) => $minHeight - 20}px;
 
-		/* Placeholder */
+		&.ql-blank::before {
+			right: 0;
+			left: auto;
+			color: ${gray[400]};
+			font-style: normal;
+			position: absolute;
+			pointer-events: none;
+			font-size: 13px;
+		}
+
 		&[data-mce-placeholder]:not(.mce-visualblocks)::before {
 			content: attr(data-mce-placeholder);
 			right: 0;

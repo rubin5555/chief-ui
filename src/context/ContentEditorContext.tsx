@@ -1,134 +1,90 @@
+import type { TinyQuillToolbarState } from '@workspace/tiny-quill-editor';
 import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import type { CursorPath } from '@/collab/types';
-import { type LockInfo, useCollabContext } from './CollabContext';
+import type { RemoteCursorInfo } from '@/collab/types';
+import { useCollabContext } from './CollabContext';
 
-// Cap per-field history so a long editing session on a large list can't grow unbounded.
-const MAX_HISTORY_LENGTH = 100;
-
-interface HistoryEntry {
-  stack: string[];
-  pointer: number;
-}
-
-const EMPTY_LOCK_STATE = new Map<string, LockInfo | null>();
-const EMPTY_CURSORS = new Map<string, CursorPath | null>();
+const EMPTY_CURSORS = new Map<string, RemoteCursorInfo | null>();
 
 export interface ContentEditorContextValue {
   toolbarId: string;
+  activeTinyToolbar: TinyQuillToolbarState | null;
+  setActiveTinyToolbar: (toolbar: TinyQuillToolbarState | null) => void;
   activeId: string | null;
+  // The *field* being edited, as opposed to `activeId`'s editor instance. The
+  // toolbar acts on the editor for most things, but a footnote belongs to the
+  // section rather than to the text inside it.
+  activeFieldId: string | null;
   setActive: (id: string | null) => void;
-  // Requests the lock for `fieldId` (the stable domain id — see
-  // ContentEditor's `id` prop) then, on grant, activates `instanceId` (the
-  // editor's own per-mount id — see ContentEditor's `myId`). The two are
-  // different things: locking is keyed by field, local activation by mount.
-  // Optimistic — activates immediately, rolls back only if denied (plan §3).
-  // With no CollabProvider above this one, degrades to the original
-  // always-succeeds setActive(instanceId).
   requestActivate: (fieldId: string, instanceId: string) => void;
-  lockState: Map<string, LockInfo | null>;
-  remoteCursors: Map<string, CursorPath | null>;
-  // Undo/redo history keyed by a stable field id rather than the editor instance,
-  // so it survives the field's TinyMCE instance being unmounted and remounted
-  // (e.g. scrolling a field out of and back into a virtualised list).
-  getHistoryValue: (id: string, initialValue: string) => string;
-  pushHistoryLevel: (id: string, value: string) => void;
-  undoHistory: (id: string) => string | null;
-  redoHistory: (id: string) => string | null;
+  remoteCursors: Map<string, RemoteCursorInfo | null>;
+  // Whether this page holds footnotes at all — the document does, the share
+  // and template dialogs use the same editor and the same ribbon and do not.
+  // That is a different question from whether one can be added *right now*,
+  // which is what `addFootnoteToActive` being null answers.
+  supportsFootnotes: boolean;
+  // Returns the marker the new footnote is numbered with, so the caller can
+  // reference it from the text it was added for.
+  addFootnoteToActive: (() => string) | null;
 }
 
 const ContentEditorContext = createContext<ContentEditorContextValue | null>(null);
 
-export const ContentEditorProvider = ({ children }: { children: ReactNode }) => {
+export interface ContentEditorProviderProps {
+  // How the page adds a footnote to a field, if it can, returning the marker
+  // it was numbered with. Left out by a page whose editors have nothing under
+  // them to add one to.
+  onAddFootnote?: (fieldId: string) => string;
+  children: ReactNode;
+}
+
+export const ContentEditorProvider = ({ onAddFootnote, children }: ContentEditorProviderProps) => {
   const toolbarId = useRef(`ce-shared-tb-${self.crypto.randomUUID()}`);
+  const [activeTinyToolbar, setActiveTinyToolbar] = useState<TinyQuillToolbarState | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const historyRef = useRef(new Map<string, HistoryEntry>());
+  const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   const collab = useCollabContext();
 
-  const getEntry = useCallback((id: string, initialValue: string): HistoryEntry => {
-    let entry = historyRef.current.get(id);
-    if (!entry) {
-      entry = { stack: [initialValue], pointer: 0 };
-      historyRef.current.set(id, entry);
+  const setActive = useCallback((id: string | null) => {
+    setActiveId(id);
+    if (id === null) {
+      setActiveFieldId(null);
+      setActiveTinyToolbar(null);
     }
-    return entry;
   }, []);
 
-  const getHistoryValue = useCallback(
-    (id: string, initialValue: string) => {
-      const entry = getEntry(id, initialValue);
-      return entry.stack[entry.pointer];
-    },
-    [getEntry],
-  );
-
-  const pushHistoryLevel = useCallback(
-    (id: string, value: string) => {
-      const entry = getEntry(id, value);
-      if (entry.stack[entry.pointer] === value) return;
-
-      entry.stack = entry.stack.slice(0, entry.pointer + 1);
-      entry.stack.push(value);
-
-      if (entry.stack.length > MAX_HISTORY_LENGTH) {
-        entry.stack = entry.stack.slice(entry.stack.length - MAX_HISTORY_LENGTH);
-      }
-      entry.pointer = entry.stack.length - 1;
-    },
-    [getEntry],
-  );
-
-  const undoHistory = useCallback((id: string) => {
-    const entry = historyRef.current.get(id);
-    if (!entry || entry.pointer <= 0) return null;
-    entry.pointer -= 1;
-    return entry.stack[entry.pointer];
+  const requestActivate = useCallback((fieldId: string, instanceId: string) => {
+    setActiveId(instanceId);
+    setActiveFieldId(fieldId);
   }, []);
 
-  const redoHistory = useCallback((id: string) => {
-    const entry = historyRef.current.get(id);
-    if (!entry || entry.pointer >= entry.stack.length - 1) return null;
-    entry.pointer += 1;
-    return entry.stack[entry.pointer];
-  }, []);
-
-  const requestActivate = useCallback(
-    (fieldId: string, instanceId: string) => {
-      if (!collab) {
-        setActiveId(instanceId);
-        return;
-      }
-      setActiveId(instanceId);
-      collab.acquireLock(fieldId).then((granted) => {
-        if (!granted) {
-          setActiveId((current) => (current === instanceId ? null : current));
-        }
-      });
-    },
-    [collab],
+  const addFootnoteToActive = useMemo(
+    () => (onAddFootnote && activeFieldId ? () => onAddFootnote(activeFieldId) : null),
+    [onAddFootnote, activeFieldId],
   );
 
   const value = useMemo<ContentEditorContextValue>(
     () => ({
       toolbarId: toolbarId.current,
+      activeTinyToolbar,
+      setActiveTinyToolbar,
       activeId,
-      setActive: setActiveId,
+      activeFieldId,
+      setActive,
       requestActivate,
-      lockState: collab?.lockState ?? EMPTY_LOCK_STATE,
+      supportsFootnotes: onAddFootnote !== undefined,
+      addFootnoteToActive,
       remoteCursors: collab?.remoteCursors ?? EMPTY_CURSORS,
-      getHistoryValue,
-      pushHistoryLevel,
-      undoHistory,
-      redoHistory,
     }),
     [
+      activeTinyToolbar,
       activeId,
+      activeFieldId,
+      setActive,
       collab,
       requestActivate,
-      getHistoryValue,
-      pushHistoryLevel,
-      undoHistory,
-      redoHistory,
+      onAddFootnote,
+      addFootnoteToActive,
     ],
   );
 

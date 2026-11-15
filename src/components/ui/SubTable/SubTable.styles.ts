@@ -13,6 +13,12 @@ export const SubTableHeader = styled.div<{ $columns: string }>`
   column-gap: 6px;
 `;
 
+export const SubHeaderCell = styled.span<{ $align?: 'right' | 'center' }>`
+  display: block;
+  width: 100%;
+  text-align: ${({ $align }) => $align ?? 'center'};
+`;
+
 export const SubTableScrollViewport = styled.div<{ $maxHeight: number }>`
   max-height: ${({ $maxHeight }) => $maxHeight}px;
   overflow-y: auto;
@@ -38,5 +44,9 @@ export const SubTableRowRoot = styled.div<{ $columns: string }>`
   align-items: center;
   padding: 6px 12px;
   column-gap: 6px;
+  /* The sub-table's own scale, for the same reason GridTable sets one: a cell
+     that brings no size of its own should land here, not on the document's
+     16px. */
+  font-size: 12px;
   border-bottom: 1px solid rgba(219,234,254,0.4);
 `;

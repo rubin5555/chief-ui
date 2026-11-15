@@ -1,8 +1,9 @@
+import type { ReactNode } from 'react';
+import { CompareButton } from './controls/CompareButton';
 import { DuplicateButton } from './controls/DuplicateButton';
 import { EditDocButton } from './controls/EditDocButton';
 import type { ExportType } from './controls/ExportControls';
 import { ExportControls } from './controls/ExportControls';
-import { FilterButton } from './controls/FilterButton';
 import { PermissionsButton } from './controls/PermissionsButton';
 import { SearchControl } from './controls/SearchControl';
 import { ZoomControl } from './controls/ZoomControl';
@@ -11,41 +12,37 @@ import { Divider, ToolbarRoot } from './DocActionToolbar.styles';
 import { DOC_ACTION_TOOLBAR_IDS } from './DocActionToolbar.testids';
 
 interface DocActionToolbarProps {
-  onFilterClick?: () => void;
+  filter: ReactNode;
+  zoom: number;
+  searchQuery: string;
   onEditDocClick?: () => void;
   onDuplicateClick?: () => void;
   onPermissionsClick?: () => void;
+  onCompareClick?: () => void;
   onZoomChange?: (zoom: number) => void;
   onSearchChange?: (query: string) => void;
 }
 
-// This component is the only place that owns analytics tracking for the toolbar — the
-// controls/ subcomponents are dumb (own only ephemeral UI state) and receive already-composed
-// callbacks, per the "keep nested sub-component folders dumb" analytics rule. Each control still
-// owns its own local state (zoom value, search-open flag, export-loading flag), so interacting
-// with one control never re-renders the others.
 export const DocActionToolbar = ({
-  onFilterClick,
+  filter,
+  zoom,
+  searchQuery,
   onEditDocClick,
   onDuplicateClick,
   onPermissionsClick,
+  onCompareClick,
   onZoomChange,
   onSearchChange,
 }: DocActionToolbarProps) => {
   const {
-    trackFilterClicked,
     trackEditDocClicked,
     trackDuplicateClicked,
     trackPermissionsClicked,
+    trackCompareClicked,
     trackExportStarted,
     trackZoomChanged,
     trackSearchToggled,
   } = useDocActionToolbarAnalytics();
-
-  const onFilterButtonClick = () => {
-    trackFilterClicked();
-    onFilterClick?.();
-  };
 
   const onEditDocButtonClick = () => {
     trackEditDocClicked();
@@ -62,30 +59,40 @@ export const DocActionToolbar = ({
     onPermissionsClick?.();
   };
 
+  const onCompareButtonClick = () => {
+    trackCompareClicked();
+    onCompareClick?.();
+  };
+
   const onExportStart = (type: ExportType) => trackExportStarted(type);
 
-  const onZoomControlChange = (zoom: number) => {
-    trackZoomChanged(zoom);
-    onZoomChange?.(zoom);
+  const onZoomControlChange = (nextZoom: number) => {
+    trackZoomChanged(nextZoom);
+    onZoomChange?.(nextZoom);
   };
 
   const onSearchToggle = (isOpen: boolean) => trackSearchToggled(isOpen);
 
   return (
     <ToolbarRoot data-testid={DOC_ACTION_TOOLBAR_IDS.root}>
-      <FilterButton onClick={onFilterButtonClick} />
+      {filter}
       <EditDocButton onClick={onEditDocButtonClick} />
       <DuplicateButton onClick={onDuplicateButtonClick} />
       <PermissionsButton onClick={onPermissionsButtonClick} />
+      <CompareButton onClick={onCompareButtonClick} />
       <ExportControls onExportStart={onExportStart} />
 
       <Divider />
 
-      <ZoomControl onChange={onZoomControlChange} />
+      <ZoomControl value={zoom} onChange={onZoomControlChange} />
 
       <Divider />
 
-      <SearchControl onToggle={onSearchToggle} onSearchChange={onSearchChange} />
+      <SearchControl
+        value={searchQuery}
+        onToggle={onSearchToggle}
+        onSearchChange={onSearchChange}
+      />
     </ToolbarRoot>
   );
 };

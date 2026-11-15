@@ -13,20 +13,15 @@ import {
   SwatchBtn,
   SwatchRow,
   ToggleRow,
-} from '../../TableDesignModal.styles';
+} from '../../TableDesignModal.shared.styles';
 import { CELL_STYLE_FIELDS_IDS } from './CellStyleFields.testids';
 
 interface CellStyleFieldsProps {
-  // Disambiguates testids across the multiple places this editor is reused
-  // (a global target, a per-column override, a rule's conditional style).
   idPrefix: string;
   value: CellStyle;
   onChange: (next: CellStyle) => void;
 }
 
-// The one place that edits a raw json-table CellStyle — reused for the global
-// header/subheader/key/cell/caption targets, per-column overrides, and each
-// conditional rule's style, so all three surfaces stay in sync automatically.
 export const CellStyleFields = ({ idPrefix, value, onChange }: CellStyleFieldsProps) => {
   const pickBackground = (background: string) => () =>
     onChange({ ...value, background: background || undefined });

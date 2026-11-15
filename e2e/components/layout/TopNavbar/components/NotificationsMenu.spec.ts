@@ -3,7 +3,7 @@ import { NOTIFICATIONS } from '../../../../../src/components/layout/TopNavbar/co
 import { NOTIFICATIONS_MENU_IDS } from '../../../../../src/components/layout/TopNavbar/components/NotificationsMenu/NotificationsMenu.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${NOTIFICATIONS_MENU_IDS.trigger}"]`);
 });
 

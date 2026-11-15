@@ -28,12 +28,10 @@ export interface GetTemplatesResult {
   deletedTemplates: TemplateDto[];
 }
 
-// No `select`: the two collections travel together, so the envelope is the shape.
 export const useTemplates = () => useApiQuery<GetTemplatesResult>(GET_TEMPLATES_QUERY);
 
 // ponytail: no backend/resolver yet — registered on stubLink with the same
-// catalog ProfilePage used to import directly. Delete this registration once
-// GetTemplates has a real resolver; call sites don't change.
+
 export const TEMPLATES_FALLBACK: GetTemplatesResult = {
   templates: [
     { id: 't1', name: 'תבנית נוהל בטיחות', department: 'מחלקה א׳' },

@@ -1,3 +1,4 @@
+import * as Y from 'yjs';
 import { writeAuditLog } from '../audit.js';
 import { restoreVersionSnapshot, writeVersionSnapshot } from '../snapshot.js';
 import type { AuditEntry, VersionSnapshot } from '../store/memoryStore.js';
@@ -34,6 +35,7 @@ export class RoomManager {
   private readonly contentDebounceMs: number;
   private readonly pendingContent = new Map<string, PendingContent>();
   private readonly pendingContentTimers = new Map<string, NodeJS.Timeout>();
+  private readonly ydocs = new Map<string, Y.Doc>();
   // Content as of the moment a lock was granted — compared against current
   // content on release to decide whether an edit session actually changed
   // anything (and so whether it's worth a version snapshot at all).
@@ -43,6 +45,20 @@ export class RoomManager {
   constructor(options: RoomManagerOptions = {}) {
     this.lockManager = options.lockManager ?? new LockManager();
     this.contentDebounceMs = options.contentDebounceMs ?? DEFAULT_CONTENT_DEBOUNCE_MS;
+  }
+
+  getYDoc(fieldId: string): Y.Doc {
+    let doc = this.ydocs.get(fieldId);
+    if (!doc) {
+      doc = new Y.Doc();
+      doc.clientID = 1;
+      const existing = store.getField(fieldId);
+      if (existing?.content) {
+        doc.getText('content').insert(0, existing.content);
+      }
+      this.ydocs.set(fieldId, doc);
+    }
+    return doc;
   }
 
   registerClient(socket: RoomSocket, userId: string): void {
@@ -94,15 +110,79 @@ export class RoomManager {
         return;
       case 'cursor':
         // Cursor broadcasts don't touch lock/content state — just relay to
-        // everyone else currently in the room.
-        this.broadcastToField(message.fieldId, message, socket);
+        // everyone else currently in the room with sender userId.
+        this.broadcastToField(
+          message.fieldId,
+          { ...message, userId: message.userId ?? client.userId },
+          socket,
+        );
+        return;
+      case 'yjs:sync':
+        this.handleYjsSync(socket, message.fieldId);
+        return;
+      case 'yjs:update':
+        this.handleYjsUpdate(socket, client, message.fieldId, message.update);
         return;
       default:
-        // yjs:update / yjs:sync are reserved for the future CRDT swap (plan §4)
-        // and unused by the locking implementation.
         return;
     }
   }
+
+  private handleYjsSync(socket: RoomSocket, fieldId: string): void {
+    const doc = this.getYDoc(fieldId);
+    const update = Y.encodeStateAsUpdate(doc);
+    this.send(socket, {
+      type: 'yjs:update',
+      fieldId,
+      update: Array.from(update),
+    });
+  }
+
+  private handleYjsUpdate(
+    socket: RoomSocket,
+    _client: ClientInfo,
+    fieldId: string,
+    update: number[] | Uint8Array,
+  ): void {
+    const doc = this.getYDoc(fieldId);
+    const bytes = update instanceof Uint8Array ? update : new Uint8Array(update);
+    Y.applyUpdate(doc, bytes);
+
+    // Broadcast CRDT delta to all other peers without requiring lock
+    this.broadcastToField(
+      fieldId,
+      {
+        type: 'yjs:update',
+        fieldId,
+        update: Array.from(bytes),
+      },
+      socket,
+    );
+
+    this.scheduleYjsAutosave(fieldId);
+  }
+
+  private scheduleYjsAutosave(fieldId: string): void {
+    const existing = this.pendingContentTimers.get(fieldId);
+    if (existing) clearTimeout(existing);
+
+    const timer = setTimeout(() => {
+      this.pendingContentTimers.delete(fieldId);
+      const doc = this.ydocs.get(fieldId);
+      if (!doc) return;
+      const html = doc.getText('content').toString();
+      const now = Date.now();
+      store.updateFieldContent(fieldId, html, now);
+      this.broadcastToField(
+        fieldId,
+        { type: 'db:autosave', fieldId, savedAt: now } as CollabMessage,
+        null,
+      );
+    }, this.contentDebounceMs);
+
+    this.pendingContentTimers.set(fieldId, timer);
+  }
+
 
   private joinField(socket: RoomSocket, client: ClientInfo, fieldId: string): void {
     client.fields.add(fieldId);
@@ -125,6 +205,9 @@ export class RoomManager {
     if (holderId) {
       this.send(socket, { type: 'lock:granted', fieldId, holderId });
     }
+
+
+
   }
 
   private leaveField(socket: RoomSocket, fieldId: string): void {

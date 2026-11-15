@@ -1,12 +1,14 @@
 import { Copy, Trash2 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { LISTS_FALLBACK, useLists } from '@/api/lists';
+import type { Member } from '@/components/PeoplePicker';
 import type { RowAction } from '@/components/ui/ItemRow';
 import { ItemRow } from '@/components/ui/ItemRow';
 import { ModalLoading } from '@/components/ui/ModalLoading';
 import { PanelLoading } from '@/components/ui/PanelLoading';
 import { useEntityModal } from '@/hooks/useEntityModal';
-import type { Member, ModalMode } from '@/modals/MailingListModal';
+import type { ModalMode } from '@/modals/MailingListFormModal';
+import { chunkGuard } from '../../../../../utils/chunkRecovery';
 import { TabPanelShell } from '../TabPanelShell';
 import { useFilterableList } from '../useFilterableList';
 import { useListsPanelAnalytics } from './ListsPanel.analytics';
@@ -23,8 +25,10 @@ export interface DistributionList {
 
 const noop = () => {};
 
-const MailingListModal = lazy(() =>
-  import('@/modals/MailingListModal').then((m) => ({ default: m.MailingListModal })),
+const MailingListFormModal = lazy(
+  chunkGuard(() =>
+    import('@/modals/MailingListFormModal').then((m) => ({ default: m.MailingListFormModal })),
+  ),
 );
 
 interface ListsPanelProps {
@@ -33,9 +37,6 @@ interface ListsPanelProps {
 }
 
 export const ListsPanel = ({ departmentOptions, onDelete }: ListsPanelProps) => {
-  // Fetched here rather than by the page: this panel is already lazy-loaded
-  // per-tab, so its data should be too — the query only fires once a user
-  // actually switches to this tab, matching the JS chunk fetch.
   const { data, loading } = useLists();
   const lists = data?.lists ?? LISTS_FALLBACK.lists;
   const deletedLists = data?.deletedLists ?? LISTS_FALLBACK.deletedLists;
@@ -138,7 +139,7 @@ export const ListsPanel = ({ departmentOptions, onDelete }: ListsPanelProps) => 
 
       {listModal.mode && (
         <Suspense fallback={<ModalLoading />}>
-          <MailingListModal
+          <MailingListFormModal
             mode={listModal.mode}
             initialName={listModal.editing?.name}
             initialMembers={listModal.editing?.members}

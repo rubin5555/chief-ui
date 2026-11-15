@@ -3,23 +3,23 @@ import { type ChangeEvent, type KeyboardEvent, useEffect, useState } from 'react
 import { useDebounce } from '@/hooks/useDebounce';
 import { gray } from '@/styles/theme';
 import { SEARCH_DEBOUNCE_MS } from '../../DocActionToolbar.constants';
-import { SearchCloseButton, SearchField, SearchFieldInput } from '../../DocActionToolbar.styles';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../DocActionToolbar.testids';
+import { SearchCloseButton, SearchField, SearchFieldInput } from '../controls.shared.styles';
 
 interface DocSearchFieldProps {
+  initialValue: string;
   onChange: (query: string) => void;
   onClose: () => void;
 }
 
-// Owns its own keystroke-level value/debounce so typing here only re-renders
-// this field, not the whole toolbar — only the debounced query bubbles up.
-export const DocSearchField = ({ onChange, onClose }: DocSearchFieldProps) => {
-  const [value, setValue] = useState('');
+export const DocSearchField = ({ initialValue, onChange, onClose }: DocSearchFieldProps) => {
+  const [value, setValue] = useState(initialValue);
   const debouncedValue = useDebounce(value, SEARCH_DEBOUNCE_MS);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment above
   useEffect(() => {
     onChange(debouncedValue);
-  }, [debouncedValue, onChange]);
+  }, [debouncedValue]);
 
   const onInputChange = (e: ChangeEvent<HTMLInputElement>) => setValue(e.target.value);
 
@@ -32,6 +32,7 @@ export const DocSearchField = ({ onChange, onClose }: DocSearchFieldProps) => {
       <Search size={12} color={gray[500]} />
       <SearchFieldInput
         autoFocus
+        aria-label="חיפוש במסמך"
         data-testid={DOC_ACTION_TOOLBAR_IDS.searchInput}
         value={value}
         onChange={onInputChange}
@@ -41,6 +42,7 @@ export const DocSearchField = ({ onChange, onClose }: DocSearchFieldProps) => {
       />
       <SearchCloseButton
         type="button"
+        aria-label="סגירת חיפוש"
         data-testid={DOC_ACTION_TOOLBAR_IDS.searchClose}
         onClick={onClose}
       >

@@ -1,9 +1,10 @@
 export const DOC_ACTION_TOOLBAR_IDS = {
   root: 'doc-action-toolbar',
-  filter: 'doc-action-toolbar-filter',
+
   editDoc: 'doc-action-toolbar-edit-doc',
   duplicate: 'doc-action-toolbar-duplicate',
   permissions: 'doc-action-toolbar-permissions',
+  compare: 'doc-action-toolbar-compare',
   exportWord: 'doc-action-toolbar-export-word',
   exportPdf: 'doc-action-toolbar-export-pdf',
   zoomOut: 'doc-action-toolbar-zoom-out',

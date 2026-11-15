@@ -3,7 +3,7 @@ import { TAB_CARD_IDS } from '../../../../../src/components/ui/TabCard/TabCard.t
 import { SIGNATURES_PANEL_IDS } from '../../../../../src/pages/profile/components/tabs/SignaturesPanel/SignaturesPanel.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.getByTestId(TAB_CARD_IDS.card('חתימות')).click();
   await page.waitForSelector(`[data-testid="${SIGNATURES_PANEL_IDS.root}"]`);
 });

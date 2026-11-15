@@ -3,12 +3,9 @@ import { colors } from '@/styles/theme';
 import type { DynamicField, FieldShape } from '../DataImportModal.constants';
 import { toRenderOptions } from './tableDesignOptions';
 
-// Inline SVG database glyph — stroke follows the chip's text color via currentColor.
 const DB_ICON_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;display:inline-block;vertical-align:middle;margin-left:2px"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>';
 
-// Every color below is a var(--token) reference from the theme, so chips stored inside
-// field HTML keep following the palette (including dark mode) wherever they render.
 const CHIP_STYLE = [
   'display:inline-flex',
   'align-items:center',
@@ -36,8 +33,6 @@ const REMOVE_BTN_STYLE =
 const TOGGLE_BTN_STYLE =
   'margin-right:5px;opacity:0.55;cursor:pointer;background:none;border:none;color:inherit;padding:0;line-height:1;font-size:11px;font-family:inherit';
 
-// Block container for the list/table shapes — same palette as the inline chip, but
-// laid out as a block since a table or a multi-item list can't stay inline like text.
 const BLOCK_STYLE = [
   'display:block',
   'margin:6px 0',
@@ -60,8 +55,6 @@ const BLOCK_HEADER_STYLE = [
   'margin-bottom:4px',
 ].join(';');
 
-// The data-chip-* attributes shared by every shape — this is what a backend resolver
-// (or the remove/toggle click handlers in useTinyMceSetup) uses to identify the field.
 const chipAttrs = (field: DynamicField, shape: FieldShape): string =>
   `data-chip-id="${field.id}"` +
   ` data-chip-field="${encodeURIComponent(field.fieldName)}"` +
@@ -82,8 +75,6 @@ const chipHeaderHtml = (field: DynamicField, extraButtons: string): string =>
 const removeButtonHtml = (field: DynamicField): string =>
   `<button type="button" data-chip-remove="${field.id}" contenteditable="false" style="${REMOVE_BTN_STYLE}">×</button>`;
 
-// Serializes a plain-value field into the chip markup dropped into ContentEditor fields.
-// contenteditable="false" makes TinyMCE treat the chip as an atomic, non-editable island.
 export const buildFieldChipHtml = (field: DynamicField): string =>
   `<span ${chipAttrs(field, 'text')}` +
   ' contenteditable="false" draggable="true"' +
@@ -93,17 +84,9 @@ export const buildFieldChipHtml = (field: DynamicField): string =>
   removeButtonHtml(field) +
   '</span>';
 
-// json-table's renderListHtml always emits a single outer <ul class="jt-ul">…</ul> (any
-// nesting from object/array items lands strictly *inside* that wrapper), so swapping just
-// the anchored outer tag is enough to honor the user's ordered/unordered choice.
 const toOrderedList = (html: string, ordered: boolean): string =>
   ordered ? html.replace(/^<ul/, '<ol').replace(/<\/ul>$/, '</ol>') : html;
 
-// Array-of-primitives fields become a real <ul>/<ol> (via json-table's renderListHtml) so
-// the section renders an actual list; the ↕ button lets the user flip ordered/unordered
-// after the drop (see useTinyMceSetup's data-chip-list-toggle handling). renderListHtml has
-// no styling hooks of its own — a field with renderAsTable set skips this entirely and goes
-// through buildFieldTableHtml instead, where json-table's real design options apply.
 export const buildFieldListHtml = (field: DynamicField): string => {
   const toggleBtn =
     `<button type="button" data-chip-list-toggle="${field.id}" contenteditable="false"` +
@@ -118,10 +101,6 @@ export const buildFieldListHtml = (field: DynamicField): string => {
   );
 };
 
-// Array-of-objects fields (and list fields with renderAsTable) become a real <table>
-// rendered by json-table: automatic colspan/rowspan for nested keys, aggregation,
-// row titles, per-field labels, and header/cell styling — all driven by the user's
-// TableDesignModal choices (see utils/tableDesignOptions.ts), not hardcoded here.
 export const buildFieldTableHtml = (field: DynamicField): string => {
   const shape = field.shape === 'list' ? 'list' : 'table';
   const tableHtml = renderJsonTable(
@@ -136,7 +115,6 @@ export const buildFieldTableHtml = (field: DynamicField): string => {
   );
 };
 
-// Single entry point for drag sources: picks the right markup for the field's shape.
 export const buildFieldContentHtml = (field: DynamicField): string => {
   if (field.shape === 'table') return buildFieldTableHtml(field);
   if (field.shape === 'list')

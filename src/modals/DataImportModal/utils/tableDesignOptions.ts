@@ -15,8 +15,6 @@ import type {
   TableDesignOptions,
 } from '../DataImportModal.constants';
 
-// Swatch presets for background/text color — kept to theme tokens (not a freeform
-// color picker) so table design stays dark-mode safe like the rest of the app.
 export const BACKGROUND_PRESETS: Record<string, string> = {
   'ברירת מחדל': '',
   ראשי: colors.primaryLight,
@@ -58,9 +56,6 @@ export const RULE_OPERATOR_LABELS: Record<RuleOperator, string> = {
   contains: 'מכיל',
 };
 
-// Builds the value→key reverse of a label map once, so a Select bound to a typed enum
-// (StyleTarget, RuleOperator, align direction) can resolve its picked label back to the
-// enum value with an O(1) lookup instead of an Object.entries().find() on every call.
 const invertRecord = <K extends string, V extends string>(record: Record<K, V>): Record<V, K> => {
   const inverted = {} as Record<V, K>;
   for (const key of Object.keys(record) as K[]) inverted[record[key]] = key;
@@ -71,8 +66,6 @@ export const ALIGN_LABEL_BY_VALUE = invertRecord(CELL_ALIGN_OPTIONS);
 export const STYLE_TARGET_FROM_LABEL = invertRecord(STYLE_TARGET_LABELS);
 export const RULE_OPERATOR_FROM_LABEL = invertRecord(RULE_OPERATOR_LABELS);
 
-// Column keys for a table-shape field's sample value (union of keys across records,
-// first-seen order) — what a user picks from for aggregate/row-title/labels/rules.
 export const tableColumnsOf = (value: JsonValue): string[] => {
   if (!Array.isArray(value)) return [];
   const seen = new Set<string>();
@@ -83,9 +76,6 @@ export const tableColumnsOf = (value: JsonValue): string[] => {
   return [...seen];
 };
 
-// Evaluates one rule's condition against a cell's raw value. Numeric operators coerce
-// both sides to numbers (so "5" and 5 compare equal); 'contains' always compares as
-// case-insensitive strings.
 const compareRule = (
   raw: JsonPrimitive | undefined,
   operator: RuleOperator,
@@ -115,8 +105,6 @@ const compareRule = (
   }
 };
 
-// Compiles every rule targeting one column into a single StyleWhen: every matching
-// rule's style is merged (later rule in the list wins on conflicting properties).
 const buildWhen = (rules: StyleRule[]): StyleWhen => {
   return (value) => {
     const matched = rules
@@ -135,17 +123,6 @@ const groupRulesByColumn = (rules: StyleRule[]): Record<string, StyleRule[]> => 
   return grouped;
 };
 
-// Maps our flat form-friendly TableDesignOptions onto json-table's real RenderOptions —
-// this is the only place that translates "what the user picked" into "what json-table
-// understands," so buildFieldTableHtml stays a thin caller.
-//
-// supportsFieldStyles must be true for genuine matrix tables (array-of-objects) only:
-// per-field styling (columnStyles/rules) keys off a cell's dotted path, and json-table's
-// listTable() never threads one through (see render.ts's listTable — emitCell/res.key are
-// called with no path), so those rules would silently no-op there. TableDesignModal's UI
-// already gates the controls that populate columnStyles/rules to table-shape fields, but
-// this second check means stale/mistaken data on a non-table draft is dropped here too,
-// rather than relying solely on the UI never producing it.
 export const toRenderOptions = (
   design: TableDesignOptions | undefined,
   fallbackCaption: string,

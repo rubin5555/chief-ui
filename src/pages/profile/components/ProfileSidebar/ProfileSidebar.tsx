@@ -5,6 +5,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { ModalLoading } from '@/components/ui/ModalLoading';
 import { colors } from '@/styles/theme';
+import { chunkGuard } from '../../../../utils/chunkRecovery';
 import { useProfileSidebarAnalytics } from './ProfileSidebar.analytics';
 import {
   AvatarWrap,
@@ -40,12 +41,12 @@ export interface ListEntry {
 
 const noop = () => {};
 
-// EnvironmentRequestModal is only needed once the user asks to request an
-// environment — lazy-loaded so it doesn't ship in the main bundle.
-const EnvironmentRequestModal = lazy(() =>
-  import('@/modals/EnvironmentRequestModal').then((m) => ({
-    default: m.EnvironmentRequestModal,
-  })),
+const EnvironmentRequestModal = lazy(
+  chunkGuard(() =>
+    import('@/modals/EnvironmentRequestModal').then((m) => ({
+      default: m.EnvironmentRequestModal,
+    })),
+  ),
 );
 
 interface ProfileSidebarProps {

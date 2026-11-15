@@ -25,13 +25,11 @@ export const Select = ({
   'data-testid': testId,
 }: SelectProps) => {
   const [internalSelected, setInternalSelected] = useState<string>('');
-  // Derived, not synced via effect: a controlled parent's value always wins,
-  // and uncontrolled usage falls back to the locally picked option.
+
   const selected = value ?? internalSelected;
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  // Highlight only reflects real keyboard nav — set on open too, it'd render as an unprompted
-  // highlighted option (looks like Tab was pressed) before the user has touched the keyboard.
+
   const [keyboardActive, setKeyboardActive] = useState(false);
   const [dropPos, setDropPos] = useState<DropPos | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -87,16 +85,20 @@ export const Select = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    // scrolling the trigger out from under the fixed-position dropdown leaves it floating
-    // detached, so close immediately on any scroll that isn't inside the dropdown itself (e.g.
-    // its own options list). No debounce and no refocus — both caused a visible delay/jump.
+
+    let armed = false;
+    const arm = requestAnimationFrame(() => {
+      armed = true;
+    });
     const onScroll = (e: Event) => {
+      if (!armed) return;
       if (dropRef.current?.contains(e.target as Node)) return;
       setIsOpen(false);
     };
     window.addEventListener('scroll', onScroll, true);
     window.addEventListener('resize', onScroll);
     return () => {
+      cancelAnimationFrame(arm);
       window.removeEventListener('scroll', onScroll, true);
       window.removeEventListener('resize', onScroll);
     };
@@ -117,7 +119,7 @@ export const Select = ({
     if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onTriggerClick();
-      // opening via keyboard is itself a keyboard-nav gesture, so show the highlight immediately
+
       if (e.key === 'ArrowDown') setKeyboardActive(true);
     }
   };
@@ -162,8 +164,8 @@ export const Select = ({
           id={`${base}-listbox`}
           data-testid={SELECT_IDS.dropdown}
           role="listbox"
-          $pos={dropPos}
-          $width={dropPos.width}
+          pos={dropPos}
+          width={dropPos.width}
         >
           {options.map((opt, index) => (
             <OptionBtn

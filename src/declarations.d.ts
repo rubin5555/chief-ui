@@ -3,7 +3,18 @@ declare module '*.css' {
   export default content;
 }
 
-// Matomo's global command queue, injected by its tracking snippet.
+declare module '*.svg' {
+  const src: string;
+  export default src;
+}
+
+declare const process: {
+  env: {
+    NODE_ENV: 'development' | 'production';
+    E2E: string;
+  };
+};
+
 interface Window {
   _paq?: unknown[][];
 }

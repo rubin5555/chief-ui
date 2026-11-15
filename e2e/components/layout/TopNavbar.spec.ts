@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { TOP_NAVBAR_IDS } from '../../../src/components/layout/TopNavbar/TopNavbar.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${TOP_NAVBAR_IDS.root}"]`);
 });
 

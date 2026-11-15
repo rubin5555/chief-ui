@@ -5,7 +5,7 @@ import { SIGNATURES_PANEL_IDS } from '../../../../src/pages/profile/components/t
 import { TEMPLATES_PANEL_IDS } from '../../../../src/pages/profile/components/tabs/TemplatesPanel/TemplatesPanel.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.waitForSelector(`[data-testid="${PROFILE_CONTENT_IDS.root}"]`);
 });
 

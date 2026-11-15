@@ -1,13 +1,8 @@
 import { memo } from 'react';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { CREATOR_SLOTS, ENV_PEOPLE_OPTIONS } from '../../EnvironmentRequestModal.constants';
-import {
-  CreatorsStack,
-  FieldGroup,
-  FieldLabel,
-  FieldSubLabel,
-} from '../../EnvironmentRequestModal.styles';
 import { ENV_REQUEST_MODAL_IDS } from '../../EnvironmentRequestModal.testids';
+import { CreatorsStack, FieldGroup, FieldLabel, FieldSubLabel } from '../components.shared.styles';
 
 interface CreatorsFieldProps {
   value: string[];

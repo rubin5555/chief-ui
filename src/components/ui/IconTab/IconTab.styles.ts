@@ -1,18 +1,20 @@
 import styled from 'styled-components';
-import { ellipsis, flexCenter, flexGap } from '@/styles/mixins';
+import { ellipsis, flexCenter, flexFill, flexGap } from '@/styles/mixins';
 import { colors, gray, radii, shadows, transitions } from '@/styles/theme';
 
-export const IconTabButton = styled.button<{ $isActive: boolean }>`
-  ${flexGap(6)}
-  flex: 1;
-  padding: 8px 10px;
+export const IconTabButton = styled.button<{ $isActive: boolean; $compact: boolean }>`
+  ${(p) => flexGap(p.$compact ? 4 : 6)}
+  ${(p) => (p.$compact ? 'flex-shrink: 0;' : flexFill)}
+  padding: 8px;
   border-radius: ${radii.xl};
   border: 1px solid
-    ${(p) => (p.$isActive ? `color-mix(in srgb, ${colors.primary} 35%, transparent)` : gray[100])};
+    ${(p) => (p.$isActive ? `color-mix(in srgb, ${colors.primary} 20.8%, transparent)` : gray[100])};
   background: ${(p) =>
-    p.$isActive ? `color-mix(in srgb, ${colors.primary} 7%, transparent)` : gray[50]};
+    p.$isActive
+      ? `color-mix(in srgb, ${colors.primary} 2.75%, transparent)`
+      : `color-mix(in srgb, ${gray[50]} 60%, transparent)`};
   box-shadow: ${(p) =>
-    p.$isActive ? `0 1px 3px color-mix(in srgb, ${colors.primary} 14%, transparent)` : 'none'};
+    p.$isActive ? `0 1px 3px color-mix(in srgb, ${colors.primary} 8%, transparent)` : 'none'};
   transition: background ${transitions.normal}, border-color ${transitions.normal}, box-shadow ${transitions.normal};
   cursor: pointer;
   text-align: right;
@@ -24,20 +26,20 @@ export const IconTabButton = styled.button<{ $isActive: boolean }>`
   }
 `;
 
-export const IconTabIconWrap = styled.span<{ $isActive: boolean }>`
+export const IconTabIconWrap = styled.span<{ $isActive: boolean; $idleIconColor?: string }>`
   width: 20px;
   height: 20px;
   border-radius: ${radii.lg};
   ${flexCenter}
   flex-shrink: 0;
   background: ${(p) =>
-    p.$isActive ? `color-mix(in srgb, ${colors.primary} 18%, transparent)` : colors.surface};
+    p.$isActive ? `color-mix(in srgb, ${colors.primary} 9.4%, transparent)` : colors.surface};
   border: ${(p) => (p.$isActive ? 'none' : `1px solid ${gray[100]}`)};
 
   svg {
     width: 10px;
     height: 10px;
-    color: ${(p) => (p.$isActive ? colors.primary : gray[400])};
+    color: ${(p) => (p.$isActive ? colors.primary : (p.$idleIconColor ?? gray[400]))};
   }
 `;
 

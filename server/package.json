@@ -13,7 +13,8 @@
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "yjs": "^13.6.33"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

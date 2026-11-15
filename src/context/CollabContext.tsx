@@ -1,6 +1,7 @@
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -9,101 +10,117 @@ import {
 } from 'react';
 import { CollabClient } from '@/collab/CollabClient';
 import { COLLAB_WS_URL } from '@/collab/collabConfig';
-import type { CollabMessage, CursorPath } from '@/collab/types';
-
-export interface LockInfo {
-  holderId: string;
-}
-
-interface RemoteContentUpdate {
-  html: string;
-  receivedAt: number;
-}
+import type { CollabMessage, CursorPath, RemoteCursorInfo } from '@/collab/types';
 
 export interface CollabContextValue {
   userId: string;
+  userName?: string;
   connected: boolean;
-  // All three keyed by field id (Section/SubSection/Appendix id, plan §3) —
-  // never by the field's local editor-instance id.
-  lockState: Map<string, LockInfo | null>;
-  remoteCursors: Map<string, CursorPath | null>;
-  remoteContent: Map<string, RemoteContentUpdate>;
+  remoteCursors: Map<string, RemoteCursorInfo | null>;
   joinField: (fieldId: string) => void;
   leaveField: (fieldId: string) => void;
-  acquireLock: (fieldId: string) => Promise<boolean>;
-  releaseLock: (fieldId: string) => void;
-  sendHeartbeat: (fieldId: string) => void;
-  sendContent: (fieldId: string, html: string) => void;
   sendCursor: (fieldId: string, path: CursorPath) => void;
+  sendYjsUpdate: (fieldId: string, update: number[]) => void;
+  sendYjsSync: (fieldId: string) => void;
+  registerYjsListener: (fieldId: string, listener: (update: Uint8Array) => void) => () => void;
 }
 
 const CollabContext = createContext<CollabContextValue | null>(null);
 
-// A lock request that never hears back (dropped connection, server hiccup)
-// resolves false rather than hanging the caller's optimistic-activation UI
-// forever.
-const ACQUIRE_TIMEOUT_MS = 5000;
+const EMPTY_CURSORS = new Map<string, RemoteCursorInfo | null>();
 
-const EMPTY_LOCK_STATE = new Map<string, LockInfo | null>();
-const EMPTY_CURSORS = new Map<string, CursorPath | null>();
-const EMPTY_CONTENT = new Map<string, RemoteContentUpdate>();
-
-interface CollabProviderProps {
+export interface CollabEventLogItem {
+  id: string;
+  direction: 'in' | 'out';
   userId: string;
+  timestamp: number;
+  message: CollabMessage;
+}
+
+export interface CollabProviderProps {
+  userId: string;
+  userName?: string;
+  onCollabEvent?: (event: CollabEventLogItem) => void;
   children: ReactNode;
 }
 
-export const CollabProvider = ({ userId, children }: CollabProviderProps) => {
+export const CollabProvider = ({
+  userId,
+  userName,
+  onCollabEvent,
+  children,
+}: CollabProviderProps) => {
   const clientRef = useRef<CollabClient | null>(null);
-  const pendingAcquiresRef = useRef(new Map<string, (granted: boolean) => void>());
+  const onCollabEventRef = useRef(onCollabEvent);
+  onCollabEventRef.current = onCollabEvent;
+
+  const yjsListenersRef = useRef(new Map<string, Set<(update: Uint8Array) => void>>());
   const [connected, setConnected] = useState(false);
-  const [lockState, setLockState] = useState<Map<string, LockInfo | null>>(EMPTY_LOCK_STATE);
-  const [remoteCursors, setRemoteCursors] = useState<Map<string, CursorPath | null>>(EMPTY_CURSORS);
-  const [remoteContent, setRemoteContent] =
-    useState<Map<string, RemoteContentUpdate>>(EMPTY_CONTENT);
+  const [remoteCursors, setRemoteCursors] =
+    useState<Map<string, RemoteCursorInfo | null>>(EMPTY_CURSORS);
+
+  const emitEvent = useCallback(
+    (direction: 'in' | 'out', message: CollabMessage) => {
+      onCollabEventRef.current?.({
+        id: `${direction}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        direction,
+        userId,
+        timestamp: Date.now(),
+        message,
+      });
+    },
+    [userId],
+  );
+
+  const joinedFieldsRef = useRef(new Set<string>());
+
+  const send = useCallback(
+    (message: CollabMessage) => {
+      emitEvent('out', message);
+      clientRef.current?.send(message);
+    },
+    [emitEvent],
+  );
 
   useEffect(() => {
     const client = new CollabClient({
       url: COLLAB_WS_URL,
       token: userId,
-      onOpen: () => setConnected(true),
+      onOpen: () => {
+        setConnected(true);
+        for (const fieldId of joinedFieldsRef.current) {
+          send({ type: 'join', fieldId });
+          send({ type: 'yjs:sync', fieldId });
+        }
+      },
       onClose: () => setConnected(false),
     });
     clientRef.current = client;
 
-    const settleAcquire = (fieldId: string, granted: boolean) => {
-      const resolve = pendingAcquiresRef.current.get(fieldId);
-      if (!resolve) return;
-      pendingAcquiresRef.current.delete(fieldId);
-      resolve(granted);
-    };
-
     const unsubscribe = client.onMessage((message: CollabMessage) => {
+      emitEvent('in', message);
       switch (message.type) {
-        case 'lock:granted':
-          setLockState((prev) =>
-            new Map(prev).set(message.fieldId, { holderId: message.holderId }),
-          );
-          settleAcquire(message.fieldId, message.holderId === userId);
-          return;
-        case 'lock:denied':
-          settleAcquire(message.fieldId, false);
-          return;
-        case 'lock:released':
-          setLockState((prev) => new Map(prev).set(message.fieldId, null));
-          setRemoteCursors((prev) => new Map(prev).set(message.fieldId, null));
-          return;
-        case 'content':
-          setRemoteContent((prev) =>
-            new Map(prev).set(message.fieldId, { html: message.html, receivedAt: Date.now() }),
-          );
-          return;
         case 'cursor':
-          setRemoteCursors((prev) => new Map(prev).set(message.fieldId, message.path));
+          if (message.userId && message.userId === userId) return;
+          setRemoteCursors((prev) =>
+            new Map(prev).set(message.fieldId, {
+              path: message.path,
+              userId: message.userId ?? 'Remote User',
+            }),
+          );
           return;
+        case 'yjs:update': {
+          const listeners = yjsListenersRef.current.get(message.fieldId);
+          if (listeners) {
+            const bytes =
+              message.update instanceof Uint8Array
+                ? message.update
+                : new Uint8Array(message.update);
+            for (const fn of listeners) fn(bytes);
+          }
+          return;
+        }
         default:
-          // yjs:update / yjs:sync are reserved for the future CRDT swap (plan
-          // §4) and unused by the locking implementation.
           return;
       }
     });
@@ -113,59 +130,82 @@ export const CollabProvider = ({ userId, children }: CollabProviderProps) => {
       client.close();
       clientRef.current = null;
     };
-  }, [userId]);
+  }, [userId, emitEvent, send]);
 
-  const joinField = (fieldId: string) => clientRef.current?.send({ type: 'join', fieldId });
-  const leaveField = (fieldId: string) => clientRef.current?.send({ type: 'leave', fieldId });
+  const joinField = useCallback(
+    (fieldId: string) => {
+      joinedFieldsRef.current.add(fieldId);
+      send({ type: 'join', fieldId });
+    },
+    [send],
+  );
 
-  const acquireLock = (fieldId: string): Promise<boolean> =>
-    new Promise((resolve) => {
-      const settle = (granted: boolean) => {
-        pendingAcquiresRef.current.delete(fieldId);
-        resolve(granted);
-      };
-      pendingAcquiresRef.current.set(fieldId, settle);
-      clientRef.current?.send({ type: 'lock:acquire', fieldId });
-      setTimeout(() => {
-        if (pendingAcquiresRef.current.get(fieldId) === settle) settle(false);
-      }, ACQUIRE_TIMEOUT_MS);
-    });
-
-  // Not optimistically cleared locally — the server broadcasts lock:released
-  // back to the releaser too (it doesn't exclude the sender), so the message
-  // handler above is the single source of truth for when this actually takes
-  // effect.
-  const releaseLock = (fieldId: string) =>
-    clientRef.current?.send({ type: 'lock:release', fieldId });
-
-  const sendHeartbeat = (fieldId: string) =>
-    clientRef.current?.send({ type: 'lock:heartbeat', fieldId });
-
-  const sendContent = (fieldId: string, html: string) =>
-    clientRef.current?.send({ type: 'content', fieldId, html });
+  const leaveField = useCallback(
+    (fieldId: string) => {
+      joinedFieldsRef.current.delete(fieldId);
+      send({ type: 'leave', fieldId });
+    },
+    [send],
+  );
 
   const sendCursor = (fieldId: string, path: CursorPath) =>
-    clientRef.current?.send({ type: 'cursor', fieldId, path });
+    send({ type: 'cursor', fieldId, path, userId: userName || userId });
 
-  // The send/join/etc. functions close over clientRef (a ref, stable identity) rather than
-  // any state, so they don't need to be listed as dependencies themselves.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment above
+  const sendYjsUpdate = useCallback(
+    (fieldId: string, update: number[]) => {
+      send({ type: 'yjs:update', fieldId, update });
+    },
+    [send],
+  );
+
+  const sendYjsSync = useCallback(
+    (fieldId: string) => {
+      send({ type: 'yjs:sync', fieldId });
+    },
+    [send],
+  );
+
+  const registerYjsListener = useCallback(
+    (fieldId: string, listener: (update: Uint8Array) => void) => {
+      let set = yjsListenersRef.current.get(fieldId);
+      if (!set) {
+        set = new Set();
+        yjsListenersRef.current.set(fieldId, set);
+      }
+      set.add(listener);
+      return () => {
+        set?.delete(listener);
+        if (set?.size === 0) yjsListenersRef.current.delete(fieldId);
+      };
+    },
+    [],
+  );
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional memo deps
   const value = useMemo<CollabContextValue>(
     () => ({
       userId,
+      userName,
       connected,
-      lockState,
       remoteCursors,
-      remoteContent,
       joinField,
       leaveField,
-      acquireLock,
-      releaseLock,
-      sendHeartbeat,
-      sendContent,
       sendCursor,
+      sendYjsUpdate,
+      sendYjsSync,
+      registerYjsListener,
     }),
-    [userId, connected, lockState, remoteCursors, remoteContent],
+    [
+      userId,
+      userName,
+      connected,
+      remoteCursors,
+      joinField,
+      leaveField,
+      sendYjsUpdate,
+      sendYjsSync,
+      registerYjsListener,
+    ],
   );
 
   return <CollabContext.Provider value={value}>{children}</CollabContext.Provider>;

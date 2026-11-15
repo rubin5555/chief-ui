@@ -3,7 +3,7 @@ import { TAB_CARD_IDS } from '../../../../../src/components/ui/TabCard/TabCard.t
 import { LISTS_PANEL_IDS } from '../../../../../src/pages/profile/components/tabs/ListsPanel/ListsPanel.testids';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/profile');
   await page.getByTestId(TAB_CARD_IDS.card('רשימות תפוצה')).click();
   await page.waitForSelector(`[data-testid="${LISTS_PANEL_IDS.root}"]`);
 });

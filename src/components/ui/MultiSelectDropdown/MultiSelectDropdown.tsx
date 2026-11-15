@@ -64,8 +64,8 @@ export const MultiSelectDropdown = ({
         <Dropdown
           ref={panel.panelRef}
           data-testid={MULTI_SELECT_DROPDOWN_IDS.dropdown}
-          $pos={panel.pos}
-          $width={triggerWidth}
+          pos={panel.pos}
+          width={triggerWidth}
         >
           {options.map((opt) => {
             const isSelected = selected.includes(opt);

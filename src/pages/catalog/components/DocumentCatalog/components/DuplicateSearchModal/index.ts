@@ -1,0 +1,1 @@
+export { DuplicateSearchModal } from './DuplicateSearchModal';

@@ -1,1 +1,1 @@
-export { useDragReorder } from './useDragReorder';
+export { appendTargetId, parseAppendTarget, useDragReorder } from './useDragReorder';

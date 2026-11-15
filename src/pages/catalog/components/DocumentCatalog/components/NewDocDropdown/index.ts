@@ -1,0 +1,1 @@
+export { NewDocDropdown } from './NewDocDropdown';

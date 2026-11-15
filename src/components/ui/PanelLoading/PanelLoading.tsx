@@ -1,7 +1,7 @@
 import { ItemListCard, ItemListScroll } from '@/components/ui/ItemList/ItemList.styles';
+import { SkeletonBar } from '@/components/ui/SkeletonBar';
 import {
   LoadingRoot,
-  SkeletonBar,
   SkeletonRow,
   SkeletonRowActions,
   SkeletonRowLeft,
@@ -25,8 +25,8 @@ export const PanelLoading = () => (
 
     <ItemListCard>
       <ItemListScroll>
-        {ROW_WIDTHS.map((width, i) => (
-          <SkeletonRow key={i}>
+        {ROW_WIDTHS.map((width) => (
+          <SkeletonRow key={width}>
             <SkeletonRowLeft>
               <SkeletonBar $width="24px" $height="24px" $round />
               <SkeletonBar $width={width} />

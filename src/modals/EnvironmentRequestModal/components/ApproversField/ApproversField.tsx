@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import type { ApproverRank } from '../../EnvironmentRequestModal.constants';
 import { ENV_PEOPLE_OPTIONS } from '../../EnvironmentRequestModal.constants';
-import { FieldGroup, FieldLabel } from '../../EnvironmentRequestModal.styles';
 import { ApproversByRankField } from '../ApproversByRankField';
+import { FieldGroup, FieldLabel } from '../components.shared.styles';
 
 interface ApproversFieldProps {
   value: Record<ApproverRank, string[]>;

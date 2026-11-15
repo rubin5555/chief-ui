@@ -30,9 +30,9 @@ export const ItemRow = ({ label, leadingSlot, actions, onClick }: ItemRowProps) 
         <RowText>{label}</RowText>
       </RowLabel>
       <RowActions>
-        {actions.map((action, i) => (
+        {actions.map((action) => (
           <ActionButton
-            key={i}
+            key={action.label}
             data-testid={ITEM_ROW_IDS.action(action.label)}
             title={action.label}
             $danger={action.danger}

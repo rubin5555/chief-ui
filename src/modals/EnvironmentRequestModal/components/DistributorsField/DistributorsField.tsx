@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { SearchableMultiSelect } from '@/components/ui/SearchableMultiSelect';
 import { ENV_PEOPLE_OPTIONS } from '../../EnvironmentRequestModal.constants';
-import { FieldGroup, FieldLabel } from '../../EnvironmentRequestModal.styles';
 import { ENV_REQUEST_MODAL_IDS } from '../../EnvironmentRequestModal.testids';
+import { FieldGroup, FieldLabel } from '../components.shared.styles';
 
 interface DistributorsFieldProps {
   value: string[];

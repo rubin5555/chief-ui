@@ -1,18 +1,19 @@
 import { Search } from 'lucide-react';
 import { useState } from 'react';
-import { IconAction } from '../../DocActionToolbar.styles';
 import { DOC_ACTION_TOOLBAR_IDS } from '../../DocActionToolbar.testids';
+import { IconAction } from '../controls.shared.styles';
 import { DocSearchField } from '../DocSearchField';
 
 const noop = () => {};
 
 interface SearchControlProps {
+  value: string;
   onToggle: (isOpen: boolean) => void;
   onSearchChange?: (query: string) => void;
 }
 
-export const SearchControl = ({ onToggle, onSearchChange }: SearchControlProps) => {
-  const [searchActive, setSearchActive] = useState(false);
+export const SearchControl = ({ value, onToggle, onSearchChange }: SearchControlProps) => {
+  const [searchActive, setSearchActive] = useState(() => value !== '');
 
   const onOpen = () => {
     setSearchActive(true);
@@ -26,13 +27,16 @@ export const SearchControl = ({ onToggle, onSearchChange }: SearchControlProps) 
   };
 
   if (searchActive) {
-    return <DocSearchField onChange={onSearchChange ?? noop} onClose={onClose} />;
+    return (
+      <DocSearchField initialValue={value} onChange={onSearchChange ?? noop} onClose={onClose} />
+    );
   }
 
   return (
     <IconAction
       type="button"
       title="חיפוש במסמך"
+      aria-label="חיפוש במסמך"
       data-testid={DOC_ACTION_TOOLBAR_IDS.searchToggle}
       onClick={onOpen}
     >

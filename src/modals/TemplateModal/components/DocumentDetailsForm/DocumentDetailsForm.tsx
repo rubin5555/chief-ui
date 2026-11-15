@@ -1,7 +1,8 @@
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { Select } from '@/components/ui/Select';
 import { Toggle } from '@/components/ui/Toggle';
-import type { TemplateFormApi, TemplateModalMode } from '../../TemplateModal.constants';
+import type { TemplateFormApi } from '../../hooks/useTemplateForm';
+import type { TemplateModalMode } from '../../TemplateModal.constants';
 import {
   CLASSIFICATION_OPTIONS,
   CLASSIFICATION_TAG_OPTIONS,

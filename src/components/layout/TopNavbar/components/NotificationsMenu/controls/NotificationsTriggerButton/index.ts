@@ -1,0 +1,1 @@
+export { NotificationsTriggerButton } from './NotificationsTriggerButton';

@@ -114,9 +114,6 @@ export const ChipMeta = styled.div`
   line-height: 1.3;
 `;
 
-// Shared by every icon-only action button hosted in a ChipRow (remove/design/reorder):
-// hidden until the row is hovered, opacity+color both transition, hover always resolves
-// to primary regardless of the button's semantic (matches the existing chip convention).
 const chipIconButton = css`
   padding: 2px;
   border-radius: 4px;

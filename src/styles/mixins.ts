@@ -1,5 +1,5 @@
 import { css } from 'styled-components';
-import { colors, radii, transitions } from '@/styles/theme';
+import { colors, gray, radii, transitions } from '@/styles/theme';
 
 export const ellipsis = css`
   overflow: hidden;
@@ -48,6 +48,29 @@ export const flexScroll = css`
   overflow-y: auto;
 `;
 
+export const subtleScrollbar = css`
+  scrollbar-width: thin;
+  scrollbar-color: ${gray[300]} transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: ${radii.full};
+    background: ${gray[300]};
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${gray[400]};
+  }
+`;
+
 export const rtlTextInput = css`
   font-size: 14px;
   text-align: right;
@@ -58,6 +81,18 @@ export const focusPrimaryBorder = css`
   &:focus {
     outline: none;
     border-color: ${colors.primary};
+  }
+`;
+
+export const navIconAction = css`
+  padding: 6px;
+  border-radius: ${radii.full};
+  transition: background-color ${transitions.normal};
+  ${flexCenter}
+  color: ${gray[500]};
+
+  &:hover {
+    background-color: ${gray[100]};
   }
 `;
 

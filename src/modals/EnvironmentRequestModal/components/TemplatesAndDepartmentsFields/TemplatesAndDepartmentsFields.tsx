@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { MultiSelectDropdown } from '@/components/ui/MultiSelectDropdown';
 import { DEPARTMENT_OPTIONS, TEMPLATE_OPTIONS } from '../../EnvironmentRequestModal.constants';
-import { FieldGrid, FieldGroup, FieldLabel } from '../../EnvironmentRequestModal.styles';
 import { ENV_REQUEST_MODAL_IDS } from '../../EnvironmentRequestModal.testids';
+import { FieldGrid, FieldGroup, FieldLabel } from '../components.shared.styles';
 
 interface TemplatesAndDepartmentsFieldsProps {
   templates: string[];

@@ -1,32 +1,37 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
+import { renderBodyCells, renderHeaderCells } from './GridTable.cells';
+import { DENSITY } from './GridTable.constants';
 import { GridTableContext } from './GridTable.context';
 import { TableHeader, TableScrollBody, VirtualRow, VirtualScrollSpacer } from './GridTable.styles';
+import type { ColumnDef, Density, RowConfig } from './GridTable.types';
+import { gridTemplateOf } from './GridTable.types';
+import { GridTableRow } from './GridTableRow';
 
-const DEFAULT_ROW_HEIGHT = 44;
 const ROW_OVERSCAN = 8;
 
 interface GridTableProps<T> {
-  columns: string;
-  headers: ReactNode[];
+  columns: ColumnDef<T>[];
   items: T[];
   getRowKey: (item: T, index: number) => string | number;
-  renderRow: (item: T, index: number) => ReactNode;
+  row?: (item: T, index: number) => RowConfig;
+  density?: Density;
   estimateRowHeight?: number;
   emptyState?: ReactNode;
 }
 
 export const GridTable = <T,>({
   columns,
-  headers,
   items,
   getRowKey,
-  renderRow,
-  estimateRowHeight = DEFAULT_ROW_HEIGHT,
+  row,
+  density = 'compact',
+  estimateRowHeight = DENSITY[density].estimateRowHeight,
   emptyState,
 }: GridTableProps<T>) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const template = gridTemplateOf(columns);
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
@@ -37,27 +42,30 @@ export const GridTable = <T,>({
   });
 
   return (
-    <GridTableContext.Provider value={columns}>
+    <GridTableContext.Provider value={{ template, density }}>
       <TableScrollBody ref={scrollRef}>
-        <TableHeader $columns={columns}>
-          {headers.map((header, i) => (
-            <span key={i}>{header}</span>
-          ))}
+        <TableHeader $columns={template} $density={density}>
+          {renderHeaderCells(columns)}
         </TableHeader>
         {items.length === 0 ? (
           emptyState
         ) : (
-          <VirtualScrollSpacer $totalSize={rowVirtualizer.getTotalSize()}>
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => (
-              <VirtualRow
-                key={virtualRow.key}
-                data-index={virtualRow.index}
-                ref={rowVirtualizer.measureElement}
-                $start={virtualRow.start}
-              >
-                {renderRow(items[virtualRow.index], virtualRow.index)}
-              </VirtualRow>
-            ))}
+          <VirtualScrollSpacer $totalSize={rowVirtualizer.getTotalSize()} $density={density}>
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const item = items[virtualRow.index];
+              return (
+                <VirtualRow
+                  key={virtualRow.key}
+                  data-index={virtualRow.index}
+                  ref={rowVirtualizer.measureElement}
+                  $start={virtualRow.start}
+                >
+                  <GridTableRow {...row?.(item, virtualRow.index)}>
+                    {renderBodyCells(columns, item, virtualRow.index)}
+                  </GridTableRow>
+                </VirtualRow>
+              );
+            })}
           </VirtualScrollSpacer>
         )}
       </TableScrollBody>
