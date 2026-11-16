@@ -1510,10 +1510,14 @@ export function PersonalArea() {
   }, [showNewTemplate]);
 
   const DYN_MIME = 'application/x-dyn-chip';
-  // Linking is optional: fields stay fully editable; while dragging they only get an outline.
-  const renderLinkable = (key: TLinkKey, control: ReactNode, inline = false) => {
+  // Linking is optional: a small corner badge marks linkable fields; the drop hint shows only while dragging.
+  const renderLinkable = (key: TLinkKey, control: ReactNode, opts: { inline?: boolean; empty?: boolean } = {}) => {
+    const { inline = false, empty = true } = opts;
     const linked = tLinkedFields[key];
     const hover = tDropHover === key;
+    const dragging = tDragActive || hover;
+    // inline editors keep their content visible (drop lands at the caret); hint only when empty
+    const showHint = dragging && (!inline || empty);
     return (
       <div className="relative"
         onDragOver={e => {
@@ -1531,7 +1535,7 @@ export function PersonalArea() {
         }}>
         {linked ? (
           <div className="flex items-center gap-2 px-3 bg-[#EEF4FF] border border-[#1B3A6B]/25 rounded-xl" style={{ height: 38 }}>
-            <Link2 className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0" />
+            <Database className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0" />
             <span className="text-sm font-semibold text-[#1B3A6B] truncate">{linked.fieldName}</span>
             <span className="text-[11px] text-[#1B3A6B]/50 truncate flex-1 min-w-0">{linked.systemName}</span>
             <button type="button" title="ביטול קישור — חזרה למילוי ידני"
@@ -1541,31 +1545,38 @@ export function PersonalArea() {
             </button>
           </div>
         ) : control}
-        {(tDragActive || hover) && (
-          <div className={`absolute -inset-[3px] rounded-[14px] pointer-events-none transition-all ${hover
-            ? 'border-2 border-[#3B82F6] shadow-[0_0_0_4px_rgba(59,130,246,0.12)]'
-            : 'border-2 border-dashed border-[#3B82F6]/40'}`} />
+
+        {/* Drag state: outline (+ in-field drop hint) */}
+        {dragging && (
+          <div className={`absolute inset-0 rounded-xl pointer-events-none flex items-center justify-center gap-1.5 text-xs font-medium transition-all ${showHint ? (hover ? 'bg-[#EEF4FF]' : 'bg-[#F5F8FF]') : ''} ${hover
+            ? 'border-2 border-[#3B82F6] text-[#2563EB] shadow-[0_0_0_4px_rgba(59,130,246,0.12)]'
+            : 'border border-dashed border-[#3B82F6]/60 text-[#3B82F6]/80'}`}>
+            {showHint && (<><Link2 className="w-3.5 h-3.5" />{linked ? 'שחררו כאן להחלפה' : 'שחררו כאן לקישור'}</>)}
+          </div>
         )}
-        {hover && (
-          <span className="absolute -top-2.5 left-3 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#3B82F6] text-white text-[10px] font-semibold shadow pointer-events-none whitespace-nowrap">
-            <Link2 className="w-3 h-3" />
-            {inline ? 'שחררו כדי לשלב בשם' : linked ? 'שחררו כדי להחליף' : 'שחררו כדי לקשר'}
+
+        {/* Corner badge with tooltip */}
+        <div className="group absolute -top-2 -left-2 z-20">
+          <span className={`flex items-center justify-center w-5 h-5 rounded-full border transition-all duration-150 cursor-help ${dragging
+            ? 'bg-[#3B82F6] border-[#3B82F6] text-white shadow-[0_2px_6px_rgba(59,130,246,0.45)] scale-110'
+            : linked
+              ? 'bg-[#1B3A6B] border-[#1B3A6B] text-white shadow-sm'
+              : 'bg-white border-gray-200 text-gray-400 shadow-sm group-hover:text-[#1B3A6B] group-hover:border-[#1B3A6B]/40'}`}>
+            <Link2 className="w-[11px] h-[11px]" />
           </span>
-        )}
+          {!dragging && (
+            <div className="pointer-events-none absolute bottom-full left-0 mb-1.5 w-max max-w-[220px] px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-[11px] leading-snug text-right opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 shadow-lg">
+              {linked ? 'מקושר למערכת מקור — ניתן לבטל ולמלא ידנית' : 'ניתן לגרור לכאן מידע ממערכת מקור'}
+              <span className="absolute top-full left-2 border-4 border-transparent border-t-gray-900" />
+            </div>
+          )}
+        </div>
       </div>
     );
   };
 
-  // Label with a quiet "optional link" hint
-  const linkLabel = (text: string, small = false) => (
-    <div className="flex items-center justify-between mb-1">
-      <label className={small ? 'text-[10px] text-gray-400' : 'text-xs font-medium text-gray-500'}>{text}</label>
-      <span title="ניתן למלא ידנית או לגרור שדה ממערכת מקור"
-        className={`inline-flex items-center gap-0.5 text-[10px] cursor-help transition-colors ${tDragActive ? 'text-[#3B82F6]' : 'text-gray-300 hover:text-gray-500'}`}>
-        <Link2 className="w-3 h-3" />
-        ניתן לקשר
-      </span>
-    </div>
+  const fieldLabel = (text: string, small = false) => (
+    <label className={`block mb-1 text-right ${small ? 'text-[10px] text-gray-400' : 'text-xs font-medium text-gray-500'}`}>{text}</label>
   );
 
   return (
@@ -2271,7 +2282,7 @@ export function PersonalArea() {
               <div className="grid grid-cols-2 gap-x-8 gap-y-3">
                 {/* שם התבנית */}
                 <div>
-                  {linkLabel('שם התבנית')}
+                  {fieldLabel('שם התבנית')}
                   {renderLinkable('name',
                   <InlineChipInput
                     value={templateName}
@@ -2280,7 +2291,7 @@ export function PersonalArea() {
                     fields={tTemplateFields}
                     invalid={templateDuplicateMode && templateName === templateOriginalName}
                     onDropDone={() => { setTDropHover(null); setTDragActive(false); setTemplateDirty(true); }}
-                  />, true)}
+                  />, { inline: true, empty: !templateName.replace(/<br>|&nbsp;|\s/g, '') })}
                   {templateDuplicateMode && templateName === templateOriginalName && (
                     <p className="text-[11px] text-amber-600 mt-1 text-right">יש לשנות את שם התבנית לפני השכפול</p>
                   )}
@@ -2301,11 +2312,11 @@ export function PersonalArea() {
                 {/* בחירת אגף + חיבור לתיקייה — both inside one grid cell */}
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    {linkLabel('בחירת אגף')}
+                    {fieldLabel('בחירת אגף')}
                     {renderLinkable('dept', <CustomSelect placeholder="בחר אגף..." options={['מחלקת משאבי אנוש', 'מחלקת כספים', 'מחלקת טכנולוגיה', 'מחלקת תפעול', 'מחלקת שיווק']} />)}
                   </div>
                   <div className="flex-1">
-                    {linkLabel('חיבור לתיקייה')}
+                    {fieldLabel('חיבור לתיקייה')}
                     {renderLinkable('folder', <CustomSelect placeholder="בחר תיקייה..." options={['תיקיית פקודות', 'תיקיית דוחות', 'תיקיית הוראות', 'תיקייה כללית']} />)}
                   </div>
                 </div>
@@ -2353,7 +2364,7 @@ export function PersonalArea() {
                   <div className="flex gap-3">
                     {/* כניסה לתוקף */}
                     <div className="flex-1">
-                      {linkLabel('כניסה לתוקף', true)}
+                      {fieldLabel('כניסה לתוקף', true)}
                       {renderLinkable('effective', <DateTimePicker
                         value={tEffectiveDateTime}
                         onChange={setTEffectiveDateTime}
@@ -2362,7 +2373,7 @@ export function PersonalArea() {
                     </div>
                     {/* יציאה מתוקף */}
                     <div className="flex-1">
-                      {linkLabel('יציאה מתוקף', true)}
+                      {fieldLabel('יציאה מתוקף', true)}
                       {renderLinkable('expiry', <DateTimePicker
                         value={tExpiryDateTime}
                         onChange={setTExpiryDateTime}
