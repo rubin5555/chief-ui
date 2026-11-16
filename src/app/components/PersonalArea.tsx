@@ -2997,7 +2997,7 @@ export function PersonalArea() {
                                                 aria-label={`עיצוב תצוגת ${df.fieldName}`}
                                                 className={`group/design relative p-1 rounded-md transition-all flex-shrink-0 ${designed
                                                   ? 'text-[#1B3A6B] bg-[#EEF4FF] opacity-100'
-                                                  : 'text-gray-400 hover:text-[#1B3A6B] hover:bg-[#EEF4FF] opacity-0 group-hover:opacity-100'}`}>
+                                                  : 'text-[#1B3A6B]/75 hover:text-[#1B3A6B] hover:bg-[#EEF4FF]'}`}>
                                                 <Paintbrush className="w-3.5 h-3.5" />
                                                 <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-900 text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 translate-y-0.5 group-hover/design:opacity-100 group-hover/design:translate-y-0 transition-all duration-150 z-20">
                                                   {designed ? 'עריכת עיצוב תצוגה' : 'עיצוב תצוגה'}
@@ -3010,7 +3010,7 @@ export function PersonalArea() {
                                               const Icon = FIELD_TYPE_ICON[type];
                                               return (
                                                 <span className="group/type relative flex-shrink-0" aria-label={`סוג שדה: ${FIELD_TYPE_LABELS[type]}`}>
-                                                  <span className="w-6 h-6 rounded-md flex items-center justify-center bg-[#1B3A6B]/[0.05] text-[#1B3A6B]/55 group-hover/type:bg-[#1B3A6B]/10 group-hover/type:text-[#1B3A6B] transition-colors">
+                                                  <span className="w-6 h-6 rounded-md flex items-center justify-center bg-[#1B3A6B]/[0.07] text-[#1B3A6B]/85 group-hover/type:bg-[#1B3A6B]/[0.12] group-hover/type:text-[#1B3A6B] transition-colors">
                                                     <Icon className="w-3.5 h-3.5" strokeWidth={2} />
                                                   </span>
                                                   <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-900 text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 translate-y-0.5 group-hover/type:opacity-100 group-hover/type:translate-y-0 transition-all duration-150 z-20">
