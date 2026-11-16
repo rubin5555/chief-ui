@@ -577,6 +577,87 @@ function ContentEditor({
   );
 }
 
+// Compact chip used inside single-line fields (e.g. template name)
+const makeInlineChipHtml = (df: DynamicField): string =>
+  `<span data-chip-id="${df.id}" title="${df.systemName} · ${df.operationName}${df.instanceName ? ` · ${df.instanceName}` : ''}" contenteditable="false" style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px 1px 5px;margin:0 2px;background:#EEF4FF;border:1px solid rgba(27,58,107,0.25);border-radius:7px;font-size:12px;color:#1B3A6B;font-weight:600;white-space:nowrap;user-select:none;line-height:1.5;vertical-align:middle">${_DB_ICON_SVG} ${df.fieldName}<button data-chip-remove="${df.id}" contenteditable="false" style="margin-right:3px;opacity:0.4;cursor:pointer;background:none;border:none;color:#1B3A6B;padding:0;line-height:1;font-size:13px;font-family:inherit">×</button></span>`;
+
+// Single-line input that mixes free text with source-system chips dropped at the caret
+function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = false, onDropDone }: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  fields: DynamicField[];
+  invalid?: boolean;
+  onDropDone?: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const last = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (ref.current && value !== last.current) {
+      ref.current.innerHTML = value;
+      last.current = value;
+    }
+  }, [value]);
+
+  const commit = () => {
+    if (!ref.current) return;
+    // an editor left with only a <br> should count as empty (placeholder)
+    if (ref.current.innerHTML === '<br>') ref.current.innerHTML = '';
+    last.current = ref.current.innerHTML;
+    onChange(last.current);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    const df = fields.find(f => f.id === e.dataTransfer.getData('application/x-dyn-chip'));
+    onDropDone?.();
+    if (!df || !ref.current) return;
+    e.preventDefault();
+    ref.current.focus();
+    const range: Range | null =
+      (document as any).caretRangeFromPoint?.(e.clientX, e.clientY) ??
+      (() => {
+        const pos = (document as any).caretPositionFromPoint?.(e.clientX, e.clientY);
+        if (!pos) return null;
+        const r = document.createRange(); r.setStart(pos.offsetNode, pos.offset); r.collapse(true); return r;
+      })();
+    const tmp = document.createElement('span');
+    tmp.innerHTML = makeInlineChipHtml(df);
+    const chip = tmp.firstChild as HTMLElement;
+    const space = document.createTextNode(' ');
+    if (range && ref.current.contains(range.startContainer) && !(range.startContainer.parentElement?.closest('[data-chip-id]'))) {
+      range.insertNode(space); range.insertNode(chip);
+    } else {
+      ref.current.append(chip, space);
+    }
+    const sel = window.getSelection();
+    const after = document.createRange(); after.setStartAfter(space); after.collapse(true);
+    sel?.removeAllRanges(); sel?.addRange(after);
+    commit();
+  };
+
+  return (
+    <div
+      ref={ref}
+      contentEditable
+      suppressContentEditableWarning
+      dir="rtl"
+      data-placeholder={placeholder}
+      onInput={commit}
+      onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
+      onPaste={e => { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain').replace(/\s*\n\s*/g, ' ')); }}
+      onClick={e => {
+        const btn = (e.target as HTMLElement).closest('[data-chip-remove]') as HTMLElement | null;
+        if (btn && ref.current) { ref.current.querySelector(`[data-chip-id="${btn.dataset.chipRemove}"]`)?.remove(); commit(); }
+      }}
+      onDragOver={e => { if (e.dataTransfer.types.includes('application/x-dyn-chip')) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } }}
+      onDrop={handleDrop}
+      className={`content-editor w-full px-3 py-2 border rounded-xl text-sm text-right text-gray-900 bg-white transition-colors focus:border-[#1B3A6B] whitespace-nowrap overflow-x-auto overflow-y-hidden ${invalid ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`}
+      style={{ height: 38, lineHeight: '20px', scrollbarWidth: 'none' }}
+    />
+  );
+}
+
 const DYNAMIC_SYSTEMS = [
   { id: 'sys1', name: 'UniTree', operations: [
     { id: 'op1', name: 'הבאת יחידת אב', instances: ['יחידה 101', 'יחידה 202', 'יחידה 303', 'יחידה 404', 'יחידה 505', 'יחידה 606', 'יחידה 707', 'יחידה 808', 'יחידה 900', 'יחידה 1001', 'יחידה צפון א׳', 'יחידה צפון ב׳', 'יחידה דרום א׳', 'יחידה דרום ב׳', 'יחידה מרכז'], fields: ['שם היחידה', 'מספר יחידה', 'מפקד היחידה', 'כתובת היחידה', 'סוג היחידה'] },
@@ -1405,6 +1486,12 @@ export function PersonalArea() {
   const removeTField = (id: string) => {
     setTTemplateFields(p => p.filter(f => f.id !== id));
     setTLinkedFields(p => Object.fromEntries(Object.entries(p).filter(([, f]) => f?.id !== id)));
+    setTemplateName(n => {
+      if (!n.includes(`data-chip-id="${id}"`)) return n;
+      const d = document.createElement('div'); d.innerHTML = n;
+      d.querySelectorAll(`[data-chip-id="${id}"]`).forEach(el => el.remove());
+      return d.innerHTML;
+    });
   };
 
   // Source-fields panel spans the dialog body only (between header and footer)
@@ -1423,7 +1510,8 @@ export function PersonalArea() {
   }, [showNewTemplate]);
 
   const DYN_MIME = 'application/x-dyn-chip';
-  const renderLinkable = (key: TLinkKey, control: ReactNode) => {
+  // Linking is optional: fields stay fully editable; while dragging they only get an outline.
+  const renderLinkable = (key: TLinkKey, control: ReactNode, inline = false) => {
     const linked = tLinkedFields[key];
     const hover = tDropHover === key;
     return (
@@ -1435,8 +1523,10 @@ export function PersonalArea() {
         }}
         onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setTDropHover(h => h === key ? null : h); }}
         onDrop={e => {
-          const df = tTemplateFields.find(f => f.id === e.dataTransfer.getData(DYN_MIME));
-          if (df) { e.preventDefault(); setTLinkedFields(p => ({ ...p, [key]: df })); setTemplateDirty(true); }
+          if (!inline) {
+            const df = tTemplateFields.find(f => f.id === e.dataTransfer.getData(DYN_MIME));
+            if (df) { e.preventDefault(); setTLinkedFields(p => ({ ...p, [key]: df })); setTemplateDirty(true); }
+          }
           setTDropHover(null); setTDragActive(false);
         }}>
         {linked ? (
@@ -1444,7 +1534,7 @@ export function PersonalArea() {
             <Link2 className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0" />
             <span className="text-sm font-semibold text-[#1B3A6B] truncate">{linked.fieldName}</span>
             <span className="text-[11px] text-[#1B3A6B]/50 truncate flex-1 min-w-0">{linked.systemName}</span>
-            <button type="button" title="ביטול קישור"
+            <button type="button" title="ביטול קישור — חזרה למילוי ידני"
               onClick={() => { setTLinkedFields(p => { const n = { ...p }; delete n[key]; return n; }); setTemplateDirty(true); }}
               className="p-0.5 rounded text-[#1B3A6B]/40 hover:text-[#1B3A6B] hover:bg-[#1B3A6B]/10 transition-colors flex-shrink-0">
               <X className="w-3.5 h-3.5" />
@@ -1452,16 +1542,31 @@ export function PersonalArea() {
           </div>
         ) : control}
         {(tDragActive || hover) && (
-          <div className={`absolute inset-0 rounded-xl flex items-center justify-center gap-1.5 text-xs font-medium transition-all pointer-events-none ${hover
-            ? 'border-2 border-[#3B82F6] bg-white text-[#2563EB] shadow-[0_0_0_4px_rgba(59,130,246,0.12)]'
-            : 'border border-dashed border-[#3B82F6]/50 bg-[#F3F7FF] text-[#3B82F6]/80'}`}>
-            <Link2 className="w-3.5 h-3.5" />
-            {hover ? 'שחררו כדי לקשר' : 'ניתן לקשר שדה'}
-          </div>
+          <div className={`absolute -inset-[3px] rounded-[14px] pointer-events-none transition-all ${hover
+            ? 'border-2 border-[#3B82F6] shadow-[0_0_0_4px_rgba(59,130,246,0.12)]'
+            : 'border-2 border-dashed border-[#3B82F6]/40'}`} />
+        )}
+        {hover && (
+          <span className="absolute -top-2.5 left-3 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#3B82F6] text-white text-[10px] font-semibold shadow pointer-events-none whitespace-nowrap">
+            <Link2 className="w-3 h-3" />
+            {inline ? 'שחררו כדי לשלב בשם' : linked ? 'שחררו כדי להחליף' : 'שחררו כדי לקשר'}
+          </span>
         )}
       </div>
     );
   };
+
+  // Label with a quiet "optional link" hint
+  const linkLabel = (text: string, small = false) => (
+    <div className="flex items-center justify-between mb-1">
+      <label className={small ? 'text-[10px] text-gray-400' : 'text-xs font-medium text-gray-500'}>{text}</label>
+      <span title="ניתן למלא ידנית או לגרור שדה ממערכת מקור"
+        className={`inline-flex items-center gap-0.5 text-[10px] cursor-help transition-colors ${tDragActive ? 'text-[#3B82F6]' : 'text-gray-300 hover:text-gray-500'}`}>
+        <Link2 className="w-3 h-3" />
+        ניתן לקשר
+      </span>
+    </div>
+  );
 
   return (
     <div className="flex-1 overflow-auto px-8 py-6" dir="rtl">
@@ -2166,11 +2271,16 @@ export function PersonalArea() {
               <div className="grid grid-cols-2 gap-x-8 gap-y-3">
                 {/* שם התבנית */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1 text-right">שם התבנית</label>
+                  {linkLabel('שם התבנית')}
                   {renderLinkable('name',
-                  <input type="text" value={templateName} onChange={e => { setTemplateName(e.target.value); setTemplateDirty(true); }}
-                    placeholder="הזן שם תבנית..."
-                    className={`w-full px-3 py-2 border rounded-xl text-sm text-right focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors ${templateDuplicateMode && templateName === templateOriginalName ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`} />)}
+                  <InlineChipInput
+                    value={templateName}
+                    onChange={v => { setTemplateName(v); setTemplateDirty(true); }}
+                    placeholder="הזן שם תבנית או גרור שדות..."
+                    fields={tTemplateFields}
+                    invalid={templateDuplicateMode && templateName === templateOriginalName}
+                    onDropDone={() => { setTDropHover(null); setTDragActive(false); setTemplateDirty(true); }}
+                  />, true)}
                   {templateDuplicateMode && templateName === templateOriginalName && (
                     <p className="text-[11px] text-amber-600 mt-1 text-right">יש לשנות את שם התבנית לפני השכפול</p>
                   )}
@@ -2191,11 +2301,11 @@ export function PersonalArea() {
                 {/* בחירת אגף + חיבור לתיקייה — both inside one grid cell */}
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-500 mb-1 text-right">בחירת אגף</label>
+                    {linkLabel('בחירת אגף')}
                     {renderLinkable('dept', <CustomSelect placeholder="בחר אגף..." options={['מחלקת משאבי אנוש', 'מחלקת כספים', 'מחלקת טכנולוגיה', 'מחלקת תפעול', 'מחלקת שיווק']} />)}
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-500 mb-1 text-right">חיבור לתיקייה</label>
+                    {linkLabel('חיבור לתיקייה')}
                     {renderLinkable('folder', <CustomSelect placeholder="בחר תיקייה..." options={['תיקיית פקודות', 'תיקיית דוחות', 'תיקיית הוראות', 'תיקייה כללית']} />)}
                   </div>
                 </div>
@@ -2243,7 +2353,7 @@ export function PersonalArea() {
                   <div className="flex gap-3">
                     {/* כניסה לתוקף */}
                     <div className="flex-1">
-                      <label className="block text-[10px] text-gray-400 mb-0.5 text-right">כניסה לתוקף</label>
+                      {linkLabel('כניסה לתוקף', true)}
                       {renderLinkable('effective', <DateTimePicker
                         value={tEffectiveDateTime}
                         onChange={setTEffectiveDateTime}
@@ -2252,7 +2362,7 @@ export function PersonalArea() {
                     </div>
                     {/* יציאה מתוקף */}
                     <div className="flex-1">
-                      <label className="block text-[10px] text-gray-400 mb-0.5 text-right">יציאה מתוקף</label>
+                      {linkLabel('יציאה מתוקף', true)}
                       {renderLinkable('expiry', <DateTimePicker
                         value={tExpiryDateTime}
                         onChange={setTExpiryDateTime}
