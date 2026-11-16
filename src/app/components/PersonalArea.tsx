@@ -1,5 +1,5 @@
-import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw} from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles} from 'lucide-react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
 import { DatePicker } from './DatePicker';
@@ -1378,6 +1378,7 @@ export function PersonalArea() {
     setTTopics([]); setTAppendices([]); setTHasEmphasis(false); setTEmphasis(''); setTemplateName('');
     setTClassification(''); setTClassificationTag(''); setTEffectiveDateTime(nowIso()); setTExpiryDateTime('');
     setTPermTarget(null); setTTemplateFields([]); setTDynTarget(null); setTemplateEditMode(false); setTemplateDuplicateMode(false); setTemplateOriginalName(''); setTemplateDirty(false);
+    setTLinkedFields({}); setTDragActive(false); setTDropHover(null);
   };
   const addTTopic = () => { setTTopics(p => [...p, {id:`tt-${Date.now()}`,title:'',sections:[]}]); setTemplateDirty(true); };
   const addTSection = (ti: number) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:[...t.sections,{id:`ts-${Date.now()}`,title:'',content:'',subsections:[],permissions:{approvers:[],editors:[]},dynamicFields:[]}]})); setTemplateDirty(true); };
@@ -1396,7 +1397,71 @@ export function PersonalArea() {
   const updTAppPerms = (ai: number, v: {approvers: PermTag[]; editors: PermTag[]}) => setTAppendices(p => p.map((a,i) => i!==ai?a:{...a,permissions:v}));
   const [tTemplateFields, setTTemplateFields] = useState<DynamicField[]>([]);
   const [showFieldBankPicker, setShowFieldBankPicker] = useState(false);
-  const [fieldsExpanded, setFieldsExpanded] = useState(false);
+  // Template-level fields linked to a source-system field (dropped from the side panel)
+  type TLinkKey = 'name' | 'dept' | 'folder' | 'effective' | 'expiry';
+  const [tLinkedFields, setTLinkedFields] = useState<Partial<Record<TLinkKey, DynamicField>>>({});
+  const [tDragActive, setTDragActive] = useState(false);
+  const [tDropHover, setTDropHover] = useState<TLinkKey | null>(null);
+  const removeTField = (id: string) => {
+    setTTemplateFields(p => p.filter(f => f.id !== id));
+    setTLinkedFields(p => Object.fromEntries(Object.entries(p).filter(([, f]) => f?.id !== id)));
+  };
+
+  // Source-fields panel spans the dialog body only (between header and footer)
+  const tHeaderRef = useRef<HTMLDivElement>(null);
+  const tFooterRef = useRef<HTMLDivElement>(null);
+  const [tPanelInset, setTPanelInset] = useState({ top: 64, bottom: 76 });
+  useEffect(() => {
+    if (!showNewTemplate) return;
+    const h = tHeaderRef.current, f = tFooterRef.current;
+    if (!h || !f) return;
+    const measure = () => setTPanelInset({ top: h.offsetHeight, bottom: f.offsetHeight });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(h); ro.observe(f);
+    return () => ro.disconnect();
+  }, [showNewTemplate]);
+
+  const DYN_MIME = 'application/x-dyn-chip';
+  const renderLinkable = (key: TLinkKey, control: ReactNode) => {
+    const linked = tLinkedFields[key];
+    const hover = tDropHover === key;
+    return (
+      <div className="relative"
+        onDragOver={e => {
+          if (!e.dataTransfer.types.includes(DYN_MIME)) return;
+          e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
+          if (tDropHover !== key) setTDropHover(key);
+        }}
+        onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setTDropHover(h => h === key ? null : h); }}
+        onDrop={e => {
+          const df = tTemplateFields.find(f => f.id === e.dataTransfer.getData(DYN_MIME));
+          if (df) { e.preventDefault(); setTLinkedFields(p => ({ ...p, [key]: df })); setTemplateDirty(true); }
+          setTDropHover(null); setTDragActive(false);
+        }}>
+        {linked ? (
+          <div className="flex items-center gap-2 px-3 bg-[#EEF4FF] border border-[#1B3A6B]/25 rounded-xl" style={{ height: 38 }}>
+            <Link2 className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0" />
+            <span className="text-sm font-semibold text-[#1B3A6B] truncate">{linked.fieldName}</span>
+            <span className="text-[11px] text-[#1B3A6B]/50 truncate flex-1 min-w-0">{linked.systemName}</span>
+            <button type="button" title="ביטול קישור"
+              onClick={() => { setTLinkedFields(p => { const n = { ...p }; delete n[key]; return n; }); setTemplateDirty(true); }}
+              className="p-0.5 rounded text-[#1B3A6B]/40 hover:text-[#1B3A6B] hover:bg-[#1B3A6B]/10 transition-colors flex-shrink-0">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : control}
+        {(tDragActive || hover) && (
+          <div className={`absolute inset-0 rounded-xl flex items-center justify-center gap-1.5 text-xs font-medium transition-all pointer-events-none ${hover
+            ? 'border-2 border-[#3B82F6] bg-white text-[#2563EB] shadow-[0_0_0_4px_rgba(59,130,246,0.12)]'
+            : 'border border-dashed border-[#3B82F6]/50 bg-[#F3F7FF] text-[#3B82F6]/80'}`}>
+            <Link2 className="w-3.5 h-3.5" />
+            {hover ? 'שחררו כדי לקשר' : 'ניתן לקשר שדה'}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="flex-1 overflow-auto px-8 py-6" dir="rtl">
@@ -2083,14 +2148,15 @@ export function PersonalArea() {
           style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
           onClick={() => { setShowNewTemplate(false); resetNewTemplate(); }}
         >
+          {/* Dialog + attached source-fields panel (panel sits on the physical right) */}
+          <div dir="ltr" className="flex items-stretch" style={{ height: '90vh' }} onClick={e => e.stopPropagation()}>
           <div
-            className="relative bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden"
-            style={{ width: '1140px', maxWidth: '96vw', height: '90vh' }}
-            onClick={e => e.stopPropagation()}
+            className="relative z-10 bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+            style={{ width: '1140px', maxWidth: 'calc(96vw - 300px)', height: '100%' }}
             dir="rtl"
           >
             {/* ── Header ── */}
-            <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100">
+            <div ref={tHeaderRef} className="flex-shrink-0 flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100">
               <h2 className="text-xl font-bold text-gray-900">{templateDuplicateMode ? 'שכפול תבנית' : templateEditMode ? 'עריכת תבנית' : 'תבנית חדשה'}</h2>
               <button onClick={() => { setShowNewTemplate(false); resetNewTemplate(); }} className="text-gray-400 hover:text-gray-700 text-xl leading-none">✕</button>
             </div>
@@ -2101,9 +2167,10 @@ export function PersonalArea() {
                 {/* שם התבנית */}
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1 text-right">שם התבנית</label>
+                  {renderLinkable('name',
                   <input type="text" value={templateName} onChange={e => { setTemplateName(e.target.value); setTemplateDirty(true); }}
                     placeholder="הזן שם תבנית..."
-                    className={`w-full px-3 py-2 border rounded-xl text-sm text-right focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors ${templateDuplicateMode && templateName === templateOriginalName ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`} />
+                    className={`w-full px-3 py-2 border rounded-xl text-sm text-right focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors ${templateDuplicateMode && templateName === templateOriginalName ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`} />)}
                   {templateDuplicateMode && templateName === templateOriginalName && (
                     <p className="text-[11px] text-amber-600 mt-1 text-right">יש לשנות את שם התבנית לפני השכפול</p>
                   )}
@@ -2125,11 +2192,11 @@ export function PersonalArea() {
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <label className="block text-xs font-medium text-gray-500 mb-1 text-right">בחירת אגף</label>
-                    <CustomSelect placeholder="בחר אגף..." options={['מחלקת משאבי אנוש', 'מחלקת כספים', 'מחלקת טכנולוגיה', 'מחלקת תפעול', 'מחלקת שיווק']} />
+                    {renderLinkable('dept', <CustomSelect placeholder="בחר אגף..." options={['מחלקת משאבי אנוש', 'מחלקת כספים', 'מחלקת טכנולוגיה', 'מחלקת תפעול', 'מחלקת שיווק']} />)}
                   </div>
                   <div className="flex-1">
                     <label className="block text-xs font-medium text-gray-500 mb-1 text-right">חיבור לתיקייה</label>
-                    <CustomSelect placeholder="בחר תיקייה..." options={['תיקיית פקודות', 'תיקיית דוחות', 'תיקיית הוראות', 'תיקייה כללית']} />
+                    {renderLinkable('folder', <CustomSelect placeholder="בחר תיקייה..." options={['תיקיית פקודות', 'תיקיית דוחות', 'תיקיית הוראות', 'תיקייה כללית']} />)}
                   </div>
                 </div>
                 {/* סבב אישורים — same row, left cell */}
@@ -2177,20 +2244,20 @@ export function PersonalArea() {
                     {/* כניסה לתוקף */}
                     <div className="flex-1">
                       <label className="block text-[10px] text-gray-400 mb-0.5 text-right">כניסה לתוקף</label>
-                      <DateTimePicker
+                      {renderLinkable('effective', <DateTimePicker
                         value={tEffectiveDateTime}
                         onChange={setTEffectiveDateTime}
                         placeholder="בחר תאריך ושעה"
-                      />
+                      />)}
                     </div>
                     {/* יציאה מתוקף */}
                     <div className="flex-1">
                       <label className="block text-[10px] text-gray-400 mb-0.5 text-right">יציאה מתוקף</label>
-                      <DateTimePicker
+                      {renderLinkable('expiry', <DateTimePicker
                         value={tExpiryDateTime}
                         onChange={setTExpiryDateTime}
                         placeholder="בחר תאריך ושעה"
-                      />
+                      />)}
                     </div>
                   </div>
                 </div>
@@ -2203,65 +2270,6 @@ export function PersonalArea() {
               {/* Right sidebar — structure builder */}
               <div className="w-64 flex-shrink-0 border-l border-gray-100 bg-[#FAFAFA] flex flex-col overflow-hidden">
 
-                {/* ── Field bank view: title moves to top as header ── */}
-                {fieldsExpanded && tTemplateFields.length > 0 ? (
-                  <>
-                    {/* Header at top when expanded */}
-                    <div className="flex-shrink-0 border-b-2 border-[#1B3A6B]/10 bg-[#FAFAFA]">
-                      <div className="px-3 py-2.5 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <Database className="w-3 h-3 text-[#1B3A6B]" />
-                          <span className="text-[11px] font-bold text-[#1B3A6B]">ייבוא מידע ממערכת מקור</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => setFieldsExpanded(false)}
-                            className="p-0.5 text-[#1B3A6B]/40 hover:text-[#1B3A6B] transition-colors"
-                            title="חזור לנושאים">
-                            <ChevronDown className="w-3.5 h-3.5" />
-                          </button>
-                          <button onClick={() => setShowFieldBankPicker(true)}
-                            className="p-0.5 text-[#1B3A6B]/50 hover:text-[#1B3A6B] transition-colors">
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Scrollable field list */}
-                    <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
-                      <p className="text-[9px] text-[#1B3A6B]/40 px-1">גרור שדה לתוך הסעיף הרצוי</p>
-                      {tTemplateFields.map(df => (
-                        <div
-                          key={df.id}
-                          draggable
-                          onDragStart={e => {
-                            e.dataTransfer.effectAllowed = 'copy';
-                            e.dataTransfer.setData('application/x-dyn-chip', df.id);
-                            e.dataTransfer.setData('text/x-chip-html', makeChipHtml(df));
-                          }}
-                          className="flex items-center gap-2 px-2.5 py-2 bg-[#EEF4FF] border border-[#1B3A6B]/15 rounded-xl cursor-grab select-none hover:bg-[#dce9ff] hover:border-[#1B3A6B]/30 active:opacity-60 transition-colors group"
-                        >
-                          <GripVertical className="w-3.5 h-3.5 text-[#1B3A6B]/30 flex-shrink-0 group-hover:text-[#1B3A6B]/60 transition-colors" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[11px] font-semibold text-[#1B3A6B] truncate">{df.fieldName}</div>
-                            <div className="text-[9px] text-[#1B3A6B]/50 truncate leading-tight">{df.operationName}{df.instanceName ? ` · ${df.instanceName}` : ''} · {df.systemName}</div>
-                          </div>
-                          <button
-                            onMouseDown={e => e.stopPropagation()}
-                            onClick={() => setTTemplateFields(p => p.filter(f => f.id !== df.id))}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-all flex-shrink-0">
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                      <button onClick={() => setShowFieldBankPicker(true)}
-                        className="flex items-center gap-1.5 w-full px-3 py-1.5 text-[#1B3A6B]/50 hover:text-[#1B3A6B] border border-dashed border-[#1B3A6B]/20 hover:border-[#1B3A6B]/40 rounded-xl text-xs transition-colors mt-1">
-                        <Plus className="w-3.5 h-3.5" />
-                        הוסף שדות נוספים
-                      </button>
-                    </div>
-                  </>
-                ) : (
                 <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
 
                 {/* Add topic button */}
@@ -2420,33 +2428,6 @@ export function PersonalArea() {
                 </div>
 
                 </div>
-                )}
-
-                {/* ── Fixed bottom: title bar — only when fields are collapsed ── */}
-                {!(fieldsExpanded && tTemplateFields.length > 0) && (
-                <div className="flex-shrink-0 border-t-2 border-[#1B3A6B]/10 bg-[#FAFAFA]">
-                  <div className="px-3 py-2.5 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <Database className="w-3 h-3 text-[#1B3A6B]" />
-                      <span className="text-[11px] font-bold text-[#1B3A6B]">ייבוא מידע ממערכת מקור</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {tTemplateFields.length > 0 && (
-                        <button
-                          onClick={() => setFieldsExpanded(p => !p)}
-                          className="p-0.5 text-[#1B3A6B]/40 hover:text-[#1B3A6B] transition-colors"
-                          title={fieldsExpanded ? 'חזור לנושאים' : 'הצג שדות'}>
-                          <ChevronDown className="w-3.5 h-3.5 rotate-180 transition-transform duration-200" />
-                        </button>
-                      )}
-                      <button onClick={() => setShowFieldBankPicker(true)}
-                        className="p-0.5 text-[#1B3A6B]/50 hover:text-[#1B3A6B] transition-colors">
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                )}
 
               </div>
 
@@ -2594,7 +2575,7 @@ export function PersonalArea() {
             </div>
 
             {/* ── Footer ── */}
-            <div className="flex-shrink-0 px-8 py-4 border-t border-gray-100 flex justify-end">
+            <div ref={tFooterRef} className="flex-shrink-0 px-8 py-4 border-t border-gray-100 flex justify-end">
               {(() => {
                 const isDupBlocked = templateDuplicateMode && templateName === templateOriginalName;
                 const isEditBlocked = templateEditMode && !templateDirty;
@@ -2631,11 +2612,8 @@ export function PersonalArea() {
                   {/* Picker */}
                   <DynamicFieldPicker
                     existingFields={tTemplateFields}
-                    onAdd={newFields => {
-                      setTTemplateFields(p => [...p, ...newFields]);
-                      setFieldsExpanded(true);
-                    }}
-                    onRemove={id => setTTemplateFields(p => p.filter(f => f.id !== id))}
+                    onAdd={newFields => setTTemplateFields(p => [...p, ...newFields])}
+                    onRemove={removeTField}
                     onClose={() => setShowFieldBankPicker(false)}
                   />
                 </div>
@@ -2702,6 +2680,142 @@ export function PersonalArea() {
               </div>
             )}
 
+          </div>
+
+          {/* ── Source-system fields panel — attached extension of the dialog ── */}
+          {(() => {
+            // Group: system → (operation + instance) → fields
+            const systems: { id: string; name: string; ops: { key: string; name: string; instance: string; fields: DynamicField[] }[] }[] = [];
+            tTemplateFields.forEach(f => {
+              let sys = systems.find(x => x.id === f.systemId);
+              if (!sys) { sys = { id: f.systemId, name: f.systemName, ops: [] }; systems.push(sys); }
+              const key = `${f.operationId}|${f.instanceName}`;
+              let op = sys.ops.find(o => o.key === key);
+              if (!op) { op = { key, name: f.operationName, instance: f.instanceName, fields: [] }; sys.ops.push(op); }
+              op.fields.push(f);
+            });
+            const isEmpty = tTemplateFields.length === 0;
+            return (
+              <div dir="rtl"
+                className="relative flex flex-col overflow-hidden bg-[#F6F8FC] border border-[#1B3A6B]/10"
+                style={{
+                  width: 290, flexShrink: 0,
+                  marginTop: tPanelInset.top, marginBottom: tPanelInset.bottom,
+                  borderLeft: 'none',
+                  borderTopRightRadius: 18, borderBottomRightRadius: 18, borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
+                  boxShadow: 'inset 10px 0 14px -12px rgba(27,58,107,0.25), 14px 12px 32px -8px rgba(0,0,0,0.25)',
+                }}>
+                {/* Header */}
+                <div className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-[#1B3A6B]/[0.07]">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#1B3A6B] flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <Database className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-[15px] font-bold text-gray-900 leading-tight">שדות ממערכות מקור</h3>
+                      {!isEmpty && <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">גרור שדה לפרטי התבנית או לגוף המסמך</p>}
+                    </div>
+                  </div>
+                </div>
+
+                {isEmpty ? (
+                  /* Empty state */
+                  <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+                    <div className="relative w-36 h-36 mb-5 flex items-center justify-center">
+                      <div className="absolute inset-0 rounded-full border border-dashed border-[#1B3A6B]/15 animate-[spin_24s_linear_infinite]" />
+                      <div className="absolute inset-5 rounded-full bg-[#1B3A6B]/[0.04]" />
+                      <div className="absolute inset-10 rounded-full bg-[#1B3A6B]/[0.06]" />
+                      {/* orbiting mini tiles */}
+                      <div className="absolute top-1 right-6 w-8 h-8 rounded-lg bg-white border border-[#1B3A6B]/10 shadow-sm flex items-center justify-center rotate-[8deg]">
+                        <Network className="w-4 h-4 text-[#1B3A6B]/60" />
+                      </div>
+                      <div className="absolute bottom-3 left-2 w-8 h-8 rounded-lg bg-white border border-[#1B3A6B]/10 shadow-sm flex items-center justify-center -rotate-[10deg]">
+                        <Layers className="w-4 h-4 text-[#1B3A6B]/60" />
+                      </div>
+                      {/* center tile */}
+                      <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
+                        style={{ background: 'linear-gradient(135deg, #2A5298 0%, #1B3A6B 100%)', boxShadow: '0 10px 24px -6px rgba(27,58,107,0.45)' }}>
+                        <Database className="w-7 h-7 text-white" />
+                        <span className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-white shadow flex items-center justify-center">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm font-bold text-gray-800">הוסף מידע ממערכות מקור</p>
+                    <p className="text-xs text-gray-500 mt-1.5 leading-relaxed max-w-[210px]">
+                      שלוף שדות ממערכות הארגון וגרור אותם לפרטי התבנית או לגוף המסמך
+                    </p>
+                    <button onClick={() => setShowFieldBankPicker(true)}
+                      className="mt-5 flex items-center gap-1.5 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-xs font-semibold hover:bg-[#152e54] transition-colors shadow-sm">
+                      <Plus className="w-3.5 h-3.5" />
+                      הוספת שדות
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Grouped field list */}
+                    <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-5">
+                      {systems.map(sys => (
+                        <div key={sys.id}>
+                          {/* System header */}
+                          <div className="flex items-center gap-2 mb-2.5">
+                            <span className="text-[13px] font-bold text-[#1B3A6B]">{sys.name}</span>
+                            <span className="flex-1 h-px bg-[#1B3A6B]/10" />
+                            <span className="text-[10px] font-semibold text-[#1B3A6B]/50 bg-[#1B3A6B]/[0.06] px-1.5 py-0.5 rounded-full">
+                              {sys.ops.reduce((n, o) => n + o.fields.length, 0)}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-3">
+                            {sys.ops.map(op => (
+                              <div key={op.key}>
+                                {/* Operation sub-header */}
+                                <div className="flex items-baseline gap-1 mb-1.5 pr-0.5 min-w-0">
+                                  <span className="text-[11px] font-semibold text-gray-600 truncate">{op.name}</span>
+                                  {op.instance && <span className="text-[10px] text-gray-400 truncate">· {op.instance}</span>}
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                  {op.fields.map(df => (
+                                    <div key={df.id}
+                                      draggable
+                                      onDragStart={e => {
+                                        e.dataTransfer.effectAllowed = 'copy';
+                                        e.dataTransfer.setData(DYN_MIME, df.id);
+                                        e.dataTransfer.setData('text/x-chip-html', makeChipHtml(df));
+                                        setTDragActive(true);
+                                      }}
+                                      onDragEnd={() => { setTDragActive(false); setTDropHover(null); }}
+                                      className="flex items-center gap-2 px-3 py-2.5 bg-white border border-[#1B3A6B]/10 rounded-xl cursor-grab select-none shadow-[0_1px_2px_rgba(27,58,107,0.05)] hover:bg-[#EEF4FF] hover:border-[#3B82F6]/40 active:opacity-60 transition-colors group">
+                                      <GripVertical className="w-3.5 h-3.5 text-[#3B82F6]/50 flex-shrink-0 group-hover:text-[#3B82F6] transition-colors" />
+                                      <span className="flex-1 min-w-0 text-[13px] font-semibold text-gray-800 truncate">{df.fieldName}</span>
+                                      <button
+                                        onMouseDown={e => e.stopPropagation()}
+                                        onClick={() => removeTField(df.id)}
+                                        title="הסרה"
+                                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] transition-all flex-shrink-0">
+                                        <X className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Add more */}
+                    <div className="flex-shrink-0 px-4 py-3 border-t border-[#1B3A6B]/[0.07]">
+                      <button onClick={() => setShowFieldBankPicker(true)}
+                        className="flex items-center justify-center gap-1.5 w-full px-3 py-2.5 text-[#1B3A6B] border border-dashed border-[#1B3A6B]/30 hover:border-[#1B3A6B]/60 hover:bg-white rounded-xl text-xs font-semibold transition-colors">
+                        <Plus className="w-3.5 h-3.5" />
+                        הוספת שדות
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })()}
           </div>
         </div>
       )}
