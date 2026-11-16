@@ -582,16 +582,50 @@ const makeInlineChipHtml = (df: DynamicField): string =>
   `<span data-chip-id="${df.id}" title="${df.systemName} · ${df.operationName}${df.instanceName ? ` · ${df.instanceName}` : ''}" contenteditable="false" style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px 1px 5px;margin:0 2px;background:#EEF4FF;border:1px solid rgba(27,58,107,0.25);border-radius:7px;font-size:12px;color:#1B3A6B;font-weight:600;white-space:nowrap;user-select:none;line-height:1.5;vertical-align:middle">${_DB_ICON_SVG} ${df.fieldName}<button data-chip-remove="${df.id}" contenteditable="false" style="margin-right:3px;opacity:0.4;cursor:pointer;background:none;border:none;color:#1B3A6B;padding:0;line-height:1;font-size:13px;font-family:inherit">×</button></span>`;
 
 // Single-line input that mixes free text with source-system chips dropped at the caret
-function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = false, onDropDone }: {
+function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = false, onDropDone, dragField = null }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   fields: DynamicField[];
   invalid?: boolean;
   onDropDone?: () => void;
+  dragField?: DynamicField | null;   // field currently being dragged from the panel (for the drop preview)
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const last = useRef<string | null>(null);
+  const [caretX, setCaretX] = useState<number | null>(null);   // insertion point, px from wrapper's left
+
+  const rangeAt = (x: number, y: number): Range | null =>
+    (document as any).caretRangeFromPoint?.(x, y) ??
+    (() => {
+      const pos = (document as any).caretPositionFromPoint?.(x, y);
+      if (!pos) return null;
+      const r = document.createRange(); r.setStart(pos.offsetNode, pos.offset); r.collapse(true); return r;
+    })();
+
+  const updateCaret = (e: React.DragEvent) => {
+    if (!ref.current || !wrapRef.current) return;
+    const wrap = wrapRef.current.getBoundingClientRect();
+    const box = ref.current.getBoundingClientRect();
+    const r = rangeAt(e.clientX, e.clientY);
+    let x: number | null = null;
+    if (r && ref.current.contains(r.startContainer) && !r.startContainer.parentElement?.closest('[data-chip-id]')) {
+      const rect = r.getClientRects()[0] ?? r.getBoundingClientRect();
+      if (rect && (rect.width || rect.height || rect.left)) x = rect.left;
+    }
+    if (x === null) {
+      // empty editor or pointer past the text → end of content (left edge of last node in RTL), else start
+      const lastNode = ref.current.lastChild;
+      if (lastNode) {
+        const rr = document.createRange(); rr.selectNodeContents(ref.current); rr.collapse(false);
+        const rect = rr.getClientRects()[0];
+        x = rect ? rect.left : box.right - 12;
+      } else x = box.right - 12;
+    }
+    x = Math.max(box.left + 6, Math.min(box.right - 6, x));
+    setCaretX(x - wrap.left);
+  };
 
   useEffect(() => {
     if (ref.current && value !== last.current) {
@@ -609,18 +643,13 @@ function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = 
   };
 
   const handleDrop = (e: React.DragEvent) => {
+    setCaretX(null);
     const df = fields.find(f => f.id === e.dataTransfer.getData('application/x-dyn-chip'));
     onDropDone?.();
     if (!df || !ref.current) return;
     e.preventDefault();
     ref.current.focus();
-    const range: Range | null =
-      (document as any).caretRangeFromPoint?.(e.clientX, e.clientY) ??
-      (() => {
-        const pos = (document as any).caretPositionFromPoint?.(e.clientX, e.clientY);
-        if (!pos) return null;
-        const r = document.createRange(); r.setStart(pos.offsetNode, pos.offset); r.collapse(true); return r;
-      })();
+    const range = rangeAt(e.clientX, e.clientY);
     const tmp = document.createElement('span');
     tmp.innerHTML = makeInlineChipHtml(df);
     const chip = tmp.firstChild as HTMLElement;
@@ -636,7 +665,10 @@ function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = 
     commit();
   };
 
+  useEffect(() => { if (!dragField) setCaretX(null); }, [dragField]);
+
   return (
+    <div ref={wrapRef} className="relative">
     <div
       ref={ref}
       contentEditable
@@ -650,11 +682,25 @@ function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = 
         const btn = (e.target as HTMLElement).closest('[data-chip-remove]') as HTMLElement | null;
         if (btn && ref.current) { ref.current.querySelector(`[data-chip-id="${btn.dataset.chipRemove}"]`)?.remove(); commit(); }
       }}
-      onDragOver={e => { if (e.dataTransfer.types.includes('application/x-dyn-chip')) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } }}
+      onDragOver={e => { if (e.dataTransfer.types.includes('application/x-dyn-chip')) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; updateCaret(e); } }}
+      onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setCaretX(null); }}
       onDrop={handleDrop}
       className={`content-editor w-full px-3 py-2 border rounded-xl text-sm text-right text-gray-900 bg-white transition-colors focus:border-[#1B3A6B] whitespace-nowrap overflow-x-auto overflow-y-hidden ${invalid ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`}
       style={{ height: 38, lineHeight: '20px', scrollbarWidth: 'none' }}
     />
+    {/* Drop preview: insertion caret + ghost chip of the dragged field */}
+    {caretX !== null && (
+      <div className="pointer-events-none absolute top-0 bottom-0 z-10" style={{ left: caretX }}>
+        <span className="absolute top-[8px] -translate-x-1/2 w-[2px] h-[22px] rounded-full bg-[#3B82F6] shadow-[0_0_0_3px_rgba(59,130,246,0.18)] animate-pulse" />
+        {dragField && (
+          <span dir="rtl" className="absolute top-full mt-1.5 right-0 translate-x-1 inline-flex items-center gap-1 whitespace-nowrap px-2 py-0.5 rounded-md bg-[#3B82F6] text-white text-[11px] font-semibold shadow-md">
+            <Plus className="w-3 h-3" />
+            {dragField.fieldName}
+          </span>
+        )}
+      </div>
+    )}
+    </div>
   );
 }
 
@@ -1459,7 +1505,7 @@ export function PersonalArea() {
     setTTopics([]); setTAppendices([]); setTHasEmphasis(false); setTEmphasis(''); setTemplateName('');
     setTClassification(''); setTClassificationTag(''); setTEffectiveDateTime(nowIso()); setTExpiryDateTime('');
     setTPermTarget(null); setTTemplateFields([]); setTDynTarget(null); setTemplateEditMode(false); setTemplateDuplicateMode(false); setTemplateOriginalName(''); setTemplateDirty(false);
-    setTLinkedFields({}); setTDragActive(false); setTDropHover(null);
+    setTLinkedFields({}); setTDragActive(false); setTDragField(null); setTDropHover(null);
   };
   const addTTopic = () => { setTTopics(p => [...p, {id:`tt-${Date.now()}`,title:'',sections:[]}]); setTemplateDirty(true); };
   const addTSection = (ti: number) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:[...t.sections,{id:`ts-${Date.now()}`,title:'',content:'',subsections:[],permissions:{approvers:[],editors:[]},dynamicFields:[]}]})); setTemplateDirty(true); };
@@ -1482,6 +1528,7 @@ export function PersonalArea() {
   type TLinkKey = 'name' | 'dept' | 'folder' | 'effective' | 'expiry';
   const [tLinkedFields, setTLinkedFields] = useState<Partial<Record<TLinkKey, DynamicField>>>({});
   const [tDragActive, setTDragActive] = useState(false);
+  const [tDragField, setTDragField] = useState<DynamicField | null>(null);
   const [tDropHover, setTDropHover] = useState<TLinkKey | null>(null);
   const removeTField = (id: string) => {
     setTTemplateFields(p => p.filter(f => f.id !== id));
@@ -1511,13 +1558,13 @@ export function PersonalArea() {
 
   const DYN_MIME = 'application/x-dyn-chip';
   // Linking is optional: a small corner badge marks linkable fields; the drop hint shows only while dragging.
-  const renderLinkable = (key: TLinkKey, control: ReactNode, opts: { inline?: boolean; empty?: boolean } = {}) => {
-    const { inline = false, empty = true } = opts;
+  const renderLinkable = (key: TLinkKey, control: ReactNode, opts: { inline?: boolean } = {}) => {
+    const { inline = false } = opts;
     const linked = tLinkedFields[key];
     const hover = tDropHover === key;
     const dragging = tDragActive || hover;
-    // inline editors keep their content visible (drop lands at the caret); hint only when empty
-    const showHint = dragging && (!inline || empty);
+    // inline editors take the field as *part* of their content → caret preview instead of a whole-field hint
+    const showHint = dragging && !inline;
     return (
       <div className="relative"
         onDragOver={e => {
@@ -1566,7 +1613,7 @@ export function PersonalArea() {
           </span>
           {!dragging && (
             <div className="pointer-events-none absolute bottom-full left-0 mb-1.5 w-max max-w-[220px] px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-[11px] leading-snug text-right opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 shadow-lg">
-              {linked ? 'מקושר למערכת מקור — ניתן לבטל ולמלא ידנית' : 'ניתן לגרור לכאן מידע ממערכת מקור'}
+              {linked ? 'מקושר למערכת מקור — ניתן לבטל ולמלא ידנית' : inline ? 'ניתן לגרור לכאן מידע ממערכת מקור ולשלב אותו עם טקסט חופשי' : 'ניתן לגרור לכאן מידע ממערכת מקור'}
               <span className="absolute top-full left-2 border-4 border-transparent border-t-gray-900" />
             </div>
           )}
@@ -2290,8 +2337,9 @@ export function PersonalArea() {
                     placeholder="הזן שם תבנית או גרור שדות..."
                     fields={tTemplateFields}
                     invalid={templateDuplicateMode && templateName === templateOriginalName}
-                    onDropDone={() => { setTDropHover(null); setTDragActive(false); setTemplateDirty(true); }}
-                  />, { inline: true, empty: !templateName.replace(/<br>|&nbsp;|\s/g, '') })}
+                    onDropDone={() => { setTDropHover(null); setTDragActive(false); setTDragField(null); setTemplateDirty(true); }}
+                    dragField={tDragField}
+                  />, { inline: true })}
                   {templateDuplicateMode && templateName === templateOriginalName && (
                     <p className="text-[11px] text-amber-600 mt-1 text-right">יש לשנות את שם התבנית לפני השכפול</p>
                   )}
@@ -2902,9 +2950,9 @@ export function PersonalArea() {
                                         e.dataTransfer.effectAllowed = 'copy';
                                         e.dataTransfer.setData(DYN_MIME, df.id);
                                         e.dataTransfer.setData('text/x-chip-html', makeChipHtml(df));
-                                        setTDragActive(true);
+                                        setTDragActive(true); setTDragField(df);
                                       }}
-                                      onDragEnd={() => { setTDragActive(false); setTDropHover(null); }}
+                                      onDragEnd={() => { setTDragActive(false); setTDragField(null); setTDropHover(null); }}
                                       className="flex items-center gap-2 px-3 py-2.5 bg-white border border-[#1B3A6B]/10 rounded-xl cursor-grab select-none shadow-[0_1px_2px_rgba(27,58,107,0.05)] hover:bg-[#EEF4FF] hover:border-[#3B82F6]/40 active:opacity-60 transition-colors group">
                                       <GripVertical className="w-3.5 h-3.5 text-[#3B82F6]/50 flex-shrink-0 group-hover:text-[#3B82F6] transition-colors" />
                                       <span className="flex-1 min-w-0 text-[13px] font-semibold text-gray-800 truncate">{df.fieldName}</span>
