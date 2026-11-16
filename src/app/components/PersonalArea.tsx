@@ -581,7 +581,8 @@ function ContentEditor({
 const makeInlineChipHtml = (df: DynamicField): string =>
   `<span data-chip-id="${df.id}" title="${df.systemName} · ${df.operationName}${df.instanceName ? ` · ${df.instanceName}` : ''}" contenteditable="false" style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px 1px 5px;margin:0 2px;background:#EEF4FF;border:1px solid rgba(27,58,107,0.25);border-radius:7px;font-size:12px;color:#1B3A6B;font-weight:600;white-space:nowrap;user-select:none;line-height:1.5;vertical-align:middle">${_DB_ICON_SVG} ${df.fieldName}<button data-chip-remove="${df.id}" contenteditable="false" style="margin-right:3px;opacity:0.4;cursor:pointer;background:none;border:none;color:#1B3A6B;padding:0;line-height:1;font-size:13px;font-family:inherit">×</button></span>`;
 
-// Single-line input that mixes free text with source-system chips dropped at the caret
+// Single-line input that mixes free text with source-system chips dropped at the caret.
+// While dragging over it, a ghost chip is inserted live into the text at the pointer and pushes the words aside.
 function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = false, onDropDone, dragField = null }: {
   value: string;
   onChange: (v: string) => void;
@@ -589,43 +590,12 @@ function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = 
   fields: DynamicField[];
   invalid?: boolean;
   onDropDone?: () => void;
-  dragField?: DynamicField | null;   // field currently being dragged from the panel (for the drop preview)
+  dragField?: DynamicField | null;   // field currently being dragged from the panel (for the live preview)
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
   const last = useRef<string | null>(null);
-  const [caretX, setCaretX] = useState<number | null>(null);   // insertion point, px from wrapper's left
-
-  const rangeAt = (x: number, y: number): Range | null =>
-    (document as any).caretRangeFromPoint?.(x, y) ??
-    (() => {
-      const pos = (document as any).caretPositionFromPoint?.(x, y);
-      if (!pos) return null;
-      const r = document.createRange(); r.setStart(pos.offsetNode, pos.offset); r.collapse(true); return r;
-    })();
-
-  const updateCaret = (e: React.DragEvent) => {
-    if (!ref.current || !wrapRef.current) return;
-    const wrap = wrapRef.current.getBoundingClientRect();
-    const box = ref.current.getBoundingClientRect();
-    const r = rangeAt(e.clientX, e.clientY);
-    let x: number | null = null;
-    if (r && ref.current.contains(r.startContainer) && !r.startContainer.parentElement?.closest('[data-chip-id]')) {
-      const rect = r.getClientRects()[0] ?? r.getBoundingClientRect();
-      if (rect && (rect.width || rect.height || rect.left)) x = rect.left;
-    }
-    if (x === null) {
-      // empty editor or pointer past the text → end of content (left edge of last node in RTL), else start
-      const lastNode = ref.current.lastChild;
-      if (lastNode) {
-        const rr = document.createRange(); rr.selectNodeContents(ref.current); rr.collapse(false);
-        const rect = rr.getClientRects()[0];
-        x = rect ? rect.left : box.right - 12;
-      } else x = box.right - 12;
-    }
-    x = Math.max(box.left + 6, Math.min(box.right - 6, x));
-    setCaretX(x - wrap.left);
-  };
+  const ghost = useRef<HTMLSpanElement | null>(null);
+  const ghostPos = useRef<number | null>(null);
 
   useEffect(() => {
     if (ref.current && value !== last.current) {
@@ -642,33 +612,80 @@ function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = 
     onChange(last.current);
   };
 
+  const rangeAt = (x: number, y: number): Range | null =>
+    (document as any).caretRangeFromPoint?.(x, y) ??
+    (() => {
+      const pos = (document as any).caretPositionFromPoint?.(x, y);
+      if (!pos) return null;
+      const r = document.createRange(); r.setStart(pos.offsetNode, pos.offset); r.collapse(true); return r;
+    })();
+
+  const removeGhost = () => {
+    if (ghost.current) { ghost.current.remove(); ghost.current = null; ref.current?.normalize(); }
+  };
+
+  // Caret position for a pointer, measured on the ghost-free layout (keeps the preview stable while text shifts)
+  const caretFor = (e: React.DragEvent): { range: Range | null; pos: number } => {
+    const ed = ref.current!;
+    const r = rangeAt(e.clientX, e.clientY);
+    const ok = r && ed.contains(r.startContainer) && !r.startContainer.parentElement?.closest('[data-chip-id]');
+    if (!ok) {
+      const end = document.createRange(); end.selectNodeContents(ed); end.collapse(false);
+      return { range: end, pos: Number.MAX_SAFE_INTEGER };
+    }
+    const pre = document.createRange(); pre.selectNodeContents(ed); pre.setEnd(r!.startContainer, r!.startOffset);
+    return { range: r, pos: pre.toString().length };
+  };
+
+  const makeGhost = (df: DynamicField | null, animate: boolean) => {
+    const g = document.createElement('span');
+    g.setAttribute('data-ghost', '');
+    g.contentEditable = 'false';
+    g.className = animate ? 'ghost-chip ghost-chip-in' : 'ghost-chip';
+    g.innerHTML = `<span style="font-weight:700;font-size:13px;line-height:1">+</span>${df ? df.fieldName : 'שדה'}`;
+    return g;
+  };
+
+  const updateGhost = (e: React.DragEvent) => {
+    if (!ref.current) return;
+    removeGhost();
+    const { range, pos } = caretFor(e);
+    const changed = pos !== ghostPos.current;
+    ghostPos.current = pos;
+    const g = makeGhost(dragField, changed);
+    if (range) range.insertNode(g); else ref.current.append(g);
+    ghost.current = g;
+  };
+
+  const clearPreview = () => { removeGhost(); ghostPos.current = null; };
+  useEffect(() => { if (!dragField) clearPreview(); }, [dragField]);
+
   const handleDrop = (e: React.DragEvent) => {
-    setCaretX(null);
     const df = fields.find(f => f.id === e.dataTransfer.getData('application/x-dyn-chip'));
     onDropDone?.();
-    if (!df || !ref.current) return;
+    if (!df || !ref.current) { clearPreview(); return; }
     e.preventDefault();
-    ref.current.focus();
-    const range = rangeAt(e.clientX, e.clientY);
     const tmp = document.createElement('span');
     tmp.innerHTML = makeInlineChipHtml(df);
     const chip = tmp.firstChild as HTMLElement;
     const space = document.createTextNode(' ');
-    if (range && ref.current.contains(range.startContainer) && !(range.startContainer.parentElement?.closest('[data-chip-id]'))) {
-      range.insertNode(space); range.insertNode(chip);
+    if (ghost.current) {
+      ghost.current.replaceWith(chip, space);
+      ghost.current = null;
     } else {
-      ref.current.append(chip, space);
+      const { range } = caretFor(e);
+      if (range) { range.insertNode(space); range.insertNode(chip); } else ref.current.append(chip, space);
     }
+    ghostPos.current = null;
+    ref.current.normalize();
+    ref.current.focus();
     const sel = window.getSelection();
     const after = document.createRange(); after.setStartAfter(space); after.collapse(true);
     sel?.removeAllRanges(); sel?.addRange(after);
     commit();
   };
 
-  useEffect(() => { if (!dragField) setCaretX(null); }, [dragField]);
-
   return (
-    <div ref={wrapRef} className="relative">
     <div
       ref={ref}
       contentEditable
@@ -682,25 +699,12 @@ function InlineChipInput({ value, onChange, placeholder = '', fields, invalid = 
         const btn = (e.target as HTMLElement).closest('[data-chip-remove]') as HTMLElement | null;
         if (btn && ref.current) { ref.current.querySelector(`[data-chip-id="${btn.dataset.chipRemove}"]`)?.remove(); commit(); }
       }}
-      onDragOver={e => { if (e.dataTransfer.types.includes('application/x-dyn-chip')) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; updateCaret(e); } }}
-      onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setCaretX(null); }}
+      onDragOver={e => { if (e.dataTransfer.types.includes('application/x-dyn-chip')) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; updateGhost(e); } }}
+      onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) clearPreview(); }}
       onDrop={handleDrop}
       className={`content-editor w-full px-3 py-2 border rounded-xl text-sm text-right text-gray-900 bg-white transition-colors focus:border-[#1B3A6B] whitespace-nowrap overflow-x-auto overflow-y-hidden ${invalid ? 'border-amber-400 bg-amber-50' : 'border-gray-200'}`}
       style={{ height: 38, lineHeight: '20px', scrollbarWidth: 'none' }}
     />
-    {/* Drop preview: insertion caret + ghost chip of the dragged field */}
-    {caretX !== null && (
-      <div className="pointer-events-none absolute top-0 bottom-0 z-10" style={{ left: caretX }}>
-        <span className="absolute top-[8px] -translate-x-1/2 w-[2px] h-[22px] rounded-full bg-[#3B82F6] shadow-[0_0_0_3px_rgba(59,130,246,0.18)] animate-pulse" />
-        {dragField && (
-          <span dir="rtl" className="absolute top-full mt-1.5 right-0 translate-x-1 inline-flex items-center gap-1 whitespace-nowrap px-2 py-0.5 rounded-md bg-[#3B82F6] text-white text-[11px] font-semibold shadow-md">
-            <Plus className="w-3 h-3" />
-            {dragField.fieldName}
-          </span>
-        )}
-      </div>
-    )}
-    </div>
   );
 }
 
