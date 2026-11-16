@@ -7,12 +7,8 @@ import { DateTimePicker } from './DateTimePicker';
 import { TableDesignModal, fieldShapeOf, fieldTypeOf, FIELD_TYPE_LABELS, type FieldDataType, type FieldDesign } from './TableDesignModal';
 
 // Type badge (icon + colour) for source-field chips
-const FIELD_TYPE_BADGE: Record<FieldDataType, { Icon: LucideIcon; cls: string }> = {
-  text:   { Icon: TypeIcon,     cls: 'bg-gray-100 text-gray-500' },
-  number: { Icon: Hash,         cls: 'bg-amber-50 text-amber-600' },
-  date:   { Icon: CalendarIcon, cls: 'bg-violet-50 text-violet-600' },
-  table:  { Icon: Table2,       cls: 'bg-[#EEF4FF] text-[#1B3A6B]' },
-  list:   { Icon: List,         cls: 'bg-teal-50 text-teal-600' },
+const FIELD_TYPE_ICON: Record<FieldDataType, LucideIcon> = {
+  text: TypeIcon, number: Hash, date: CalendarIcon, table: Table2, list: List,
 };
 
 const ENV_PEOPLE_OPTIONS = [
@@ -2998,21 +2994,29 @@ export function PersonalArea() {
                                               <button
                                                 onMouseDown={e => e.stopPropagation()}
                                                 onClick={() => setTDesignFieldId(df.id)}
-                                                title="עיצוב תצוגה"
                                                 aria-label={`עיצוב תצוגת ${df.fieldName}`}
-                                                className={`relative p-1 rounded-md transition-all flex-shrink-0 ${designed
+                                                className={`group/design relative p-1 rounded-md transition-all flex-shrink-0 ${designed
                                                   ? 'text-[#1B3A6B] bg-[#EEF4FF] opacity-100'
                                                   : 'text-gray-400 hover:text-[#1B3A6B] hover:bg-[#EEF4FF] opacity-0 group-hover:opacity-100'}`}>
                                                 <Paintbrush className="w-3.5 h-3.5" />
+                                                <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-900 text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 translate-y-0.5 group-hover/design:opacity-100 group-hover/design:translate-y-0 transition-all duration-150 z-20">
+                                                  {designed ? 'עריכת עיצוב תצוגה' : 'עיצוב תצוגה'}
+                                                  <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                                                </span>
                                                 {designed && <span className="absolute -top-0.5 -left-0.5 w-1.5 h-1.5 rounded-full bg-[#3B82F6] ring-2 ring-white" />}
                                               </button>
                                             )}
                                             {(() => {
-                                              const { Icon, cls } = FIELD_TYPE_BADGE[type];
+                                              const Icon = FIELD_TYPE_ICON[type];
                                               return (
-                                                <span title={FIELD_TYPE_LABELS[type]} aria-label={`סוג: ${FIELD_TYPE_LABELS[type]}`}
-                                                  className={`flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center ${cls}`}>
-                                                  <Icon className="w-3.5 h-3.5" strokeWidth={2.25} />
+                                                <span className="group/type relative flex-shrink-0" aria-label={`סוג שדה: ${FIELD_TYPE_LABELS[type]}`}>
+                                                  <span className="w-6 h-6 rounded-md flex items-center justify-center bg-[#1B3A6B]/[0.05] text-[#1B3A6B]/55 group-hover/type:bg-[#1B3A6B]/10 group-hover/type:text-[#1B3A6B] transition-colors">
+                                                    <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+                                                  </span>
+                                                  <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-900 text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 translate-y-0.5 group-hover/type:opacity-100 group-hover/type:translate-y-0 transition-all duration-150 z-20">
+                                                    {FIELD_TYPE_LABELS[type]}
+                                                    <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                                                  </span>
                                                 </span>
                                               );
                                             })()}
