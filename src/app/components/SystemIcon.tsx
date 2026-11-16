@@ -1,5 +1,5 @@
 // Placeholder "logos" for source systems, until the real system icons are available.
-import { Network, ChartGantt, Boxes, Database, type LucideIcon } from 'lucide-react';
+import { Network, ChartGantt, Boxes, Database, Users, Crosshair, Truck, type LucideIcon } from 'lucide-react';
 
 type SystemBrand = { Icon: LucideIcon; from: string; to: string };
 
@@ -7,6 +7,9 @@ const SYSTEM_BRANDS: Record<string, SystemBrand> = {
   unitree: { Icon: Network,    from: '#3BAA7A', to: '#1F7550' },
   ganttit: { Icon: ChartGantt, from: '#F59A4A', to: '#D9631E' },
   lineapp: { Icon: Boxes,      from: '#6E72E0', to: '#4146B5' },
+  'מערכת כוח אדם':      { Icon: Users,     from: '#3B9BD9', to: '#1F6FA8' },
+  'מערכת ניהול תחמושת': { Icon: Crosshair, from: '#E06A6A', to: '#B23B3B' },
+  'מערכת לוגיסטיקה':    { Icon: Truck,     from: '#C59A3E', to: '#946C1E' },
 };
 const FALLBACK: SystemBrand = { Icon: Database, from: '#5B7BB0', to: '#1B3A6B' };
 

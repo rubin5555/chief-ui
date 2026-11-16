@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import type { EditDocInfo } from '../../App';
 import { DateTimePicker } from '../components/DateTimePicker';
+import { SystemIcon } from '../components/SystemIcon';
 
 const CLASSIFIED_POOL = [
   { id: 'u1', name: 'אלון כהן',       idNumber: '123456789', env: 'סודי' },
@@ -5098,6 +5099,7 @@ export function Edit({ navigate, doc }: EditProps) {
                 <div className="flex flex-col gap-2">
                   {systems.map((s, i) => (
                     <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-100 bg-gray-50">
+                      <SystemIcon name={s.name} size="md" />
                       <div className="flex flex-col gap-0.5 flex-1">
                         <span className="text-xs font-semibold text-gray-800">{s.name}</span>
                         <span className="text-[11px] text-gray-500">{s.field}</span>
