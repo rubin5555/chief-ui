@@ -4,11 +4,16 @@ import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
 import { DatePicker } from './DatePicker';
 import { DateTimePicker } from './DateTimePicker';
+import { SystemIcon } from './SystemIcon';
 import { TableDesignModal, fieldShapeOf, fieldTypeOf, FIELD_TYPE_LABELS, type FieldDataType, type FieldDesign } from './TableDesignModal';
 
 // Type badge (icon + colour) for source-field chips
-const FIELD_TYPE_ICON: Record<FieldDataType, LucideIcon> = {
-  text: TypeIcon, number: Hash, date: CalendarIcon, table: Table2, list: List,
+const FIELD_TYPE_BADGE: Record<FieldDataType, { Icon: LucideIcon; bg: string; fg: string }> = {
+  text:   { Icon: TypeIcon,     bg: '#EEF1F5', fg: '#475569' },
+  number: { Icon: Hash,         bg: '#E3F2FB', fg: '#0369A1' },
+  date:   { Icon: CalendarIcon, bg: '#ECEBFA', fg: '#4F46A5' },
+  table:  { Icon: Table2,       bg: '#E6ECF5', fg: '#1B3A6B' },
+  list:   { Icon: List,         bg: '#E0F4F1', fg: '#0F766E' },
 };
 
 const ENV_PEOPLE_OPTIONS = [
@@ -767,6 +772,7 @@ function SidebarFieldPicker({
         <div className="space-y-0.5">
           {DYNAMIC_SYSTEMS.map(sys => (
             <button key={sys.id} type="button" onClick={() => pickSys(sys)} className={ROW(selSys?.id === sys.id)}>
+              <SystemIcon name={sys.name} size="xs" />
               <span className="flex-1 truncate">{sys.name}</span>
               {selSys?.id === sys.id && <ChevronLeft className="w-3 h-3 flex-shrink-0" />}
             </button>
@@ -885,8 +891,9 @@ function DynamicFieldPicker({
               <button type="button" onClick={() => pickSys(sys)}
                 className={`relative w-full flex items-center gap-2 px-4 py-3 text-right transition-all duration-150 ${isSel ? 'bg-gradient-to-l from-[#EEF4FF] to-[#F7F9FF]' : 'hover:bg-gray-50/70'}`}>
                 {isSel && <span className="absolute right-0 top-2 bottom-2 w-[3px] rounded-full bg-[#1B3A6B]" />}
-                <ChevronLeft className={`w-3 h-3 flex-shrink-0 transition-colors ${isSel ? 'text-[#1B3A6B]/50' : 'text-transparent'}`} />
+                <SystemIcon name={sys.name} size="sm" />
                 <span className={`flex-1 truncate text-right text-[11px] ${isSel ? 'font-bold text-[#1B3A6B]' : 'font-medium text-gray-600'}`}>{sys.name}</span>
+                <ChevronLeft className={`w-3 h-3 flex-shrink-0 transition-colors ${isSel ? 'text-[#1B3A6B]/50' : 'text-transparent'}`} />
               </button>
             </div>
           );
@@ -1599,7 +1606,7 @@ export function PersonalArea() {
           <div className="flex items-center gap-2 px-3 bg-[#EEF4FF] border border-[#1B3A6B]/25 rounded-xl" style={{ height: 38 }}>
             <Database className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0" />
             <span className="text-sm font-semibold text-[#1B3A6B] truncate">{linked.fieldName}</span>
-            <span className="text-[11px] text-[#1B3A6B]/50 truncate flex-1 min-w-0">{linked.systemName}</span>
+            <span className="flex items-center gap-1 text-[11px] text-[#1B3A6B]/50 truncate flex-1 min-w-0"><SystemIcon name={linked.systemName} size="xs" />{linked.systemName}</span>
             <button type="button" title="ביטול קישור — חזרה למילוי ידני"
               onClick={() => { setTLinkedFields(p => { const n = { ...p }; delete n[key]; return n; }); setTemplateDirty(true); }}
               className="p-0.5 rounded text-[#1B3A6B]/40 hover:text-[#1B3A6B] hover:bg-[#1B3A6B]/10 transition-colors flex-shrink-0">
@@ -2956,6 +2963,7 @@ export function PersonalArea() {
                         <div key={sys.id}>
                           {/* System header */}
                           <div className="flex items-center gap-2 mb-2.5">
+                            <SystemIcon name={sys.name} size="sm" />
                             <span className="text-[13px] font-bold text-[#1B3A6B]">{sys.name}</span>
                             <span className="flex-1 h-px bg-[#1B3A6B]/10" />
                             <span className="text-[10px] font-semibold text-[#1B3A6B]/50 bg-[#1B3A6B]/[0.06] px-1.5 py-0.5 rounded-full">
@@ -3007,10 +3015,10 @@ export function PersonalArea() {
                                               </button>
                                             )}
                                             {(() => {
-                                              const Icon = FIELD_TYPE_ICON[type];
+                                              const { Icon, bg, fg } = FIELD_TYPE_BADGE[type];
                                               return (
                                                 <span className="group/type relative flex-shrink-0" aria-label={`סוג שדה: ${FIELD_TYPE_LABELS[type]}`}>
-                                                  <span className="w-6 h-6 rounded-md flex items-center justify-center bg-[#1B3A6B]/[0.07] text-[#1B3A6B]/85 group-hover/type:bg-[#1B3A6B]/[0.12] group-hover/type:text-[#1B3A6B] transition-colors">
+                                                  <span className="w-6 h-6 rounded-md flex items-center justify-center transition-[filter] group-hover/type:brightness-95" style={{ background: bg, color: fg }}>
                                                     <Icon className="w-3.5 h-3.5" strokeWidth={2} />
                                                   </span>
                                                   <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-900 text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 translate-y-0.5 group-hover/type:opacity-100 group-hover/type:translate-y-0 transition-all duration-150 z-20">
