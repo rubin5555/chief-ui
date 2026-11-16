@@ -44,15 +44,39 @@ export interface FieldDesign {
   renderAsTable: boolean;
 }
 
-// ── Sample values returned by source systems (only non-text fields) ──
+// ── Sample values returned by source systems (from the source-systems stub) ──
 export const FIELD_SAMPLE_VALUES: Record<string, JsonValue> = {
+  // UniTree
+  'שם היחידה': 'יחידה 101',
+  'מספר יחידה': '101',
+  'מפקד היחידה': 'אל"מ דוד כהן',
+  'כתובת היחידה': 'בסיס צפון, אזור תעשייה 5',
+  'סוג היחידה': 'יחידה קרבית',
+  'מספר חיילים': '120',
+  'מספר קצינים': '8',
+  'שם קצין הכוננות': 'סרן יוסי לוי',
   'כוח זמין': [45, 30, 25],
+  // Ganttit
+  'שם הפעולה': 'מבצע שחר',
+  'תאריך הפעולה': '16.07.2026',
+  'איזור הפעולה': 'גזרה צפונית',
+  'מטרת הפעולה': 'אבטחת ציר תנועה',
+  'שעת כניסה': '04:30',
+  'סוג האיום': 'חדירה',
+  'מיקום האיום': 'גבול צפון',
+  'עוצמת כוח': 'בינונית',
+  // LineApp
   'כמות כלי רכב': [
     { סוג: "ג'יפ", כמות: 5 },
     { סוג: 'משאית', כמות: 3 },
     { סוג: 'נגמ"ש', כמות: 2 },
   ],
+  'כמות נשק': '230',
   'מלאי תחמושת': [4000, 1200, 300],
+  'ציוד רפואי': 'ציוד עזרה ראשונה מלא',
+  'מיקום מחסן': 'מחסן ראשי א׳',
+  'שם אחראי': 'רס"ן איתי שגיא',
+  'תאריך עדכון אחסון': '10.07.2026',
 };
 
 const isPlainObject = (v: JsonValue): v is { [key: string]: JsonValue } =>
@@ -64,6 +88,25 @@ export const inferFieldShape = (value: JsonValue | undefined): FieldShape => {
 };
 
 export const fieldShapeOf = (fieldName: string): FieldShape => inferFieldShape(FIELD_SAMPLE_VALUES[fieldName]);
+
+// Data type shown on field chips
+export type FieldDataType = 'text' | 'date' | 'number' | 'table' | 'list';
+
+export const FIELD_TYPE_LABELS: Record<FieldDataType, string> = {
+  text: 'טקסט', date: 'תאריך', number: 'מספר', table: 'טבלה', list: 'רשימה',
+};
+
+export const fieldTypeOf = (fieldName: string): FieldDataType => {
+  const v = FIELD_SAMPLE_VALUES[fieldName];
+  const shape = inferFieldShape(v);
+  if (shape !== 'text') return shape;
+  if (typeof v === 'number') return 'number';
+  if (typeof v === 'string') {
+    if (/^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$/.test(v.trim())) return 'date';
+    if (/^-?\d+(\.\d+)?$/.test(v.trim())) return 'number';
+  }
+  return 'text';
+};
 
 const tableColumnsOf = (value: JsonValue | undefined): string[] => {
   if (!Array.isArray(value)) return [];
