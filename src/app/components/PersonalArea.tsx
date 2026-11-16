@@ -1,9 +1,10 @@
-import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles} from 'lucide-react';
+import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Settings2} from 'lucide-react';
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
 import { DatePicker } from './DatePicker';
 import { DateTimePicker } from './DateTimePicker';
+import { TableDesignModal, fieldShapeOf, type FieldDesign } from './TableDesignModal';
 
 const ENV_PEOPLE_OPTIONS = [
   'אבי כהן', 'שרה לוי', 'משה ישראלי', 'רחל דוד', 'יוסף מזרחי',
@@ -1510,6 +1511,7 @@ export function PersonalArea() {
     setTClassification(''); setTClassificationTag(''); setTEffectiveDateTime(nowIso()); setTExpiryDateTime('');
     setTPermTarget(null); setTTemplateFields([]); setTDynTarget(null); setTemplateEditMode(false); setTemplateDuplicateMode(false); setTemplateOriginalName(''); setTemplateDirty(false);
     setTLinkedFields({}); setTDragActive(false); setTDragField(null); setTDropHover(null);
+    setTFieldDesigns({}); setTDesignFieldId(null);
   };
   const addTTopic = () => { setTTopics(p => [...p, {id:`tt-${Date.now()}`,title:'',sections:[]}]); setTemplateDirty(true); };
   const addTSection = (ti: number) => { setTTopics(p => p.map((t,i) => i!==ti?t:{...t,sections:[...t.sections,{id:`ts-${Date.now()}`,title:'',content:'',subsections:[],permissions:{approvers:[],editors:[]},dynamicFields:[]}]})); setTemplateDirty(true); };
@@ -1533,9 +1535,13 @@ export function PersonalArea() {
   const [tLinkedFields, setTLinkedFields] = useState<Partial<Record<TLinkKey, DynamicField>>>({});
   const [tDragActive, setTDragActive] = useState(false);
   const [tDragField, setTDragField] = useState<DynamicField | null>(null);
+  // Display design for table / list source fields (keyed by field id)
+  const [tFieldDesigns, setTFieldDesigns] = useState<Record<string, FieldDesign>>({});
+  const [tDesignFieldId, setTDesignFieldId] = useState<string | null>(null);
   const [tDropHover, setTDropHover] = useState<TLinkKey | null>(null);
   const removeTField = (id: string) => {
     setTTemplateFields(p => p.filter(f => f.id !== id));
+    setTFieldDesigns(p => { const n = { ...p }; delete n[id]; return n; });
     setTLinkedFields(p => Object.fromEntries(Object.entries(p).filter(([, f]) => f?.id !== id)));
     setTemplateName(n => {
       if (!n.includes(`data-chip-id="${id}"`)) return n;
@@ -2793,6 +2799,19 @@ export function PersonalArea() {
               </div>
             )}
 
+            {tDesignFieldId && (() => {
+              const df = tTemplateFields.find(f => f.id === tDesignFieldId);
+              if (!df) return null;
+              return (
+                <TableDesignModal
+                  fieldName={df.fieldName}
+                  initial={tFieldDesigns[df.id]}
+                  onSave={d => { setTFieldDesigns(p => ({ ...p, [df.id]: d })); setTemplateDirty(true); }}
+                  onClose={() => setTDesignFieldId(null)}
+                />
+              );
+            })()}
+
             {tPermTarget && (
               <div
                 className="absolute inset-0 flex items-center justify-center pointer-events-none"
@@ -2960,6 +2979,26 @@ export function PersonalArea() {
                                       className="flex items-center gap-2 px-3 py-2.5 bg-white border border-[#1B3A6B]/10 rounded-xl cursor-grab select-none shadow-[0_1px_2px_rgba(27,58,107,0.05)] hover:bg-[#EEF4FF] hover:border-[#3B82F6]/40 active:opacity-60 transition-colors group">
                                       <GripVertical className="w-3.5 h-3.5 text-[#3B82F6]/50 flex-shrink-0 group-hover:text-[#3B82F6] transition-colors" />
                                       <span className="flex-1 min-w-0 text-[13px] font-semibold text-gray-800 truncate">{df.fieldName}</span>
+                                      {(() => {
+                                        const shape = fieldShapeOf(df.fieldName);
+                                        if (shape === 'text') return null;
+                                        const designed = Boolean(tFieldDesigns[df.id]);
+                                        return (
+                                          <>
+                                            <span title={shape === 'table' ? 'שדה טבלאי' : 'שדה רשימה'} className="flex-shrink-0 text-gray-300">
+                                              {shape === 'table' ? <Table2 className="w-3.5 h-3.5" /> : <List className="w-3.5 h-3.5" />}
+                                            </span>
+                                            <button
+                                              onMouseDown={e => e.stopPropagation()}
+                                              onClick={() => setTDesignFieldId(df.id)}
+                                              title="עיצוב תצוגה"
+                                              aria-label={`עיצוב תצוגת ${df.fieldName}`}
+                                              className={`p-1 rounded-md transition-colors flex-shrink-0 ${designed ? 'text-[#1B3A6B] bg-[#EEF4FF]' : 'text-gray-400 hover:text-[#1B3A6B] hover:bg-[#EEF4FF]'}`}>
+                                              <Settings2 className="w-3.5 h-3.5" />
+                                            </button>
+                                          </>
+                                        );
+                                      })()}
                                       <button
                                         onMouseDown={e => e.stopPropagation()}
                                         onClick={() => removeTField(df.id)}
