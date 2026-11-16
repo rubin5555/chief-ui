@@ -1,4 +1,4 @@
-import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush} from 'lucide-react';
+import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush, Hash, Calendar as CalendarIcon, Type as TypeIcon, type LucideIcon} from 'lucide-react';
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
@@ -6,13 +6,13 @@ import { DatePicker } from './DatePicker';
 import { DateTimePicker } from './DateTimePicker';
 import { TableDesignModal, fieldShapeOf, fieldTypeOf, FIELD_TYPE_LABELS, type FieldDataType, type FieldDesign } from './TableDesignModal';
 
-// Type pill colours for source-field chips
-const FIELD_TYPE_PILL: Record<FieldDataType, string> = {
-  text:   'bg-gray-100 text-gray-500',
-  number: 'bg-amber-50 text-amber-700',
-  date:   'bg-violet-50 text-violet-700',
-  table:  'bg-[#EEF4FF] text-[#1B3A6B]',
-  list:   'bg-teal-50 text-teal-700',
+// Type badge (icon + colour) for source-field chips
+const FIELD_TYPE_BADGE: Record<FieldDataType, { Icon: LucideIcon; cls: string }> = {
+  text:   { Icon: TypeIcon,     cls: 'bg-gray-100 text-gray-500' },
+  number: { Icon: Hash,         cls: 'bg-amber-50 text-amber-600' },
+  date:   { Icon: CalendarIcon, cls: 'bg-violet-50 text-violet-600' },
+  table:  { Icon: Table2,       cls: 'bg-[#EEF4FF] text-[#1B3A6B]' },
+  list:   { Icon: List,         cls: 'bg-teal-50 text-teal-600' },
 };
 
 const ENV_PEOPLE_OPTIONS = [
@@ -3007,9 +3007,15 @@ export function PersonalArea() {
                                                 {designed && <span className="absolute -top-0.5 -left-0.5 w-1.5 h-1.5 rounded-full bg-[#3B82F6] ring-2 ring-white" />}
                                               </button>
                                             )}
-                                            <span className={`flex-shrink-0 px-1.5 py-[1px] rounded-md text-[10px] font-semibold leading-4 ${FIELD_TYPE_PILL[type]}`}>
-                                              {FIELD_TYPE_LABELS[type]}
-                                            </span>
+                                            {(() => {
+                                              const { Icon, cls } = FIELD_TYPE_BADGE[type];
+                                              return (
+                                                <span title={FIELD_TYPE_LABELS[type]} aria-label={`סוג: ${FIELD_TYPE_LABELS[type]}`}
+                                                  className={`flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center ${cls}`}>
+                                                  <Icon className="w-3.5 h-3.5" strokeWidth={2.25} />
+                                                </span>
+                                              );
+                                            })()}
                                           </>
                                         );
                                       })()}
