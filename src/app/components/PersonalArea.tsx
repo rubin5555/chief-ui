@@ -1179,6 +1179,12 @@ const PERM_ROLE_META: Record<PermRole, { title: string; plural: string; desc: st
   editors:   { title: 'עורכי הסעיף', plural: 'עורכים', desc: 'יכולים לערוך את הסעיף',     Icon: PenLine   },
 };
 
+// Pending-change markers in the role dialog (calm tones, same weight as the source badges)
+const PERM_CHANGE = {
+  added:   { label: 'נוסף', bg: '#E6F4EC', fg: '#2F7A50', bar: '#7CC29A' },
+  removed: { label: 'יוסר', bg: '#FBECEC', fg: '#A23B3B', bar: '#E2A3A3' },
+} as const;
+
 function PermSourceBadge({ source }: { source: PermSource }) {
   const m = PERM_SOURCE_META[source];
   return (
@@ -1239,8 +1245,11 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
   onSave: (v: PermTag[]) => void; onClose: () => void;
 }) {
   const R = PERM_ROLE_META[role];
+  // draft = everything shown in the list; items from `initial` are only marked for removal (removed),
+  // so the user sees what will be removed until saving. Items added in this session are removed outright.
   const [draft, setDraft] = useState<PermTag[]>(initial);
-  const [justAdded, setJustAdded] = useState<Set<string>>(new Set());
+  const [removed, setRemoved] = useState<Set<string>>(new Set());
+  const initialSet = new Set(initial.map(permKey));
   const [tab, setTab] = useState<PermSource>('user');
   const [q, setQ] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -1250,17 +1259,24 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
   const [memberExpanded, setMemberExpanded] = useState<string | null>(null);
   const [confirmClose, setConfirmClose] = useState(false);
 
-  const initialKeys = initial.map(permKey).sort().join('|');
-  const dirty = draft.map(permKey).sort().join('|') !== initialKeys;
-  const inDraft = (t: PermTag) => draft.some(d => permKey(d) === permKey(t));
+  const result = draft.filter(d => !removed.has(permKey(d)));
+  const addedCount = draft.filter(d => !initialSet.has(permKey(d))).length;
+  const removedCount = removed.size;
+  const dirty = addedCount > 0 || removedCount > 0;
+  const inDraft = (t: PermTag) => result.some(d => permKey(d) === permKey(t));
 
   const add = (tags: PermTag[]) => {
-    const fresh = tags.filter(t => !inDraft(t));
-    if (!fresh.length) return;
-    setDraft(p => [...p, ...fresh]);
-    setJustAdded(p => { const n = new Set(p); fresh.forEach(t => n.add(permKey(t))); return n; });
+    // re-adding something marked for removal just un-marks it
+    setRemoved(p => { const n = new Set(p); tags.forEach(t => n.delete(permKey(t))); return n; });
+    const fresh = tags.filter(t => !draft.some(d => permKey(d) === permKey(t)));
+    if (fresh.length) setDraft(p => [...p, ...fresh]);
   };
-  const remove = (t: PermTag) => setDraft(p => p.filter(d => permKey(d) !== permKey(t)));
+  const remove = (t: PermTag) => {
+    const k = permKey(t);
+    if (initialSet.has(k)) setRemoved(p => new Set(p).add(k));
+    else setDraft(p => p.filter(d => permKey(d) !== k));
+  };
+  const restore = (t: PermTag) => setRemoved(p => { const n = new Set(p); n.delete(permKey(t)); return n; });
   const requestClose = () => { if (dirty) setConfirmClose(true); else onClose(); };
   const switchTab = (t: PermSource) => { setTab(t); setQ(''); setPicked(new Set()); setExpanded(null); setSearchOpen(false); };
 
@@ -1458,8 +1474,14 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
           <div className="flex-1 flex flex-col min-w-0">
             <div className="flex-shrink-0 flex items-center justify-between px-6 py-3.5 border-b border-gray-100 bg-gray-50/50">
               <span className="text-sm font-semibold text-gray-800">
-                {R.title} {draft.length > 0 && <span className="font-normal text-gray-500">({draft.length})</span>}
+                {R.title} {result.length > 0 && <span className="font-normal text-gray-500">({result.length})</span>}
               </span>
+              {dirty && (
+                <span className="flex items-center gap-1.5 text-[11px]">
+                  {addedCount > 0 && <span className="px-1.5 py-0.5 rounded-md font-medium" style={{ background: PERM_CHANGE.added.bg, color: PERM_CHANGE.added.fg }}>{addedCount} נוספו</span>}
+                  {removedCount > 0 && <span className="px-1.5 py-0.5 rounded-md font-medium" style={{ background: PERM_CHANGE.removed.bg, color: PERM_CHANGE.removed.fg }}>{removedCount} יוסרו</span>}
+                </span>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto">
               <div className="sticky top-0 grid items-center px-3 py-2 text-[10px] font-semibold text-gray-500 select-none z-10"
@@ -1475,24 +1497,42 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
                 const k = permKey(t);
                 const hasMembers = (t.members?.length ?? 0) > 0;
                 const open = memberExpanded === k;
+                const isNew = !initialSet.has(k);
+                const isRemoved = removed.has(k);
+                const change = isRemoved ? PERM_CHANGE.removed : isNew ? PERM_CHANGE.added : null;
                 return (
                   <div key={k} style={{ borderBottom: '1px solid #f5f5f5' }}>
-                    <div className={`grid items-center px-3 py-2.5 transition-colors ${justAdded.has(k) ? 'bg-green-50/70' : 'hover:bg-gray-50'} ${hasMembers ? 'cursor-pointer' : ''}`}
+                    <div className={`relative grid items-center px-3 py-2.5 transition-colors hover:bg-gray-50 ${hasMembers ? 'cursor-pointer' : ''}`}
                       style={{ gridTemplateColumns: membersGrid, columnGap: '6px' }}
                       onClick={() => hasMembers && setMemberExpanded(open ? null : k)}>
+                      {change && <span className="absolute right-0 top-2 bottom-2 w-[3px] rounded-l-full" style={{ background: change.bar }} />}
                       <div className="flex items-center justify-center">
                         {hasMembers && <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />}
                       </div>
-                      <span className="text-right text-xs font-medium text-gray-800 truncate">
-                        {t.label}{hasMembers && <span className="font-normal text-gray-400 mr-1">({t.members!.length})</span>}
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        <span className={`text-right text-xs font-medium truncate ${isRemoved ? 'text-gray-400 line-through decoration-gray-300' : 'text-gray-800'}`}>
+                          {t.label}{hasMembers && <span className="font-normal text-gray-400 mr-1">({t.members!.length})</span>}
+                        </span>
+                        {change && (
+                          <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium" style={{ background: change.bg, color: change.fg }}>
+                            {change.label}
+                          </span>
+                        )}
                       </span>
-                      <span className="text-center text-xs text-gray-600 tabular-nums">{t.idNumber || '—'}</span>
-                      <span className="text-center text-xs text-gray-600 truncate">{t.environment || '—'}</span>
-                      <span className="flex justify-center"><PermSourceBadge source={t.source} /></span>
-                      <button type="button" onClick={e => { e.stopPropagation(); remove(t); }} aria-label="הסרה"
-                        className="flex items-center justify-center p-1 rounded transition-colors text-gray-400 hover:text-[#1B3A6B]">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <span className={`text-center text-xs tabular-nums ${isRemoved ? 'text-gray-300' : 'text-gray-600'}`}>{t.idNumber || '—'}</span>
+                      <span className={`text-center text-xs truncate ${isRemoved ? 'text-gray-300' : 'text-gray-600'}`}>{t.environment || '—'}</span>
+                      <span className={`flex justify-center ${isRemoved ? 'opacity-50' : ''}`}><PermSourceBadge source={t.source} /></span>
+                      {isRemoved ? (
+                        <button type="button" onClick={e => { e.stopPropagation(); restore(t); }} aria-label="ביטול הסרה" title="ביטול הסרה"
+                          className="flex items-center justify-center p-1 rounded transition-colors text-gray-400 hover:text-[#1B3A6B]">
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        </button>
+                      ) : (
+                        <button type="button" onClick={e => { e.stopPropagation(); remove(t); }} aria-label="הסרה" title="הסרה"
+                          className="flex items-center justify-center p-1 rounded transition-colors text-gray-400 hover:text-[#1B3A6B]">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                     {open && <MemberRows members={t.members ?? []} />}
                   </div>
@@ -1511,7 +1551,7 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />שינויים שלא נשמרו
               </span>
             )}
-            <button type="button" disabled={!dirty} onClick={() => onSave(draft)}
+            <button type="button" disabled={!dirty} onClick={() => onSave(result)}
               className={`px-6 py-2.5 rounded-xl transition-colors text-sm font-medium ${dirty ? 'bg-[#1B3A6B] text-white hover:bg-[#152e54]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
               שמירת {R.plural}
             </button>
@@ -3143,6 +3183,8 @@ export function PersonalArea() {
                   borderTopRightRadius: 18, borderBottomRightRadius: 18, borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
                   boxShadow: 'inset 10px 0 14px -12px rgba(27,58,107,0.25), 14px 12px 32px -8px rgba(0,0,0,0.25)',
                 }}>
+                {/* Dimmed and non-interactive while the section-permissions dialog is open */}
+                {tPermTarget && <div className="absolute inset-0 z-[60] bg-gray-900/30" aria-hidden="true" />}
                 {/* Header */}
                 <div className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-[#1B3A6B]/[0.07]">
                   <div className="flex items-center gap-2.5">
