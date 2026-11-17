@@ -1,4 +1,4 @@
-import { Bell, MessageCircle, User, ChevronDown, BookOpen, Eye, Edit, X, HelpCircle, Play, ExternalLink, ArrowRight, Lock, MessageSquare, Phone, ChevronLeft, ChevronRight, Filter, FileEdit, Copy, Trash2, UserCog, Loader2, Search, Plus, FileText, FileSpreadsheet, Users, Layers, List, PenLine, UserCheck, Network, Check, Download, RefreshCw, FilePlus, GitCompare } from 'lucide-react';
+import { Bell, MessageCircle, User, ChevronDown, BookOpen, Eye, Edit, X, HelpCircle, Play, ExternalLink, ArrowRight, Lock, MessageSquare, Phone, ChevronLeft, ChevronRight, Filter, FileEdit, Copy, Trash2, UserCog, Loader2, Search, Plus, FileText, FileSpreadsheet, Users, Layers, List, PenLine, UserCheck, Network, Check, Download, RefreshCw, FilePlus, GitCompare, Inbox, Clock, XCircle, CheckCircle2, Undo2 } from 'lucide-react';
 
 function WordIcon() {
   return (
@@ -208,6 +208,37 @@ const PERM_PERSONAL_LISTS = [
 // ─── DocPermissionsModal ──────────────────────────────────────────────────────
 type PermUser = { id: string; name: string; idNumber: string; environment: string; subLabel?: string };
 
+type PermRequestStatus = 'pending' | 'approved' | 'rejected';
+type PermRequest = {
+  id: string;
+  user: PermUser;
+  permIdx: number;            // index into PERMISSIONS (0-4)
+  clauses?: string[];         // section ids — for editors / approvers
+  reason: string;
+  date: string;
+  status: PermRequestStatus;
+  handledBy?: string;
+  handledAt?: string;
+  rejectReason?: string;
+};
+const PERM_SECTION_TITLES: Record<string, string> = Object.fromEntries(
+  PERM_DOC_STRUCTURE.flatMap(ch => ch.sections.map(s => [s.id, `${s.num}. ${s.title}`]))
+);
+const PERM_REQUESTS_DATA: PermRequest[] = [
+  { id: 'r1', user: { id: 'p4',  name: 'רחל דוד',     idNumber: '045678901', environment: 'ארגון ג׳' }, permIdx: 1,
+    reason: 'אני אחראית על תיאום הלוגיסטיקה של הפקודה וצריכה לעבור על הטיוטה לפני ההפצה.', date: 'היום, 09:42', status: 'pending' },
+  { id: 'r2', user: { id: 'p13', name: 'עמי שלו',     idNumber: '134567890', environment: 'ארגון ד׳' }, permIdx: 3, clauses: ['s3', 's4'],
+    reason: 'התבקשתי ע״י רמ״ח לעדכן את נוהלי הקבלה והדיווח בפרק הוראות הביצוע.', date: 'היום, 08:15', status: 'pending' },
+  { id: 'r3', user: { id: 'p15', name: 'גיל אלון',    idNumber: '156789012', environment: 'ארגון ג׳' }, permIdx: 0,
+    reason: '', date: 'אתמול, 17:30', status: 'pending' },
+  { id: 'r4', user: { id: 'n2',  name: 'רונית שפיר',  idNumber: '202345678', environment: 'ארגון ב׳', subLabel: 'מערכת סודי' }, permIdx: 4, clauses: ['s2'],
+    reason: 'אני מאשרת סעיפי אחריות בכל פקודות היחידה.', date: 'אתמול, 11:05', status: 'pending' },
+  { id: 'r5', user: { id: 'p7',  name: 'דני אברהם',   idNumber: '078901234', environment: 'ארגון ד׳' }, permIdx: 2,
+    reason: 'מחליף את בעל הפקודה בזמן היעדרותו.', date: '12/11/2026', status: 'approved', handledBy: 'אבי כהן', handledAt: '12/11/2026' },
+  { id: 'r6', user: { id: 'p12', name: 'תמר ברק',     idNumber: '123456789', environment: 'ארגון ב׳' }, permIdx: 1,
+    reason: 'לצורך הכנת מצגת.', date: '10/11/2026', status: 'rejected', handledBy: 'אבי כהן', handledAt: '11/11/2026', rejectReason: 'הפקודה תופץ בקרוב — ניתן יהיה לצפות לאחר ההפצה.' },
+];
+
 export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = false }: { onClose: () => void; initialTab?: number; isDistributed?: boolean }) {
   const PERMISSIONS = [
     {
@@ -261,6 +292,18 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   const [addToGroupModal, setAddToGroupModal] = useState<{ groupId: string; groupName: string; x: number; y: number } | null>(null);
   const [addToGroupSearch, setAddToGroupSearch] = useState('');
 
+  const REQUESTS_IDX = PERMISSIONS.length;
+  const isRequests = activeIdx === REQUESTS_IDX;
+  const [requests, setRequests]             = useState<PermRequest[]>(PERM_REQUESTS_DATA);
+  const [reqTab, setReqTab]                 = useState<'pending'|'handled'>('pending');
+  const [reqSearch, setReqSearch]           = useState('');
+  const [reqTypeFilter, setReqTypeFilter]   = useState<number|null>(null);
+  const [reqSelected, setReqSelected]       = useState<string[]>([]);
+  const [rejectingId, setRejectingId]       = useState<string|null>(null);
+  const [rejectText, setRejectText]         = useState('');
+  const [reqTypeMenu, setReqTypeMenu]       = useState<string|null>(null);
+  const pendingCount = requests.filter(r => r.status === 'pending').length;
+
   const isClauseMode = activeIdx === 3 || activeIdx === 4;
 
   const toggleClause = (id: string) =>
@@ -312,6 +355,44 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
 
   const removeMember = (id: string) =>
     setMembers(prev => ({ ...prev, [activeIdx]: (prev[activeIdx]||[]).filter(m => m.id !== id) }));
+
+  /* ── permission requests ── */
+  const approveRequests = (ids: string[]) => {
+    const toApprove = requests.filter(r => ids.includes(r.id) && r.status === 'pending');
+    if (!toApprove.length) return;
+    setMembers(prev => {
+      const next = { ...prev };
+      toApprove.forEach(r => {
+        const cur = next[r.permIdx] || [];
+        if (!cur.some(m => m.id === r.user.id)) next[r.permIdx] = [...cur, r.user];
+      });
+      return next;
+    });
+    setMemberClauses(prev => {
+      const next = { ...prev };
+      toApprove.forEach(r => { if (r.clauses?.length) next[r.user.id] = [...new Set([...(next[r.user.id] || []), ...r.clauses])]; });
+      return next;
+    });
+    setRequests(prev => prev.map(r => ids.includes(r.id) && r.status === 'pending'
+      ? { ...r, status: 'approved', handledBy: 'אני', handledAt: 'עכשיו' } : r));
+    setReqSelected(prev => prev.filter(id => !ids.includes(id)));
+  };
+  const rejectRequests = (ids: string[], why = '') => {
+    setRequests(prev => prev.map(r => ids.includes(r.id) && r.status === 'pending'
+      ? { ...r, status: 'rejected', handledBy: 'אני', handledAt: 'עכשיו', rejectReason: why.trim() || undefined } : r));
+    setReqSelected(prev => prev.filter(id => !ids.includes(id)));
+    setRejectingId(null); setRejectText('');
+  };
+  const undoRequest = (id: string) => {
+    const r = requests.find(x => x.id === id);
+    if (!r) return;
+    if (r.status === 'approved') {
+      setMembers(prev => ({ ...prev, [r.permIdx]: (prev[r.permIdx] || []).filter(m => m.id !== r.user.id) }));
+    }
+    setRequests(prev => prev.map(x => x.id === id ? { ...x, status: 'pending', handledBy: undefined, handledAt: undefined, rejectReason: undefined } : x));
+  };
+  const changeRequestType = (id: string, permIdx: number) =>
+    setRequests(prev => prev.map(r => r.id === id ? { ...r, permIdx, clauses: permIdx === 3 || permIdx === 4 ? (r.clauses || []) : undefined } : r));
 
   const networkPool = PERM_NETWORK_PEOPLE.filter(p => p.network === networkFilter);
   const searchResults = searchQuery.trim()
@@ -399,6 +480,238 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     );
   };
 
+  /* ── Requests panel (rendered instead of the middle + members columns) ── */
+  const renderRequestsPanel = () => {
+    const q = reqSearch.trim();
+    const inTab = requests.filter(r => reqTab === 'pending' ? r.status === 'pending' : r.status !== 'pending');
+    const visible = inTab
+      .filter(r => reqTypeFilter === null || r.permIdx === reqTypeFilter)
+      .filter(r => !q || r.user.name.includes(q) || r.user.idNumber.includes(q));
+    const handledCount = requests.length - pendingCount;
+    const visiblePendingIds = visible.filter(r => r.status === 'pending').map(r => r.id);
+    const allSelected = visiblePendingIds.length > 0 && visiblePendingIds.every(id => reqSelected.includes(id));
+    const toggleSel = (id: string) => setReqSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    const initials = (name: string) => name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('');
+
+    return (
+      <div className="flex-1 flex flex-col min-w-0" dir="rtl">
+        {/* tabs + search */}
+        <div className="px-5 pt-1 flex items-end justify-between gap-4 border-b border-gray-100 flex-shrink-0">
+          <div className="flex gap-5">
+            {([['pending', 'ממתינות לטיפול', pendingCount], ['handled', 'טופלו', handledCount]] as const).map(([val, label, count]) => (
+              <button key={val} onClick={() => { setReqTab(val); setReqSelected([]); setRejectingId(null); }}
+                className={`pb-2.5 pt-2 text-sm font-semibold relative whitespace-nowrap transition-colors flex items-center gap-1.5 ${reqTab === val ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}>
+                {label}
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${reqTab === val ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'}`}>{count}</span>
+                {reqTab === val && <span className="absolute bottom-0 right-0 left-0 h-0.5 rounded-full bg-gray-900" />}
+              </button>
+            ))}
+          </div>
+          <div className="relative w-64 mb-2">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input type="text" value={reqSearch} onChange={e => setReqSearch(e.target.value)}
+              placeholder="חיפוש מבקש לפי שם או ת.ז..." dir="rtl"
+              className="w-full pr-9 pl-3 py-2 border border-gray-200 rounded-xl text-xs text-right focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors" />
+          </div>
+        </div>
+
+        {/* type filter chips + bulk actions */}
+        <div className="px-5 py-2.5 flex items-center justify-between gap-3 border-b border-gray-100 flex-shrink-0 bg-gray-50/40">
+          <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            {reqTab === 'pending' && visiblePendingIds.length > 0 && (
+              <button onClick={() => setReqSelected(allSelected ? [] : visiblePendingIds)}
+                className="flex items-center gap-1.5 ml-2 text-[11px] text-gray-500 hover:text-gray-700 whitespace-nowrap">
+                <span className={`w-4 h-4 rounded border flex items-center justify-center ${allSelected ? 'border-[#1B3A6B]' : 'border-gray-300 bg-white'}`}
+                  style={allSelected ? { background: '#1B3A6B' } : undefined}>
+                  {allSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                </span>
+                בחר הכל
+              </button>
+            )}
+            {[{ idx: null as number | null, label: 'כל הסוגים' }, ...PERMISSIONS.map((p, i) => ({ idx: i as number | null, label: p.label }))].map(({ idx, label }) => {
+              const active = reqTypeFilter === idx;
+              const n = inTab.filter(r => idx === null || r.permIdx === idx).length;
+              if (idx !== null && n === 0) return null;
+              return (
+                <button key={label} onClick={() => setReqTypeFilter(idx)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border whitespace-nowrap transition-colors ${active ? '' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`}
+                  style={active ? { background: '#1B3A6B', borderColor: '#1B3A6B', color: 'white' } : undefined}>
+                  {label} <span className={active ? 'opacity-70' : 'text-gray-300'}>{n}</span>
+                </button>
+              );
+            })}
+          </div>
+          {reqSelected.length > 0 && (
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-[11px] text-gray-500">{reqSelected.length} נבחרו</span>
+              <button onClick={() => rejectRequests(reqSelected)}
+                className="px-3 py-1.5 rounded-xl text-[11px] font-semibold border border-gray-200 bg-white text-gray-600 hover:border-red-200 hover:text-red-600 transition-colors">
+                דחה נבחרות
+              </button>
+              <button onClick={() => approveRequests(reqSelected)}
+                className="px-3 py-1.5 rounded-xl text-[11px] font-semibold text-white hover:opacity-90 transition-colors" style={{ background: '#1B3A6B' }}>
+                אשר נבחרות
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* list */}
+        <div className="flex-1 overflow-y-auto px-5 py-3 flex flex-col gap-2.5">
+          {visible.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center py-16">
+              <Inbox className="w-10 h-10 text-gray-200 mb-3" />
+              <p className="text-sm font-medium text-gray-500">{reqTab === 'pending' ? 'אין בקשות ממתינות' : 'אין בקשות שטופלו'}</p>
+              <p className="text-xs text-gray-400 mt-1">
+                {q || reqTypeFilter !== null ? 'נסה לשנות את החיפוש או הסינון' : reqTab === 'pending' ? 'בקשות חדשות שיוגשו דרך ״בקשת הרשאה״ יופיעו כאן' : ''}
+              </p>
+            </div>
+          ) : visible.map(r => {
+            const perm = PERMISSIONS[r.permIdx];
+            const PIcon = perm.Icon;
+            const isPending = r.status === 'pending';
+            const sel = reqSelected.includes(r.id);
+            const isClauseType = r.permIdx === 3 || r.permIdx === 4;
+            return (
+              <div key={r.id}
+                className={`rounded-2xl border bg-white transition-colors ${sel ? 'border-[#1B3A6B]/40 bg-blue-50/20' : 'border-gray-100 hover:border-gray-200'}`}>
+                <div className="flex items-start gap-3 p-3.5">
+                  {isPending && (
+                    <button onClick={() => toggleSel(r.id)} className="mt-2.5 flex-shrink-0">
+                      <span className={`w-4 h-4 rounded border flex items-center justify-center ${sel ? 'border-[#1B3A6B]' : 'border-gray-300'}`}
+                        style={sel ? { background: '#1B3A6B' } : undefined}>
+                        {sel && <Check className="w-2.5 h-2.5 text-white" />}
+                      </span>
+                    </button>
+                  )}
+                  {/* avatar */}
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold"
+                    style={{ background: '#1B3A6B12', color: '#1B3A6B' }}>{initials(r.user.name)}</div>
+
+                  {/* main */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-gray-900">{r.user.name}</span>
+                      <span className="text-[11px] text-gray-400 tabular-nums">{r.user.idNumber}</span>
+                      <span className="text-[11px] text-gray-300">·</span>
+                      <span className="text-[11px] text-gray-400">{r.user.environment}</span>
+                      {r.user.subLabel && <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500">{r.user.subLabel}</span>}
+                    </div>
+
+                    {/* requested permission */}
+                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                      <span className="text-[11px] text-gray-400">מבקש/ת הרשאת</span>
+                      <div className="relative">
+                        <button disabled={!isPending}
+                          onClick={() => setReqTypeMenu(reqTypeMenu === r.id ? null : r.id)}
+                          title={isPending ? 'שינוי סוג ההרשאה לפני אישור' : undefined}
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold border transition-colors ${isPending ? 'hover:border-[#1B3A6B]/40' : 'cursor-default'}`}
+                          style={{ background: '#1B3A6B0d', borderColor: '#1B3A6B25', color: '#1B3A6B' }}>
+                          <PIcon className="w-3 h-3" />
+                          {perm.label}
+                          {isPending && <ChevronDown className="w-3 h-3 opacity-60" />}
+                        </button>
+                        {reqTypeMenu === r.id && (
+                          <>
+                            <div className="fixed inset-0 z-[99998]" onClick={() => setReqTypeMenu(null)} />
+                            <div className="absolute top-full right-0 mt-1 z-[99999] bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-w-[170px]">
+                              {PERMISSIONS.map((p, i) => (
+                                <button key={i} onClick={() => { changeRequestType(r.id, i); setReqTypeMenu(null); }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 text-right text-xs text-gray-700">
+                                  <p.Icon className="w-3.5 h-3.5 text-gray-500" />
+                                  <span className="flex-1">{p.label}</span>
+                                  {i === r.permIdx && <Check className="w-3.5 h-3.5" style={{ color: '#1B3A6B' }} />}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      {isClauseType && (r.clauses?.length ? (
+                        <>
+                          <span className="text-[11px] text-gray-400">בסעיפים</span>
+                          {r.clauses.map(c => (
+                            <span key={c} className="px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-gray-100 text-gray-600">{PERM_SECTION_TITLES[c] ?? c}</span>
+                          ))}
+                        </>
+                      ) : (
+                        <span className="text-[11px] text-amber-600">לא צוינו סעיפים</span>
+                      ))}
+                    </div>
+
+                    {/* reason */}
+                    {r.reason ? (
+                      <p className="mt-2 text-xs text-gray-600 leading-relaxed bg-gray-50 rounded-xl px-3 py-2 border-r-2 border-gray-200">{r.reason}</p>
+                    ) : (
+                      <p className="mt-2 text-[11px] text-gray-300 italic">לא צורפה סיבה לבקשה</p>
+                    )}
+
+                    {/* handled info */}
+                    {!isPending && (
+                      <div className="mt-2 flex items-center gap-1.5 text-[11px] text-gray-400 flex-wrap">
+                        {r.status === 'approved'
+                          ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                          : <XCircle className="w-3.5 h-3.5 text-red-400" />}
+                        <span>{r.status === 'approved' ? 'אושרה' : 'נדחתה'} ע״י {r.handledBy} · {r.handledAt}</span>
+                        {r.rejectReason && <span className="text-gray-500">— ״{r.rejectReason}״</span>}
+                      </div>
+                    )}
+
+                    {/* inline reject form */}
+                    {rejectingId === r.id && (
+                      <div className="mt-2.5 rounded-xl border border-red-100 bg-red-50/30 p-2.5">
+                        <textarea value={rejectText} onChange={e => setRejectText(e.target.value)} autoFocus rows={2}
+                          placeholder="סיבת הדחייה (אופציונלי) — תישלח למבקש/ת"
+                          className="w-full text-xs px-2.5 py-2 rounded-lg border border-gray-200 bg-white resize-none focus:outline-none focus:border-red-300 text-right" />
+                        <div className="flex justify-end gap-2 mt-2">
+                          <button onClick={() => { setRejectingId(null); setRejectText(''); }}
+                            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-gray-500 hover:bg-white transition-colors">ביטול</button>
+                          <button onClick={() => rejectRequests([r.id], rejectText)}
+                            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors">דחיית הבקשה</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* side: date + actions */}
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    <span className="flex items-center gap-1 text-[11px] text-gray-400 whitespace-nowrap">
+                      <Clock className="w-3 h-3" />{r.date}
+                    </span>
+                    {isPending ? (
+                      rejectingId !== r.id && (
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => { setRejectingId(r.id); setRejectText(''); }}
+                            className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 hover:border-red-200 hover:text-red-600 hover:bg-red-50/40 transition-colors">
+                            דחייה
+                          </button>
+                          <button onClick={() => approveRequests([r.id])}
+                            disabled={isClauseType && !r.clauses?.length}
+                            title={isClauseType && !r.clauses?.length ? 'יש לציין סעיפים לפני אישור' : undefined}
+                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white hover:opacity-90 transition-colors disabled:opacity-40 flex items-center gap-1"
+                            style={{ background: '#1B3A6B' }}>
+                            <Check className="w-3.5 h-3.5" />
+                            אישור
+                          </button>
+                        </div>
+                      )
+                    ) : (
+                      <button onClick={() => undoRequest(r.id)}
+                        className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600 transition-colors">
+                        <Undo2 className="w-3 h-3" />
+                        החזר לממתינות
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (<>
     <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.45)', zIndex: 99999 }}
       onClick={onClose}>
@@ -430,14 +743,29 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
               );
             })}
           </nav>
+          {/* requests tab — separated from permission types */}
+          <div className="border-t border-gray-100 py-1">
+            <button onClick={() => setActiveIdx(REQUESTS_IDX)}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-right transition-colors ${isRequests ? 'bg-white shadow-sm' : 'hover:bg-white/70'}`}>
+              <Inbox className="w-4 h-4 flex-shrink-0 text-gray-900" />
+              <span className={`flex-1 text-sm leading-tight ${isRequests ? 'font-semibold text-gray-900' : 'text-gray-500'}`}>בקשות הרשאה</span>
+              {pendingCount > 0 && (
+                <span className="min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold text-white flex items-center justify-center"
+                  style={{ background: '#1B3A6B' }}>{pendingCount}</span>
+              )}
+            </button>
+          </div>
           {/* description for active permission */}
           <div className="flex-1 px-4 py-3 border-t border-gray-100 flex flex-col justify-end">
             <p className="text-[11px] text-gray-400 leading-relaxed text-right">
-              {PERMISSIONS[activeIdx].desc}
+              {isRequests
+                ? 'בקשות שהוגשו ע״י משתמשים ללא הרשאה, דרך דיאלוג ״בקשת הרשאה״. אישור בקשה מוסיף את המשתמש לרשימת ההרשאה המבוקשת; ניתן לשנות את סוג ההרשאה לפני האישור.'
+                : PERMISSIONS[activeIdx].desc}
             </p>
           </div>
         </div>
 
+        {isRequests ? renderRequestsPanel() : (<>
         {/* ── MIDDLE: search + import panel ── */}
         <div className={`flex flex-col min-w-0 ${isClauseMode ? 'flex-1 border-r border-gray-100' : 'flex-1'}`}
           style={isClauseMode ? { order: 3 } : undefined}>
@@ -965,6 +1293,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
             </div>
           )}
         </div>
+        </>)}
         </div>{/* end body */}
 
         {/* ── FOOTER ── */}
