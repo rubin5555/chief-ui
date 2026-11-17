@@ -1170,8 +1170,8 @@ const permKey = (t: PermTag) => `${t.source}:${t.id ?? t.label}`;
 // Source badges reuse the calm palette of the field-bank type badges
 const PERM_SOURCE_META: Record<PermSource, { label: string; tabLabel: string; Icon: LucideIcon; bg: string; fg: string }> = {
   user:  { label: 'אדם',     tabLabel: 'הוספה ידנית',   Icon: User,   bg: FIELD_TYPE_BADGE.text.bg, fg: FIELD_TYPE_BADGE.text.fg },
-  group: { label: "מיראז'",  tabLabel: "קבוצות מיראז'", Icon: Layers, bg: FIELD_TYPE_BADGE.date.bg, fg: FIELD_TYPE_BADGE.date.fg },
-  list:  { label: 'רשימה',   tabLabel: 'רשימות תפוצה',  Icon: List,   bg: FIELD_TYPE_BADGE.list.bg, fg: FIELD_TYPE_BADGE.list.fg },
+  group: { label: "קבוצת מיראז'", tabLabel: "קבוצות מיראז'", Icon: Layers, bg: FIELD_TYPE_BADGE.table.bg, fg: FIELD_TYPE_BADGE.table.fg },
+  list:  { label: 'רשימת תפוצה', tabLabel: 'רשימות תפוצה', Icon: List, bg: FIELD_TYPE_BADGE.list.bg, fg: FIELD_TYPE_BADGE.list.fg },
 };
 
 const PERM_ROLE_META: Record<PermRole, { title: string; plural: string; desc: string; Icon: LucideIcon }> = {
@@ -1185,13 +1185,17 @@ const PERM_CHANGE = {
   removed: { label: 'יוסר', bg: '#FBECEC', fg: '#A23B3B', bar: '#E2A3A3' },
 } as const;
 
-function PermSourceBadge({ source }: { source: PermSource }) {
-  const m = PERM_SOURCE_META[source];
+function PermSourceBadge({ source, dim }: { source: PermSource; dim?: boolean }) {
+  const { label, Icon, bg, fg } = PERM_SOURCE_META[source];
   return (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium whitespace-nowrap"
-      style={{ background: m.bg, color: m.fg }}>
-      <m.Icon className="w-2.5 h-2.5" />
-      {m.label}
+    <span className={`group/src relative flex-shrink-0 ${dim ? 'opacity-50' : ''}`} aria-label={`מקור: ${label}`}>
+      <span className="w-6 h-6 rounded-md flex items-center justify-center transition-[filter] group-hover/src:brightness-95" style={{ background: bg, color: fg }}>
+        <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+      </span>
+      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-900 text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 translate-y-0.5 group-hover/src:opacity-100 group-hover/src:translate-y-0 transition-all duration-150 z-20">
+        {label}
+        <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+      </span>
     </span>
   );
 }
@@ -1300,7 +1304,7 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
 
   const searchPlaceholder = tab === 'user' ? 'חיפוש לפי שם או ת.ז...' : tab === 'group' ? 'חיפוש קבוצה...' : 'חיפוש רשימה...';
   const subGrid = '28px 1fr 90px 90px';
-  const membersGrid = '24px 1fr 84px 64px 72px 28px';
+  const membersGrid = '24px 1fr 90px 72px 44px 28px';
 
   const MemberRows = ({ members }: { members: PermPerson[] }) => (
     <div className="bg-blue-50/40 border-t border-blue-100 py-1">
@@ -1505,7 +1509,7 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
                     <div className={`relative grid items-center px-3 py-2.5 transition-colors hover:bg-gray-50 ${hasMembers ? 'cursor-pointer' : ''}`}
                       style={{ gridTemplateColumns: membersGrid, columnGap: '6px' }}
                       onClick={() => hasMembers && setMemberExpanded(open ? null : k)}>
-                      {change && <span className="absolute right-0 top-2 bottom-2 w-[3px] rounded-l-full" style={{ background: change.bar }} />}
+                      {change && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-l-full" style={{ background: change.bar }} title={change.label} />}
                       <div className="flex items-center justify-center">
                         {hasMembers && <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />}
                       </div>
@@ -1513,7 +1517,7 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
                         <span className={`text-right text-xs font-medium truncate ${isRemoved ? 'text-gray-400 line-through decoration-gray-300' : 'text-gray-800'}`}>
                           {t.label}{hasMembers && <span className="font-normal text-gray-400 mr-1">({t.members!.length})</span>}
                         </span>
-                        {change && (
+                        {isRemoved && change && (
                           <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium" style={{ background: change.bg, color: change.fg }}>
                             {change.label}
                           </span>
@@ -1521,7 +1525,7 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
                       </span>
                       <span className={`text-center text-xs tabular-nums ${isRemoved ? 'text-gray-300' : 'text-gray-600'}`}>{t.idNumber || '—'}</span>
                       <span className={`text-center text-xs truncate ${isRemoved ? 'text-gray-300' : 'text-gray-600'}`}>{t.environment || '—'}</span>
-                      <span className={`flex justify-center ${isRemoved ? 'opacity-50' : ''}`}><PermSourceBadge source={t.source} /></span>
+                      <span className="flex justify-center"><PermSourceBadge source={t.source} dim={isRemoved} /></span>
                       {isRemoved ? (
                         <button type="button" onClick={e => { e.stopPropagation(); restore(t); }} aria-label="ביטול הסרה" title="ביטול הסרה"
                           className="flex items-center justify-center p-1 rounded transition-colors text-gray-400 hover:text-[#1B3A6B]">
