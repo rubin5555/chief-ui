@@ -301,7 +301,6 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   const [requests, setRequests]             = useState<PermRequest[]>(PERM_REQUESTS_DATA);
   const [reqTab, setReqTab]                 = useState<'pending'|'handled'>('pending');
   const [reqSearch, setReqSearch]           = useState('');
-  const [reqSelected, setReqSelected]       = useState<string[]>([]);
   const [rejectingId, setRejectingId]       = useState<string|null>(null);
   const [rejectText, setRejectText]         = useState('');
   const pendingCount = requests.filter(r => r.status === 'pending').length;
@@ -370,12 +369,10 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     });
     setRequests(prev => prev.map(r => ids.includes(r.id) && r.status === 'pending'
       ? { ...r, status: 'approved', handledBy: 'אני', handledAt: 'עכשיו' } : r));
-    setReqSelected(prev => prev.filter(id => !ids.includes(id)));
   };
   const rejectRequests = (ids: string[], why = '') => {
     setRequests(prev => prev.map(r => ids.includes(r.id) && r.status === 'pending'
       ? { ...r, status: 'rejected', handledBy: 'אני', handledAt: 'עכשיו', rejectReason: why.trim() || undefined } : r));
-    setReqSelected(prev => prev.filter(id => !ids.includes(id)));
     setRejectingId(null); setRejectText('');
   };
   const undoRequest = (id: string) => {
@@ -480,9 +477,6 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     const visible = inTab
       .filter(r => !q || r.user.name.includes(q) || r.user.idNumber.includes(q));
     const handledCount = requests.length - pendingCount;
-    const visiblePendingIds = visible.filter(r => r.status === 'pending').map(r => r.id);
-    const allSelected = visiblePendingIds.length > 0 && visiblePendingIds.every(id => reqSelected.includes(id));
-    const toggleSel = (id: string) => setReqSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
     return (
       <div className="flex-1 flex flex-col min-w-0" dir="rtl">
@@ -490,7 +484,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
         <div className="px-5 pt-1 flex items-end justify-between gap-4 border-b border-gray-100 flex-shrink-0">
           <div className="flex gap-5">
             {([['pending', 'ממתינות לטיפול', pendingCount], ['handled', 'טופלו', handledCount]] as const).map(([val, label, count]) => (
-              <button key={val} onClick={() => { setReqTab(val); setReqSelected([]); setRejectingId(null); }}
+              <button key={val} onClick={() => { setReqTab(val); setRejectingId(null); }}
                 className={`pb-2.5 pt-2 text-sm font-semibold relative whitespace-nowrap transition-colors flex items-center gap-1.5 ${reqTab === val ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}>
                 {label}
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${reqTab === val ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'}`}>{count}</span>
@@ -506,33 +500,6 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
           </div>
         </div>
 
-        {/* select all + bulk actions */}
-        {reqTab === 'pending' && visiblePendingIds.length > 0 && (
-        <div className="px-5 py-2.5 flex items-center justify-between gap-3 border-b border-gray-100 flex-shrink-0 bg-gray-50/40">
-              <button onClick={() => setReqSelected(allSelected ? [] : visiblePendingIds)}
-                className="flex items-center gap-1.5 ml-2 text-[11px] text-gray-500 hover:text-gray-700 whitespace-nowrap">
-                <span className={`w-4 h-4 rounded border flex items-center justify-center ${allSelected ? 'border-[#1B3A6B]' : 'border-gray-300 bg-white'}`}
-                  style={allSelected ? { background: '#1B3A6B' } : undefined}>
-                  {allSelected && <Check className="w-2.5 h-2.5 text-white" />}
-                </span>
-                בחר הכל
-              </button>
-          {reqSelected.length > 0 && (
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-[11px] text-gray-500">{reqSelected.length} נבחרו</span>
-              <button onClick={() => rejectRequests(reqSelected)}
-                className="px-3 py-1.5 rounded-xl text-[11px] font-semibold border border-gray-200 bg-white text-gray-600 hover:border-red-200 hover:text-red-600 transition-colors">
-                דחה נבחרות
-              </button>
-              <button onClick={() => approveRequests(reqSelected)}
-                className="px-3 py-1.5 rounded-xl text-[11px] font-semibold text-white hover:opacity-90 transition-colors" style={{ background: '#1B3A6B' }}>
-                אשר נבחרות
-              </button>
-            </div>
-          )}
-        </div>
-        )}
-
         {/* list */}
         <div className="flex-1 overflow-y-auto px-5 py-3 flex flex-col gap-2.5">
           {visible.length === 0 ? (
@@ -545,19 +512,10 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
             </div>
           ) : visible.map(r => {
             const isPending = r.status === 'pending';
-            const sel = reqSelected.includes(r.id);
             return (
               <div key={r.id}
-                className={`rounded-2xl border bg-white transition-colors ${sel ? 'border-[#1B3A6B]/40 bg-blue-50/20' : 'border-gray-100 hover:border-gray-200'}`}>
+                className={`rounded-2xl border bg-white transition-colors border-gray-100 hover:border-gray-200`}>
                 <div className="flex items-start gap-3 p-3.5">
-                  {isPending && (
-                    <button onClick={() => toggleSel(r.id)} className="mt-0.5 flex-shrink-0">
-                      <span className={`w-4 h-4 rounded border flex items-center justify-center ${sel ? 'border-[#1B3A6B]' : 'border-gray-300'}`}
-                        style={sel ? { background: '#1B3A6B' } : undefined}>
-                        {sel && <Check className="w-2.5 h-2.5 text-white" />}
-                      </span>
-                    </button>
-                  )}
                   {/* main */}
                   <div className="flex-1 min-w-0">
                     {/* name + role */}
