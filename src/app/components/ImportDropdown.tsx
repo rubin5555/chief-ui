@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { SystemIcon } from './SystemIcon';
 import { Download, ChevronRight, ChevronLeft, Plus, RefreshCw, Bell, Flag, BarChart2, FileText } from 'lucide-react';
 
 interface ImportDropdownProps {
@@ -99,9 +100,7 @@ export function ImportDropdown({ onSelect, onImportComplete }: ImportDropdownPro
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-right hover:bg-gray-50 transition-colors"
                     type="button"
                   >
-                    <div className={`w-8 h-8 rounded-full ${sys.bg} flex items-center justify-center flex-shrink-0`}>
-                      <span className={`text-xs font-bold ${sys.text}`}>{sys.letter}</span>
-                    </div>
+                    <SystemIcon name={sys.label} size="md" />
                     <span className="flex-1 text-sm text-gray-700">{sys.label}</span>
                     <ChevronLeft className="w-4 h-4 text-gray-300 flex-shrink-0" />
                   </button>
@@ -117,9 +116,7 @@ export function ImportDropdown({ onSelect, onImportComplete }: ImportDropdownPro
                   >
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </button>
-                  <div className={`w-6 h-6 rounded-full ${currentSystem!.bg} flex items-center justify-center`}>
-                    <span className={`text-xs font-bold ${currentSystem!.text}`}>{currentSystem!.letter}</span>
-                  </div>
+                  <SystemIcon name={currentSystem!.label} size="sm" />
                   <span className="text-xs font-medium text-gray-600">{currentSystem!.label}</span>
                 </div>
                 <div className="px-4 py-1 text-xs text-gray-400 font-medium">בחר פעולה</div>
