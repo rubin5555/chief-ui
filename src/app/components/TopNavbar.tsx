@@ -212,6 +212,9 @@ type PermRequestStatus = 'pending' | 'approved' | 'rejected';
 type PermRequest = {
   id: string;
   user: PermUser;
+  // fields filled in the "בקשת הרשאה" dialog
+  role: string;
+  phone: string;
   reason: string;
   date: string;
   status: PermRequestStatus;
@@ -221,16 +224,22 @@ type PermRequest = {
 };
 const PERM_REQUESTS_DATA: PermRequest[] = [
   { id: 'r1', user: { id: 'p4',  name: 'רחל דוד',     idNumber: '045678901', environment: 'ארגון ג׳' },
+    role: 'קצינת לוגיסטיקה', phone: '050-1234567',
     reason: 'אני אחראית על תיאום הלוגיסטיקה ונדרשת לי גישה לפקודה המופצת.', date: 'היום, 09:42', status: 'pending' },
   { id: 'r2', user: { id: 'p13', name: 'עמי שלו',     idNumber: '134567890', environment: 'ארגון ד׳' },
+    role: 'רמ״ד תכנון', phone: '052-7654321',
     reason: 'הפקודה רלוונטית לתחום האחריות שלי ואינני ברשימת התפוצה.', date: 'היום, 08:15', status: 'pending' },
   { id: 'r3', user: { id: 'p15', name: 'גיל אלון',    idNumber: '156789012', environment: 'ארגון ג׳' },
-    reason: '', date: 'אתמול, 17:30', status: 'pending' },
+    role: 'קצין מבצעים', phone: '054-3322110',
+    reason: 'אני מתכלל את פעילות המבצעים בגזרה וצריך להכיר את הוראות הפקודה.', date: 'אתמול, 17:30', status: 'pending' },
   { id: 'r4', user: { id: 'n2',  name: 'רונית שפיר',  idNumber: '202345678', environment: 'ארגון ב׳', subLabel: 'מערכת סודי' },
+    role: 'ע. ראש מדור', phone: '053-9988776',
     reason: 'נדרשת לי גישה לפקודה לצורך תיאום מול היחידה.', date: 'אתמול, 11:05', status: 'pending' },
   { id: 'r5', user: { id: 'p7',  name: 'דני אברהם',   idNumber: '078901234', environment: 'ארגון ד׳' },
+    role: 'סגן רמ״ד', phone: '050-5566778',
     reason: 'מחליף את רמ״ד בזמן היעדרותו.', date: '12/11/2026', status: 'approved', handledBy: 'אבי כהן', handledAt: '12/11/2026' },
   { id: 'r6', user: { id: 'p12', name: 'תמר ברק',     idNumber: '123456789', environment: 'ארגון ב׳' },
+    role: 'מש״קית הדרכה', phone: '058-4433221',
     reason: 'לצורך הכנת מצגת.', date: '10/11/2026', status: 'rejected', handledBy: 'אבי כהן', handledAt: '11/11/2026', rejectReason: 'הפקודה אינה רלוונטית לתפקידך.' },
 ];
 
@@ -474,7 +483,6 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     const visiblePendingIds = visible.filter(r => r.status === 'pending').map(r => r.id);
     const allSelected = visiblePendingIds.length > 0 && visiblePendingIds.every(id => reqSelected.includes(id));
     const toggleSel = (id: string) => setReqSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-    const initials = (name: string) => name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('');
 
     return (
       <div className="flex-1 flex flex-col min-w-0" dir="rtl">
@@ -543,33 +551,39 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
                 className={`rounded-2xl border bg-white transition-colors ${sel ? 'border-[#1B3A6B]/40 bg-blue-50/20' : 'border-gray-100 hover:border-gray-200'}`}>
                 <div className="flex items-start gap-3 p-3.5">
                   {isPending && (
-                    <button onClick={() => toggleSel(r.id)} className="mt-2.5 flex-shrink-0">
+                    <button onClick={() => toggleSel(r.id)} className="mt-0.5 flex-shrink-0">
                       <span className={`w-4 h-4 rounded border flex items-center justify-center ${sel ? 'border-[#1B3A6B]' : 'border-gray-300'}`}
                         style={sel ? { background: '#1B3A6B' } : undefined}>
                         {sel && <Check className="w-2.5 h-2.5 text-white" />}
                       </span>
                     </button>
                   )}
-                  {/* avatar */}
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold"
-                    style={{ background: '#1B3A6B12', color: '#1B3A6B' }}>{initials(r.user.name)}</div>
-
                   {/* main */}
                   <div className="flex-1 min-w-0">
+                    {/* name + role */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-gray-900">{r.user.name}</span>
-                      <span className="text-[11px] text-gray-400 tabular-nums">{r.user.idNumber}</span>
-                      <span className="text-[11px] text-gray-300">·</span>
-                      <span className="text-[11px] text-gray-400">{r.user.environment}</span>
+                      <span className="text-[11px] px-2 py-0.5 rounded-md font-medium"
+                        style={{ background: '#1B3A6B0d', color: '#1B3A6B' }}>{r.role}</span>
+                    </div>
+                    {/* id · org · phone */}
+                    <div className="flex items-center gap-2 flex-wrap mt-1 text-[11px] text-gray-400">
+                      <span className="tabular-nums">ת.ז. {r.user.idNumber}</span>
+                      <span className="text-gray-300">·</span>
+                      <span>{r.user.environment}</span>
                       {r.user.subLabel && <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500">{r.user.subLabel}</span>}
+                      <span className="text-gray-300">·</span>
+                      <span className="flex items-center gap-1 text-gray-500">
+                        <Phone className="w-3 h-3" />
+                        <span dir="ltr" className="tabular-nums">{r.phone}</span>
+                      </span>
                     </div>
 
                     {/* reason */}
-                    {r.reason ? (
-                      <p className="mt-2 text-xs text-gray-600 leading-relaxed bg-gray-50 rounded-xl px-3 py-2 border-r-2 border-gray-200">{r.reason}</p>
-                    ) : (
-                      <p className="mt-2 text-[11px] text-gray-300 italic">לא צורפה סיבה לבקשה</p>
-                    )}
+                    <div className="mt-2.5 bg-gray-50 rounded-xl px-3 py-2 border-r-2 border-gray-200">
+                      <p className="text-[10px] font-semibold text-gray-400 mb-0.5">סיבת הבקשה</p>
+                      <p className="text-xs text-gray-600 leading-relaxed">{r.reason}</p>
+                    </div>
 
                     {/* handled info */}
                     {!isPending && (
