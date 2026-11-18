@@ -967,10 +967,14 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   };
   const setRowsSelected = (rows: Row[], on: boolean) =>
     setSelected(p => { const n = new Set(p); rows.forEach(r => on ? n.add(r.key) : n.delete(r.key)); return n; });
-  const SelBox = ({ state, onToggle, label }: { state: 'on' | 'off' | 'mixed'; onToggle: () => void; label: string }) => (
+  // checkboxes stay hidden until the row is hovered; once something is selected they all show
+  const selectMode = selRows.length > 0;
+  const SelBox = ({ state, onToggle, label, hoverGroup = 'row' }: { state: 'on' | 'off' | 'mixed'; onToggle: () => void; label: string; hoverGroup?: 'row' | 'gh' }) => (
     <button type="button" role="checkbox" aria-checked={state === 'mixed' ? 'mixed' : state === 'on'} aria-label={label}
       onClick={e => { e.stopPropagation(); onToggle(); }}
-      className={`w-4 h-4 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${state === 'off' ? 'border-gray-300 bg-white hover:border-[#1B3A6B]' : 'bg-[#1B3A6B] border-[#1B3A6B]'}`}>
+      className={`w-4 h-4 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition-all focus:opacity-100 ${
+        selectMode || state !== 'off' ? 'opacity-100' : hoverGroup === 'row' ? 'opacity-0 group-hover/row:opacity-100' : 'opacity-0 group-hover/gh:opacity-100'
+      } ${state === 'off' ? 'border-gray-300 bg-white hover:border-[#1B3A6B]' : 'bg-[#1B3A6B] border-[#1B3A6B]'}`}>
       {state === 'on' && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
       {state === 'mixed' && <span className="w-2 h-[2px] rounded bg-white" />}
     </button>
@@ -987,7 +991,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     const bar = allRemoved ? CHANGE.removed.bar : allNew ? CHANGE.added.bar : null;
     const muted = allRemoved ? 'text-gray-300 line-through decoration-gray-300' : '';
     return (
-      <div className={`relative grid items-center px-4 py-2.5 transition-colors ${isSel ? 'bg-[#EEF4FF]' : 'hover:bg-gray-50'}`} style={{ gridTemplateColumns: cols, columnGap: 8, borderBottom: '1px solid #f5f5f5' }}>
+      <div className={`group/row relative grid items-center px-4 py-2.5 transition-colors ${isSel ? 'bg-[#EEF4FF]' : 'hover:bg-gray-50'}`} style={{ gridTemplateColumns: cols, columnGap: 8, borderBottom: '1px solid #f5f5f5' }}>
         {bar && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-l-full" style={{ background: bar }} />}
         <SelBox state={isSel ? 'on' : 'off'} onToggle={() => setRowsSelected([row], !isSel)} label={`בחירת ${row.person.name}`} />
         {showClause && (
@@ -1031,7 +1035,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     const st = selState(allRows);
     return (
       <div className="sticky top-0 z-10 grid items-center px-4 py-2 text-[10px] font-semibold text-gray-500 select-none" style={{ background: '#EBEBEB', gridTemplateColumns: cols, columnGap: 8 }}>
-        <SelBox state={st} onToggle={() => setRowsSelected(allRows, st !== 'on')} label="בחירת הכל" />
+        {selectMode ? <SelBox state={st} onToggle={() => setRowsSelected(allRows, st !== 'on')} label="בחירת הכל" /> : <span />}
         {showClause && <span>סעיף</span>}
         <span>שם</span><span className="text-center">תעודת זהות</span><span className="text-center">ארגון</span>
         {showVia && <span>מקור</span>}
@@ -1047,10 +1051,10 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     const allNew = gs.length > 0 && gs.every(isNew);
     const bar = allRemoved ? CHANGE.removed.bar : allNew ? CHANGE.added.bar : null;
     return (
-      <div className="relative flex items-center gap-2 px-4 py-2.5 bg-[#F7F9FC] border-b border-gray-100 cursor-pointer select-none"
+      <div className="group/gh relative flex items-center gap-2 px-4 py-2.5 bg-[#F7F9FC] border-b border-gray-100 cursor-pointer select-none"
         onClick={() => setCollapsed(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; })}>
         {bar && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-l-full" style={{ background: bar }} />}
-        <SelBox state={st} onToggle={() => setRowsSelected(rows, st !== 'on')} label={`בחירת ${title}`} />
+        <SelBox state={st} onToggle={() => setRowsSelected(rows, st !== 'on')} label={`בחירת ${title}`} hoverGroup="gh" />
         <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? '' : 'rotate-90'}`} />
         {tile}
         <span className={`text-xs font-semibold ${allRemoved ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{title}</span>
@@ -1152,7 +1156,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
           </nav>
 
           {isRequests ? renderRequestsPanel() : (
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="relative flex-1 flex flex-col min-w-0">
               {/* list header */}
               <div className="flex items-center justify-between gap-4 px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex-shrink-0">
                 <div className="min-w-0">
@@ -1199,30 +1203,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
                   </button>
                 </div>
               </div>
-              {selRows.length > 0 ? (() => {
-                const liveSel = selRows.flatMap(r => r.grants.filter(live));
-                const removedSel = selRows.flatMap(r => r.grants.filter(g => removed.has(grantKey(g))));
-                return (
-                  <div className="flex items-center gap-2 px-5 py-2 border-b border-[#c7d9ff] bg-[#EEF4FF] text-xs flex-shrink-0">
-                    <span className="font-semibold text-[#1B3A6B]">{selRows.length} נבחרו</span>
-                    <span className="w-px h-4 bg-[#c7d9ff] mx-1" />
-                    {liveSel.length > 0 && (
-                      <button type="button" onClick={() => { removeGrants(liveSel); setSelected(new Set()); }}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold text-[#1B3A6B] hover:bg-white transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />הסרה
-                      </button>
-                    )}
-                    {removedSel.length > 0 && (
-                      <button type="button" onClick={() => { restoreGrants(removedSel); setSelected(new Set()); }}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold text-[#1B3A6B] hover:bg-white transition-colors">
-                        <RotateCcw className="w-3.5 h-3.5" />ביטול הסרה
-                      </button>
-                    )}
-                    <span className="flex-1" />
-                    <button type="button" onClick={() => setSelected(new Set())} className="text-gray-500 hover:text-gray-700 transition-colors">ניקוי בחירה</button>
-                  </div>
-                );
-              })() : (tabAdded > 0 || tabRemoved > 0) && (
+              {(tabAdded > 0 || tabRemoved > 0) && (
                 <div className="flex items-center gap-1.5 px-5 py-2 border-b border-gray-100 text-[11px] text-gray-500 flex-shrink-0">
                   שינויים שלא נשמרו:
                   {tabAdded > 0 && <span className="px-1.5 py-0.5 rounded-md font-semibold" style={{ background: CHANGE.added.bg, color: CHANGE.added.fg }}>{tabAdded} נוספו</span>}
@@ -1230,6 +1211,30 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
                 </div>
               )}
               {renderList()}
+              {selectMode && (() => {
+                const liveSel = selRows.flatMap(r => r.grants.filter(live));
+                const removedSel = selRows.flatMap(r => r.grants.filter(g => removed.has(grantKey(g))));
+                return (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 pr-3 pl-1.5 py-1.5 bg-white border border-gray-200 rounded-2xl shadow-[0_8px_24px_rgba(17,24,39,0.14)]">
+                    <span className="text-xs text-gray-600 whitespace-nowrap ml-2"><span className="font-semibold text-gray-900">{selRows.length}</span> נבחרו</span>
+                    <span className="w-px h-5 bg-gray-200" />
+                    {liveSel.length > 0 && (
+                      <button type="button" onClick={() => { removeGrants(liveSel); setSelected(new Set()); }}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5 text-gray-500" />הסרה
+                      </button>
+                    )}
+                    {removedSel.length > 0 && (
+                      <button type="button" onClick={() => { restoreGrants(removedSel); setSelected(new Set()); }}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+                        <RotateCcw className="w-3.5 h-3.5 text-gray-500" />ביטול הסרה
+                      </button>
+                    )}
+                    <button type="button" onClick={() => setSelected(new Set())} title="ניקוי בחירה" aria-label="ניקוי בחירה"
+                      className="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
