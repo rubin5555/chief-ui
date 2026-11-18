@@ -1,4 +1,4 @@
-import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush, Hash, Calendar as CalendarIcon, Type as TypeIcon, type LucideIcon} from 'lucide-react';
+import { Info, User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush, Hash, Calendar as CalendarIcon, Type as TypeIcon, type LucideIcon} from 'lucide-react';
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
@@ -1162,6 +1162,8 @@ type PermTag = {
   idNumber?: string;
   environment?: string;
   members?: PermPerson[];
+  /** members of a group/list removed individually (by idNumber) */
+  excluded?: string[];
 };
 type PermRole = 'approvers' | 'editors';
 
@@ -1254,6 +1256,15 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
   const [draft, setDraft] = useState<PermTag[]>(initial);
   const [removed, setRemoved] = useState<Set<string>>(new Set());
   const initialSet = new Set(initial.map(permKey));
+  // individual members removed from a group/list, per tag key
+  const initialExcl = new Map(initial.map(t => [permKey(t), new Set(t.excluded ?? [])]));
+  const [excl, setExcl] = useState<Map<string, Set<string>>>(() => new Map([...initialExcl].map(([k, v]) => [k, new Set(v)])));
+  const exclOf = (k: string) => excl.get(k) ?? new Set<string>();
+  const wasExcl = (k: string, id: string) => initialExcl.get(k)?.has(id) ?? false;
+  const toggleExcl = (k: string, id: string) => setExcl(p => {
+    const n = new Map(p); const set = new Set(n.get(k) ?? []);
+    set.has(id) ? set.delete(id) : set.add(id); n.set(k, set); return n;
+  });
   const [tab, setTab] = useState<PermSource>('user');
   const [q, setQ] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -1263,10 +1274,17 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
   const [memberExpanded, setMemberExpanded] = useState<string | null>(null);
   const [confirmClose, setConfirmClose] = useState(false);
 
-  const result = draft.filter(d => !removed.has(permKey(d)));
+  const result = draft.filter(d => !removed.has(permKey(d))).map(d => {
+    const ex = [...exclOf(permKey(d))];
+    return d.members ? { ...d, excluded: ex.length ? ex : undefined } : d;
+  });
   const addedCount = draft.filter(d => !initialSet.has(permKey(d))).length;
   const removedCount = removed.size;
-  const dirty = addedCount > 0 || removedCount > 0;
+  const exclChanged = draft.some(d => {
+    const k = permKey(d); const now = exclOf(k); const before = initialExcl.get(k) ?? new Set<string>();
+    return now.size !== before.size || [...now].some(id => !before.has(id));
+  });
+  const dirty = addedCount > 0 || removedCount > 0 || exclChanged;
   const inDraft = (t: PermTag) => result.some(d => permKey(d) === permKey(t));
 
   const add = (tags: PermTag[]) => {
@@ -1306,21 +1324,45 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
   const subGrid = '28px 1fr 90px 90px';
   const membersGrid = '24px 1fr 90px 72px 44px 28px';
 
-  const MemberRows = ({ members }: { members: PermPerson[] }) => (
-    <div className="bg-blue-50/40 border-t border-blue-100 py-1">
-      <div className="grid items-center px-3 py-1 text-[10px] font-semibold text-gray-400 select-none" style={{ gridTemplateColumns: subGrid, columnGap: '6px' }}>
-        <span /><span className="text-right">שם מלא</span><span className="text-center">תעודת זהות</span><span className="text-center">ארגון</span>
-      </div>
-      {members.map((m, i) => (
-        <div key={i} className="grid items-center px-3 py-1.5 border-b border-blue-100/40 last:border-0" style={{ gridTemplateColumns: subGrid, columnGap: '6px' }}>
-          <span />
-          <span className="text-right text-[11px] font-medium text-gray-700 truncate">{m.name}</span>
-          <span className="text-center text-[11px] text-gray-500 tabular-nums">{m.idNumber}</span>
-          <span className="text-center text-[11px] text-gray-500">{m.environment}</span>
+  const MemberRows = ({ members, tagKey, locked }: { members: PermPerson[]; tagKey?: string; locked?: boolean }) => {
+    const editable = !!tagKey && !locked;
+    const grid = editable ? '28px 1fr 90px 72px 28px' : subGrid;
+    return (
+      <div className="bg-blue-50/40 border-t border-blue-100 py-1">
+        <div className="grid items-center px-3 py-1 text-[10px] font-semibold text-gray-400 select-none" style={{ gridTemplateColumns: grid, columnGap: '6px' }}>
+          <span /><span className="text-right">שם מלא</span><span className="text-center">תעודת זהות</span><span className="text-center">ארגון</span>{editable && <span />}
         </div>
-      ))}
-    </div>
-  );
+        {members.map((m, i) => {
+          const isEx = !!tagKey && exclOf(tagKey).has(m.idNumber);
+          const before = !!tagKey && wasExcl(tagKey, m.idNumber);
+          // saved removal → "הוסר"; pending removal → "יוסר"; pending re-include → green bar
+          const bar = isEx && !before ? PERM_CHANGE.removed.bar : !isEx && before ? PERM_CHANGE.added.bar : null;
+          const muted = isEx ? 'text-gray-400 line-through decoration-gray-300' : '';
+          return (
+            <div key={i} className="relative grid items-center px-3 py-1.5 border-b border-blue-100/40 last:border-0" style={{ gridTemplateColumns: grid, columnGap: '6px' }}>
+              {bar && <span className="absolute right-0 top-1 bottom-1 w-[3px] rounded-l-full" style={{ background: bar }} />}
+              <span />
+              <span className="flex items-center gap-1.5 min-w-0">
+                <span className={`text-right text-[11px] font-medium truncate ${isEx ? muted : 'text-gray-700'}`}>{m.name}</span>
+                {isEx && (before
+                  ? <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium bg-gray-100 text-gray-500">הוסר</span>
+                  : <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium" style={{ background: PERM_CHANGE.removed.bg, color: PERM_CHANGE.removed.fg }}>יוסר</span>)}
+              </span>
+              <span className={`text-center text-[11px] tabular-nums ${isEx ? muted : 'text-gray-500'}`}>{m.idNumber}</span>
+              <span className={`text-center text-[11px] ${isEx ? muted : 'text-gray-500'}`}>{m.environment}</span>
+              {editable && (
+                <button type="button" onClick={e => { e.stopPropagation(); toggleExcl(tagKey!, m.idNumber); }}
+                  aria-label={isEx ? 'החזרה לקבוצה' : 'הסרה מהקבוצה'} title={isEx ? 'החזרה לקבוצה' : 'הסרה מהקבוצה'}
+                  className="flex items-center justify-center p-1 rounded transition-colors text-gray-400 hover:text-[#1B3A6B]">
+                  {isEx ? <RotateCcw className="w-3 h-3" /> : <Trash2 className="w-3 h-3" />}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   const PickRow = ({ id, tag, label, count }: { id: string; tag: PermTag; label: string; count: number }) => {
     const added = inDraft(tag);
@@ -1360,9 +1402,17 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
 
         {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 border-b border-gray-100">
-          <div className="flex items-baseline gap-2 min-w-0">
-            <h2 className="text-xl font-bold text-gray-900 flex-shrink-0">{R.title}</h2>
-            <span className="text-sm text-gray-500 truncate">· {title}{subtitle ? ` · ${subtitle}` : ''}</span>
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2 min-w-0">
+              <h2 className="text-xl font-bold text-gray-900 flex-shrink-0">{R.title}</h2>
+              <span className="text-sm text-gray-500 truncate">· {title}{subtitle ? ` · ${subtitle}` : ''}</span>
+            </div>
+            {role === 'approvers' && (
+              <p className="flex items-center gap-1.5 mt-1 text-xs text-gray-500">
+                <Info className="w-3.5 h-3.5 text-[#1B3A6B]/60 flex-shrink-0" />
+                מי שיקבל הרשאת אישור לסעיף יקבל גם הרשאת עריכה לסעיף.
+              </p>
+            )}
           </div>
           <button type="button" onClick={requestClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors" aria-label="סגירה">
             <X className="w-5 h-5 text-gray-500" />
@@ -1515,8 +1565,11 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
                       </div>
                       <span className="flex items-center gap-1.5 min-w-0">
                         <span className={`text-right text-xs font-medium truncate ${isRemoved ? 'text-gray-400 line-through decoration-gray-300' : 'text-gray-800'}`}>
-                          {t.label}{hasMembers && <span className="font-normal text-gray-400 mr-1">({t.members!.length})</span>}
+                          {t.label}{hasMembers && <span className="font-normal text-gray-400 mr-1">({t.members!.length - exclOf(k).size})</span>}
                         </span>
+                        {hasMembers && !isRemoved && exclOf(k).size > 0 && (
+                          <span className="flex-shrink-0 text-[10px] text-gray-400">· {exclOf(k).size === 1 ? 'אחד הוסר' : `${exclOf(k).size} הוסרו`}</span>
+                        )}
                         {isRemoved && change && (
                           <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium" style={{ background: change.bg, color: change.fg }}>
                             {change.label}
@@ -1538,7 +1591,7 @@ function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose
                         </button>
                       )}
                     </div>
-                    {open && <MemberRows members={t.members ?? []} />}
+                    {open && <MemberRows members={t.members ?? []} tagKey={k} locked={isRemoved} />}
                   </div>
                 );
               })}
