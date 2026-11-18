@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
-import { User, ChevronDown, Eye, X, Phone, FileEdit, Trash2, Search, Plus, FileText, FileSpreadsheet, Users, Layers, List, PenLine, UserCheck, Network, Check, Download, Inbox, Clock, XCircle, CheckCircle2, Undo2, RotateCcw, type LucideIcon } from 'lucide-react';
+import { User, ChevronDown, Eye, X, Phone, FileEdit, Trash2, Search, Plus, FileText, FileSpreadsheet, Users, Layers, List, PenLine, UserCheck, Network, Check, Download, Inbox, Clock, XCircle, CheckCircle2, Undo2, RotateCcw, ListChecks, type LucideIcon } from 'lucide-react';
 
 // ─── Document clause hierarchy ───────────────────────────────────────────────
 const PERM_DOC_STRUCTURE = [
@@ -716,6 +716,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   const [listQ, setListQ]         = useState('');
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [selected, setSelected]   = useState<Set<string>>(new Set());
+  const [selMode, setSelMode]     = useState(false);
   const [addOpen, setAddOpen]     = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
@@ -731,7 +732,8 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
 
   const isClauseMode = activeIdx === 3 || activeIdx === 4;
   useEffect(() => { if (!isClauseMode && view === 'clause') setView('flat'); }, [isClauseMode, view]);
-  useEffect(() => { setSelected(new Set()); }, [activeIdx, view, listQ]);
+  useEffect(() => { setSelected(new Set()); }, [activeIdx, view, listQ, selMode]);
+  useEffect(() => { setSelMode(false); }, [activeIdx]);
 
   const live = (g: Grant) => !removed.has(grantKey(g));
   const isNew = (g: Grant) => !initialKeys.has(grantKey(g));
@@ -967,14 +969,11 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   };
   const setRowsSelected = (rows: Row[], on: boolean) =>
     setSelected(p => { const n = new Set(p); rows.forEach(r => on ? n.add(r.key) : n.delete(r.key)); return n; });
-  // checkboxes stay hidden until the row is hovered; once something is selected they all show
-  const selectMode = selRows.length > 0;
-  const SelBox = ({ state, onToggle, label, hoverGroup = 'row' }: { state: 'on' | 'off' | 'mixed'; onToggle: () => void; label: string; hoverGroup?: 'row' | 'gh' }) => (
+  // checkboxes exist only in multi-select mode (toggled from the list header)
+  const SelBox = ({ state, onToggle, label }: { state: 'on' | 'off' | 'mixed'; onToggle: () => void; label: string }) => (
     <button type="button" role="checkbox" aria-checked={state === 'mixed' ? 'mixed' : state === 'on'} aria-label={label}
       onClick={e => { e.stopPropagation(); onToggle(); }}
-      className={`w-4 h-4 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition-all focus:opacity-100 ${
-        selectMode || state !== 'off' ? 'opacity-100' : hoverGroup === 'row' ? 'opacity-0 group-hover/row:opacity-100' : 'opacity-0 group-hover/gh:opacity-100'
-      } ${state === 'off' ? 'border-gray-300 bg-white hover:border-[#1B3A6B]' : 'bg-[#1B3A6B] border-[#1B3A6B]'}`}>
+      className={`w-4 h-4 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${state === 'off' ? 'border-gray-300 bg-white hover:border-[#1B3A6B]' : 'bg-[#1B3A6B] border-[#1B3A6B]'}`}>
       {state === 'on' && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
       {state === 'mixed' && <span className="w-2 h-[2px] rounded bg-white" />}
     </button>
@@ -986,14 +985,15 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     const shown = allRemoved ? row.grants : row.grants.filter(live);
     const vias = [...new Map(shown.map(g => [viaKey(g.via), g.via])).values()];
     const roles = rolesOf(row.person.id);
-    const cols = ['18px', showClause ? '150px' : null, '1fr', '96px', '76px', showVia ? '170px' : null, '190px', '32px'].filter(Boolean).join(' ');
+    const cols = [selMode ? '18px' : null, showClause ? '150px' : null, '1fr', '96px', '76px', showVia ? '170px' : null, '190px', '32px'].filter(Boolean).join(' ');
     const isSel = selected.has(row.key);
     const bar = allRemoved ? CHANGE.removed.bar : allNew ? CHANGE.added.bar : null;
     const muted = allRemoved ? 'text-gray-300 line-through decoration-gray-300' : '';
     return (
-      <div className={`group/row relative grid items-center px-4 py-2.5 transition-colors ${isSel ? 'bg-[#EEF4FF]' : 'hover:bg-gray-50'}`} style={{ gridTemplateColumns: cols, columnGap: 8, borderBottom: '1px solid #f5f5f5' }}>
+      <div className={`relative grid items-center px-4 py-2.5 transition-colors ${isSel ? 'bg-[#EEF4FF]' : 'hover:bg-gray-50'} ${selMode ? 'cursor-pointer' : ''}`}
+        onClick={selMode ? () => setRowsSelected([row], !isSel) : undefined} style={{ gridTemplateColumns: cols, columnGap: 8, borderBottom: '1px solid #f5f5f5' }}>
         {bar && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-l-full" style={{ background: bar }} />}
-        <SelBox state={isSel ? 'on' : 'off'} onToggle={() => setRowsSelected([row], !isSel)} label={`בחירת ${row.person.name}`} />
+        {selMode && <SelBox state={isSel ? 'on' : 'off'} onToggle={() => setRowsSelected([row], !isSel)} label={`בחירת ${row.person.name}`} />}
         {showClause && (
           <span className="min-w-0"><span className="inline-block max-w-full truncate text-[11px] font-semibold text-[#1B3A6B] bg-[#F6F8FC] border border-[#E3E9F4] px-1.5 py-0.5 rounded-md">{clauseLabel(row.clause)}</span></span>
         )}
@@ -1020,10 +1020,10 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
             ))}
         </span>
         {allRemoved ? (
-          <button type="button" onClick={() => restoreGrants(row.grants)} title="ביטול הסרה" aria-label="ביטול הסרה"
+          <button type="button" onClick={e => { e.stopPropagation(); restoreGrants(row.grants); }} title="ביטול הסרה" aria-label="ביטול הסרה"
             className="flex items-center justify-center p-1 rounded text-gray-400 hover:text-[#1B3A6B] transition-colors"><RotateCcw className="w-3.5 h-3.5" /></button>
         ) : (
-          <button type="button" onClick={() => removeGrants(row.grants.filter(live))} title="הסרה" aria-label="הסרה"
+          <button type="button" onClick={e => { e.stopPropagation(); removeGrants(row.grants.filter(live)); }} title="הסרה" aria-label="הסרה"
             className="flex items-center justify-center p-1 rounded text-gray-400 hover:text-[#1B3A6B] transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
         )}
       </div>
@@ -1031,11 +1031,11 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   };
 
   const HeaderRow = ({ showClause, showVia }: { showClause: boolean; showVia: boolean }) => {
-    const cols = ['18px', showClause ? '150px' : null, '1fr', '96px', '76px', showVia ? '170px' : null, '190px', '32px'].filter(Boolean).join(' ');
+    const cols = [selMode ? '18px' : null, showClause ? '150px' : null, '1fr', '96px', '76px', showVia ? '170px' : null, '190px', '32px'].filter(Boolean).join(' ');
     const st = selState(allRows);
     return (
       <div className="sticky top-0 z-10 grid items-center px-4 py-2 text-[10px] font-semibold text-gray-500 select-none" style={{ background: '#EBEBEB', gridTemplateColumns: cols, columnGap: 8 }}>
-        {selectMode ? <SelBox state={st} onToggle={() => setRowsSelected(allRows, st !== 'on')} label="בחירת הכל" /> : <span />}
+        {selMode && <SelBox state={st} onToggle={() => setRowsSelected(allRows, st !== 'on')} label="בחירת הכל" />}
         {showClause && <span>סעיף</span>}
         <span>שם</span><span className="text-center">תעודת זהות</span><span className="text-center">ארגון</span>
         {showVia && <span>מקור</span>}
@@ -1051,10 +1051,10 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     const allNew = gs.length > 0 && gs.every(isNew);
     const bar = allRemoved ? CHANGE.removed.bar : allNew ? CHANGE.added.bar : null;
     return (
-      <div className="group/gh relative flex items-center gap-2 px-4 py-2.5 bg-[#F7F9FC] border-b border-gray-100 cursor-pointer select-none"
+      <div className="relative flex items-center gap-2 px-4 py-2.5 bg-[#F7F9FC] border-b border-gray-100 cursor-pointer select-none"
         onClick={() => setCollapsed(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; })}>
         {bar && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-l-full" style={{ background: bar }} />}
-        <SelBox state={st} onToggle={() => setRowsSelected(rows, st !== 'on')} label={`בחירת ${title}`} hoverGroup="gh" />
+        {selMode && <SelBox state={st} onToggle={() => setRowsSelected(rows, st !== 'on')} label={`בחירת ${title}`} />}
         <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? '' : 'rotate-90'}`} />
         {tile}
         <span className={`text-xs font-semibold ${allRemoved ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{title}</span>
@@ -1197,10 +1197,26 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
                       </>
                     )}
                   </div>
-                  <button type="button" onClick={() => setAddOpen(true)}
-                    className="flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#1B3A6B] text-white hover:bg-[#152e54] transition-colors">
-                    <Plus className="w-3.5 h-3.5" />הוספה
+                  <button type="button" onClick={() => setSelMode(m => !m)} aria-pressed={selMode}
+                    title={selMode ? 'יציאה מבחירה מרובה' : 'בחירה מרובה'} aria-label="בחירה מרובה"
+                    className={`p-2 rounded-xl transition-colors ${selMode ? 'bg-[#EEF4FF] text-[#1B3A6B]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}>
+                    <ListChecks className="w-4 h-4" />
                   </button>
+                  {selMode ? (() => {
+                    const liveSel = selRows.flatMap(r => r.grants.filter(live));
+                    return (
+                      <button type="button" disabled={liveSel.length === 0}
+                        onClick={() => { removeGrants(liveSel); setSelected(new Set()); }}
+                        className="flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#1B3A6B] text-white hover:bg-[#152e54] transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed">
+                        <Trash2 className="w-3.5 h-3.5" />הסרה{selRows.length > 0 ? ` (${selRows.length})` : ''}
+                      </button>
+                    );
+                  })() : (
+                    <button type="button" onClick={() => setAddOpen(true)}
+                      className="flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#1B3A6B] text-white hover:bg-[#152e54] transition-colors">
+                      <Plus className="w-3.5 h-3.5" />הוספה
+                    </button>
+                  )}
                 </div>
               </div>
               {(tabAdded > 0 || tabRemoved > 0) && (
@@ -1211,30 +1227,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
                 </div>
               )}
               {renderList()}
-              {selectMode && (() => {
-                const liveSel = selRows.flatMap(r => r.grants.filter(live));
-                const removedSel = selRows.flatMap(r => r.grants.filter(g => removed.has(grantKey(g))));
-                return (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 pr-3 pl-1.5 py-1.5 bg-white border border-gray-200 rounded-2xl shadow-[0_8px_24px_rgba(17,24,39,0.14)]">
-                    <span className="text-xs text-gray-600 whitespace-nowrap ml-2"><span className="font-semibold text-gray-900">{selRows.length}</span> נבחרו</span>
-                    <span className="w-px h-5 bg-gray-200" />
-                    {liveSel.length > 0 && (
-                      <button type="button" onClick={() => { removeGrants(liveSel); setSelected(new Set()); }}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-                        <Trash2 className="w-3.5 h-3.5 text-gray-500" />הסרה
-                      </button>
-                    )}
-                    {removedSel.length > 0 && (
-                      <button type="button" onClick={() => { restoreGrants(removedSel); setSelected(new Set()); }}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-                        <RotateCcw className="w-3.5 h-3.5 text-gray-500" />ביטול הסרה
-                      </button>
-                    )}
-                    <button type="button" onClick={() => setSelected(new Set())} title="ניקוי בחירה" aria-label="ניקוי בחירה"
-                      className="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"><X className="w-3.5 h-3.5" /></button>
-                  </div>
-                );
-              })()}
+
             </div>
           )}
         </div>
