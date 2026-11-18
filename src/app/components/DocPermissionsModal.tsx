@@ -1198,9 +1198,11 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
                     )}
                   </div>
                   <button type="button" onClick={() => setSelMode(m => !m)} aria-pressed={selMode}
-                    title={selMode ? 'יציאה מבחירה מרובה' : 'בחירה מרובה'} aria-label="בחירה מרובה"
-                    className={`p-2 rounded-xl transition-colors ${selMode ? 'bg-[#EEF4FF] text-[#1B3A6B]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}>
-                    <ListChecks className="w-4 h-4" />
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${selMode
+                      ? 'bg-[#EEF4FF] text-[#1B3A6B] hover:bg-[#E2ECFF]'
+                      : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}>
+                    {selMode ? <X className="w-3.5 h-3.5" /> : <ListChecks className="w-3.5 h-3.5" />}
+                    {selMode ? 'ביטול' : 'בחירה'}
                   </button>
                   {selMode ? (() => {
                     const liveSel = selRows.flatMap(r => r.grants.filter(live));
