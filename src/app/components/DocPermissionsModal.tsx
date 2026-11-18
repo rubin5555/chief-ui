@@ -215,7 +215,10 @@ const PERM_REQUESTS_DATA: PermRequest[] = [
 // optionally scoped to a clause (section editors / approvers).
 type ViaKind = 'direct' | 'hamal' | 'miraz' | 'list' | 'doc' | 'excel' | 'request';
 type Via = { kind: ViaKind; id: string; label: string };
-type Grant = { perm: number; person: PermUser; via: Via; clause?: string };
+type Grant = { perm: number; person: PermUser; via: Via; clause?: string;
+  /** saved removal of one member from a group/list — kept so the group shows who was taken out */
+  excluded?: boolean };
+const isGroupVia = (v: Via) => v.kind !== 'direct' && v.kind !== 'request';
 
 const viaKey = (v: Via) => `${v.kind}:${v.id}`;
 const grantKey = (g: Grant) => `${g.perm}|${g.person.id}|${viaKey(g.via)}|${g.clause ?? ''}`;
@@ -278,6 +281,9 @@ const SEED_GRANTS: Grant[] = (() => {
 })();
 
 type BasketItem = { via: Via; people: PermUser[] };
+
+// In-memory "saved" permissions, so reopening the dialog shows what was saved with "אישור"
+let SAVED_GRANTS: Grant[] = SEED_GRANTS;
 
 /** "Add" dialog: sources on the right, a basket of everything picked (across all sources) on the left. */
 function AddPermissionsDialog({ permLabel, clauseMode, isGranted, onAdd, onClose }: {
@@ -709,9 +715,10 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   ];
 
   const [activeIdx, setActiveIdx] = useState(initialTab);
-  const [grants, setGrants]       = useState<Grant[]>(SEED_GRANTS);
+  const [grants, setGrants]       = useState<Grant[]>(SAVED_GRANTS);
+  const [unexcluded, setUnexcluded] = useState<Set<string>>(new Set());
   const [removed, setRemoved]     = useState<Set<string>>(new Set());
-  const initialKeys = useRef(new Set(SEED_GRANTS.map(grantKey))).current;
+  const initialKeys = useRef(new Set(SAVED_GRANTS.map(grantKey))).current;
   const [view, setView]           = useState<'flat' | 'source' | 'clause'>('flat');
   const [listQ, setListQ]         = useState('');
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -735,7 +742,8 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   useEffect(() => { setSelected(new Set()); }, [activeIdx, view, listQ, selMode]);
   useEffect(() => { setSelMode(false); }, [activeIdx]);
 
-  const live = (g: Grant) => !removed.has(grantKey(g));
+  const isExcl = (g: Grant) => !!g.excluded && !unexcluded.has(grantKey(g));   // saved removal, still in effect
+  const live = (g: Grant) => !removed.has(grantKey(g)) && !isExcl(g);
   const isNew = (g: Grant) => !initialKeys.has(grantKey(g));
   const permGrants = (idx: number) => grants.filter(g => g.perm === idx);
   const peopleCount = (idx: number) => new Set(permGrants(idx).filter(live).map(g => g.person.id)).size;
@@ -743,12 +751,20 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     PERMISSIONS.map((p, i) => ({ i, role: p.role })).filter(({ i }) => grants.some(g => g.perm === i && g.person.id === personId && live(g)));
 
   const removeGrants = (gs: Grant[]) => {
+    // a saved-excluded member that was brought back in this session: just undo that
+    const back = gs.filter(g => g.excluded && unexcluded.has(grantKey(g))).map(grantKey);
+    if (back.length) setUnexcluded(p => { const n = new Set(p); back.forEach(k => n.delete(k)); return n; });
+    gs = gs.filter(g => !g.excluded);
     const fresh = new Set(gs.filter(isNew).map(grantKey));
     if (fresh.size) setGrants(p => p.filter(g => !fresh.has(grantKey(g))));
     const existing = gs.filter(g => !isNew(g)).map(grantKey);
     if (existing.length) setRemoved(p => { const n = new Set(p); existing.forEach(k => n.add(k)); return n; });
   };
-  const restoreGrants = (gs: Grant[]) => setRemoved(p => { const n = new Set(p); gs.forEach(g => n.delete(grantKey(g))); return n; });
+  const restoreGrants = (gs: Grant[]) => {
+    setRemoved(p => { const n = new Set(p); gs.forEach(g => n.delete(grantKey(g))); return n; });
+    const ex = gs.filter(g => g.excluded).map(grantKey);
+    if (ex.length) setUnexcluded(p => { const n = new Set(p); ex.forEach(k => n.add(k)); return n; });
+  };
 
   const addFromBasket = (items: BasketItem[], clauses: string[]) => {
     const scopes = isClauseMode ? clauses : [undefined];
@@ -757,8 +773,8 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
       const via = b.via.kind === 'direct' ? DIRECT_VIA : b.via;
       next.push({ perm: activeIdx, person, via, clause });
     })));
-    // re-adding something marked for removal just un-marks it
-    restoreGrants(next);
+    // re-adding something marked for removal (or excluded earlier) just un-marks it
+    restoreGrants(grants.filter(g => next.some(n => grantKey(n) === grantKey(g))));
     setGrants(p => {
       const keys = new Set(p.map(grantKey));
       return [...p, ...next.filter(g => !keys.has(grantKey(g)))];
@@ -767,10 +783,25 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   };
 
   const added   = grants.filter(g => isNew(g)).length;
-  const dirty   = added > 0 || removed.size > 0;
-  const tabAdded   = permGrants(activeIdx).filter(isNew).length;
+  const dirty   = added > 0 || removed.size > 0 || unexcluded.size > 0;
+  const tabAdded   = permGrants(activeIdx).filter(g => isNew(g) || (g.excluded && unexcluded.has(grantKey(g)))).length;
   const tabRemoved = permGrants(activeIdx).filter(g => removed.has(grantKey(g))).length;
   const requestClose = () => { if (dirty) setConfirmClose(true); else onClose(); };
+
+  // "אישור": removed group members stay as excluded; whole removed groups and direct grants are dropped
+  const commit = () => {
+    const next = grants.flatMap(g => {
+      const k = grantKey(g);
+      if (removed.has(k)) return isGroupVia(g.via) ? [{ ...g, excluded: true }] : [];
+      if (g.excluded && unexcluded.has(k)) return [{ ...g, excluded: false }];
+      return [g];
+    });
+    const groupKey = (g: Grant) => `${g.perm}|${viaKey(g.via)}`;
+    const fullyExcluded = new Set([...new Set(next.filter(g => isGroupVia(g.via)).map(groupKey))]
+      .filter(k => next.filter(g => groupKey(g) === k).every(g => g.excluded)));
+    SAVED_GRANTS = next.filter(g => !fullyExcluded.has(groupKey(g)));
+    onClose();
+  };
 
   /* ── permission requests ── */
   const requestVia: Via = { kind: 'request', id: 'request', label: 'בקשת הרשאה' };
@@ -935,7 +966,8 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   /* ── list rows ── */
   type Row = { key: string; person: PermUser; clause?: string; grants: Grant[] };
   const q = listQ.trim();
-  const tabGrants = permGrants(activeIdx).filter(g => !q || g.person.name.includes(q) || g.person.idNumber.includes(q) || g.via.label.includes(q));
+  const tabGrantsAll = permGrants(activeIdx).filter(g => !q || g.person.name.includes(q) || g.person.idNumber.includes(q) || g.via.label.includes(q));
+  const tabGrants = view === 'source' ? tabGrantsAll : tabGrantsAll.filter(g => !isExcl(g));
   const toRows = (gs: Grant[], prefix = ''): Row[] => {
     const m = new Map<string, Row>();
     gs.forEach(g => {
@@ -980,15 +1012,18 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   );
 
   const RowLine = ({ row, showClause, showVia, indent }: { row: Row; showClause: boolean; showVia: boolean; indent?: boolean }) => {
-    const allRemoved = row.grants.every(g => removed.has(grantKey(g)));
-    const allNew = row.grants.every(isNew);
-    const shown = allRemoved ? row.grants : row.grants.filter(live);
+    const savedOut = row.grants.every(isExcl);                                 // removed earlier and saved
+    const allRemoved = !savedOut && row.grants.every(g => removed.has(grantKey(g)) || isExcl(g));
+    const broughtBack = row.grants.some(g => g.excluded && unexcluded.has(grantKey(g)));
+    const allNew = row.grants.every(isNew) || broughtBack;
+    const out = savedOut || allRemoved;
+    const shown = out ? row.grants : row.grants.filter(live);
     const vias = [...new Map(shown.map(g => [viaKey(g.via), g.via])).values()];
     const roles = rolesOf(row.person.id);
     const cols = [selMode ? '18px' : null, showClause ? '150px' : null, '1fr', '96px', '76px', showVia ? '170px' : null, '190px', '32px'].filter(Boolean).join(' ');
     const isSel = selected.has(row.key);
     const bar = allRemoved ? CHANGE.removed.bar : allNew ? CHANGE.added.bar : null;
-    const muted = allRemoved ? 'text-gray-300 line-through decoration-gray-300' : '';
+    const muted = out ? 'text-gray-300 line-through decoration-gray-300' : '';
     return (
       <div className={`relative grid items-center px-4 py-2.5 transition-colors ${isSel ? 'bg-[#EEF4FF]' : 'hover:bg-gray-50'} ${selMode ? 'cursor-pointer' : ''}`}
         onClick={selMode ? () => setRowsSelected([row], !isSel) : undefined} style={{ gridTemplateColumns: cols, columnGap: 8, borderBottom: '1px solid #f5f5f5' }}>
@@ -998,13 +1033,14 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
           <span className="min-w-0"><span className="inline-block max-w-full truncate text-[11px] font-semibold text-[#1B3A6B] bg-[#F6F8FC] border border-[#E3E9F4] px-1.5 py-0.5 rounded-md">{clauseLabel(row.clause)}</span></span>
         )}
         <span className={`flex items-center gap-1.5 min-w-0 ${indent ? 'pr-8' : ''}`}>
-          <span className={`text-xs font-medium truncate ${allRemoved ? muted : 'text-gray-800'}`}>{row.person.name}</span>
+          <span className={`text-xs font-medium truncate ${out ? muted : 'text-gray-800'}`}>{row.person.name}</span>
           {allRemoved && <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium" style={{ background: CHANGE.removed.bg, color: CHANGE.removed.fg }}>יוסר</span>}
+          {savedOut && <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium bg-gray-100 text-gray-500">הוסר</span>}
         </span>
-        <span className={`text-center text-xs tabular-nums ${allRemoved ? muted : 'text-gray-600'}`}>{row.person.idNumber || '—'}</span>
-        <span className={`text-center text-xs truncate ${allRemoved ? muted : 'text-gray-600'}`}>{row.person.environment || '—'}</span>
+        <span className={`text-center text-xs tabular-nums ${out ? muted : 'text-gray-600'}`}>{row.person.idNumber || '—'}</span>
+        <span className={`text-center text-xs truncate ${out ? muted : 'text-gray-600'}`}>{row.person.environment || '—'}</span>
         {showVia && (
-          <span className={`flex items-center gap-1.5 min-w-0 ${allRemoved ? 'opacity-50' : ''}`}>
+          <span className={`flex items-center gap-1.5 min-w-0 ${out ? 'opacity-50' : ''}`}>
             <ViaTile kind={vias[0].kind} size={22} />
             <span className="text-[11px] text-gray-600 truncate">{vias[0].label}</span>
             {vias.length > 1 && (
@@ -1019,8 +1055,8 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
               <span key={r.i} className={`text-[10.5px] px-1.5 py-0.5 rounded-full whitespace-nowrap ${r.i === activeIdx ? 'bg-[#EEF4FF] text-[#1B3A6B] font-semibold' : 'bg-gray-100 text-gray-500'}`}>{r.role}</span>
             ))}
         </span>
-        {allRemoved ? (
-          <button type="button" onClick={e => { e.stopPropagation(); restoreGrants(row.grants); }} title="ביטול הסרה" aria-label="ביטול הסרה"
+        {out ? (
+          <button type="button" onClick={e => { e.stopPropagation(); restoreGrants(row.grants); }} title={savedOut ? 'החזרה' : 'ביטול הסרה'} aria-label={savedOut ? 'החזרה' : 'ביטול הסרה'}
             className="flex items-center justify-center p-1 rounded text-gray-400 hover:text-[#1B3A6B] transition-colors"><RotateCcw className="w-3.5 h-3.5" /></button>
         ) : (
           <button type="button" onClick={e => { e.stopPropagation(); removeGrants(row.grants.filter(live)); }} title="הסרה" aria-label="הסרה"
@@ -1047,7 +1083,8 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   const GroupHeader = ({ id, title, tile, count, gs, removable, rows }: { id: string; title: string; tile?: ReactNode; count: number; gs: Grant[]; removable: boolean; rows: Row[] }) => {
     const open = !collapsed.has(id);
     const st = selState(rows);
-    const allRemoved = gs.length > 0 && gs.every(g => removed.has(grantKey(g)));
+    const outCount = new Set(gs.filter(isExcl).map(g => g.person.id)).size;
+    const allRemoved = gs.length > 0 && gs.every(g => removed.has(grantKey(g)) || isExcl(g)) && gs.some(g => removed.has(grantKey(g)));
     const allNew = gs.length > 0 && gs.every(isNew);
     const bar = allRemoved ? CHANGE.removed.bar : allNew ? CHANGE.added.bar : null;
     return (
@@ -1059,6 +1096,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
         {tile}
         <span className={`text-xs font-semibold ${allRemoved ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{title}</span>
         <span className="text-[11px] text-gray-500">· {count} אנשים</span>
+        {outCount > 0 && <span className="text-[11px] text-gray-400">· {outCount === 1 ? 'אחד הוסר' : `${outCount} הוסרו`}</span>}
         <span className="flex-1" />
         {removable && (allRemoved ? (
           <button type="button" onClick={e => { e.stopPropagation(); restoreGrants(gs); }} title="ביטול הסרה" aria-label="ביטול הסרה"
@@ -1096,7 +1134,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
         {(listGroups ?? []).map(g => (
           <div key={g.id}>
             <GroupHeader id={g.id} title={g.title} tile={g.via ? <ViaTile kind={g.via.kind} size={22} /> : undefined}
-              count={new Set(g.gs.map(x => x.person.id)).size} gs={g.gs} removable={g.removable} rows={g.rows} />
+              count={new Set(g.gs.filter(x => !isExcl(x)).map(x => x.person.id)).size} gs={g.gs} removable={g.removable} rows={g.rows} />
             {!collapsed.has(g.id) && g.rows.map(r => <RowLine key={r.key} row={r} showClause={view === 'source' && isClauseMode} showVia={view !== 'source'} indent />)}
           </div>
         ))}
@@ -1239,7 +1277,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
           <button onClick={requestClose} className="px-2 py-2 rounded-xl text-sm text-gray-400 hover:text-gray-600 transition-colors">ביטול</button>
           <div className="flex items-center gap-3">
             {dirty && <span className="flex items-center gap-1.5 text-xs text-amber-700"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" />שינויים שלא נשמרו</span>}
-            <button onClick={onClose} className="px-6 py-2 rounded-xl text-sm font-semibold text-white transition-colors hover:opacity-90" style={{ background: '#1B3A6B' }}>
+            <button onClick={commit} className="px-6 py-2 rounded-xl text-sm font-semibold text-white transition-colors hover:opacity-90" style={{ background: '#1B3A6B' }}>
               אישור
             </button>
           </div>
