@@ -1,4 +1,4 @@
-import { User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush, Hash, Calendar as CalendarIcon, Type as TypeIcon, type LucideIcon} from 'lucide-react';
+import { Info, User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush, Hash, Calendar as CalendarIcon, Type as TypeIcon, type LucideIcon} from 'lucide-react';
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
@@ -1154,129 +1154,481 @@ function DynamicFieldPicker({
 }
 
 type PermSource = 'user' | 'group' | 'list';
-type PermTag = { label: string; source: PermSource };
+type PermPerson = { name: string; idNumber: string; environment: string };
+type PermTag = {
+  label: string;
+  source: PermSource;
+  id?: string;
+  idNumber?: string;
+  environment?: string;
+  members?: PermPerson[];
+  /** members of a group/list removed individually (by idNumber) */
+  excluded?: string[];
+};
+type PermRole = 'approvers' | 'editors';
 
-const PERM_SOURCE_OPTIONS: { id: PermSource; label: string; Icon: React.FC<{ className?: string }> }[] = [
-  { id: 'user',  label: 'שם פרטי',       Icon: User  },
-  { id: 'group', label: 'קבוצה ממיראז׳',  Icon: Users },
-  { id: 'list',  label: 'רשימת תפוצה',   Icon: List  },
-];
+const permKey = (t: PermTag) => `${t.source}:${t.id ?? t.label}`;
 
-const MOCK_BY_SOURCE: Record<PermSource, string[]> = {
-  user:  ['אבי כהן', 'שרה לוי', 'יוסי מזרחי', 'רחל גולן', 'דניאל שמש', 'מיכל ברק', 'נועם שפירא', 'תמר אלון'],
-  group: ['צוות פיתוח', 'צוות תפעול', 'מחלקת ביטחון', 'הנהלה', 'צוות לוגיסטיקה', 'מחלקת מבצעים'],
-  list:  ['רשימת מנהלים', 'רשימת טכנאים', 'רשימת מאשרים', 'רשימת עדכונים', 'רשימת תפוצה כללית'],
+// Source badges reuse the calm palette of the field-bank type badges
+const PERM_SOURCE_META: Record<PermSource, { label: string; tabLabel: string; Icon: LucideIcon; bg: string; fg: string }> = {
+  user:  { label: 'אדם',     tabLabel: 'הוספה ידנית',   Icon: User,   bg: FIELD_TYPE_BADGE.text.bg, fg: FIELD_TYPE_BADGE.text.fg },
+  group: { label: "קבוצת מיראז'", tabLabel: "קבוצות מיראז'", Icon: Layers, bg: FIELD_TYPE_BADGE.table.bg, fg: FIELD_TYPE_BADGE.table.fg },
+  list:  { label: 'רשימת תפוצה', tabLabel: 'רשימות תפוצה', Icon: List, bg: FIELD_TYPE_BADGE.list.bg, fg: FIELD_TYPE_BADGE.list.fg },
 };
 
-// Unified pool: all sources combined, each entry tagged with its source
-const ALL_PERM_OPTIONS: PermTag[] = [
-  ...MOCK_BY_SOURCE.user.map(label  => ({ label, source: 'user'  as PermSource })),
-  ...MOCK_BY_SOURCE.group.map(label => ({ label, source: 'group' as PermSource })),
-  ...MOCK_BY_SOURCE.list.map(label  => ({ label, source: 'list'  as PermSource })),
-];
+const PERM_ROLE_META: Record<PermRole, { title: string; plural: string; desc: string; Icon: LucideIcon }> = {
+  approvers: { title: 'מאשרי הסעיף', plural: 'מאשרים', desc: 'מאשרים את הסעיף לפני הפצה', Icon: UserCheck },
+  editors:   { title: 'עורכי הסעיף', plural: 'עורכים', desc: 'יכולים לערוך את הסעיף',     Icon: PenLine   },
+};
 
-function PermissionsPanel({ approvers, editors, onChangeApprovers, onChangeEditors, showApprovers = true }: {
-  approvers: PermTag[]; editors: PermTag[];
-  onChangeApprovers: (v: PermTag[]) => void; onChangeEditors: (v: PermTag[]) => void;
-  showApprovers?: boolean;
-}) {
-  // Active role tab — default to 'editors'; if no approvers toggle skip to editors
-  const [activeRole, setActiveRole] = useState<'approvers' | 'editors'>(showApprovers ? 'approvers' : 'editors');
-  const [q, setQ] = useState('');
-  const [dropOpen, setDropOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
+// Pending-change markers in the role dialog (calm tones, same weight as the source badges)
+const PERM_CHANGE = {
+  added:   { label: 'נוסף', bg: '#E6F4EC', fg: '#2F7A50', bar: '#7CC29A' },
+  removed: { label: 'יוסר', bg: '#FBECEC', fg: '#A23B3B', bar: '#E2A3A3' },
+} as const;
 
-  // Reset to valid tab if showApprovers changes
-  useEffect(() => { if (!showApprovers && activeRole === 'approvers') setActiveRole('editors'); }, [showApprovers]);
-
-  useEffect(() => {
-    const h = (e: MouseEvent) => { if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setDropOpen(false); };
-    document.addEventListener('mousedown', h);
-    return () => document.removeEventListener('mousedown', h);
-  }, []);
-
-  const isApproverTab = activeRole === 'approvers';
-  const currentTags   = isApproverTab ? approvers : editors;
-  const onChangeTags  = isApproverTab ? onChangeApprovers : onChangeEditors;
-
-  const suggestions = ALL_PERM_OPTIONS.filter(opt =>
-    !currentTags.find(t => t.label === opt.label && t.source === opt.source) &&
-    opt.label.includes(q)
+function PermSourceBadge({ source, dim }: { source: PermSource; dim?: boolean }) {
+  const { label, Icon, bg, fg } = PERM_SOURCE_META[source];
+  return (
+    <span className={`group/src relative flex-shrink-0 ${dim ? 'opacity-50' : ''}`} aria-label={`מקור: ${label}`}>
+      <span className="w-6 h-6 rounded-md flex items-center justify-center transition-[filter] group-hover/src:brightness-95" style={{ background: bg, color: fg }}>
+        <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+      </span>
+      <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-md bg-gray-900 text-white text-[11px] font-medium whitespace-nowrap shadow-lg opacity-0 translate-y-0.5 group-hover/src:opacity-100 group-hover/src:translate-y-0 transition-all duration-150 z-20">
+        {label}
+        <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+      </span>
+    </span>
   );
-  const getIcon = (src: PermSource) => PERM_SOURCE_OPTIONS.find(o => o.id === src)?.Icon ?? User;
+}
+
+/** Small menu that opens from a section's permissions icon: pick the role first. */
+function PermRoleMenu({ pos, approversCount, editorsCount, showApprovers, onPick, onClose }: {
+  pos: { top: number; left: number };
+  approversCount: number; editorsCount: number; showApprovers: boolean;
+  onPick: (role: PermRole) => void; onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose(); };
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('mousedown', h);
+    document.addEventListener('keydown', k);
+    return () => { document.removeEventListener('mousedown', h); document.removeEventListener('keydown', k); };
+  }, [onClose]);
+  const roles: PermRole[] = showApprovers ? ['approvers', 'editors'] : ['editors'];
+  return (
+    <div ref={ref} dir="rtl"
+      className="fixed z-[99999] w-60 bg-white border border-gray-200 rounded-xl shadow-xl p-1.5"
+      style={{ top: pos.top, left: pos.left }}>
+      {roles.map(r => {
+        const m = PERM_ROLE_META[r];
+        const count = r === 'approvers' ? approversCount : editorsCount;
+        return (
+          <button key={r} type="button" onClick={() => onPick(r)}
+            className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors text-right">
+            <span className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#EEF4FF] text-[#1B3A6B]">
+              <m.Icon className="w-3.5 h-3.5" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-xs font-semibold text-gray-800">{m.title}</span>
+              <span className="block text-[10px] text-gray-400">{m.desc}</span>
+            </span>
+            <span className={`min-w-[20px] h-[18px] px-1.5 rounded-full text-[10px] font-semibold flex items-center justify-center ${count ? 'bg-[#1B3A6B] text-white' : 'bg-gray-100 text-gray-500'}`}>
+              {count}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Dialog locked to a single role (approvers OR editors). Edits a draft; nothing is saved until "שמירת …". */
+function RolePermissionsDialog({ role, title, subtitle, initial, onSave, onClose }: {
+  role: PermRole; title: string; subtitle?: string;
+  initial: PermTag[];
+  onSave: (v: PermTag[]) => void; onClose: () => void;
+}) {
+  const R = PERM_ROLE_META[role];
+  // draft = everything shown in the list; items from `initial` are only marked for removal (removed),
+  // so the user sees what will be removed until saving. Items added in this session are removed outright.
+  const [draft, setDraft] = useState<PermTag[]>(initial);
+  const [removed, setRemoved] = useState<Set<string>>(new Set());
+  const initialSet = new Set(initial.map(permKey));
+  // individual members removed from a group/list, per tag key
+  const initialExcl = new Map(initial.map(t => [permKey(t), new Set(t.excluded ?? [])]));
+  const [excl, setExcl] = useState<Map<string, Set<string>>>(() => new Map([...initialExcl].map(([k, v]) => [k, new Set(v)])));
+  const exclOf = (k: string) => excl.get(k) ?? new Set<string>();
+  const wasExcl = (k: string, id: string) => initialExcl.get(k)?.has(id) ?? false;
+  const toggleExcl = (k: string, id: string) => setExcl(p => {
+    const n = new Map(p); const set = new Set(n.get(k) ?? []);
+    set.has(id) ? set.delete(id) : set.add(id); n.set(k, set); return n;
+  });
+  const [tab, setTab] = useState<PermSource>('user');
+  const [q, setQ] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [network, setNetwork] = useState<'sodibioti' | 'sodi' | 'aman'>('sodibioti');
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [memberExpanded, setMemberExpanded] = useState<string | null>(null);
+  const [confirmClose, setConfirmClose] = useState(false);
+
+  const result = draft.filter(d => !removed.has(permKey(d))).map(d => {
+    const ex = [...exclOf(permKey(d))];
+    return d.members ? { ...d, excluded: ex.length ? ex : undefined } : d;
+  });
+  const addedCount = draft.filter(d => !initialSet.has(permKey(d))).length;
+  const removedCount = removed.size;
+  const exclChanged = draft.some(d => {
+    const k = permKey(d); const now = exclOf(k); const before = initialExcl.get(k) ?? new Set<string>();
+    return now.size !== before.size || [...now].some(id => !before.has(id));
+  });
+  const dirty = addedCount > 0 || removedCount > 0 || exclChanged;
+  const inDraft = (t: PermTag) => result.some(d => permKey(d) === permKey(t));
+
+  const add = (tags: PermTag[]) => {
+    // re-adding something marked for removal just un-marks it
+    setRemoved(p => { const n = new Set(p); tags.forEach(t => n.delete(permKey(t))); return n; });
+    const fresh = tags.filter(t => !draft.some(d => permKey(d) === permKey(t)));
+    if (fresh.length) setDraft(p => [...p, ...fresh]);
+  };
+  const remove = (t: PermTag) => {
+    const k = permKey(t);
+    if (initialSet.has(k)) setRemoved(p => new Set(p).add(k));
+    else setDraft(p => p.filter(d => permKey(d) !== k));
+  };
+  const restore = (t: PermTag) => setRemoved(p => { const n = new Set(p); n.delete(permKey(t)); return n; });
+  const requestClose = () => { if (dirty) setConfirmClose(true); else onClose(); };
+  const switchTab = (t: PermSource) => { setTab(t); setQ(''); setPicked(new Set()); setExpanded(null); setSearchOpen(false); };
+
+  const groupTag = (g: typeof MIRAZ_GROUPS[number]): PermTag => ({ id: g.id, label: g.name, source: 'group', environment: g.environment, members: g.members });
+  const listTag  = (l: typeof PERSONAL_LISTS[number]): PermTag => ({ id: l.id, label: l.name, source: 'list', members: l.members });
+  const personTag = (p: typeof NETWORK_PEOPLE[number]): PermTag => ({ id: p.id, label: p.name, source: 'user', idNumber: p.idNumber, environment: p.environment });
+
+  const peopleResults = NETWORK_PEOPLE
+    .filter(p => p.network === network)
+    .filter(p => p.name.includes(q) || p.idNumber.includes(q))
+    .filter(p => !inDraft(personTag(p)));
+  const groups = MIRAZ_GROUPS.filter(g => g.name.includes(q) || g.type.includes(q) || g.environment.includes(q));
+  const lists  = PERSONAL_LISTS.filter(l => l.name.includes(q));
+
+  const togglePick = (id: string) => setPicked(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const addPicked = () => {
+    if (tab === 'group') add(MIRAZ_GROUPS.filter(g => picked.has(g.id)).map(groupTag));
+    if (tab === 'list')  add(PERSONAL_LISTS.filter(l => picked.has(l.id)).map(listTag));
+    setPicked(new Set());
+  };
+
+  const searchPlaceholder = tab === 'user' ? 'חיפוש לפי שם או ת.ז...' : tab === 'group' ? 'חיפוש קבוצה...' : 'חיפוש רשימה...';
+  const subGrid = '28px 1fr 90px 90px';
+  const membersGrid = '24px 1fr 90px 72px 44px 28px';
+
+  const MemberRows = ({ members, tagKey, locked }: { members: PermPerson[]; tagKey?: string; locked?: boolean }) => {
+    const editable = !!tagKey && !locked;
+    const grid = editable ? '28px 1fr 90px 72px 28px' : subGrid;
+    return (
+      <div className="bg-blue-50/40 border-t border-blue-100 py-1">
+        <div className="grid items-center px-3 py-1 text-[10px] font-semibold text-gray-400 select-none" style={{ gridTemplateColumns: grid, columnGap: '6px' }}>
+          <span /><span className="text-right">שם מלא</span><span className="text-center">תעודת זהות</span><span className="text-center">ארגון</span>{editable && <span />}
+        </div>
+        {members.map((m, i) => {
+          const isEx = !!tagKey && exclOf(tagKey).has(m.idNumber);
+          const before = !!tagKey && wasExcl(tagKey, m.idNumber);
+          // saved removal → "הוסר"; pending removal → "יוסר"; pending re-include → green bar
+          const bar = isEx && !before ? PERM_CHANGE.removed.bar : !isEx && before ? PERM_CHANGE.added.bar : null;
+          const muted = isEx ? 'text-gray-400 line-through decoration-gray-300' : '';
+          return (
+            <div key={i} className="relative grid items-center px-3 py-1.5 border-b border-blue-100/40 last:border-0" style={{ gridTemplateColumns: grid, columnGap: '6px' }}>
+              {bar && <span className="absolute right-0 top-1 bottom-1 w-[3px] rounded-l-full" style={{ background: bar }} />}
+              <span />
+              <span className="flex items-center gap-1.5 min-w-0">
+                <span className={`text-right text-[11px] font-medium truncate ${isEx ? muted : 'text-gray-700'}`}>{m.name}</span>
+                {isEx && (before
+                  ? <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium bg-gray-100 text-gray-500">הוסר</span>
+                  : <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium" style={{ background: PERM_CHANGE.removed.bg, color: PERM_CHANGE.removed.fg }}>יוסר</span>)}
+              </span>
+              <span className={`text-center text-[11px] tabular-nums ${isEx ? muted : 'text-gray-500'}`}>{m.idNumber}</span>
+              <span className={`text-center text-[11px] ${isEx ? muted : 'text-gray-500'}`}>{m.environment}</span>
+              {editable && (
+                <button type="button" onClick={e => { e.stopPropagation(); toggleExcl(tagKey!, m.idNumber); }}
+                  aria-label={isEx ? 'החזרה לקבוצה' : 'הסרה מהקבוצה'} title={isEx ? 'החזרה לקבוצה' : 'הסרה מהקבוצה'}
+                  className="flex items-center justify-center p-1 rounded transition-colors text-gray-400 hover:text-[#1B3A6B]">
+                  {isEx ? <RotateCcw className="w-3 h-3" /> : <Trash2 className="w-3 h-3" />}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const PickRow = ({ id, tag, label, count }: { id: string; tag: PermTag; label: string; count: number }) => {
+    const added = inDraft(tag);
+    const sel = picked.has(id);
+    const open = expanded === id;
+    return (
+      <div style={{ borderBottom: '1px solid #f5f5f5' }}>
+        <div className={`grid items-center px-3 py-2.5 transition-colors cursor-pointer ${sel ? 'bg-[#EEF4FF]' : 'hover:bg-gray-50'}`}
+          style={{ gridTemplateColumns: '28px 1fr 28px', columnGap: '6px' }}
+          onClick={() => setExpanded(open ? null : id)}>
+          <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
+            <button type="button" disabled={added} onClick={() => !added && togglePick(id)}
+              aria-label={added ? 'כבר נוסף' : 'בחירה'}
+              className={`w-5 h-5 rounded border-[1.5px] flex items-center justify-center transition-colors ${added ? 'bg-white border-gray-200 cursor-default' : sel ? 'bg-[#1B3A6B] border-[#1B3A6B]' : 'border-gray-300 hover:border-[#1B3A6B]'}`}>
+              {added && <Check className="w-3.5 h-3.5 text-gray-300" strokeWidth={2.5} />}
+              {sel && !added && <Check className="w-3 h-3 text-white" />}
+            </button>
+          </div>
+          <span className={`text-right text-xs font-medium truncate ${added ? 'text-gray-400' : 'text-gray-800'}`}>
+            {label}<span className="font-normal text-gray-400 mr-1">({count})</span>
+          </span>
+          <div className="flex items-center justify-center">
+            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+          </div>
+        </div>
+        {open && <MemberRows members={tag.members ?? []} />}
+      </div>
+    );
+  };
 
   return (
-    <div className="flex flex-col" ref={wrapRef}>
-      {/* Role tabs */}
-      <div className="flex border-b border-gray-100 px-5 pt-1">
-        {showApprovers && (
-          <button type="button" onClick={() => { setActiveRole('approvers'); setQ(''); setDropOpen(false); }}
-            className="relative flex items-center gap-1.5 px-3 py-2 text-xs focus:outline-none transition-colors flex-shrink-0"
-            style={{ color: activeRole === 'approvers' ? '#111827' : '#9ca3af', fontWeight: activeRole === 'approvers' ? 600 : 400 }}>
-            <UserCheck className="w-3 h-3" />
-            מאשר הסעיף
-            {activeRole === 'approvers' && <span className="absolute bottom-0 right-0 left-0 h-[2px] rounded-full bg-[#1B3A6B]" />}
-          </button>
-        )}
-        <button type="button" onClick={() => { setActiveRole('editors'); setQ(''); setDropOpen(false); }}
-          className="relative flex items-center gap-1.5 px-3 py-2 text-xs focus:outline-none transition-colors flex-shrink-0"
-          style={{ color: activeRole === 'editors' ? '#111827' : '#9ca3af', fontWeight: activeRole === 'editors' ? 600 : 400 }}>
-          <Users className="w-3 h-3" />
-          עורכי הסעיף
-          {activeRole === 'editors' && <span className="absolute bottom-0 right-0 left-0 h-[2px] rounded-full bg-[#1B3A6B]" />}
-        </button>
-      </div>
+    <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 50 }}>
+      <div className="absolute inset-0 bg-gray-900/30 rounded-[inherit]" onMouseDown={requestClose} />
+      <div dir="rtl"
+        className="relative bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden w-[1000px] max-w-[94%] h-[620px] max-h-[92%]"
+        onMouseDown={e => e.stopPropagation()}>
 
-      {/* Panel body */}
-      <div className="flex flex-col gap-3 p-5">
-        {/* Search */}
-        <div className="relative">
-          <div className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-xl bg-white focus-within:border-[#1B3A6B] transition-colors">
-            <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-            <input value={q}
-              onChange={e => { setQ(e.target.value); setDropOpen(true); }}
-              onFocus={() => setDropOpen(true)}
-              placeholder="חיפוש שם, קבוצה או רשימה..."
-              className="flex-1 text-sm text-right focus:outline-none bg-transparent placeholder-gray-400"
-              dir="rtl" />
+        {/* Header */}
+        <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 border-b border-gray-100">
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2 min-w-0">
+              <h2 className="text-xl font-bold text-gray-900 flex-shrink-0">{R.title}</h2>
+              <span className="text-sm text-gray-500 truncate">· {title}{subtitle ? ` · ${subtitle}` : ''}</span>
+            </div>
+            {role === 'approvers' && (
+              <p className="flex items-center gap-1.5 mt-1 text-xs text-gray-500">
+                <Info className="w-3.5 h-3.5 text-[#1B3A6B]/60 flex-shrink-0" />
+                מי שיקבל הרשאת אישור לסעיף יקבל גם הרשאת עריכה לסעיף.
+              </p>
+            )}
           </div>
-          {dropOpen && suggestions.length > 0 && (
-            <div className="absolute top-full mt-1 right-0 left-0 bg-white border border-gray-100 rounded-xl shadow-lg z-30 py-1 max-h-48 overflow-y-auto">
-              {suggestions.map((opt, idx) => {
-                const Ico = getIcon(opt.source);
+          <button type="button" onClick={requestClose} className="p-2 hover:bg-gray-100 rounded-xl transition-colors" aria-label="סגירה">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 flex min-h-0">
+
+          {/* RIGHT: add from sources */}
+          <div className="w-[540px] flex-shrink-0 flex flex-col border-l border-gray-100 min-h-0">
+            <div className="px-4 pt-3.5 pb-3 flex-shrink-0">
+              <p className="text-[11px] text-gray-400 mb-2 font-medium">הוספת {R.plural} מ־</p>
+              <div className="flex gap-1.5">
+                {(Object.keys(PERM_SOURCE_META) as PermSource[]).map(k => {
+                  const { tabLabel, Icon } = PERM_SOURCE_META[k];
+                  const active = tab === k;
+                  return (
+                    <button key={k} type="button" onClick={() => switchTab(k)}
+                      className={`flex items-center gap-1.5 flex-1 px-2.5 py-2 rounded-xl border transition-all text-right ${active ? '' : 'border-gray-100 bg-gray-50/60 hover:bg-white hover:border-gray-200 hover:shadow-sm'}`}
+                      style={active ? { background: '#1B3A6B07', borderColor: '#1B3A6B35', boxShadow: '0 1px 3px rgba(27,58,107,0.08)' } : undefined}>
+                      <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={active ? { background: '#1B3A6B18' } : { background: 'white', border: '1px solid #f3f4f6' }}>
+                        <Icon className="w-2.5 h-2.5" style={{ color: active ? '#1B3A6B' : '#9ca3af' }} />
+                      </div>
+                      <span className="text-[11px] font-semibold truncate" style={{ color: active ? '#1B3A6B' : '#374151' }}>{tabLabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Search */}
+            <div className="px-4 pb-3 flex-shrink-0">
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <input type="text" autoComplete="off" value={q} dir="rtl"
+                  onChange={e => { setQ(e.target.value); setSearchOpen(true); }}
+                  onFocus={() => setSearchOpen(true)}
+                  onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
+                  placeholder={searchPlaceholder}
+                  className="w-full pr-9 pl-4 py-2.5 border border-gray-200 rounded-xl text-right text-sm focus:outline-none focus:border-[#1B3A6B] bg-white transition-colors" />
+                {tab === 'user' && searchOpen && q.trim() !== '' && (
+                  <div className="absolute top-full right-0 left-0 mt-1.5 z-20 rounded-xl border border-gray-100 bg-white shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+                    {peopleResults.length === 0
+                      ? <div className="py-5 text-center text-sm text-gray-400">לא נמצאו תוצאות</div>
+                      : peopleResults.map(p => (
+                        <button key={p.id} type="button"
+                          onMouseDown={() => { add([personTag(p)]); setQ(''); setSearchOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 text-right">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800 truncate">{p.name}</p>
+                            <p className="text-xs text-gray-400">{p.idNumber}</p>
+                          </div>
+                          <Plus className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Tab content */}
+            <div className="flex-1 min-h-0 flex flex-col border-t border-gray-100">
+              {tab === 'user' && (
+                <>
+                  <div className="flex items-center border-b border-gray-100 px-4 flex-shrink-0">
+                    {([['sodibioti', 'סודי ביותר'], ['sodi', 'סודי'], ['aman', 'אמ"ן']] as const).map(([val, label]) => (
+                      <button key={val} type="button" onClick={() => { setNetwork(val); setQ(''); }}
+                        className={`relative pb-2.5 pt-3 pl-4 text-sm font-semibold transition-colors whitespace-nowrap ${network === val ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}>
+                        {label}
+                        {network === val && <span className="absolute bottom-0 right-0 left-4 h-0.5 rounded-full bg-gray-900" />}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex-1 flex items-center justify-center">
+                    <p className="text-xs text-gray-400">חפש לפי שם או ת.ז. להוספה</p>
+                  </div>
+                </>
+              )}
+
+              {(tab === 'group' || tab === 'list') && (
+                <>
+                  <div className="flex-1 overflow-y-auto min-h-0">
+                    <div className="sticky top-0 grid items-center px-3 py-2 text-[10px] font-semibold text-gray-500 select-none z-10"
+                      style={{ background: '#EBEBEB', gridTemplateColumns: '28px 1fr 28px', columnGap: '6px' }}>
+                      <span /><span className="text-right">{tab === 'group' ? 'שם הקבוצה' : 'שם הרשימה'}</span><span />
+                    </div>
+                    {tab === 'group' && (groups.length === 0
+                      ? <div className="px-3 py-8 text-center text-sm text-gray-400">לא נמצאו קבוצות</div>
+                      : groups.map(g => <PickRow key={g.id} id={g.id} tag={groupTag(g)} label={g.name} count={g.members.length} />))}
+                    {tab === 'list' && (lists.length === 0
+                      ? <div className="px-3 py-8 text-center text-sm text-gray-400">לא נמצאו רשימות</div>
+                      : lists.map(l => <PickRow key={l.id} id={l.id} tag={listTag(l)} label={l.name} count={l.members.length} />))}
+                  </div>
+                  {picked.size > 0 && (
+                    <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100 bg-white flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        {picked.size} {tab === 'group' ? (picked.size === 1 ? 'קבוצה נבחרה' : 'קבוצות נבחרו') : (picked.size === 1 ? 'רשימה נבחרה' : 'רשימות נבחרו')}
+                      </span>
+                      <button type="button" onClick={addPicked}
+                        className="px-4 py-1.5 bg-[#1B3A6B] text-white text-xs font-medium rounded-lg hover:bg-[#152e54] transition-colors">
+                        הוסף ל{R.plural}
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* LEFT: everyone assigned to this role */}
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex-shrink-0 flex items-center justify-between px-6 py-3.5 border-b border-gray-100 bg-gray-50/50">
+              <span className="text-sm font-semibold text-gray-800">
+                {R.title} {result.length > 0 && <span className="font-normal text-gray-500">({result.length})</span>}
+              </span>
+              {dirty && (
+                <span className="flex items-center gap-1.5 text-[11px]">
+                  {addedCount > 0 && <span className="px-1.5 py-0.5 rounded-md font-medium" style={{ background: PERM_CHANGE.added.bg, color: PERM_CHANGE.added.fg }}>{addedCount} נוספו</span>}
+                  {removedCount > 0 && <span className="px-1.5 py-0.5 rounded-md font-medium" style={{ background: PERM_CHANGE.removed.bg, color: PERM_CHANGE.removed.fg }}>{removedCount} יוסרו</span>}
+                </span>
+              )}
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <div className="sticky top-0 grid items-center px-3 py-2 text-[10px] font-semibold text-gray-500 select-none z-10"
+                style={{ background: '#EBEBEB', gridTemplateColumns: membersGrid, columnGap: '6px' }}>
+                <span /><span className="text-right">שם</span><span className="text-center">תעודת זהות</span><span className="text-center">ארגון</span><span className="text-center">מקור</span><span />
+              </div>
+              {draft.length === 0 ? (
+                <div className="px-4 py-16 text-center">
+                  <R.Icon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-400 text-sm">עדיין לא הוגדרו {R.plural}<br />הוסף מהפאנל הימני</p>
+                </div>
+              ) : draft.map(t => {
+                const k = permKey(t);
+                const hasMembers = (t.members?.length ?? 0) > 0;
+                const open = memberExpanded === k;
+                const isNew = !initialSet.has(k);
+                const isRemoved = removed.has(k);
+                const change = isRemoved ? PERM_CHANGE.removed : isNew ? PERM_CHANGE.added : null;
                 return (
-                  <button key={idx} type="button"
-                    onMouseDown={() => { onChangeTags([...currentTags, opt]); setQ(''); setDropOpen(false); }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors justify-end">
-                    {opt.label}
-                    <Ico className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                  </button>
+                  <div key={k} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                    <div className={`relative grid items-center px-3 py-2.5 transition-colors hover:bg-gray-50 ${hasMembers ? 'cursor-pointer' : ''}`}
+                      style={{ gridTemplateColumns: membersGrid, columnGap: '6px' }}
+                      onClick={() => hasMembers && setMemberExpanded(open ? null : k)}>
+                      {change && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-l-full" style={{ background: change.bar }} title={change.label} />}
+                      <div className="flex items-center justify-center">
+                        {hasMembers && <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />}
+                      </div>
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        <span className={`text-right text-xs font-medium truncate ${isRemoved ? 'text-gray-400 line-through decoration-gray-300' : 'text-gray-800'}`}>
+                          {t.label}{hasMembers && <span className="font-normal text-gray-400 mr-1">({t.members!.length - exclOf(k).size})</span>}
+                        </span>
+                        {hasMembers && !isRemoved && exclOf(k).size > 0 && (
+                          <span className="flex-shrink-0 text-[10px] text-gray-400">· {exclOf(k).size === 1 ? 'אחד הוסר' : `${exclOf(k).size} הוסרו`}</span>
+                        )}
+                        {isRemoved && change && (
+                          <span className="flex-shrink-0 px-1.5 py-px rounded text-[10px] font-medium" style={{ background: change.bg, color: change.fg }}>
+                            {change.label}
+                          </span>
+                        )}
+                      </span>
+                      <span className={`text-center text-xs tabular-nums ${isRemoved ? 'text-gray-300' : 'text-gray-600'}`}>{t.idNumber || '—'}</span>
+                      <span className={`text-center text-xs truncate ${isRemoved ? 'text-gray-300' : 'text-gray-600'}`}>{t.environment || '—'}</span>
+                      <span className="flex justify-center"><PermSourceBadge source={t.source} dim={isRemoved} /></span>
+                      {isRemoved ? (
+                        <button type="button" onClick={e => { e.stopPropagation(); restore(t); }} aria-label="ביטול הסרה" title="ביטול הסרה"
+                          className="flex items-center justify-center p-1 rounded transition-colors text-gray-400 hover:text-[#1B3A6B]">
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        </button>
+                      ) : (
+                        <button type="button" onClick={e => { e.stopPropagation(); remove(t); }} aria-label="הסרה" title="הסרה"
+                          className="flex items-center justify-center p-1 rounded transition-colors text-gray-400 hover:text-[#1B3A6B]">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    {open && <MemberRows members={t.members ?? []} tagKey={k} locked={isRemoved} />}
+                  </div>
                 );
               })}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Table of selected */}
-        {currentTags.length > 0 ? (
-          <div className="border border-gray-100 rounded-xl overflow-hidden">
-            {currentTags.map((t, i) => {
-              const Ico = getIcon(t.source);
-              return (
-                <div key={i} className={`flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${i > 0 ? 'border-t border-gray-50' : ''}`}>
-                  <Ico className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0" />
-                  <span className="flex-1 text-right text-gray-700">{t.label}</span>
-                  <button type="button"
-                    onClick={() => onChangeTags(currentTags.filter((_,j) => j !== i))}
-                    className="p-0.5 rounded text-gray-300 hover:text-[#1B3A6B] hover:bg-[#EEF4FF] transition-colors flex-shrink-0">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              );
-            })}
+        {/* Footer */}
+        <div className="flex-shrink-0 flex items-center justify-between px-8 py-4 border-t border-gray-100">
+          <button type="button" onClick={requestClose} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">ביטול</button>
+          <div className="flex items-center gap-4">
+            {dirty && (
+              <span className="flex items-center gap-1.5 text-xs text-amber-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />שינויים שלא נשמרו
+              </span>
+            )}
+            <button type="button" disabled={!dirty} onClick={() => onSave(result)}
+              className={`px-6 py-2.5 rounded-xl transition-colors text-sm font-medium ${dirty ? 'bg-[#1B3A6B] text-white hover:bg-[#152e54]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+              שמירת {R.plural}
+            </button>
           </div>
-        ) : (
-          <p className="text-xs text-gray-400 text-center py-3">אין {isApproverTab ? 'מאשרים' : 'עורכים'} מוגדרים</p>
+        </div>
+
+        {/* Unsaved-changes guard */}
+        {confirmClose && (
+          <div className="absolute inset-0 bg-gray-900/30 flex items-center justify-center z-30">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 w-[360px] flex flex-col gap-3" dir="rtl">
+              <p className="font-bold text-gray-900">לצאת בלי לשמור?</p>
+              <p className="text-sm text-gray-500 leading-relaxed">יש שינויים ב{R.title} שעדיין לא נשמרו. אם תצא עכשיו, הם לא יישמרו.</p>
+              <div className="flex items-center justify-between mt-2">
+                <button type="button" onClick={onClose}
+                  className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">יציאה בלי שמירה</button>
+                <button type="button" onClick={() => setConfirmClose(false)}
+                  className="px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-[#152e54] transition-colors">חזרה לעריכה</button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
@@ -1319,13 +1671,21 @@ export function PersonalArea() {
   const nowIso = () => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}T${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; };
   const [tEffectiveDateTime, setTEffectiveDateTime] = useState(() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}T${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; });
   const [tExpiryDateTime, setTExpiryDateTime] = useState('');
-  const [tPermTarget, setTPermTarget] = useState<{
-    id: string; label: string;
+  type TPermSubject = {
+    id: string; label: string; subtitle?: string;
     permissions: { approvers: PermTag[]; editors: PermTag[] };
     onChangeApprovers: (v: PermTag[]) => void;
     onChangeEditors: (v: PermTag[]) => void;
-  } | null>(null);
-  const tPermCardRef = useRef<HTMLDivElement>(null);
+  };
+  // Step 1: role menu anchored to the clicked icon. Step 2: dialog locked to the chosen role.
+  const [tPermMenu, setTPermMenu] = useState<(TPermSubject & { pos: { top: number; left: number } }) | null>(null);
+  const [tPermTarget, setTPermTarget] = useState<(TPermSubject & { role: PermRole }) | null>(null);
+  const openTPermMenu = (e: React.MouseEvent<HTMLElement>, subject: TPermSubject) => {
+    if (tPermMenu?.id === subject.id) { setTPermMenu(null); return; }
+    if (templateApprovalDefault !== 'allow') { setTPermTarget({ ...subject, role: 'editors' }); return; }
+    const r = e.currentTarget.getBoundingClientRect();
+    setTPermMenu({ ...subject, pos: { top: r.bottom + 6, left: Math.max(8, r.left - 240 + r.width) } });
+  };
   const [tHasEmphasis, setTHasEmphasis] = useState(false);
   const [tEmphasis, setTEmphasis] = useState('');
   const [showApprovalTooltip, setShowApprovalTooltip] = useState(false);
@@ -1521,7 +1881,7 @@ export function PersonalArea() {
     setTemplateRows([]); setSelectedTemplateType(null);
     setTTopics([]); setTAppendices([]); setTHasEmphasis(false); setTEmphasis(''); setTemplateName('');
     setTClassification(''); setTClassificationTag(''); setTEffectiveDateTime(nowIso()); setTExpiryDateTime('');
-    setTPermTarget(null); setTTemplateFields([]); setTDynTarget(null); setTemplateEditMode(false); setTemplateDuplicateMode(false); setTemplateOriginalName(''); setTemplateDirty(false);
+    setTPermTarget(null); setTPermMenu(null); setTTemplateFields([]); setTDynTarget(null); setTemplateEditMode(false); setTemplateDuplicateMode(false); setTemplateOriginalName(''); setTemplateDirty(false);
     setTLinkedFields({}); setTDragActive(false); setTDragField(null); setTDropHover(null);
     setTFieldDesigns({}); setTDesignFieldId(null);
   };
@@ -2489,7 +2849,7 @@ export function PersonalArea() {
                       <div className="p-2 space-y-1.5">
                         {topic.sections.map((sec, si) => {
                           const secHasPerms = sec.permissions.approvers.length > 0 || sec.permissions.editors.length > 0;
-                          const secPermActive = tPermTarget?.id === sec.id;
+                          const secPermActive = tPermTarget?.id === sec.id || tPermMenu?.id === sec.id;
                           return (
                           <div key={sec.id} className="pr-2">
                             <div className="flex items-center gap-1 px-2 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
@@ -2499,9 +2859,10 @@ export function PersonalArea() {
                                 className="flex-1 bg-transparent text-xs text-gray-700 focus:outline-none placeholder-gray-400 text-right min-w-0"
                                 dir="rtl" />
                               <button
-                                onClick={() => setTPermTarget(secPermActive ? null : {
+                                onClick={e => openTPermMenu(e, {
                                   id: sec.id,
-                                  label: `הרשאות סעיף ${si + 1}`,
+                                  label: `סעיף ${si + 1}`,
+                                  subtitle: sec.title || undefined,
                                   permissions: sec.permissions,
                                   onChangeApprovers: v => updTSecPerms(ti, si, { ...sec.permissions, approvers: v }),
                                   onChangeEditors:   v => updTSecPerms(ti, si, { ...sec.permissions, editors: v }),
@@ -2519,7 +2880,7 @@ export function PersonalArea() {
                               <div className="pr-4 mt-1 space-y-1">
                                 {sec.subsections.map((sub, subi) => {
                                   const subHasPerms = sub.permissions.approvers.length > 0 || sub.permissions.editors.length > 0;
-                                  const subPermActive = tPermTarget?.id === sub.id;
+                                  const subPermActive = tPermTarget?.id === sub.id || tPermMenu?.id === sub.id;
                                   return (
                                   <div key={sub.id}>
                                     <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-gray-100">
@@ -2529,9 +2890,10 @@ export function PersonalArea() {
                                         className="flex-1 bg-transparent text-xs text-gray-600 focus:outline-none placeholder-gray-400 text-right min-w-0"
                                         dir="rtl" />
                                       <button
-                                        onClick={() => setTPermTarget(subPermActive ? null : {
+                                        onClick={e => openTPermMenu(e, {
                                           id: sub.id,
-                                          label: `הרשאות תת סעיף ${heAlpha[subi]}`,
+                                          label: `תת סעיף ${heAlpha[subi]}`,
+                                          subtitle: sub.title || undefined,
                                           permissions: sub.permissions,
                                           onChangeApprovers: v => updTSubPerms(ti, si, subi, { ...sub.permissions, approvers: v }),
                                           onChangeEditors:   v => updTSubPerms(ti, si, subi, { ...sub.permissions, editors: v }),
@@ -2571,7 +2933,7 @@ export function PersonalArea() {
                 <div className="pt-2 border-t border-gray-100 space-y-2 mt-auto">
                   {tAppendices.map((app, ai) => {
                     const appHasPerms = app.permissions.approvers.length > 0 || app.permissions.editors.length > 0;
-                    const appPermActive = tPermTarget?.id === app.id;
+                    const appPermActive = tPermTarget?.id === app.id || tPermMenu?.id === app.id;
                     return (
                     <div key={app.id} className="flex items-center gap-1 px-2 py-1.5 bg-white border border-gray-100 rounded-lg shadow-sm">
                       <span className="text-[10px] text-gray-500 font-semibold flex-shrink-0">נספח {heAlpha[ai]}.</span>
@@ -2580,9 +2942,10 @@ export function PersonalArea() {
                         className="flex-1 bg-transparent text-xs focus:outline-none placeholder-gray-400 text-right min-w-0"
                         dir="rtl" />
                       <button
-                        onClick={() => setTPermTarget(appPermActive ? null : {
+                        onClick={e => openTPermMenu(e, {
                           id: app.id,
-                          label: `הרשאות נספח ${heAlpha[ai]}`,
+                          label: `נספח ${heAlpha[ai]}`,
+                          subtitle: app.title || undefined,
                           permissions: app.permissions,
                           onChangeApprovers: v => updTAppPerms(ai, { ...app.permissions, approvers: v }),
                           onChangeEditors:   v => updTAppPerms(ai, { ...app.permissions, editors: v }),
@@ -2825,63 +3188,31 @@ export function PersonalArea() {
             })()}
 
             {tPermTarget && (
-              <div
-                className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                style={{ zIndex: 10 }}
-              >
-                <div
-                  ref={tPermCardRef}
-                  dir="rtl"
-                  className="pointer-events-auto bg-white rounded-2xl border border-gray-200 w-[640px] max-w-[90%]"
-                  style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04)' }}
-                  onMouseDown={e => e.stopPropagation()}
-                >
-                  {/* Card header */}
-                  <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-[#EEF4FF] rounded-t-2xl">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-[#1B3A6B]" />
-                      <span className="text-sm font-semibold text-[#1B3A6B]">{tPermTarget.label}</span>
-                    </div>
-                    <button
-                      onClick={() => setTPermTarget(null)}
-                      className="p-1.5 rounded-lg hover:bg-[#1B3A6B]/10 transition-colors text-[#1B3A6B]/60 hover:text-[#1B3A6B]"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {/* Card body */}
-                  <div>
-                    <PermissionsPanel
-                      showApprovers={templateApprovalDefault === 'allow'}
-                      approvers={tPermTarget.permissions.approvers}
-                      editors={tPermTarget.permissions.editors}
-                      onChangeApprovers={v => {
-                        tPermTarget.onChangeApprovers(v);
-                        setTPermTarget(prev => prev ? { ...prev, permissions: { ...prev.permissions, approvers: v } } : null);
-                      }}
-                      onChangeEditors={v => {
-                        tPermTarget.onChangeEditors(v);
-                        setTPermTarget(prev => prev ? { ...prev, permissions: { ...prev.permissions, editors: v } } : null);
-                      }}
-                    />
-                  </div>
-                  {/* Card footer — ביטול left / אישור right (RTL: first child = rightmost) */}
-                  <div className="flex items-center justify-between px-5 pb-4">
-                    <button
-                      onClick={() => setTPermTarget(null)}
-                      className="px-5 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
-                    >
-                      ביטול
-                    </button>
-                    <button
-                      onClick={() => setTPermTarget(null)}
-                      className="px-5 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-[#152e54] transition-colors"
-                    >
-                      אישור
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <RolePermissionsDialog
+                key={`${tPermTarget.id}-${tPermTarget.role}`}
+                role={tPermTarget.role}
+                title={tPermTarget.label}
+                subtitle={tPermTarget.subtitle}
+                initial={tPermTarget.permissions[tPermTarget.role]}
+                onClose={() => setTPermTarget(null)}
+                onSave={v => {
+                  if (tPermTarget.role === 'approvers') tPermTarget.onChangeApprovers(v);
+                  else tPermTarget.onChangeEditors(v);
+                  setTemplateDirty(true);
+                  setTPermTarget(null);
+                }}
+              />
+            )}
+
+            {tPermMenu && (
+              <PermRoleMenu
+                pos={tPermMenu.pos}
+                showApprovers={templateApprovalDefault === 'allow'}
+                approversCount={tPermMenu.permissions.approvers.length}
+                editorsCount={tPermMenu.permissions.editors.length}
+                onClose={() => setTPermMenu(null)}
+                onPick={role => { const { pos, ...subject } = tPermMenu; setTPermMenu(null); setTPermTarget({ ...subject, role }); }}
+              />
             )}
 
           </div>
@@ -2909,6 +3240,8 @@ export function PersonalArea() {
                   borderTopRightRadius: 18, borderBottomRightRadius: 18, borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
                   boxShadow: 'inset 10px 0 14px -12px rgba(27,58,107,0.25), 14px 12px 32px -8px rgba(0,0,0,0.25)',
                 }}>
+                {/* Dimmed and non-interactive while the section-permissions dialog is open */}
+                {tPermTarget && <div className="absolute inset-0 z-[60] bg-gray-900/30" aria-hidden="true" />}
                 {/* Header */}
                 <div className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-[#1B3A6B]/[0.07]">
                   <div className="flex items-center gap-2.5">
