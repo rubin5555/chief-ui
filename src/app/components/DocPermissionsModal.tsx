@@ -715,6 +715,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   const [view, setView]           = useState<'flat' | 'source' | 'clause'>('flat');
   const [listQ, setListQ]         = useState('');
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [selected, setSelected]   = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen]     = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
@@ -730,6 +731,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
 
   const isClauseMode = activeIdx === 3 || activeIdx === 4;
   useEffect(() => { if (!isClauseMode && view === 'clause') setView('flat'); }, [isClauseMode, view]);
+  useEffect(() => { setSelected(new Set()); }, [activeIdx, view, listQ]);
 
   const live = (g: Grant) => !removed.has(grantKey(g));
   const isNew = (g: Grant) => !initialKeys.has(grantKey(g));
@@ -932,15 +934,47 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   type Row = { key: string; person: PermUser; clause?: string; grants: Grant[] };
   const q = listQ.trim();
   const tabGrants = permGrants(activeIdx).filter(g => !q || g.person.name.includes(q) || g.person.idNumber.includes(q) || g.via.label.includes(q));
-  const toRows = (gs: Grant[]): Row[] => {
+  const toRows = (gs: Grant[], prefix = ''): Row[] => {
     const m = new Map<string, Row>();
     gs.forEach(g => {
-      const k = `${g.person.id}|${isClauseMode ? g.clause ?? '' : ''}`;
+      const k = `${prefix}${g.person.id}|${isClauseMode ? g.clause ?? '' : ''}`;
       const r = m.get(k) ?? { key: k, person: g.person, clause: isClauseMode ? g.clause : undefined, grants: [] };
       r.grants.push(g); m.set(k, r);
     });
     return [...m.values()];
   };
+
+  // list model for the current view (rows are what the user can select)
+  type Group = { id: string; title: string; via?: Via; gs: Grant[]; rows: Row[]; removable: boolean };
+  const VIA_ORDER: ViaKind[] = ['direct', 'request', 'miraz', 'hamal', 'list', 'doc', 'excel'];
+  const listGroups: Group[] | null = view === 'flat' ? null : view === 'source'
+    ? (() => {
+        const m = new Map<string, { via: Via; gs: Grant[] }>();
+        tabGrants.forEach(g => { const k = viaKey(g.via); const e = m.get(k) ?? { via: g.via, gs: [] }; e.gs.push(g); m.set(k, e); });
+        return [...m.entries()].sort((a, b) => VIA_ORDER.indexOf(a[1].via.kind) - VIA_ORDER.indexOf(b[1].via.kind))
+          .map(([k, { via, gs }]) => ({ id: `src-${k}`, title: via.kind === 'direct' ? 'ישיר (נוסף ידנית)' : via.label, via, gs, rows: toRows(gs, `src-${k}#`), removable: via.kind !== 'direct' }));
+      })()
+    : PERM_CLAUSES.map(c => ({ c, gs: tabGrants.filter(g => g.clause === c.id) })).filter(x => x.gs.length)
+        .map(({ c, gs }) => ({ id: `cl-${c.id}`, title: c.label, gs, rows: toRows(gs, `cl-${c.id}#`), removable: true }));
+  const flatRows = view === 'flat'
+    ? toRows(tabGrants).sort((a, b) => isClauseMode ? PERM_CLAUSES.findIndex(c => c.id === a.clause) - PERM_CLAUSES.findIndex(c => c.id === b.clause) : 0)
+    : [];
+  const allRows = listGroups ? listGroups.flatMap(g => g.rows) : flatRows;
+  const selRows = allRows.filter(r => selected.has(r.key));
+  const selState = (rows: Row[]): 'on' | 'off' | 'mixed' => {
+    const n = rows.filter(r => selected.has(r.key)).length;
+    return n === 0 ? 'off' : n === rows.length ? 'on' : 'mixed';
+  };
+  const setRowsSelected = (rows: Row[], on: boolean) =>
+    setSelected(p => { const n = new Set(p); rows.forEach(r => on ? n.add(r.key) : n.delete(r.key)); return n; });
+  const SelBox = ({ state, onToggle, label }: { state: 'on' | 'off' | 'mixed'; onToggle: () => void; label: string }) => (
+    <button type="button" role="checkbox" aria-checked={state === 'mixed' ? 'mixed' : state === 'on'} aria-label={label}
+      onClick={e => { e.stopPropagation(); onToggle(); }}
+      className={`w-4 h-4 rounded border-[1.5px] flex items-center justify-center flex-shrink-0 transition-colors ${state === 'off' ? 'border-gray-300 bg-white hover:border-[#1B3A6B]' : 'bg-[#1B3A6B] border-[#1B3A6B]'}`}>
+      {state === 'on' && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+      {state === 'mixed' && <span className="w-2 h-[2px] rounded bg-white" />}
+    </button>
+  );
 
   const RowLine = ({ row, showClause, showVia, indent }: { row: Row; showClause: boolean; showVia: boolean; indent?: boolean }) => {
     const allRemoved = row.grants.every(g => removed.has(grantKey(g)));
@@ -948,12 +982,14 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     const shown = allRemoved ? row.grants : row.grants.filter(live);
     const vias = [...new Map(shown.map(g => [viaKey(g.via), g.via])).values()];
     const roles = rolesOf(row.person.id);
-    const cols = [showClause ? '150px' : null, '1fr', '96px', '76px', showVia ? '170px' : null, '190px', '32px'].filter(Boolean).join(' ');
+    const cols = ['18px', showClause ? '150px' : null, '1fr', '96px', '76px', showVia ? '170px' : null, '190px', '32px'].filter(Boolean).join(' ');
+    const isSel = selected.has(row.key);
     const bar = allRemoved ? CHANGE.removed.bar : allNew ? CHANGE.added.bar : null;
     const muted = allRemoved ? 'text-gray-300 line-through decoration-gray-300' : '';
     return (
-      <div className="relative grid items-center px-4 py-2.5 hover:bg-gray-50 transition-colors" style={{ gridTemplateColumns: cols, columnGap: 8, borderBottom: '1px solid #f5f5f5' }}>
+      <div className={`relative grid items-center px-4 py-2.5 transition-colors ${isSel ? 'bg-[#EEF4FF]' : 'hover:bg-gray-50'}`} style={{ gridTemplateColumns: cols, columnGap: 8, borderBottom: '1px solid #f5f5f5' }}>
         {bar && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-l-full" style={{ background: bar }} />}
+        <SelBox state={isSel ? 'on' : 'off'} onToggle={() => setRowsSelected([row], !isSel)} label={`בחירת ${row.person.name}`} />
         {showClause && (
           <span className="min-w-0"><span className="inline-block max-w-full truncate text-[11px] font-semibold text-[#1B3A6B] bg-[#F6F8FC] border border-[#E3E9F4] px-1.5 py-0.5 rounded-md">{clauseLabel(row.clause)}</span></span>
         )}
@@ -991,9 +1027,11 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
   };
 
   const HeaderRow = ({ showClause, showVia }: { showClause: boolean; showVia: boolean }) => {
-    const cols = [showClause ? '150px' : null, '1fr', '96px', '76px', showVia ? '170px' : null, '190px', '32px'].filter(Boolean).join(' ');
+    const cols = ['18px', showClause ? '150px' : null, '1fr', '96px', '76px', showVia ? '170px' : null, '190px', '32px'].filter(Boolean).join(' ');
+    const st = selState(allRows);
     return (
       <div className="sticky top-0 z-10 grid items-center px-4 py-2 text-[10px] font-semibold text-gray-500 select-none" style={{ background: '#EBEBEB', gridTemplateColumns: cols, columnGap: 8 }}>
+        <SelBox state={st} onToggle={() => setRowsSelected(allRows, st !== 'on')} label="בחירת הכל" />
         {showClause && <span>סעיף</span>}
         <span>שם</span><span className="text-center">תעודת זהות</span><span className="text-center">ארגון</span>
         {showVia && <span>מקור</span>}
@@ -1002,8 +1040,9 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
     );
   };
 
-  const GroupHeader = ({ id, title, tile, count, gs, removable }: { id: string; title: string; tile?: ReactNode; count: number; gs: Grant[]; removable: boolean }) => {
+  const GroupHeader = ({ id, title, tile, count, gs, removable, rows }: { id: string; title: string; tile?: ReactNode; count: number; gs: Grant[]; removable: boolean; rows: Row[] }) => {
     const open = !collapsed.has(id);
+    const st = selState(rows);
     const allRemoved = gs.length > 0 && gs.every(g => removed.has(grantKey(g)));
     const allNew = gs.length > 0 && gs.every(isNew);
     const bar = allRemoved ? CHANGE.removed.bar : allNew ? CHANGE.added.bar : null;
@@ -1011,6 +1050,7 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
       <div className="relative flex items-center gap-2 px-4 py-2.5 bg-[#F7F9FC] border-b border-gray-100 cursor-pointer select-none"
         onClick={() => setCollapsed(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; })}>
         {bar && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-l-full" style={{ background: bar }} />}
+        <SelBox state={st} onToggle={() => setRowsSelected(rows, st !== 'on')} label={`בחירת ${title}`} />
         <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? '' : 'rotate-90'}`} />
         {tile}
         <span className={`text-xs font-semibold ${allRemoved ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{title}</span>
@@ -1042,38 +1082,18 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
       return (
         <div className="flex-1 overflow-y-auto">
           <HeaderRow showClause={isClauseMode} showVia />
-          {toRows(tabGrants)
-            .sort((a, b) => isClauseMode ? PERM_CLAUSES.findIndex(c => c.id === a.clause) - PERM_CLAUSES.findIndex(c => c.id === b.clause) : 0)
-            .map(r => <RowLine key={r.key} row={r} showClause={isClauseMode} showVia />)}
+          {flatRows.map(r => <RowLine key={r.key} row={r} showClause={isClauseMode} showVia />)}
         </div>
       );
     }
-    if (view === 'source') {
-      const groups = new Map<string, { via: Via; gs: Grant[] }>();
-      tabGrants.forEach(g => { const k = viaKey(g.via); const e = groups.get(k) ?? { via: g.via, gs: [] }; e.gs.push(g); groups.set(k, e); });
-      const order: ViaKind[] = ['direct', 'request', 'miraz', 'hamal', 'list', 'doc', 'excel'];
-      return (
-        <div className="flex-1 overflow-y-auto">
-          <HeaderRow showClause={isClauseMode} showVia={false} />
-          {[...groups.entries()].sort((a, b) => order.indexOf(a[1].via.kind) - order.indexOf(b[1].via.kind)).map(([k, { via, gs }]) => (
-            <div key={k}>
-              <GroupHeader id={`src-${k}`} title={via.kind === 'direct' ? 'ישיר (נוסף ידנית)' : via.label} tile={<ViaTile kind={via.kind} size={22} />}
-                count={new Set(gs.map(g => g.person.id)).size} gs={gs} removable={via.kind !== 'direct'} />
-              {!collapsed.has(`src-${k}`) && toRows(gs).map(r => <RowLine key={r.key} row={r} showClause={isClauseMode} showVia={false} indent />)}
-            </div>
-          ))}
-        </div>
-      );
-    }
-    // by clause
-    const byClause = PERM_CLAUSES.map(c => ({ c, gs: tabGrants.filter(g => g.clause === c.id) })).filter(x => x.gs.length);
     return (
       <div className="flex-1 overflow-y-auto">
-        <HeaderRow showClause={false} showVia />
-        {byClause.map(({ c, gs }) => (
-          <div key={c.id}>
-            <GroupHeader id={`cl-${c.id}`} title={c.label} count={new Set(gs.map(g => g.person.id)).size} gs={gs} removable />
-            {!collapsed.has(`cl-${c.id}`) && toRows(gs).map(r => <RowLine key={r.key} row={r} showClause={false} showVia indent />)}
+        <HeaderRow showClause={view === 'source' && isClauseMode} showVia={view !== 'source'} />
+        {(listGroups ?? []).map(g => (
+          <div key={g.id}>
+            <GroupHeader id={g.id} title={g.title} tile={g.via ? <ViaTile kind={g.via.kind} size={22} /> : undefined}
+              count={new Set(g.gs.map(x => x.person.id)).size} gs={g.gs} removable={g.removable} rows={g.rows} />
+            {!collapsed.has(g.id) && g.rows.map(r => <RowLine key={r.key} row={r} showClause={view === 'source' && isClauseMode} showVia={view !== 'source'} indent />)}
           </div>
         ))}
       </div>
@@ -1179,7 +1199,30 @@ export function DocPermissionsModal({ onClose, initialTab = 0, isDistributed = f
                   </button>
                 </div>
               </div>
-              {(tabAdded > 0 || tabRemoved > 0) && (
+              {selRows.length > 0 ? (() => {
+                const liveSel = selRows.flatMap(r => r.grants.filter(live));
+                const removedSel = selRows.flatMap(r => r.grants.filter(g => removed.has(grantKey(g))));
+                return (
+                  <div className="flex items-center gap-2 px-5 py-2 border-b border-[#c7d9ff] bg-[#EEF4FF] text-xs flex-shrink-0">
+                    <span className="font-semibold text-[#1B3A6B]">{selRows.length} נבחרו</span>
+                    <span className="w-px h-4 bg-[#c7d9ff] mx-1" />
+                    {liveSel.length > 0 && (
+                      <button type="button" onClick={() => { removeGrants(liveSel); setSelected(new Set()); }}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold text-[#1B3A6B] hover:bg-white transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />הסרה
+                      </button>
+                    )}
+                    {removedSel.length > 0 && (
+                      <button type="button" onClick={() => { restoreGrants(removedSel); setSelected(new Set()); }}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg font-semibold text-[#1B3A6B] hover:bg-white transition-colors">
+                        <RotateCcw className="w-3.5 h-3.5" />ביטול הסרה
+                      </button>
+                    )}
+                    <span className="flex-1" />
+                    <button type="button" onClick={() => setSelected(new Set())} className="text-gray-500 hover:text-gray-700 transition-colors">ניקוי בחירה</button>
+                  </div>
+                );
+              })() : (tabAdded > 0 || tabRemoved > 0) && (
                 <div className="flex items-center gap-1.5 px-5 py-2 border-b border-gray-100 text-[11px] text-gray-500 flex-shrink-0">
                   שינויים שלא נשמרו:
                   {tabAdded > 0 && <span className="px-1.5 py-0.5 rounded-md font-semibold" style={{ background: CHANGE.added.bg, color: CHANGE.added.fg }}>{tabAdded} נוספו</span>}
