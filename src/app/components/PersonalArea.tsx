@@ -1,4 +1,4 @@
-import { Info, User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush, Hash, Calendar as CalendarIcon, Type as TypeIcon, CalendarDays, CalendarRange, ListChecks, ToggleLeft, Building2, Lock, CheckCircle2, type LucideIcon} from 'lucide-react';
+import { Info, User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush, Hash, Calendar as CalendarIcon, Type as TypeIcon, Lock, CheckCircle2, type LucideIcon} from 'lucide-react';
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
@@ -837,7 +837,6 @@ type OpParam =
   | { id: string; label: string; type: 'boolean' }
   | { id: string; label: string; type: 'number' }
   | { id: string; label: string; type: 'person' };
-type OpParamType = OpParam['type'];
 type ParamValue = string | string[] | boolean | { from: string; to: string };
 
 const REGIONS = ['צפון', 'גליל עליון', 'גליל מערבי', 'רמת הגולן', 'עמקים', 'חיפה', 'שרון', 'מרכז', 'ירושלים', 'שפלה', 'נגב צפוני', 'נגב מערבי', 'ערבה', 'אילת'];
@@ -874,16 +873,6 @@ const OP_PARAMS: Record<string, OpParam[]> = {
   ],
 };
 
-// Each parameter type gets its own icon and colour, so a date never looks like a list or a switch
-const PARAM_TYPE_META: Record<OpParamType, { Icon: LucideIcon; bg: string; fg: string }> = {
-  entities:    { Icon: Building2,     bg: '#EAF2FB', fg: '#2B6CB0' },
-  date:        { Icon: CalendarDays,  bg: '#FBF3E7', fg: '#9A6A1F' },
-  dateRange:   { Icon: CalendarRange, bg: '#FBF3E7', fg: '#9A6A1F' },
-  multiSelect: { Icon: ListChecks,    bg: '#F1EEF9', fg: '#5B4BA8' },
-  boolean:     { Icon: ToggleLeft,    bg: '#ECF6F1', fg: '#2F7A57' },
-  number:      { Icon: Hash,          bg: '#E8F5F5', fg: '#2A7A7A' },
-  person:      { Icon: User,          bg: '#EEF1F5', fg: '#475569' },
-};
 // Short option lists show as tags; longer ones get a searchable checkbox list
 const TAG_LIMIT = 6;
 
@@ -1074,12 +1063,15 @@ function DynamicFieldPicker({
           const hasSel = selSys?.id === sys.id;
           return (
             <div key={sys.id} className={idx > 0 ? 'border-t border-gray-50' : ''}>
-              <button type="button" onClick={() => setOpenSysId(isOpen ? null : sys.id)} aria-expanded={isOpen}
-                className="w-full flex items-center gap-2 px-4 py-3 text-right transition-colors hover:bg-gray-50/70">
-                <SystemIcon name={sys.name} size="sm" />
-                <span className={`flex-1 truncate text-right text-[11px] ${hasSel || isOpen ? 'font-bold text-[#1B3A6B]' : 'font-medium text-gray-600'}`}>{sys.name}</span>
-                <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#1B3A6B]/50' : 'text-gray-300'}`} />
-              </button>
+              <div className="flex items-center gap-1.5 pl-3 transition-colors hover:bg-gray-50/70">
+                <button type="button" onClick={() => setOpenSysId(isOpen ? null : sys.id)} aria-expanded={isOpen}
+                  className="flex-1 min-w-0 flex items-center gap-2 pr-4 py-3 text-right">
+                  <SystemIcon name={sys.name} size="sm" />
+                  <span className={`flex-1 truncate text-right text-[11px] ${hasSel || isOpen ? 'font-bold text-[#1B3A6B]' : 'font-medium text-gray-600'}`}>{sys.name}</span>
+                  <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#1B3A6B]/50' : 'text-gray-300'}`} />
+                </button>
+                <SystemChatButton systemName={sys.name} variant="icon" />
+              </div>
               {isOpen && (
                 <div className="pb-1.5">
                   {sys.operations.map(op => {
@@ -1090,7 +1082,6 @@ function DynamicFieldPicker({
                         {isSel && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-[#1B3A6B]" />}
                         <span className="absolute right-[22px] top-0 bottom-0 w-px bg-gray-100" />
                         <span className="flex-1 truncate">{op.name}</span>
-                        {isSel && <ChevronLeft className="w-3 h-3 flex-shrink-0 text-[#1B3A6B]/50" />}
                       </button>
                     );
                   })}
@@ -1114,15 +1105,11 @@ function DynamicFieldPicker({
         ) : params.length === 0 ? (
           <p className="px-4 py-6 text-center text-[11px] text-gray-400">הפעולה לא דורשת פרמטרים</p>
         ) : params.map(p => {
-          const { Icon, bg, fg } = PARAM_TYPE_META[p.type];
           const filled = isParamFilled(p, values[p.id]);
           const control = renderControl(p);
           return (
             <div key={p.id} className="px-3 py-3 border-b border-gray-100 last:border-0">
               <div className={`flex items-center gap-2 ${control ? 'mb-2' : ''}`}>
-                <span className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: bg, color: fg }}>
-                  <Icon className="w-3.5 h-3.5" strokeWidth={2} />
-                </span>
                 <span className="flex-1 min-w-0 truncate text-[11px] font-bold text-gray-700">{p.label}</span>
                 {p.type === 'boolean' ? (
                   <button type="button" dir="ltr" role="switch" aria-checked={Boolean(values[p.id])} aria-label={p.label}
