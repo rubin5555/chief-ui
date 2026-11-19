@@ -1,4 +1,4 @@
-import { Info, User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush, Hash, Calendar as CalendarIcon, Type as TypeIcon, type LucideIcon} from 'lucide-react';
+import { Info, User, Eye, Send, CheckCircle, Share2, FileText, PenLine, List, Search, Folder, Trash2, Copy, ChevronDown, ChevronLeft, ChevronRight, GripVertical, Pin, Filter, X, Check, Download, Users, Layers, Network, UserCheck, UserCog, AlertCircle, Bold, Italic, Underline, Strikethrough, Highlighter, AlignRight, AlignCenter, AlignLeft, AlignJustify, ListOrdered, Indent, Outdent, PilcrowRight, PilcrowLeft, Superscript, Paperclip, Table2, PaintBucket, PaintRoller, RemoveFormatting, Plus, Database, RotateCcw, Link2, Sparkles, Paintbrush, Hash, Calendar as CalendarIcon, Type as TypeIcon, CalendarDays, CalendarRange, ListChecks, ToggleLeft, Building2, Lock, CheckCircle2, type LucideIcon} from 'lucide-react';
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { ImportDropdown } from './ImportDropdown';
 import { CustomSelect } from './CustomSelect';
@@ -827,273 +827,338 @@ function SidebarFieldPicker({
   );
 }
 
+// Parameters each source-system operation requires. Every parameter is required;
+// the type decides which control is shown. `entities` takes its options from the operation's instances.
+type OpParam =
+  | { id: string; label: string; type: 'entities' }
+  | { id: string; label: string; type: 'date' }
+  | { id: string; label: string; type: 'dateRange' }
+  | { id: string; label: string; type: 'multiSelect'; options: string[] }
+  | { id: string; label: string; type: 'boolean' }
+  | { id: string; label: string; type: 'number' }
+  | { id: string; label: string; type: 'person' };
+type OpParamType = OpParam['type'];
+type ParamValue = string | string[] | boolean | { from: string; to: string };
+
+const REGIONS = ['צפון', 'גליל עליון', 'גליל מערבי', 'רמת הגולן', 'עמקים', 'חיפה', 'שרון', 'מרכז', 'ירושלים', 'שפלה', 'נגב צפוני', 'נגב מערבי', 'ערבה', 'אילת'];
+const OP_PARAMS: Record<string, OpParam[]> = {
+  op1: [
+    { id: 'units', label: 'יחידות', type: 'entities' },
+    { id: 'asOf', label: 'נכון לתאריך', type: 'date' },
+  ],
+  op2: [
+    { id: 'units', label: 'יחידות', type: 'entities' },
+    { id: 'service', label: 'סוג שירות', type: 'multiSelect', options: ['סדיר', 'קבע', 'מילואים', 'אזרח עובד'] },
+    { id: 'released', label: 'כולל משוחררים', type: 'boolean' },
+    { id: 'asOf', label: 'נכון לתאריך', type: 'date' },
+  ],
+  op3: [
+    { id: 'ops', label: 'מבצעים', type: 'entities' },
+    { id: 'range', label: 'טווח תאריכים', type: 'dateRange' },
+  ],
+  op4: [
+    { id: 'threats', label: 'איומים', type: 'entities' },
+    { id: 'regions', label: 'אזורים', type: 'multiSelect', options: REGIONS },
+    { id: 'severity', label: 'רמת חומרה', type: 'multiSelect', options: ['נמוכה', 'בינונית', 'גבוהה', 'קריטית'] },
+    { id: 'range', label: 'טווח תאריכים', type: 'dateRange' },
+    { id: 'cancelled', label: 'כולל איומים שבוטלו', type: 'boolean' },
+    { id: 'reporter', label: 'גורם מדווח', type: 'person' },
+  ],
+  op5: [
+    { id: 'stores', label: 'מחסנים', type: 'entities' },
+    { id: 'minQty', label: 'כמות מינימלית', type: 'number' },
+    { id: 'disabled', label: 'כולל ציוד מושבת', type: 'boolean' },
+  ],
+  op6: [
+    { id: 'stores', label: 'מחסנים', type: 'entities' },
+  ],
+};
+
+// Each parameter type gets its own icon and colour, so a date never looks like a list or a switch
+const PARAM_TYPE_META: Record<OpParamType, { Icon: LucideIcon; bg: string; fg: string }> = {
+  entities:    { Icon: Building2,     bg: '#EAF2FB', fg: '#2B6CB0' },
+  date:        { Icon: CalendarDays,  bg: '#FBF3E7', fg: '#9A6A1F' },
+  dateRange:   { Icon: CalendarRange, bg: '#FBF3E7', fg: '#9A6A1F' },
+  multiSelect: { Icon: ListChecks,    bg: '#F1EEF9', fg: '#5B4BA8' },
+  boolean:     { Icon: ToggleLeft,    bg: '#ECF6F1', fg: '#2F7A57' },
+  number:      { Icon: Hash,          bg: '#E8F5F5', fg: '#2A7A7A' },
+  person:      { Icon: User,          bg: '#EEF1F5', fg: '#475569' },
+};
+// Short option lists show as tags; longer ones get a searchable checkbox list
+const TAG_LIMIT = 6;
+
+const emptyParamValue = (p: OpParam): ParamValue =>
+  p.type === 'boolean' ? false
+  : p.type === 'dateRange' ? { from: '', to: '' }
+  : p.type === 'entities' || p.type === 'multiSelect' ? []
+  : '';
+const isParamFilled = (p: OpParam, v: ParamValue | undefined): boolean => {
+  if (v === undefined) return p.type === 'boolean';
+  if (p.type === 'boolean') return true;
+  if (Array.isArray(v)) return v.length > 0;
+  if (typeof v === 'object' && v !== null) return Boolean((v as { from: string }).from && (v as { to: string }).to);
+  return String(v).trim() !== '';
+};
+
+function ParamCheckList({ options, value, onChange, search, onSearch, placeholder }: {
+  options: string[]; value: string[]; onChange: (v: string[]) => void; search: string; onSearch: (s: string) => void; placeholder: string;
+}) {
+  const filtered = options.filter(o => o.includes(search.trim()));
+  const toggle = (o: string) => onChange(value.includes(o) ? value.filter(x => x !== o) : [...value, o]);
+  return (
+    <div className="rounded-xl overflow-hidden border border-gray-200 bg-white">
+      <div className="px-2.5 pt-2 pb-1.5">
+        <div className="relative">
+          <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+          <input type="text" value={search} onChange={e => onSearch(e.target.value)} placeholder={placeholder} dir="rtl"
+            className="w-full pr-7 pl-2 py-1.5 text-[11px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#1B3A6B]/50 focus:ring-1 focus:ring-[#1B3A6B]/15 placeholder-gray-300 text-gray-700" />
+        </div>
+      </div>
+      <div className="overflow-y-auto border-t border-gray-100" style={{ maxHeight: 132 }}>
+        {filtered.length > 0 ? filtered.map(o => {
+          const on = value.includes(o);
+          return (
+            <button key={o} type="button" onClick={() => toggle(o)}
+              className={`w-full flex items-center justify-between px-3 py-1.5 text-[11px] transition-colors border-b border-gray-50 last:border-0 ${on ? 'bg-[#EEF4FF] text-[#1B3A6B] font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <span className="truncate ml-2">{o}</span>
+              <span className={`w-4 h-4 rounded-md flex-shrink-0 border-[1.5px] flex items-center justify-center transition-colors ${on ? 'bg-[#1B3A6B] border-[#1B3A6B]' : 'border-gray-300 bg-white'}`}>
+                {on && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
+              </span>
+            </button>
+          );
+        }) : <p className="py-3 text-center text-[10px] text-gray-400">אין תוצאות</p>}
+      </div>
+      {value.length > 0 && (
+        <div className="flex items-center justify-between px-3 py-1.5 border-t border-gray-100 text-[10px]">
+          <span className="text-gray-400">{value.length} נבחרו</span>
+          <button type="button" onClick={() => onChange([])} className="text-[10px] font-semibold text-[#1B3A6B]/70 hover:text-[#1B3A6B]">ניקוי</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DynamicFieldPicker({
   existingFields, onAdd, onRemove, onClose,
 }: { existingFields: DynamicField[]; onAdd: (v: DynamicField[]) => void; onRemove?: (id: string) => void; onClose?: () => void }) {
-  const [selSys,       setSelSys]       = useState<typeof DYNAMIC_SYSTEMS[0] | null>(null);
-  const [selOp,        setSelOp]        = useState<typeof DYNAMIC_SYSTEMS[0]['operations'][0] | null>(null);
-  const [selInsts,     setSelInsts]     = useState<string[]>([]);
-  const [instSearch,   setInstSearch]   = useState('');
-  const [showInstPanel, setShowInstPanel] = useState(false);
+  type Sys = typeof DYNAMIC_SYSTEMS[0];
+  type Op = Sys['operations'][0];
+  const [openSysId,     setOpenSysId]     = useState<string | null>(null);
+  const [selSys,        setSelSys]        = useState<Sys | null>(null);
+  const [selOp,         setSelOp]         = useState<Op | null>(null);
+  const [values,        setValues]        = useState<Record<string, ParamValue>>({});
+  const [searches,      setSearches]      = useState<Record<string, string>>({});
   const [expandedField, setExpandedField] = useState<string | null>(null);
 
-  // Per-operation parameters
-  const [opParams, setOpParams] = useState<Record<string, { name: string; date: string; quantity: string; question: boolean }>>({});
-  const [opNameSearch, setOpNameSearch] = useState<Record<string, string>>({});
-  const [opNameDropOpen, setOpNameDropOpen] = useState<string | null>(null);
+  const params = selOp ? OP_PARAMS[selOp.id] ?? [] : [];
+  const filledCount = params.filter(p => isParamFilled(p, values[p.id])).length;
+  const paramsDone = Boolean(selOp) && filledCount === params.length;
 
-  const getParam = (opId: string) => opParams[opId] ?? { name: '', date: '', quantity: '', question: false };
-  const setParam = (opId: string, patch: Partial<{ name: string; date: string; quantity: string; question: boolean }>) =>
-    setOpParams(prev => ({ ...prev, [opId]: { ...(prev[opId] ?? { name: '', date: '', quantity: '', question: false }), ...patch } }));
-  const pickOpName = (opId: string, name: string) => {
-    setParam(opId, { name });
-    setOpNameSearch(prev => ({ ...prev, [opId]: '' }));
-    setOpNameDropOpen(null);
+  const pickOp = (sys: Sys, op: Op) => {
+    if (selOp?.id === op.id) return;
+    setSelSys(sys); setSelOp(op); setExpandedField(null); setSearches({});
+    setValues(Object.fromEntries((OP_PARAMS[op.id] ?? []).map(p => [p.id, emptyParamValue(p)])));
   };
+  const setValue = (id: string, v: ParamValue) => setValues(prev => ({ ...prev, [id]: v }));
+  const setSearch = (id: string, s: string) => setSearches(prev => ({ ...prev, [id]: s }));
 
-  const pickSys = (s: typeof DYNAMIC_SYSTEMS[0]) => {
-    setSelSys(s); setSelOp(null); setSelInsts([]); setInstSearch(''); setShowInstPanel(false);
-  };
-  const pickOp = (o: typeof DYNAMIC_SYSTEMS[0]['operations'][0]) => {
-    if (selOp?.id === o.id) {
-      setShowInstPanel(p => !p);
-    } else {
-      setSelOp(o); setSelInsts([]); setInstSearch(''); setShowInstPanel(true);
-    }
-  };
-  const toggleInst = (inst: string) => {
-    setSelInsts(prev => prev.includes(inst) ? prev.filter(i => i !== inst) : [...prev, inst]);
-  };
+  // Fields are added once per selected entity; an operation without an entities parameter adds them once
+  const entityParam = params.find(p => p.type === 'entities');
+  const selInsts: string[] = entityParam ? (values[entityParam.id] as string[] | undefined) ?? [] : [''];
 
   const toggleField = (fn: string) => {
-    if (!selSys || !selOp || selInsts.length === 0) return;
+    if (!selSys || !selOp || !paramsDone || selInsts.length === 0) return;
     const toAdd: DynamicField[] = [];
     selInsts.forEach(inst => {
-      const existing = existingFields.find(f => f.operationId === selOp!.id && f.instanceName === inst && f.fieldName === fn);
+      const existing = existingFields.find(f => f.operationId === selOp.id && f.instanceName === inst && f.fieldName === fn);
       if (existing) onRemove?.(existing.id);
-      else toAdd.push({ id: `df-${Date.now()}-${Math.random().toString(36).slice(2)}`, systemId: selSys!.id, systemName: selSys!.name, operationId: selOp!.id, operationName: selOp!.name, instanceName: inst, fieldName: fn });
+      else toAdd.push({ id: `df-${Date.now()}-${Math.random().toString(36).slice(2)}`, systemId: selSys.id, systemName: selSys.name, operationId: selOp.id, operationName: selOp.name, instanceName: inst, fieldName: fn });
     });
     if (toAdd.length > 0) onAdd(toAdd);
   };
+  const isLinked = (fn: string) => Boolean(selOp) && selInsts.length > 0 &&
+    selInsts.every(inst => existingFields.some(f => f.operationId === selOp!.id && f.instanceName === inst && f.fieldName === fn));
 
-  const filteredInsts = selOp ? selOp.instances.filter(i => i.includes(instSearch)) : [];
+  const COL_HEAD = 'text-[9px] font-semibold text-gray-400 tracking-widest uppercase px-4 pt-3 pb-2 sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-50';
+
+  const renderControl = (p: OpParam) => {
+    const v = values[p.id];
+    switch (p.type) {
+      case 'entities':
+        return <ParamCheckList options={selOp!.instances} value={(v as string[]) ?? []} onChange={x => setValue(p.id, x)}
+          search={searches[p.id] ?? ''} onSearch={s => setSearch(p.id, s)} placeholder={`חיפוש ${p.label}...`} />;
+      case 'multiSelect': {
+        const sel = (v as string[]) ?? [];
+        if (p.options.length > TAG_LIMIT)
+          return <ParamCheckList options={p.options} value={sel} onChange={x => setValue(p.id, x)}
+            search={searches[p.id] ?? ''} onSearch={s => setSearch(p.id, s)} placeholder={`חיפוש ${p.label} (${p.options.length})...`} />;
+        return (
+          <div className="flex flex-wrap gap-1">
+            {p.options.map(o => {
+              const on = sel.includes(o);
+              return (
+                <button key={o} type="button" onClick={() => setValue(p.id, on ? sel.filter(x => x !== o) : [...sel, o])}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] border transition-colors ${on ? 'bg-[#1B3A6B] border-[#1B3A6B] text-white font-semibold' : 'border-gray-200 text-gray-600 hover:border-[#1B3A6B]/40 hover:text-[#1B3A6B]'}`}>
+                  {o}
+                </button>
+              );
+            })}
+          </div>
+        );
+      }
+      case 'date':
+        return <DateTimePicker value={(v as string) ?? ''} onChange={x => setValue(p.id, x)} placeholder="בחר תאריך ושעה" />;
+      case 'dateRange': {
+        const r = (v as { from: string; to: string }) ?? { from: '', to: '' };
+        return (
+          <div className="flex flex-col gap-1.5">
+            {(['from', 'to'] as const).map(k => (
+              <div key={k} className="flex items-center gap-2">
+                <span className="w-5 text-[10px] font-semibold text-gray-400 flex-shrink-0">{k === 'from' ? 'מ-' : 'עד'}</span>
+                <div className="flex-1 min-w-0"><DateTimePicker value={r[k]} onChange={x => setValue(p.id, { ...r, [k]: x })} placeholder="בחר תאריך ושעה" /></div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      case 'number':
+        return (
+          <input type="text" inputMode="numeric" value={(v as string) ?? ''} dir="ltr" placeholder="הכנס מספר"
+            onChange={e => setValue(p.id, e.target.value.replace(/[^\d]/g, ''))}
+            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:border-[#1B3A6B]/50 focus:ring-1 focus:ring-[#1B3A6B]/15 placeholder-gray-300 text-gray-700 text-right" />
+        );
+      case 'person': {
+        const sel = (v as string) ?? '';
+        if (sel) return (
+          <div className="flex items-center justify-between px-3 py-2 bg-[#EEF4FF] rounded-lg">
+            <span className="text-[11px] font-semibold text-[#1B3A6B] truncate">{sel}</span>
+            <button type="button" onClick={() => setValue(p.id, '')} className="text-[#1B3A6B]/40 hover:text-[#1B3A6B] transition-colors flex-shrink-0"><X className="w-3 h-3" /></button>
+          </div>
+        );
+        const q = (searches[p.id] ?? '').trim();
+        const people = LIST_PEOPLE_POOL.filter(x => q === '' || x.name.includes(q));
+        return (
+          <div className="rounded-xl overflow-hidden border border-gray-200 bg-white">
+            <div className="px-2.5 pt-2 pb-1.5">
+              <div className="relative">
+                <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+                <input type="text" value={searches[p.id] ?? ''} onChange={e => setSearch(p.id, e.target.value)} placeholder="חיפוש שם..." dir="rtl"
+                  className="w-full pr-7 pl-2 py-1.5 text-[11px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#1B3A6B]/50 focus:ring-1 focus:ring-[#1B3A6B]/15 placeholder-gray-300 text-gray-700" />
+              </div>
+            </div>
+            <div className="overflow-y-auto border-t border-gray-100" style={{ maxHeight: 112 }}>
+              {people.length > 0 ? people.map(x => (
+                <button key={x.id} type="button" onClick={() => setValue(p.id, x.name)}
+                  className="w-full flex items-center px-3 py-1.5 text-[11px] text-gray-700 hover:bg-gray-50 border-b border-gray-50 last:border-0">
+                  <span className="truncate">{x.name}</span>
+                </button>
+              )) : <p className="py-3 text-center text-[10px] text-gray-400">אין תוצאות</p>}
+            </div>
+          </div>
+        );
+      }
+      case 'boolean':
+        return null; // the switch sits in the parameter's header row
+    }
+  };
 
   return (
     <>
-    <div className="flex overflow-hidden" style={{ height: 320 }}>
+    <div className="flex overflow-hidden" style={{ height: 400 }}>
 
-      {/* ── Col 1: Systems ── */}
-      <div className="w-36 flex-shrink-0 overflow-y-auto border-l border-gray-100 bg-white">
-        <p className="text-[9px] font-semibold text-gray-400 tracking-widest uppercase px-4 pt-3 pb-2 sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-50">מערכת</p>
+      {/* ── Col 1: Systems with their operations (tree) ── */}
+      <div className="w-48 flex-shrink-0 overflow-y-auto border-l border-gray-100 bg-white">
+        <p className={COL_HEAD}>מערכת ופעולה</p>
         {DYNAMIC_SYSTEMS.map((sys, idx) => {
-          const isSel = selSys?.id === sys.id;
+          const isOpen = openSysId === sys.id;
+          const hasSel = selSys?.id === sys.id;
           return (
             <div key={sys.id} className={idx > 0 ? 'border-t border-gray-50' : ''}>
-              <button type="button" onClick={() => pickSys(sys)}
-                className={`relative w-full flex items-center gap-2 px-4 py-3 text-right transition-all duration-150 ${isSel ? 'bg-gradient-to-l from-[#EEF4FF] to-[#F7F9FF]' : 'hover:bg-gray-50/70'}`}>
-                {isSel && <span className="absolute right-0 top-2 bottom-2 w-[3px] rounded-full bg-[#1B3A6B]" />}
+              <button type="button" onClick={() => setOpenSysId(isOpen ? null : sys.id)} aria-expanded={isOpen}
+                className="w-full flex items-center gap-2 px-4 py-3 text-right transition-colors hover:bg-gray-50/70">
                 <SystemIcon name={sys.name} size="sm" />
-                <span className={`flex-1 truncate text-right text-[11px] ${isSel ? 'font-bold text-[#1B3A6B]' : 'font-medium text-gray-600'}`}>{sys.name}</span>
-                <ChevronLeft className={`w-3 h-3 flex-shrink-0 transition-colors ${isSel ? 'text-[#1B3A6B]/50' : 'text-transparent'}`} />
+                <span className={`flex-1 truncate text-right text-[11px] ${hasSel || isOpen ? 'font-bold text-[#1B3A6B]' : 'font-medium text-gray-600'}`}>{sys.name}</span>
+                <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#1B3A6B]/50' : 'text-gray-300'}`} />
               </button>
+              {isOpen && (
+                <div className="pb-1.5">
+                  {sys.operations.map(op => {
+                    const isSel = selOp?.id === op.id;
+                    return (
+                      <button key={op.id} type="button" onClick={() => pickOp(sys, op)}
+                        className={`relative w-full flex items-center gap-1.5 pr-9 pl-3 py-2 text-right text-[11px] transition-all duration-150 ${isSel ? 'bg-gradient-to-l from-[#EEF4FF] to-[#F7F9FF] font-bold text-[#1B3A6B]' : 'text-gray-600 hover:bg-gray-50/70'}`}>
+                        {isSel && <span className="absolute right-0 top-1.5 bottom-1.5 w-[3px] rounded-full bg-[#1B3A6B]" />}
+                        <span className="absolute right-[22px] top-0 bottom-0 w-px bg-gray-100" />
+                        <span className="flex-1 truncate">{op.name}</span>
+                        {isSel && <ChevronLeft className="w-3 h-3 flex-shrink-0 text-[#1B3A6B]/50" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* ── Col 2: Operations + parameters ── */}
-      <div className="w-80 flex-shrink-0 overflow-y-auto border-l border-gray-100 bg-white">
-        <p className="text-[9px] font-semibold text-gray-400 tracking-widest uppercase px-4 pt-3 pb-2 sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-50">פעולה</p>
-        {selSys ? selSys.operations.map((op, idx) => {
-          const isOpen = selOp?.id === op.id;
-          const panelVisible = isOpen && showInstPanel;
-          const param = getParam(op.id);
-          const nameSearch = opNameSearch[op.id] ?? '';
-          const nameDropVisible = opNameDropOpen === op.id;
-          const filteredNames = LIST_PEOPLE_POOL.filter(p =>
-            nameSearch.trim() === '' || p.name.includes(nameSearch.trim())
-          );
+      {/* ── Col 2: Parameters the selected operation requires ── */}
+      <div className="w-72 flex-shrink-0 overflow-y-auto border-l border-gray-100 bg-white">
+        <div className={`${COL_HEAD} flex items-center justify-between`}>
+          <span>פרמטרים</span>
+          {selOp && params.length > 0 && (
+            <span className={`text-[10px] font-bold tracking-normal ${paramsDone ? 'text-emerald-600' : 'text-gray-400'}`}>{filledCount}/{params.length}</span>
+          )}
+        </div>
+        {!selOp ? (
+          <div className="flex flex-col items-center justify-center h-[calc(100%-34px)] pb-8"><p className="text-[11px] text-gray-300">בחר פעולה</p></div>
+        ) : params.length === 0 ? (
+          <p className="px-4 py-6 text-center text-[11px] text-gray-400">הפעולה לא דורשת פרמטרים</p>
+        ) : params.map(p => {
+          const { Icon, bg, fg } = PARAM_TYPE_META[p.type];
+          const filled = isParamFilled(p, values[p.id]);
+          const control = renderControl(p);
           return (
-            <div key={op.id} className={idx > 0 ? 'border-t border-gray-50' : ''}>
-              {/* Operation row */}
-              <button type="button" onClick={() => pickOp(op)}
-                className={`relative w-full flex items-center gap-2 py-3 pr-4 text-right transition-all duration-150 ${
-                  isOpen ? 'bg-gradient-to-l from-[#EEF4FF] to-[#F7F9FF]' : 'hover:bg-gray-50/70'
-                } ${isOpen && selInsts.length > 0 ? 'pl-9' : 'pl-4'}`}>
-                {isOpen && <span className="absolute right-0 top-2 bottom-2 w-[3px] rounded-full bg-[#1B3A6B]" />}
-                {/* Badge — absolutely at far left */}
-                {isOpen && selInsts.length > 0 && (
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[9px] font-bold bg-[#1B3A6B] text-white rounded-full leading-none flex-shrink-0">
-                    {selInsts.length}
-                  </span>
-                )}
-                {/* Chevron */}
-                <ChevronDown className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200 ${panelVisible ? 'rotate-180 text-[#1B3A6B]' : isOpen ? 'text-[#1B3A6B]/40' : 'text-gray-300'}`} />
-                {/* Name — always bold */}
-                <span className={`flex-1 truncate text-right text-[12px] font-bold ${isOpen ? 'text-[#1B3A6B]' : 'text-gray-700'}`}>{op.name}</span>
-              </button>
-
-              {/* ── Parameters (shown when operation is clicked/expanded) ── */}
-              {panelVisible && (
-                <div className="px-3 pb-3 space-y-2.5 bg-white">
-
-                  {/* פרמטר א׳: שם (single-select search dropdown) — no label, dropdown first */}
-                  <div className="pt-2">
-                    {/* Search input + dropdown */}
-                    <div className="relative">
-                      <div className="relative">
-                        <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
-                        <input
-                          type="text"
-                          value={nameSearch}
-                          onChange={e => {
-                            setOpNameSearch(prev => ({ ...prev, [op.id]: e.target.value }));
-                            setOpNameDropOpen(op.id);
-                          }}
-                          onFocus={() => setOpNameDropOpen(op.id)}
-                          onBlur={() => setTimeout(() => setOpNameDropOpen(null), 150)}
-                          placeholder="חיפוש שם..."
-                          dir="rtl"
-                          className="w-full pr-8 pl-3 py-1.5 text-[11px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#1B3A6B]/50 focus:ring-1 focus:ring-[#1B3A6B]/15 placeholder-gray-300 text-gray-700"
-                        />
-                      </div>
-                      {/* Dropdown */}
-                      {nameDropVisible && (
-                        <div className="absolute top-full mt-0.5 left-0 right-0 bg-white rounded-lg border border-gray-200 shadow-md z-50 overflow-hidden" style={{ maxHeight: 120 }}>
-                          <div className="overflow-y-auto" style={{ maxHeight: 120 }}>
-                            {filteredNames.length > 0 ? filteredNames.map(p => {
-                              const sel = param.name === p.name;
-                              return (
-                                <button key={p.id} type="button"
-                                  onMouseDown={e => { e.preventDefault(); pickOpName(op.id, p.name); }}
-                                  className={`w-full flex items-center px-3 py-1.5 text-[11px] transition-colors border-b border-gray-50 last:border-0 ${sel ? 'bg-[#EEF4FF] text-[#1B3A6B] font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}>
-                                  <span className="truncate">{p.name}</span>
-                                </button>
-                              );
-                            }) : (
-                              <div className="py-3 text-center text-[10px] text-gray-400">אין תוצאות</div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    {/* Selected name display */}
-                    {param.name && (
-                      <div className="mt-1.5 flex items-center justify-between px-2.5 py-1.5 bg-[#EEF4FF] rounded-lg">
-                        <span className="text-[11px] font-semibold text-[#1B3A6B] truncate">{param.name}</span>
-                        <button type="button" onClick={() => setParam(op.id, { name: '' })} className="text-[#1B3A6B]/40 hover:text-[#1B3A6B] transition-colors ml-1 flex-shrink-0">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* פרמטר ב׳: תאריך */}
-                  <div>
-                    <p className="text-[10px] font-bold text-gray-500 mb-1">תאריך</p>
-                    <DateTimePicker
-                      value={param.date}
-                      onChange={v => setParam(op.id, { date: v })}
-                      placeholder="בחר תאריך ושעה"
-                    />
-                  </div>
-
-                  {/* פרמטר ג׳: כמות */}
-                  <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-bold text-gray-500 flex-shrink-0">כמות</p>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={param.quantity}
-                      onChange={e => setParam(op.id, { quantity: e.target.value.replace(/[^\d]/g, '') })}
-                      placeholder="הכנס מספר"
-                      dir="ltr"
-                      className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 bg-white focus:outline-none focus:border-[#1B3A6B]/50 focus:ring-1 focus:ring-[#1B3A6B]/15 placeholder-gray-300 text-gray-700 text-center"
-                    />
-                  </div>
-
-                  {/* פרמטר ד׳: שאלה (toggle) */}
-                  <div className="flex items-center justify-between py-0.5">
-                    <p className="text-[10px] font-bold text-gray-500">שאלה</p>
-                    <button
-                      type="button"
-                      dir="ltr"
-                      onClick={() => setParam(op.id, { question: !param.question })}
-                      className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none ${param.question ? 'bg-[#1B3A6B]' : 'bg-gray-300'}`}
-                    >
-                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${param.question ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                    </button>
-                  </div>
-
-                </div>
-              )}
-
-              {/* Inline instance picker */}
-              {panelVisible && (
-                <div className="mx-3 mb-2 rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm">
-                  {/* Search */}
-                  <div className="px-3 pt-2.5 pb-2">
-                    <div className="relative">
-                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
-                      <input type="text" value={instSearch} onChange={e => setInstSearch(e.target.value)}
-                        placeholder="חיפוש ישות..." dir="rtl" autoFocus
-                        className="w-full pr-8 pl-3 py-2 text-[11px] bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#1B3A6B]/50 focus:ring-1 focus:ring-[#1B3A6B]/15 placeholder-gray-300 text-gray-700" />
-                    </div>
-                  </div>
-                  {/* List */}
-                  <div className="overflow-y-auto border-t border-gray-100" style={{ maxHeight: 118 }}>
-                    {filteredInsts.length > 0 ? filteredInsts.map(inst => {
-                      const checked = selInsts.includes(inst);
-                      return (
-                        <button key={inst} type="button" onClick={() => toggleInst(inst)}
-                          className={`w-full flex items-center justify-between px-3 py-2 text-[11px] transition-all border-b border-gray-50 last:border-0 ${checked ? 'bg-[#EEF4FF] text-[#1B3A6B] font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}>
-                          <span className="truncate ml-2">{inst}</span>
-                          <div className={`w-4 h-4 rounded-md flex-shrink-0 border-[1.5px] flex items-center justify-center transition-all duration-150 ${checked ? 'bg-[#1B3A6B] border-[#1B3A6B]' : 'border-gray-300 bg-white'}`}>
-                            {checked && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
-                          </div>
-                        </button>
-                      );
-                    }) : (
-                      <div className="flex items-center justify-center py-4">
-                        <p className="text-[10px] text-gray-400">אין תוצאות</p>
-                      </div>
-                    )}
-                  </div>
-                  {/* Confirm button */}
-                  <div className="px-3 pt-2 pb-2.5 border-t border-gray-100">
-                    <button type="button" onClick={() => setShowInstPanel(false)}
-                      className={`w-full py-2 rounded-xl text-[11px] font-bold tracking-wide transition-all duration-150 ${selInsts.length > 0 ? 'bg-[#1B3A6B] text-white hover:bg-[#152e54]' : 'bg-gray-100 text-gray-400 cursor-default'}`}>
-                      {selInsts.length > 0 ? `אישור  ·  ${selInsts.length} נבחרו` : 'בחר ישות'}
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div key={p.id} className="px-3 py-3 border-b border-gray-100 last:border-0">
+              <div className={`flex items-center gap-2 ${control ? 'mb-2' : ''}`}>
+                <span className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: bg, color: fg }}>
+                  <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+                </span>
+                <span className="flex-1 min-w-0 truncate text-[11px] font-bold text-gray-700">{p.label}</span>
+                {p.type === 'boolean' ? (
+                  <button type="button" dir="ltr" role="switch" aria-checked={Boolean(values[p.id])} aria-label={p.label}
+                    onClick={() => setValue(p.id, !values[p.id])}
+                    className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors duration-200 ${values[p.id] ? 'bg-[#1B3A6B]' : 'bg-gray-300'}`}>
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${values[p.id] ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
+                ) : filled
+                  ? <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  : <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" title="חובה" />}
+              </div>
+              {control}
             </div>
           );
-        }) : (
-          <div className="flex flex-col items-center justify-center h-full gap-1.5 pb-8"><p className="text-[11px] text-gray-300">בחר מערכת</p></div>
-        )}
+        })}
       </div>
 
-      {/* ── Col 3: Fields ── */}
+      {/* ── Col 3: Fields (unlocked once all parameters are filled) ── */}
       <div className="flex-1 min-w-0 overflow-y-auto border-l border-gray-100 bg-white">
-        <p className="text-[9px] font-semibold text-gray-400 tracking-widest uppercase px-3 pt-3 pb-2 sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-50">שדה מידע</p>
-        {selInsts.length > 0 && selOp ? selOp.fields.map(fn => {
-          const linked = selInsts.every(inst => existingFields.some(f => f.operationId === selOp!.id && f.instanceName === inst && f.fieldName === fn));
+        <p className={COL_HEAD}>שדה מידע</p>
+        {!selOp ? (
+          <div className="flex flex-col items-center justify-center h-[calc(100%-34px)] pb-8"><p className="text-[11px] text-gray-300">בחר פעולה</p></div>
+        ) : !paramsDone ? (
+          <div className="flex flex-col items-center justify-center text-center gap-2 px-4 h-[calc(100%-34px)] pb-8">
+            <span className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center"><Lock className="w-4 h-4 text-gray-300" /></span>
+            <p className="text-[11px] text-gray-400 leading-snug">השדות ייפתחו אחרי<br />מילוי כל הפרמטרים</p>
+            <p className="text-[10px] text-gray-300">{filledCount} מתוך {params.length}</p>
+          </div>
+        ) : selOp.fields.map(fn => {
+          const linked = isLinked(fn);
           const subFields = FIELD_CHILDREN[fn];
           const isExpanded = expandedField === fn;
-
           return (
             <div key={fn}>
-              {/* Parent field row */}
               <button type="button"
-                onClick={() => {
-                  if (subFields) {
-                    setExpandedField(isExpanded ? null : fn);
-                  } else {
-                    toggleField(fn);
-                  }
-                }}
+                onClick={() => subFields ? setExpandedField(isExpanded ? null : fn) : toggleField(fn)}
                 className={`w-full flex items-center justify-between gap-1.5 px-3 py-2 mx-1 rounded-lg text-[11px] text-right transition-all mb-0.5 group ${isExpanded ? 'bg-[#EEF4FF] text-[#1B3A6B]' : linked ? 'text-gray-700 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]' : 'text-gray-600 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]'}`}
                 style={{ width: 'calc(100% - 8px)' }}>
                 <span className={`truncate ${isExpanded ? 'font-semibold' : linked ? 'font-medium' : 'group-hover:font-medium'}`}>{fn}</span>
@@ -1103,12 +1168,10 @@ function DynamicFieldPicker({
                     ? <><Check className="w-3.5 h-3.5 text-[#1B3A6B]/40 flex-shrink-0 group-hover:hidden" /><X className="w-3.5 h-3.5 text-[#1B3A6B] flex-shrink-0 hidden group-hover:block" /></>
                     : <Plus className="w-3.5 h-3.5 text-transparent group-hover:text-[#1B3A6B]/50 flex-shrink-0 transition-colors" />}
               </button>
-
-              {/* Sub-fields (expanded hierarchy) */}
               {subFields && isExpanded && (
                 <div className="mr-3 mb-1 border-r-2 border-[#1B3A6B]/10 pr-2">
                   {subFields.map(sf => {
-                    const sfLinked = selInsts.every(inst => existingFields.some(f => f.operationId === selOp!.id && f.instanceName === inst && f.fieldName === sf));
+                    const sfLinked = isLinked(sf);
                     return (
                       <button key={sf} type="button" onClick={() => toggleField(sf)}
                         className={`w-full flex items-center justify-between gap-1.5 px-2.5 py-1.5 mx-0.5 rounded-lg text-[11px] text-right transition-all mb-0.5 group ${sfLinked ? 'text-[#1B3A6B] bg-[#EEF4FF]/60' : 'text-gray-500 hover:bg-[#EEF4FF] hover:text-[#1B3A6B]'}`}
@@ -1128,11 +1191,7 @@ function DynamicFieldPicker({
               )}
             </div>
           );
-        }) : (
-          <div className="flex flex-col items-center justify-center h-full gap-1.5 pb-8">
-            <p className="text-[11px] text-gray-300">{!selOp ? 'בחר פעולה' : 'בחר ישות'}</p>
-          </div>
-        )}
+        })}
       </div>
 
     </div>
@@ -1141,7 +1200,7 @@ function DynamicFieldPicker({
       <div className="border-t border-gray-100 bg-white rounded-b-2xl">
         <div className="flex items-center justify-between px-5 py-3">
           <span className="text-[11px] text-gray-400">
-            {existingFields.length > 0 ? `${existingFields.length} שדות נבחרו` : 'לחץ על שדה להוספה מיידית'}
+            {existingFields.length > 0 ? `${existingFields.length} שדות נבחרו` : selOp && !paramsDone ? 'מלא את כל הפרמטרים כדי לבחור שדות' : 'לחץ על שדה להוספה מיידית'}
           </span>
           <button type="button" onClick={onClose}
             className="px-5 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-semibold hover:bg-[#152e54] transition-colors">
@@ -3150,7 +3209,7 @@ export function PersonalArea() {
             {/* ── Import from source system floating card ── */}
             {showFieldBankPicker && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 10 }}>
-                <div dir="rtl" className="pointer-events-auto bg-white rounded-2xl border border-gray-200 w-[680px] max-w-[90%]"
+                <div dir="rtl" className="pointer-events-auto bg-white rounded-2xl border border-gray-200 w-[720px] max-w-[90%]"
                   style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04)' }}
                   onMouseDown={e => e.stopPropagation()}>
                   {/* Header */}
