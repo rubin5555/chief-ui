@@ -5,6 +5,7 @@ import { CustomSelect } from './CustomSelect';
 import { DatePicker } from './DatePicker';
 import { DateTimePicker } from './DateTimePicker';
 import { SystemIcon } from './SystemIcon';
+import { SourceResponsibilityStrip, SystemChatButton } from './SourceSystemContact';
 import { TableDesignModal, fieldShapeOf, fieldTypeOf, FIELD_TYPE_LABELS, type FieldDataType, type FieldDesign } from './TableDesignModal';
 
 // Type badge (icon + colour) for source-field chips
@@ -3255,6 +3256,8 @@ export function PersonalArea() {
                   </div>
                 </div>
 
+                {!isEmpty && <SourceResponsibilityStrip />}
+
                 {isEmpty ? (
                   /* Empty state */
                   <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
@@ -3299,6 +3302,7 @@ export function PersonalArea() {
                             <SystemIcon name={sys.name} size="sm" />
                             <span className="text-[13px] font-bold text-[#1B3A6B]">{sys.name}</span>
                             <span className="flex-1 h-px bg-[#1B3A6B]/10" />
+                            <SystemChatButton systemName={sys.name} variant="icon" />
                             <span className="text-[10px] font-semibold text-[#1B3A6B]/50 bg-[#1B3A6B]/[0.06] px-1.5 py-0.5 rounded-full">
                               {sys.ops.reduce((n, o) => n + o.fields.length, 0)}
                             </span>

@@ -20,6 +20,7 @@ import {
 import type { EditDocInfo } from '../../App';
 import { DateTimePicker } from '../components/DateTimePicker';
 import { SystemIcon } from '../components/SystemIcon';
+import { SourceResponsibilityNotice, SystemChatButton } from '../components/SourceSystemContact';
 
 const CLASSIFIED_POOL = [
   { id: 'u1', name: 'אלון כהן',       idNumber: '123456789', env: 'סודי' },
@@ -5091,6 +5092,7 @@ export function Edit({ navigate, doc }: EditProps) {
                 </button>
               </div>
               <div className="px-6 py-4 flex flex-col gap-3">
+                <SourceResponsibilityNotice />
                 <p className="text-xs text-gray-500 leading-relaxed">
                   {sourceSystemsContext === 'doc'
                     ? 'המסמך מכיל מידע שנוצר ממערכות המקור הבאות:'
@@ -5104,6 +5106,7 @@ export function Edit({ navigate, doc }: EditProps) {
                         <span className="text-xs font-semibold text-gray-800">{s.name}</span>
                         <span className="text-[11px] text-gray-500">{s.field}</span>
                       </div>
+                      <SystemChatButton systemName={s.name} />
                     </div>
                   ))}
                 </div>
