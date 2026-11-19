@@ -8,7 +8,6 @@ const SYSTEM_CHAT_URLS: Record<string, string> = {};
 export const systemChatUrl = (systemName: string) => SYSTEM_CHAT_URLS[systemName.trim().toLowerCase()] ?? '#';
 
 export const SOURCE_RESPONSIBILITY_TITLE = "צ'יף אינו אחראי על המידע ממערכות המקור";
-export const SOURCE_RESPONSIBILITY_BODY = 'הנגשת המידע, דיוקו והיקפו באחריות כל מערכת. לבקשת מידע נוסף פנה לצוות המערכת.';
 
 /** Chat button for a single source system. `icon` = square icon-only, `button` = small labelled button. */
 export function SystemChatButton({ systemName, variant = 'button' }: { systemName: string; variant?: 'icon' | 'button' }) {
@@ -40,15 +39,17 @@ export function SourceResponsibilityNotice() {
       <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
       <div className="flex flex-col gap-0.5">
         <p className="text-xs font-bold text-amber-900">{SOURCE_RESPONSIBILITY_TITLE}</p>
-        <p className="text-[11px] leading-relaxed text-amber-800">{SOURCE_RESPONSIBILITY_BODY}</p>
+        <p className="text-[11px] leading-relaxed text-amber-800">
+          הנגשת המידע, דיוקו והיקפו באחריות כל מערכת. במידה ו<b>חסר מידע</b> או שאתה צריך <b>מידע נוסף</b> מאותה מערכת, יש ללחוץ על כפתור הצ'אט שלה.
+        </p>
       </div>
     </div>
   );
 }
 
-/** Collapsible amber strip — used in the template's source-fields panel. Chat buttons sit on each system header. */
-export function SourceResponsibilityStrip() {
-  const [open, setOpen] = useState(true);
+/** Collapsible amber strip — used in the template's source-fields panel and the import dialog. Chat buttons sit next to each system name. */
+export function SourceResponsibilityStrip({ defaultOpen = true }: { defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="flex-shrink-0 border-b border-amber-200 bg-amber-50">
       <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open}
@@ -60,10 +61,10 @@ export function SourceResponsibilityStrip() {
       {open && (
         <div className="px-5 pb-3 pr-[42px] flex flex-col gap-1.5">
           <p className="text-[11px] leading-relaxed text-amber-800">
-            צ'יף מציג רק את מה שהמערכות מנגישות ואינו אחראי על התוכן. לשדה שחסר לך פנה לצוות המערכת.
-          </p>
-          <p className="text-[11px] text-amber-800 flex items-center gap-1">
-            לחץ על <MessageCircle className="w-3.5 h-3.5 inline flex-shrink-0" /> ליד שם המערכת.
+            צ'יף מציג רק את מה שהמערכות מנגישות ואינו אחראי על התוכן.
+            במידה ו<b>חסר מידע</b> או שאתה צריך <b>מידע נוסף</b> מאותה מערכת, יש ללחוץ על{' '}
+            <MessageCircle className="w-3.5 h-3.5 inline-block align-[-3px]" aria-label="אייקון הצ'אט" />{' '}
+            ליד שם המערכת.
           </p>
         </div>
       )}

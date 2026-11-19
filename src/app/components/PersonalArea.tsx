@@ -1053,6 +1053,7 @@ function DynamicFieldPicker({
 
   return (
     <>
+    <SourceResponsibilityStrip defaultOpen={false} />
     <div className="flex overflow-hidden" style={{ height: 400 }}>
 
       {/* ── Col 1: Systems with their operations (tree) ── */}
@@ -1108,7 +1109,7 @@ function DynamicFieldPicker({
           const filled = isParamFilled(p, values[p.id]);
           const control = renderControl(p);
           return (
-            <div key={p.id} className="px-3 py-3 border-b border-gray-100 last:border-0">
+            <div key={p.id} id={`op-param-${p.id}`} className="px-3 py-3 border-b border-gray-100 last:border-0">
               <div className={`flex items-center gap-2 ${control ? 'mb-2' : ''}`}>
                 <span className="flex-1 min-w-0 truncate text-[11px] font-bold text-gray-700">{p.label}</span>
                 {p.type === 'boolean' ? (
@@ -1135,8 +1136,16 @@ function DynamicFieldPicker({
         ) : !paramsDone ? (
           <div className="flex flex-col items-center justify-center text-center gap-2 px-4 h-[calc(100%-34px)] pb-8">
             <span className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center"><Lock className="w-4 h-4 text-gray-300" /></span>
-            <p className="text-[11px] text-gray-400 leading-snug">השדות ייפתחו אחרי<br />מילוי כל הפרמטרים</p>
-            <p className="text-[10px] text-gray-300">{filledCount} מתוך {params.length}</p>
+            <p className="text-[11px] text-gray-400 leading-snug">השדות ייפתחו אחרי מילוי:</p>
+            <div className="flex flex-wrap justify-center gap-1">
+              {params.filter(p => !isParamFilled(p, values[p.id])).map(p => (
+                <button key={p.id} type="button"
+                  onClick={() => document.getElementById(`op-param-${p.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                  className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[10px] font-semibold text-amber-800 hover:bg-amber-100 transition-colors">
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
         ) : selOp.fields.map(fn => {
           const linked = isLinked(fn);
